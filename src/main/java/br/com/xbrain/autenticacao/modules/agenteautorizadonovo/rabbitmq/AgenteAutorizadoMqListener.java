@@ -27,14 +27,18 @@ public class AgenteAutorizadoMqListener {
 
     @RabbitListener(queues = "${app-config.queue.adicionar-permissao-tecnico-indicador}")
     public void adicionarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
-        try {
-            log.info("Adicionando permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
+        log.info("Adicionando permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
 
+        try {
             var usuarioAutenticadoId = autenticacaoService.getUsuarioAutenticado().getUsuario().getId();
 
-            permissaoEspecialService.save(usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
-                .map(usuario -> PermissaoEspecial.of(usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID, usuarioAutenticadoId))
-                .collect(Collectors.toList()));
+            permissaoEspecialService.save(
+                usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
+                    .map(usuario -> PermissaoEspecial.of(
+                        usuario.getId(),
+                        PERMISSAO_TECNICO_INDICADOR_ID,
+                        usuarioAutenticadoId))
+                    .collect(Collectors.toList()));
         } catch (Exception ex) {
             log.error("Erro ao processar fila para adicionar permissão de técnico indicador", ex);
         }
@@ -42,12 +46,13 @@ public class AgenteAutorizadoMqListener {
 
     @RabbitListener(queues = "${app-config.queue.remover-permissao-tecnico-indicador}")
     public void removerPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
-        try {
-            log.info("Removendo permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
+        log.info("Removendo permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
 
+        try {
             usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
-                .forEach(usuario -> permissaoEspecialService
-                    .remover(usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID));
+                .forEach(usuario -> permissaoEspecialService.remover(
+                    usuario.getId(),
+                    PERMISSAO_TECNICO_INDICADOR_ID));
         } catch (Exception ex) {
             log.error("Erro ao processar fila para remover permissão de técnico indicador", ex);
         }
