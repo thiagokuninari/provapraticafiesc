@@ -147,6 +147,12 @@ public class UsuarioService {
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
+    private static final List<CodigoCargo> LISTA_CARGOS_TECNICO_INDICADOR = List.of(
+        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
+        AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
+        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS_RECEPTIVO, AGENTE_AUTORIZADO_SOCIO, AGENTE_AUTORIZADO_COORDENADOR,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS_RECEPTIVO, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS);
 
     @Autowired
     private UsuarioRepository repository;
@@ -2521,5 +2527,12 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
+    }
+
+    public List<Usuario> getUsuariosPermissaoTecnicoIndicador(List<Integer> usuariosIds) {
+        return repository.findByIdIn(usuariosIds).stream()
+            .filter(usuario ->
+                LISTA_CARGOS_TECNICO_INDICADOR.contains(usuario.getCargoCodigo()))
+            .collect(Collectors.toList());
     }
 }
