@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 public class AgenteAutorizadoMqListener {
 
-    private static final Integer POL_TABULAR_TECNICO_INDICADOR_ID = 253;
+    private static final Integer PERMISSAO_TECNICO_INDICADOR_ID = 253;
 
     @Autowired
     private PermissaoEspecialService permissaoEspecialService;
@@ -30,14 +30,11 @@ public class AgenteAutorizadoMqListener {
         try {
             log.info("Adicionando permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
 
-            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+            var usuarioAutenticadoId = autenticacaoService.getUsuarioAutenticado().getUsuario().getId();
 
-            permissaoEspecialService.save(
-                usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds())
-                    .stream()
-                    .map(usuario -> 
-                        PermissaoEspecial.of(usuario.getId(), POL_TABULAR_TECNICO_INDICADOR_ID, usuarioAutenticado.getId()))
-                    .collect(Collectors.toList()));
+            permissaoEspecialService.save(usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
+                .map(usuario -> PermissaoEspecial.of(usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID, usuarioAutenticadoId))
+                .collect(Collectors.toList()));
         } catch (Exception ex) {
             log.error("Erro ao processar fila para adicionar permissão de técnico indicador", ex);
         }
@@ -48,8 +45,9 @@ public class AgenteAutorizadoMqListener {
         try {
             log.info("Removendo permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
 
-            dto.getUsuariosIds().forEach(usuarioId ->
-                permissaoEspecialService.remover(usuarioId, POL_TABULAR_TECNICO_INDICADOR_ID));
+            usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
+                .forEach(usuario -> permissaoEspecialService
+                    .remover(usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID));
         } catch (Exception ex) {
             log.error("Erro ao processar fila para remover permissão de técnico indicador", ex);
         }
