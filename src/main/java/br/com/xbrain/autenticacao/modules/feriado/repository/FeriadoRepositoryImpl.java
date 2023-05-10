@@ -38,7 +38,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf) {
+    public Boolean hasFeriadoMunicipal(LocalDate data, String cidade, String uf) {
         return new JPAQueryFactory(entityManager)
             .select(feriado.id.countDistinct())
             .from(feriado)
@@ -47,10 +47,44 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             .where(
                 feriado.dataFeriado.eq(data)
                     .and(feriado.situacao.eq(ATIVO))
-                    .and(feriado.feriadoNacional.eq(Eboolean.V)
-                        .or(QCidade.cidade.nome.containsIgnoreCase(cidade.toUpperCase())
-                            .or(QUf.uf1.uf.containsIgnoreCase(uf.toUpperCase())
+                    .and(feriado.tipoFeriado.eq(ETipoFeriado.MUNICIPAL))
+                    .and(feriado.feriadoNacional.eq(Eboolean.F)
+                        .and(QCidade.cidade.nome.containsIgnoreCase(cidade.toUpperCase())
+                            .and(QUf.uf1.uf.containsIgnoreCase(uf.toUpperCase())
                                 .or(QUf.uf1.nome.containsIgnoreCase(uf.toUpperCase())))))
+            )
+            .fetchCount() > 0;
+    }
+
+    @Override
+    public Boolean hasFeriadoEstadual(LocalDate data, String cidade, String uf) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.id.countDistinct())
+            .from(feriado)
+            .leftJoin(feriado.cidade, QCidade.cidade)
+            .leftJoin(feriado.uf, QUf.uf1)
+            .where(
+                feriado.dataFeriado.eq(data)
+                    .and(feriado.situacao.eq(ATIVO))
+                    .and(feriado.tipoFeriado.eq(ETipoFeriado.ESTADUAL))
+                    .and(feriado.feriadoNacional.eq(Eboolean.F)
+                        .and(QUf.uf1.uf.containsIgnoreCase(uf.toUpperCase())
+                            .or(QUf.uf1.nome.containsIgnoreCase(uf.toUpperCase()))))
+            )
+            .fetchCount() > 0;
+    }
+
+    @Override
+    public Boolean hasFeriadoNacional(LocalDate data) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.id.countDistinct())
+            .from(feriado)
+            .leftJoin(feriado.cidade, QCidade.cidade)
+            .leftJoin(feriado.uf, QUf.uf1)
+            .where(
+                feriado.dataFeriado.eq(data)
+                    .and(feriado.situacao.eq(ATIVO))
+                    .and(feriado.feriadoNacional.eq(Eboolean.V))
             )
             .fetchCount() > 0;
     }

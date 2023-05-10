@@ -1,8 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +16,4 @@ public class FeriadoAutomacao {
     private String diaSemana;
     private String nome;
     private ETipoFeriado tipoFeriado;
-    private Uf uf;
-    private Cidade cidade;
-
 }

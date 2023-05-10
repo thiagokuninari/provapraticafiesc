@@ -23,12 +23,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-socio-principal-success}")
     private String usuarioCadastroSocioPrincipalSuccessMq;
 
-    @Value("${app-config.queue.usuario-atualizar-socio-principal-success}")
-    private String usuarioAtualizarSocioPrincipalSuccessMq;
-
-    @Value("${app-config.queue.usuario-atualizar-socio-principal-failure}")
-    private String usuarioAtualizarSocioPrincipalFailureMq;
-
     @Value("${app-config.queue.usuario-cadastro-loja-futuro-success}")
     private String usuarioCadastroLojaFuturoSuccessMq;
 
@@ -37,18 +31,6 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-cadastro-failure}")
     private String usuarioCadastroFailureMq;
-
-    @Value("${app-config.queue.organizacao-empresa-cadastro-success}")
-    private String organizacaoEmpresaCadastroSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-atualizacao-success}")
-    private String organizacaoEmpresaAtualizacaoSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-inativar-situacao-success}")
-    private String organizacaoEmpresaInativarSituacaoSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-ativar-situacao-success}")
-    private String organizacaoEmpresaAtivarSituacaoSuccessMq;
 
     @Value("${app-config.queue.usuario-atualizacao}")
     private String usuarioAtualizacaoMq;
@@ -97,9 +79,6 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.inativar-colaborador-pol}")
     private String inativarColaboradorPolMq;
-
-    @Value("${app-config.queue.inativar-colaborador-pol-failure}")
-    private String inativarColaboradorPolFailureMq;
 
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
@@ -207,19 +186,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioAtualizarSocioPrincipalSuccessMq() {
-        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalSuccessMq)
-            .withArgument(DEAD_LETTER_EXCHANGE, "")
-            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioAtualizarSocioPrincipalFailureMq)
-            .build();
-    }
-
-    @Bean
-    Queue usuarioAtualizarSocioPrincipalFailureMq() {
-        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalFailureMq).build();
-    }
-
-    @Bean
     Queue usuarioCadastroLojaFuturoSuccessMq() {
         return new Queue(usuarioCadastroLojaFuturoSuccessMq, false);
     }
@@ -236,36 +202,12 @@ public class RabbitConfig {
 
     @Bean
     Queue inativarColaboradorPolMq() {
-        return QueueBuilder
-            .durable(inativarColaboradorPolMq)
-            .withArgument(DEAD_LETTER_EXCHANGE, "")
-            .withArgument(DEAD_LETTER_ROUTING_KEY, inativarColaboradorPolFailureMq)
-            .build();
+        return new Queue(inativarColaboradorPolMq, false);
     }
 
     @Bean
     Queue usuarioCadastroSuccessMq() {
         return new Queue(usuarioCadastroSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaCadastroSuccessMq() {
-        return new Queue(organizacaoEmpresaCadastroSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaAtualizacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaAtualizacaoSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaInativarSituacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaInativarSituacaoSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaAtivarSituacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaAtivarSituacaoSuccessMq, false);
     }
 
     @Bean

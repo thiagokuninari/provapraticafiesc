@@ -29,10 +29,22 @@ public interface FeriadoRepositoryCustom {
     void updateFeriadoNomeEDataByIds(List<Integer> feriadoIds, String nome, LocalDate dataFeriado);
 
     @Cacheable(
-            cacheManager = "concurrentCacheManager",
-            cacheNames = FERIADOS_DATA_CACHE_NAME,
-            unless = "#cidade == null || #uf == null")
-    boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
+        cacheManager = "concurrentCacheManager",
+        cacheNames = FERIADOS_DATA_CACHE_NAME,
+        unless = "#cidade == null || #uf == null")
+    Boolean hasFeriadoMunicipal(LocalDate data, String cidade, String uf);
+
+    @Cacheable(
+        cacheManager = "concurrentCacheManager",
+        cacheNames = FERIADOS_DATA_CACHE_NAME,
+        unless = "#cidade == null || #uf == null")
+    Boolean hasFeriadoEstadual(LocalDate data, String cidade, String uf);
+
+    @Cacheable(
+        cacheManager = "concurrentCacheManager",
+        cacheNames = FERIADOS_DATA_CACHE_NAME,
+        unless = "#cidade == null || #uf == null")
+    Boolean hasFeriadoNacional(LocalDate data);
 
     List<String> buscarEstadosFeriadosEstaduaisPorData(LocalDate data);
 

@@ -47,7 +47,6 @@ public class ImportacaoAutomaticaFeriadoService {
     private final UfService ufService;
     private final FeriadoRepository feriadoRepository;
     private final ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaRepository;
-
     private final CidadeService cidadeService;
 
     private List<FeriadoAutomacao> consultarFeriadosNacionais(Integer ano) {

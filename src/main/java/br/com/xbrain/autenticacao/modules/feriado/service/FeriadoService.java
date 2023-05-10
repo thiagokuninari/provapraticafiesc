@@ -108,8 +108,27 @@ public class FeriadoService {
             .setFeriadosNacionais(new HashSet<>(repository.findAllNacional(LocalDate.now())));
     }
 
+    private Boolean isFeriadoNacional(LocalDate data) {
+        return repository.hasFeriadoNacional(data);
+    }
+
+    private boolean isFeriadoMunicipal(LocalDate data, String cidade, String uf) {
+        return repository.hasFeriadoMunicipal(data, cidade, uf);
+    }
+
+    private boolean isFeriadoEstadual(LocalDate data, String cidade, String uf) {
+        return repository.hasFeriadoEstadual(data, cidade, uf);
+    }
+
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
-        return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
+        var data = dataHoraAtual.getData();
+        if (isFeriadoNacional(data)) {
+            return true;
+        } else if (isFeriadoEstadual(data, cidade, uf)) {
+            return true;
+        }
+
+        return isFeriadoMunicipal(data, cidade, uf);
     }
 
     public List<String> buscarUfsFeriadosEstaduaisPorData() {
