@@ -2,17 +2,17 @@ package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.controll
 
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service.ImportacaoAutomaticaFeriadoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/importacao-automatica")
+@RequiredArgsConstructor
 public class ImportacaoAutomaticaFeriadoController {
 
-    @Autowired
-    private ImportacaoAutomaticaFeriadoService service;
+    private final ImportacaoAutomaticaFeriadoService service;
 
     @PostMapping("municipais")
     public void importarFeriadosAutomacaoMunicipais(FeriadoRequest request) {
