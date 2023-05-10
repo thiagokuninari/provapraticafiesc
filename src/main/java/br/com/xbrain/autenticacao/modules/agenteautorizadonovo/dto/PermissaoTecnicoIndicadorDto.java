@@ -15,4 +15,5 @@ public class PermissaoTecnicoIndicadorDto {
 
     private Integer agenteAutorizadoId;
     private List<Integer> usuariosIds;
+    private Integer usuarioAutenticadoId;
 }

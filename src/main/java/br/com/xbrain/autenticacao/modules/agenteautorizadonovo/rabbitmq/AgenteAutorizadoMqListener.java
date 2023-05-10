@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.rabbitmq;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.PermissaoTecnicoIndicadorDto;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -22,23 +21,21 @@ public class AgenteAutorizadoMqListener {
     private PermissaoEspecialService permissaoEspecialService;
     @Autowired
     private UsuarioService usuarioService;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
     @RabbitListener(queues = "${app-config.queue.adicionar-permissao-tecnico-indicador}")
     public void adicionarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
-        log.info("Adicionando permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
+        log.info("Adicionando permissão de técnico indicador para os usuários do Agente Autorizado: {}",
+            dto.getAgenteAutorizadoId());
 
         try {
-            var usuarioAutenticadoId = autenticacaoService.getUsuarioAutenticado().getUsuario().getId();
+            var permissoes = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
+                .stream()
+                .filter(usuario -> !validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
+                .map(usuario -> PermissaoEspecial.of(
+                    usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID, dto.getUsuarioAutenticadoId()))
+                .collect(Collectors.toList());
 
-            permissaoEspecialService.save(
-                usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
-                    .map(usuario -> PermissaoEspecial.of(
-                        usuario.getId(),
-                        PERMISSAO_TECNICO_INDICADOR_ID,
-                        usuarioAutenticadoId))
-                    .collect(Collectors.toList()));
+            permissaoEspecialService.save(permissoes);
         } catch (Exception ex) {
             log.error("Erro ao processar fila para adicionar permissão de técnico indicador", ex);
         }
@@ -46,15 +43,22 @@ public class AgenteAutorizadoMqListener {
 
     @RabbitListener(queues = "${app-config.queue.remover-permissao-tecnico-indicador}")
     public void removerPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
-        log.info("Removendo permissão de técnico indicador para os usuários: {}", dto.getUsuariosIds());
+        log.info("Removendo permissão de técnico indicador dos usuários do Agente Autorizado: {}",
+            dto.getAgenteAutorizadoId());
 
         try {
-            usuarioService.getUsuariosPermissaoTecnicoIndicador(dto.getUsuariosIds()).stream()
+            usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
+                .stream()
+                .filter(usuario -> validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
                 .forEach(usuario -> permissaoEspecialService.remover(
-                    usuario.getId(),
-                    PERMISSAO_TECNICO_INDICADOR_ID));
+                    usuario.getId(), PERMISSAO_TECNICO_INDICADOR_ID, dto.getUsuarioAutenticadoId()));
         } catch (Exception ex) {
             log.error("Erro ao processar fila para remover permissão de técnico indicador", ex);
         }
+    }
+
+    private boolean validarUsuarioComPermissaoTecnicoIndicador(Integer usuarioId) {
+        return permissaoEspecialService.hasPermissaoEspecialAtiva(
+            usuarioId, PERMISSAO_TECNICO_INDICADOR_ID);
     }
 }

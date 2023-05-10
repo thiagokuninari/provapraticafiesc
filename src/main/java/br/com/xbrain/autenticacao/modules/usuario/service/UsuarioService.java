@@ -2529,10 +2529,8 @@ public class UsuarioService {
         }
     }
 
-    public List<Usuario> getUsuariosPermissaoTecnicoIndicador(List<Integer> usuariosIds) {
-        return repository.findByIdIn(usuariosIds).stream()
-            .filter(usuario ->
-                LISTA_CARGOS_TECNICO_INDICADOR.contains(usuario.getCargoCodigo()))
-            .collect(Collectors.toList());
+    public List<Usuario> buscarUsuariosTabulacaoTecnicoIndicador(List<Integer> usuarioIds) {
+        return repository.findByIdInAndCargoIn(
+            usuarioIds, cargoRepository.findByCodigoIn(LISTA_CARGOS_TECNICO_INDICADOR));
     }
 }
