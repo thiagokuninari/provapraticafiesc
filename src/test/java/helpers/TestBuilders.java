@@ -12,10 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -181,11 +178,12 @@ public class TestBuilders {
 
     public static Usuario umUsuario(Integer id, CodigoCargo codigoCargo) {
         return Usuario.builder()
-                .id(id)
-                .cargo(umCargoOperacao(codigoCargo))
-                .nome("UM USUARIO " + codigoCargo.name())
-                .build();
-
+            .id(id)
+            .cargo(umCargoOperacao(codigoCargo))
+            .nome("UM USUARIO " + codigoCargo.name())
+            .cidades(Collections.emptySet())
+            .departamento(umDepartamento())
+            .build();
     }
 
     public static UsuarioNomeResponse umUsuarioNomeResponse(Integer id, String nome, ESituacao situacao) {
@@ -240,5 +238,13 @@ public class TestBuilders {
                 .nome(codigoCargo.name())
                 .situacao(ESituacao.A)
                 .build();
+    }
+
+    private static Departamento umDepartamento() {
+        return Departamento
+            .builder()
+            .id(1)
+            .codigo(CodigoDepartamento.COMERCIAL)
+            .build();
     }
 }
