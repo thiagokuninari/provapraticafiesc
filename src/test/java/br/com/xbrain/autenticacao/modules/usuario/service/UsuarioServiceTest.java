@@ -1019,6 +1019,20 @@ public class UsuarioServiceTest {
             eq(List.of(1027)));
     }
 
+    @Test
+    public void buscarUsuariosTabulacaoTecnicoIndicador_deveRetornarUsuarios_quandoExistirem() {
+        var cargos = List.of(new Cargo(3005), new Cargo(3006));
+        var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).build();
+
+        when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
+        when(usuarioRepository.findByIdInAndCargoIn(List.of(1, 2, 3), cargos))
+            .thenReturn(List.of(usuario));
+
+        var usuarios = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3));
+
+        assertThat(usuarios).isNotEmpty();
+    }
+
     private Usuario umUsuarioAtivo() {
         return Usuario.builder()
             .id(10)
