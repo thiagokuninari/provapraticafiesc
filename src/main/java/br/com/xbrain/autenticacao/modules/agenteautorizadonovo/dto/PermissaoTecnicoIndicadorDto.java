@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,5 @@ public class PermissaoTecnicoIndicadorDto {
     private Integer agenteAutorizadoId;
     private List<Integer> usuariosIds;
     private Integer usuarioAutenticadoId;
+    private Eboolean isAdicionarPermissao;
 }

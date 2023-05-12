@@ -65,9 +65,9 @@ public class PermissaoEspecialService {
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId, int usuarioBaixaId) {
         return repository
             .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)
-            .map(p -> {
-                p.baixar(usuarioBaixaId);
-                return repository.save(p);
+            .map(permissao -> {
+                permissao.baixar(usuarioBaixaId);
+                return repository.save(permissao);
             })
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
