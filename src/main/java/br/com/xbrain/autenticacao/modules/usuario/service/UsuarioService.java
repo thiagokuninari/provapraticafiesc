@@ -137,7 +137,7 @@ public class UsuarioService {
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
     private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
-        List.of(SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS);
+        List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(

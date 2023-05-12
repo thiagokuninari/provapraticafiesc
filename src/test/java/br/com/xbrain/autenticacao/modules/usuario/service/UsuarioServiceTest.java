@@ -74,8 +74,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -436,14 +436,14 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveLancarExcecao_quandoEmailComCaracteresEspeciais() {
-        var emailsComCaracteresEspeciais = List.of( "asteristico*@test.com","!exclamacao@gmail.com",
-            "#hashtag@gmail.com","&ecomercial@gmail.com","(parentese@gmail.com",")parentese@gmail.com",
-            "=igual@gmail.com","/barra@gmail.com", "{chave@gmail.com","}chave@gmail.com", "[colchete@gmail.com",
+        var emailsComCaracteresEspeciais = List.of("asteristico*@test.com", "!exclamacao@gmail.com",
+            "#hashtag@gmail.com", "&ecomercial@gmail.com", "(parentese@gmail.com", ")parentese@gmail.com",
+            "=igual@gmail.com", "/barra@gmail.com", "{chave@gmail.com", "}chave@gmail.com", "[colchete@gmail.com",
             "]colchete@gmail.com", "?interrogacao@gmail.com");
 
         emailsComCaracteresEspeciais.forEach(email -> {
-            var usuario = Usuario.builder().email(email).build();
-            assertThatThrownBy(() -> usuarioService.save(usuario)).hasMessage("Email inválido.");
+                var usuario = Usuario.builder().email(email).build();
+                assertThatThrownBy(() -> usuarioService.save(usuario)).hasMessage("Email inválido.");
             }
         );
     }
@@ -962,13 +962,13 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(usuarioRepository, times(1)).findAllNomesIds(eq(
-            PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalAa(false)
-                .todoCanalD2d(false)
-                .comUsuariosLogadosHoje(false)
-                .regionalId(1027)
-                .usuarioService(usuarioService)
-                .build()),
+                PublicoAlvoComunicadoFiltros.builder()
+                    .todoCanalAa(false)
+                    .todoCanalD2d(false)
+                    .comUsuariosLogadosHoje(false)
+                    .regionalId(1027)
+                    .usuarioService(usuarioService)
+                    .build()),
             eq(List.of(1027)));
     }
 
@@ -985,13 +985,13 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(usuarioRepository, times(1)).findAllNomesIds(eq(
-            PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalAa(false)
-                .todoCanalD2d(false)
-                .comUsuariosLogadosHoje(false)
-                .ufId(1)
-                .usuarioService(usuarioService)
-                .build()),
+                PublicoAlvoComunicadoFiltros.builder()
+                    .todoCanalAa(false)
+                    .todoCanalD2d(false)
+                    .comUsuariosLogadosHoje(false)
+                    .ufId(1)
+                    .usuarioService(usuarioService)
+                    .build()),
             eq(List.of(1027)));
     }
 
@@ -1009,13 +1009,13 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(usuarioRepository, times(1)).findAllNomesIds(eq(
-            PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalAa(false)
-                .todoCanalD2d(false)
-                .comUsuariosLogadosHoje(false)
-                .cidadesIds(List.of(5578))
-                .usuarioService(usuarioService)
-                .build()),
+                PublicoAlvoComunicadoFiltros.builder()
+                    .todoCanalAa(false)
+                    .todoCanalD2d(false)
+                    .comUsuariosLogadosHoje(false)
+                    .cidadesIds(List.of(5578))
+                    .usuarioService(usuarioService)
+                    .build()),
             eq(List.of(1027)));
     }
 
@@ -2153,7 +2153,7 @@ public class UsuarioServiceTest {
         usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
 
         verify(equipeVendaD2dService, times(1))
-            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS)));
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS)));
     }
 
     @Test
