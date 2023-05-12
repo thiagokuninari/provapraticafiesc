@@ -450,6 +450,15 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void getSubordinados_deveEnviarDefault_quandoNaoPassarParametro() {
+        mvc.perform(get(BASE_URL.concat("/1/subordinados")))
+            .andExpect(status().isOk());
+        verify(usuarioService).getIdDosUsuariosSubordinados(1, false);
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void getSubordinadosVendas_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1/subordinados/vendas")))
@@ -725,6 +734,16 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void getUsuarioByEmail_deveEnviarNulo_quandoNaoPassarParametroNaoObrigatorio() {
+        mvc.perform(get(BASE_URL)
+                .param("email", "email@test.com"))
+            .andExpect(status().isOk());
+        verify(usuarioService).findByEmailAa("email@test.com", null);
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void getUsuariosByEmails_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/emails")))
@@ -743,6 +762,18 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).findByEmails(List.of("email@test.com"), true);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosByEmails_deveEnviarNulo_quandoNaoPassarParametroNaoObrigatorio() {
+        mvc.perform(post(BASE_URL.concat("/emails"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(List.of("email@test.com"))))
+            .andExpect(status().isOk());
+        verify(usuarioService).findByEmails(List.of("email@test.com"), null);
     }
 
     @Test
@@ -767,6 +798,16 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void getUsuarioByCpf_deveEnviarNulo_quandoNaoPassarParametroNaoObrigatorio() {
+        mvc.perform(get(BASE_URL)
+                .param("cpf", "123"))
+            .andExpect(status().isOk());
+        verify(usuarioService).findByCpfAa("123", null);
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void getUsuariosByCpfs_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/cpfs")))
@@ -785,6 +826,18 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).findByCpfs(List.of("123"), true);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosByCpfs_deveEnviarNulo_quandoNaoPassarParametroNaoObrigatorio() {
+        mvc.perform(post(BASE_URL.concat("/cpfs"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(List.of("123"))))
+            .andExpect(status().isOk());
+        verify(usuarioService).findByCpfs(List.of("123"), null);
     }
 
     @Test
@@ -1614,9 +1667,19 @@ public class UsuarioControllerTest {
     public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL)
                 .param("organizacaoId", "1")
-                .param("buscarInativos", "true"))
+                .param("buscarInativos", "false"))
             .andExpect(status().isOk());
 
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, false);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveEnviarTrue_quandoNaoPassarParametroNaoObrigatorio() {
+        mvc.perform(get(BASE_URL)
+                .param("organizacaoId", "1"))
+            .andExpect(status().isOk());
         verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, true);
     }
 
