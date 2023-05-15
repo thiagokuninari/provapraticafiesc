@@ -22,11 +22,15 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static com.google.common.collect.Lists.partition;
 
 @Slf4j
 @Service
@@ -68,10 +72,7 @@ public class UsuarioAgendamentoService {
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
         var usuariosDoAa = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
-        var usuariosIds = usuariosDoAa
-                .stream()
-                .map(UsuarioAgenteAutorizadoResponse::getId)
-                .collect(Collectors.toList());
+        var usuariosIds = getUsuarioIds(usuariosDoAa);
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
 
@@ -182,19 +183,26 @@ public class UsuarioAgendamentoService {
     private List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosAutenticacao(
         List<UsuarioAgenteAutorizadoResponse> usuarios) {
 
-        var comUsuarioAutenticacao = usuarioService.getUsuariosAtivosByIds(
-            usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId).collect(Collectors.toList()));
+        var usuariosAut = partition(getUsuarioIds(usuarios), QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(usuarioService::getUsuariosAtivosByIds)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
 
         return usuarios.stream()
-            .filter(usuario -> comUsuarioAutenticacao.contains(usuario.getId()))
+            .filter(usuario -> usuariosAut.contains(usuario.getId()))
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    private static List<Integer> getUsuarioIds(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+        return usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());
     }
 
     public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
         try {
-            var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(
-                usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId)
-                    .collect(Collectors.toList()));
+            var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
 
             usuarios.forEach(usuario -> {
                 if (usuarioEquipes.containsKey(usuario.getId())) {
@@ -207,8 +215,8 @@ public class UsuarioAgendamentoService {
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
-        var usuarios = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
-
+        var usuariosPol = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
+        var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
         popularEquipeVendasId(usuarios);
 
         if (isUsuarioAutenticadoSupervisor()) {
