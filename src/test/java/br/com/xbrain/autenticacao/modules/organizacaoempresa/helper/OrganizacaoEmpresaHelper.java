@@ -20,20 +20,7 @@ public class OrganizacaoEmpresaHelper {
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Marcos AA")
-            .cnpj("66.845.365/0001-25")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
-            .modalidadesEmpresaIds(List.of(1))
-            .nivelId(1)
-            .codigo("CODIGO")
-            .build();
-    }
-
-    public static OrganizacaoEmpresaRequest organizacaoEmpresaSemCnpjRequest() {
-        return OrganizacaoEmpresaRequest.builder()
-            .nome("Marcos AA")
-            .cnpj(null)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
-            .modalidadesEmpresaIds(List.of(1))
             .nivelId(1)
             .codigo("CODIGO")
             .build();
@@ -42,7 +29,6 @@ public class OrganizacaoEmpresaHelper {
     public static OrganizacaoEmpresa organizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .nome("Marcos AA")
-            .cnpj("66.845.365/0001-25")
             .id(2)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -62,7 +48,6 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .nome("Teste AA")
-            .cnpj("54.238.644/0001-41")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .codigo("codigo")
             .build();
@@ -73,7 +58,6 @@ public class OrganizacaoEmpresaHelper {
             .id(2)
             .nome("Teste AA Dois")
             .nivel(umNivel())
-            .cnpj("79.742.597/0001-08")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .codigo("codigo2")
             .build();
@@ -93,8 +77,8 @@ public class OrganizacaoEmpresaHelper {
     public static Nivel umNivel() {
         return Nivel.builder()
             .id(1)
-            .nome("VAREJO")
-            .codigo(CodigoNivel.VAREJO)
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE)
             .build();
     }
 
@@ -117,8 +101,8 @@ public class OrganizacaoEmpresaHelper {
     public static NivelResponse umNivelResponse() {
         return NivelResponse.builder()
             .id(1)
-            .nome("VAREJO")
-            .codigo(CodigoNivel.VAREJO.name())
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE.name())
             .build();
     }
 }

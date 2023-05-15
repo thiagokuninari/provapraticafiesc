@@ -3,9 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -23,7 +21,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -63,8 +60,6 @@ public class OrganizacaoEmpresaHistoricoServiceTest {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .nome("THIAGO TESTE")
-            .cnpj("08112392000192")
-            .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
             .nivel(Nivel.builder()
                 .codigo(CodigoNivel.RECEPTIVO)
                 .build())
@@ -87,19 +82,4 @@ public class OrganizacaoEmpresaHistoricoServiceTest {
         usuarioAutenticado.setNome("Thiago");
         return usuarioAutenticado;
     }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaPap() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(1);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.PAP);
-        return modalidadeEmpresa;
-    }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaTelevendas() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(2);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.TELEVENDAS);
-        return modalidadeEmpresa;
-    }
-
 }

@@ -138,7 +138,6 @@ public class OrganizacaoEmpresaControllerTest {
             .thenReturn(umUsuarioAdminAutenticado());
 
         var salvarOrganizacao = organizacaoEmpresaRequest();
-        salvarOrganizacao.setCnpj("01.332.351/0001-62");
 
         mockMvc.perform(post(API_URI)
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
@@ -154,29 +153,12 @@ public class OrganizacaoEmpresaControllerTest {
             .thenReturn(umUsuarioMsoConsultorAutenticado());
 
         var salvarOrganizacao = organizacaoEmpresaRequest();
-        salvarOrganizacao.setCnpj("01.332.351/0001-62");
 
         mockMvc.perform(post(API_URI)
                 .header("Authorization", getAccessToken(mockMvc, HELP_DESK))
                 .contentType(APPLICATION_JSON)
                 .content(OrganizacaoEmpresaHelper.convertObjectToJsonBytes(salvarOrganizacao)))
             .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @SneakyThrows
-    public void update_deveRetornarOk_seCnpjNaoForIgualAOutroCnpjCadastrado() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAdminAutenticado());
-
-        var atualizarOrganizacao = organizacaoEmpresaRequest();
-        atualizarOrganizacao.setCnpj("63.628.238/0001-86");
-
-        mockMvc.perform(put(API_URI + "/{id}/editar", 2)
-                .header("Authorization", getAccessToken(mockMvc, ADMIN))
-                .contentType(APPLICATION_JSON)
-                .content(OrganizacaoEmpresaHelper.convertObjectToJsonBytes(atualizarOrganizacao)))
-            .andExpect(status().isOk());
     }
 
     @Test
@@ -223,12 +205,10 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].id", is(1)))
             .andExpect(jsonPath("$.content[0].nome", is("Teste AA")))
-            .andExpect(jsonPath("$.content[0].cnpj", is("54.238.644/0001-41")))
             .andExpect(jsonPath("$.content[0].situacao", is("A")))
             .andExpect(jsonPath("$.content[0].codigo", is("codigo")))
             .andExpect(jsonPath("$.content[1].id", is(2)))
             .andExpect(jsonPath("$.content[1].nome", is("Teste AA Dois")))
-            .andExpect(jsonPath("$.content[1].cnpj", is("79.742.597/0001-08")))
             .andExpect(jsonPath("$.content[1].situacao", is("A")))
             .andExpect(jsonPath("$.content[1].codigo", is("codigo2")));
     }
@@ -248,7 +228,6 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.nome", is("Teste AA")))
-            .andExpect(jsonPath("$.cnpj", is("54.238.644/0001-41")))
             .andExpect(jsonPath("$.situacao", is("A")))
             .andExpect(jsonPath("$.codigo", is("codigo")));
 

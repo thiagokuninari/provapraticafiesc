@@ -1,15 +1,12 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.model;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,11 +17,9 @@ public class OrganizacaoEmpresaTest {
 
     @Test
     public void of_deveRetornarObjetoCorreto_quandoRecebeOrganizacaoEmpresa() {
-        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build(),
-            List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas())))
-            .extracting("nome", "cnpj", "nivel", "modalidadesEmpresa", "situacao")
-            .containsExactly("Organizacao 1", "08112392000192", OrganizacaoEmpresaHelper.umNivel(),
-                List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()), ESituacaoOrganizacaoEmpresa.A);
+        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build()))
+            .extracting("nome", "nivel", "situacao")
+            .containsExactly("Organizacao 1", OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
     }
 
     @Test
@@ -40,19 +35,6 @@ public class OrganizacaoEmpresaTest {
     }
 
     @Test
-    public void getModalidadesEmpresaIdNome_deveRetornarEmpty_quandoModalidadesEmpresaIsEmpty() {
-        assertThat(umaOrganizacaoEmpresa().getModalidadesEmpresaIdNome()).isEmpty();
-    }
-
-    @Test
-    public void getModalidadesEmpresaIdNome_deveRetornarModalidadesEmpresa_quandoModalidadesEmpresaIsNotEmpty() {
-        assertThat(umaOutraOrganizacaoEmpresa().getModalidadesEmpresaIdNome())
-            .isNotEmpty()
-            .isEqualTo(List.of(SelectResponse.of(1, EModalidadeEmpresa.PAP.name()),
-                SelectResponse.of(2, EModalidadeEmpresa.TELEVENDAS.name())));
-    }
-
-    @Test
     public void isAtivo_deveRetornarTrue_quandoOrganizacaoAtiva() {
         assertTrue(umaOrganizacaoComStatus(1, ESituacaoOrganizacaoEmpresa.A)
             .isAtivo());
@@ -62,20 +44,6 @@ public class OrganizacaoEmpresaTest {
     public void isAtivo_deveRetornarFalse_quandoOrganizacaoInativa() {
         assertFalse(umaOrganizacaoComStatus(1, ESituacaoOrganizacaoEmpresa.I)
             .isAtivo());
-    }
-
-    @Test
-    public void formataCnpj_deveRetornarCnpjComMascara_quandoCnpjSemMascara() {
-        assertThat(umaOrganizacaoEmpresa().formataCnpj())
-            .isNotEmpty()
-            .isEqualTo("08.112.392/0001-92");
-    }
-
-    @Test
-    public void formataCnpj_deveRetornarCnpjComMascara_quandoCnpjComMascara() {
-        assertThat(umaOrganizacaoEmpresaCnpjComMascara().formataCnpj())
-            .isNotEmpty()
-            .isEqualTo("08.112.392/0001-92");
     }
 
     private OrganizacaoEmpresa umaOrganizacaoComStatus(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
@@ -88,9 +56,7 @@ public class OrganizacaoEmpresaTest {
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 1")
-            .cnpj("08112392000192")
             .nivelId(1)
-            .modalidadesEmpresaIds(List.of(1, 2))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
     }
@@ -98,18 +64,6 @@ public class OrganizacaoEmpresaTest {
     private OrganizacaoEmpresa umaOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .nome("Organizacao 1")
-            .cnpj("08112392000192")
-            .modalidadesEmpresa(null)
-            .nivel(null)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
-            .build();
-    }
-
-    private OrganizacaoEmpresa umaOrganizacaoEmpresaCnpjComMascara() {
-        return OrganizacaoEmpresa.builder()
-            .nome("Organizacao 1")
-            .cnpj("08.112.392/0001-92")
-            .modalidadesEmpresa(null)
             .nivel(null)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -118,28 +72,12 @@ public class OrganizacaoEmpresaTest {
     private OrganizacaoEmpresa umaOutraOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .nome("Organizacao 1")
-            .cnpj("08112392000192")
             .nivel(Nivel.builder()
                 .id(1)
-                .nome("VAREJO")
-                .codigo(CodigoNivel.VAREJO)
+                .nome("BACKOFFICE")
+                .codigo(CodigoNivel.BACKOFFICE)
                 .build())
-            .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
-    }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaPap() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(1);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.PAP);
-        return modalidadeEmpresa;
-    }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaTelevendas() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(2);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.TELEVENDAS);
-        return modalidadeEmpresa;
     }
 }

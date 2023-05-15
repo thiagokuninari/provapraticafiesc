@@ -8,8 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,9 +16,7 @@ public class OrganizacaoEmpresaFiltros {
 
     private Integer organizacaoId;
     private String nome;
-    private String cnpj;
     private Integer nivelId;
-    private List<Integer> modalidadesEmpresaIds;
     private ESituacaoOrganizacaoEmpresa situacao;
     private CodigoNivel codigoNivel;
     private String codigo;
@@ -29,9 +25,7 @@ public class OrganizacaoEmpresaFiltros {
         return new OrganizacaoEmpresaPredicate()
             .comId(organizacaoId)
             .comNome(nome)
-            .comCnpj(cnpj)
             .comNivel(nivelId)
-            .comModalidades(modalidadesEmpresaIds)
             .comSituacao(situacao)
             .comCodigoNivel(codigoNivel)
             .comCodigo(codigo);

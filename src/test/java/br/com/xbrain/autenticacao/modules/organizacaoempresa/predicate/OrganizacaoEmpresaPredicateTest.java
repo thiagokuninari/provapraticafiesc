@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrga
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
-import java.util.List;
-
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,33 +55,6 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj(null)
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjVazio() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj("")
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjNaoNullENaoVazio() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj("53.501.393/0001-83")
-            .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.cnpj.containsIgnoreCase("53501393000183"));
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
     public void comNivel_organizacaoEmpresaPredicate_quandoNivelNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
             .comNivel(null)
@@ -98,24 +69,6 @@ public class OrganizacaoEmpresaPredicateTest {
             .comNivel(1)
             .build();
         var expected = new BooleanBuilder(organizacaoEmpresa.nivel.id.eq(1));
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comModalidades_organizacaoEmpresaPredicate_quandoModalidadeNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comModalidades(null)
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comModalidades_organizacaoEmpresaPredicate_quandoModalidadeNaoNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comModalidades(List.of(1))
-            .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.modalidadesEmpresa.any().id.eq(1));
         assertThat(predicate).isEqualTo(expected);
     }
 

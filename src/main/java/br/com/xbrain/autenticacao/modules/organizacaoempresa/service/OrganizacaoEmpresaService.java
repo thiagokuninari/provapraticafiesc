@@ -11,12 +11,9 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +32,12 @@ public class  OrganizacaoEmpresaService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
-    private static final NotFoundException EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA =
-        new NotFoundException("Modalidade empresa não encontrada.");
     private static final ValidacaoException ORGANIZACAO_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo nome.");
-    private static final ValidacaoException CNPJ_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada com o mesmo CNPJ.");
     private static final ValidacaoException ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
-    private static final ValidacaoException CNPJ_OBRIGATORIO =
-        new ValidacaoException("O campo cnpj é obrigatório.");
 
     @Autowired
     private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
@@ -59,9 +50,6 @@ public class  OrganizacaoEmpresaService {
 
     @Autowired
     private NivelRepository nivelRepository;
-
-    @Autowired
-    private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
 
     @Autowired
     private OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
@@ -77,23 +65,12 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = validarNivel(request.getNivelId());
         var organizacaoEmpresa = new OrganizacaoEmpresa();
-        if (nivel.getCodigo() == CodigoNivel.VAREJO) {
-            validarCnpj(request.getCnpj());
-            validarCnpjExistente(request.getCnpjSemMascara());
-            validarNome(request.getNome());
-            var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
-            organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
-                autenticacaoService.getUsuarioId(), nivel, modalidades));
+        validarNome(request.getNome());
+        organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+            autenticacaoService.getUsuarioId(), nivel));
 
-        } else {
-            validarNome(request.getNome());
-
-            organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
-                autenticacaoService.getUsuarioId(), nivel, null));
-        }
         organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
-
         return organizacaoEmpresa;
     }
 
@@ -103,6 +80,7 @@ public class  OrganizacaoEmpresaService {
         if (!organizacaoEmpresa.isAtivo()) {
             throw ORGANIZACAO_INATIVA;
         }
+
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
@@ -115,8 +93,8 @@ public class  OrganizacaoEmpresaService {
         var organizacaoEmpresa = findById(id);
         if (organizacaoEmpresa.isAtivo()) {
             throw ORGANIZACAO_ATIVA;
-
         }
+
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
@@ -128,16 +106,9 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
         var organizacaoEmpresaToUpdate = findById(id);
         var nivel = validarNivel(request.getNivelId());
-        if (nivel.getCodigo() == CodigoNivel.VAREJO) {
-            validarCnpj(request.getCnpj());
-            validarCnpjExistenteParaUpdate(request.getCnpjSemMascara(), id);
-            validarNomeParaUpdate(request.getNome(), id);
-            var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
-            organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
-        } else {
-            validarNomeParaUpdate(request.getNome(), id);
-            organizacaoEmpresaToUpdate.of(request, null, nivel);
-        }
+
+        validarNomeParaUpdate(request.getNome(), id);
+        OrganizacaoEmpresa.of(request, null, nivel);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
@@ -145,24 +116,6 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
 
         return organizacaoEmpresa;
-    }
-
-    private void validarCnpjExistente(String cnpj) {
-        if (organizacaoEmpresaRepository.existsByCnpj(cnpj)) {
-            throw CNPJ_EXISTENTE;
-        }
-    }
-
-    private void validarCnpjExistenteParaUpdate(String cnpj, Integer id) {
-        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(cnpj, id)) {
-            throw CNPJ_EXISTENTE;
-        }
-    }
-
-    private void validarCnpj(String cnpj) {
-        if (cnpj == null) {
-            throw CNPJ_OBRIGATORIO;
-        }
     }
 
     private void validarNome(String nome) {
@@ -180,14 +133,6 @@ public class  OrganizacaoEmpresaService {
     public Nivel validarNivel(Integer id) {
         return nivelRepository.findById(id)
             .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
-    }
-
-    public List<ModalidadeEmpresa> validarModalidadeEmpresa(List<Integer> ids) {
-        var modalidades = modalidadeEmpresaRepository.findAll(ids);
-        if (CollectionUtils.isEmpty(modalidades)) {
-            throw EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA;
-        }
-        return modalidades;
     }
 
     public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
