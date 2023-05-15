@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -213,8 +215,8 @@ public class UsuarioRepositoryTest {
     @Test
     public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
         assertThat(repository.obterIdsPorUsuarioCadastroId(100))
-            .hasSize(3)
-            .containsExactly(200, 300, 400);
+            .hasSize(4)
+            .containsExactly(200, 300, 400, 500);
     }
 
     @Test
@@ -307,5 +309,14 @@ public class UsuarioRepositoryTest {
             .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
         assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
+    }
+
+    @Test
+    public void findByIdInAndCargoIn_deveRetornarVendedoresTelevendas_quandoPassadoIdsDosUsuariosAndCargos() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoIn(List.of(500), List.of(cargo)))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"));
     }
 }
