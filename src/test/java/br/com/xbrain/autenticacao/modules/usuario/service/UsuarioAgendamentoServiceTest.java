@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
@@ -312,6 +313,17 @@ public class UsuarioAgendamentoServiceTest {
                 .usuarioNome("JOAO")
                 .equipeVendaId(10)
                 .build()
+        );
+    }
+
+    public static List<UsuarioAgenteAutorizadoResponse> umaListaUsuarioAgenteAutorizadoResponse() {
+        return List.of(
+            new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", null),
+            new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", null),
+            new UsuarioAgenteAutorizadoResponse(132, "LUIZ BARRETTO DE AZEVEDO NETO", null),
+            new UsuarioAgenteAutorizadoResponse(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR", null),
+            new UsuarioAgenteAutorizadoResponse(134, "PAULO JUNIO COLARES MIRANDA", null),
+            new UsuarioAgenteAutorizadoResponse(135, "LEONARDO DOS SANTOS GONCALVES REIS", null)
         );
     }
 }

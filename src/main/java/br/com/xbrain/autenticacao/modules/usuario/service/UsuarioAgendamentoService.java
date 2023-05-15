@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
@@ -183,32 +182,32 @@ public class UsuarioAgendamentoService {
     private List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosAutenticacao(
         List<UsuarioAgenteAutorizadoResponse> usuarios) {
 
+        var comUsuarioAutenticacao = usuarioService.getUsuariosAtivosByIds(
+            usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId).collect(Collectors.toList()));
+
         return usuarios.stream()
-            .map(usuario -> usuarioRepository.findById(usuario.getId()).orElse(null))
-            .filter(Objects::nonNull)
-            .filter(usuario -> usuario.getSituacao().equals(ESituacao.A))
-            .map(UsuarioAgenteAutorizadoResponse::of)
+            .filter(usuario -> comUsuarioAutenticacao.contains(usuario.getId()))
             .collect(Collectors.toList());
     }
 
     public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
         try {
+            var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(
+                usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId)
+                    .collect(Collectors.toList()));
+
             usuarios.forEach(usuario -> {
-                var equipeVendasId = equipeVendasService.getByUsuario(usuario.getId()).getId();
-                if (equipeVendasId != null) {
-                    usuario.setEquipeVendaId(equipeVendasId);
+                if (usuarioEquipes.containsKey(usuario.getId())) {
+                    usuario.setEquipeVendaId(usuarioEquipes.get(usuario.getId()));
                 }
             });
-        } catch (NullPointerException ex) {
-            log.error("Equipe de vendas não encontrada.");
         } catch (Exception ex) {
             log.error("Ocorreu um erro ao encontrar a equipe de vendas.");
         }
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
-        var usuariosPol = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
-        var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
+        var usuarios = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
 
         popularEquipeVendasId(usuarios);
 

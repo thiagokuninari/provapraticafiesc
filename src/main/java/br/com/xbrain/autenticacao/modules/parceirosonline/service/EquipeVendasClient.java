@@ -6,8 +6,10 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSuperv
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.parceiros-online.url}",
@@ -19,4 +21,7 @@ public interface EquipeVendasClient {
 
     @GetMapping("api/equipe-vendas/usuario/{usuarioId}")
     EquipeVendaDto getByUsuario(@PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping("api/equipe-vendas/usuarios-equipes")
+    Map<Integer, Integer> getByUsuarioEEquipe(@RequestParam(name = "usuarioIds") List<Integer> usuarioIds);
 }
