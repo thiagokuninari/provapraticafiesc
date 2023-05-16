@@ -23,5 +23,5 @@ public interface EquipeVendasClient {
     EquipeVendaDto getByUsuario(@PathVariable("usuarioId") Integer usuarioId);
 
     @GetMapping("api/equipe-vendas/usuarios-equipes")
-    Map<Integer, Integer> getByUsuarioEEquipe(@RequestParam(name = "usuarioIds") List<Integer> usuarioIds);
+    Map<Integer, Integer> getUsuarioEEquipeByUsuarioIds(@RequestParam(name = "usuarioIds") List<Integer> usuarioIds);
 }

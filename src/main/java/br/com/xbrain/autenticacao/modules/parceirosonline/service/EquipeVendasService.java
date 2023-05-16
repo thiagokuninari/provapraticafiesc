@@ -37,9 +37,12 @@ public class EquipeVendasService {
 
     public Map<Integer, Integer> getUsuarioEEquipeByUsuarioIds(List<Integer> usuarioIds) {
         try {
-            return equipeVendasClient.getByUsuarioEEquipe(usuarioIds);
+            if (!usuarioIds.isEmpty()) {
+                return equipeVendasClient.getUsuarioEEquipeByUsuarioIds(usuarioIds);
+            }
+            return null;
         } catch (Exception ex) {
-            log.warn("Erro ao obter a equipe de venda do usuário", ex);
+            log.warn("Erro ao obter a equipe de venda dos usuários", ex);
             return null;
         }
     }

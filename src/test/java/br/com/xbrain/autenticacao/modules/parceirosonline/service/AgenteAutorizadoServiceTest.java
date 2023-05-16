@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.parceirosonline.dto;
+package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;

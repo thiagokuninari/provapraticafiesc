@@ -22,7 +22,6 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -194,24 +193,17 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    private static List<Integer> getUsuarioIds(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+    private List<Integer> getUsuarioIds(List<UsuarioAgenteAutorizadoResponse> usuarios) {
         return usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());
     }
 
     public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
-        try {
-            var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
+        var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
 
-            usuarios.forEach(usuario -> {
-                if (usuarioEquipes.containsKey(usuario.getId())) {
-                    usuario.setEquipeVendaId(usuarioEquipes.get(usuario.getId()));
-                }
-            });
-        } catch (Exception ex) {
-            log.error("Ocorreu um erro ao encontrar a equipe de vendas.");
-        }
+        usuarios.forEach(usuario -> {
+            usuario.setEquipeVendaId(usuarioEquipes.getOrDefault(usuario.getId(), null));
+        });
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
