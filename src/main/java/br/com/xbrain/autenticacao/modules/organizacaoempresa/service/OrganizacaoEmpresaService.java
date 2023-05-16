@@ -64,10 +64,9 @@ public class  OrganizacaoEmpresaService {
 
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = validarNivel(request.getNivelId());
-        var organizacaoEmpresa = new OrganizacaoEmpresa();
 
         validarNome(request.getNome());
-        organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
 
         organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
