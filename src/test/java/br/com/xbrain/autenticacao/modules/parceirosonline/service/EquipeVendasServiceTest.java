@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
-import com.netflix.hystrix.exception.HystrixBadRequestException;
+import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,7 +25,7 @@ public class EquipeVendasServiceTest {
     private EquipeVendasClient equipeVendasClient;
 
     @Test
-    public void getUsuarioEEquipeByUsuarioIds_deveRetornarNull_quandoListaVazia() {
+    public void getUsuarioEEquipeByUsuarioIds_deveRetornarMapVazio_quandoListaVazia() {
         assertThat(equipeVendasService.getUsuarioEEquipeByUsuarioIds(List.of()))
             .isEqualTo(Map.of());
 
@@ -47,8 +47,8 @@ public class EquipeVendasServiceTest {
     }
 
     @Test
-    public void getUsuarioEEquipeByUsuarioIds_deveRetornarMapNull_quandoApiNaoDisponivel() {
-        doThrow(HystrixBadRequestException.class)
+    public void getUsuarioEEquipeByUsuarioIds_deveRetornarMapVazio_quandoClientRetornarErro() {
+        doThrow(RetryableException.class)
             .when(equipeVendasClient).getUsuarioEEquipeByUsuarioIds(anyList());
 
         assertThat(equipeVendasService.getUsuarioEEquipeByUsuarioIds(List.of(1, 2)))
