@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.service.UfService;
+import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
@@ -44,10 +44,10 @@ public class ImportacaoAutomaticaFeriadoService {
     private final FeriadoAutomacaoClient feriadoAutomacaoClient;
     private final AutenticacaoService autenticacaoService;
     private final FeriadoService feriadoService;
-    private final UfService ufService;
     private final FeriadoRepository feriadoRepository;
     private final ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaRepository;
     private final CidadeService cidadeService;
+    private final UfRepository ufRepository;
 
     private List<FeriadoAutomacao> consultarFeriadosNacionais(Integer ano) {
         try {
@@ -100,7 +100,7 @@ public class ImportacaoAutomaticaFeriadoService {
 
         importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
         importacaoAutomaticaRepository.save(importado);
-        log.info("usuario importação cadastrado com sucesso");
+        log.info("Usuario importação cadastrado com sucesso");
     }
 
     @Transactional
@@ -110,15 +110,16 @@ public class ImportacaoAutomaticaFeriadoService {
         var importado = importacaoAutomaticaRepository.save(
             ImportacaoFeriado.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticado));
 
-        var uf = ufService.findById(request.getEstadoId());
-        var feriados = consultarFeriadosEstaduais(request.getAno(), uf.getUf());
-
-        validarFeriadosEstaduais(feriados);
-        cadastrarFeriados(feriados, usuarioAutenticado, request, importado);
+        var ufs = ufRepository.findByOrderByNomeAsc();
+        ufs.forEach(uf -> {
+            var feriados = consultarFeriadosEstaduais(request.getAno(), uf.getUf());
+            validarFeriadosEstaduais(feriados);
+            cadastrarFeriados(feriados, usuarioAutenticado, request, importado);
+        });
 
         importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
         importacaoAutomaticaRepository.save(importado);
-        log.info("usuario importação cadastrado com sucesso");
+        log.info("Usuario importação cadastrado com sucesso");
     }
 
     @Transactional
@@ -133,7 +134,7 @@ public class ImportacaoAutomaticaFeriadoService {
 
         importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
         importacaoAutomaticaRepository.save(importado);
-        log.info("usuario importação cadastrado com sucesso");
+        log.info("Usuario importação cadastrado com sucesso");
     }
 
     private void cadastrarFeriados(List<FeriadoAutomacao> feriadosAutomacao, UsuarioAutenticado usuario,
@@ -143,7 +144,7 @@ public class ImportacaoAutomaticaFeriadoService {
             feriadoService.validarSeFeriadoAutomacaoJaCadastado(feriado, request);
             feriadoRepository.save(Feriado.ofAutomacao(feriado, usuario.getId(), request, importacaoFeriado));
         });
-        log.info("feriados importados com sucesso");
+        log.info("Feriados importados com sucesso");
     }
 
     private void validarFeriadosEstaduais(List<FeriadoAutomacao> feriados) {

@@ -219,15 +219,6 @@ public class FeriadoService {
         }
     }
 
-    private void salvarFeriadoAutomacaoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
-        if (feriadoPai.isFeriadoEstadual()) {
-            var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
-                .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))
-                .collect(Collectors.toList());
-            repository.save(feriadosFilhos);
-        }
-    }
-
     private void salvarFeriadoEstadualParaCidadesDoEstadoAsync(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
             if (uploadAsync) {

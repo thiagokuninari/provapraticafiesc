@@ -13,9 +13,9 @@ import java.util.List;
 
 public class FeriadoHelper {
 
-    public static Uf umUf() {
+    public static Uf umUf(Integer id) {
         return Uf.builder()
-            .id(1)
+            .id(id)
             .nome("PARANA")
             .uf("PR")
             .build();
@@ -47,5 +47,10 @@ public class FeriadoHelper {
             .nome(nome)
             .uf(Uf.builder().id(1).uf("PR").build())
             .build();
+    }
+
+    public static List<Uf> umaListUf() {
+        return List.of(umUf(1),
+            umUf(2));
     }
 }

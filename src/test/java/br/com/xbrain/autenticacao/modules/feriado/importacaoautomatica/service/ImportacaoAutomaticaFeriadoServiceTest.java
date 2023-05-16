@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.service.UfService;
+import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.repository.ImportacaoAutomaticaFeriadoRepository;
@@ -48,7 +48,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
     @Mock
     private ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaFeriadoRepository;
     @Mock
-    private UfService ufService;
+    private UfRepository ufRepository;
 
     @Test
     public void importarFeriadosAutomacaoMunicipais_deveImportarFeriados_seSolicitado() {
@@ -147,7 +147,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(feriadoAutomacaoClient.buscarFeriadosEstaduais(2023, "PR"))
             .thenReturn(umaListFeriadoAutomacao());
-        when(ufService.findById(1)).thenReturn(umUf());
+        when(ufRepository.findByOrderByNomeAsc()).thenReturn(umaListUf());
         when(importacaoAutomaticaFeriadoRepository.save(any(ImportacaoFeriado.class)))
             .thenReturn(new ImportacaoFeriado());
 
@@ -158,8 +158,8 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         service.importarFeriadosAutomacaoEstaduais(request);
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(feriadoAutomacaoClient).buscarFeriadosEstaduais(2023, "PR");
-        verify(ufService).findById(1);
+        verify(feriadoAutomacaoClient, times(2)).buscarFeriadosEstaduais(2023, "PR");
+        verify(ufRepository).findByOrderByNomeAsc();
         verify(importacaoAutomaticaFeriadoRepository, times(2)).save(any(ImportacaoFeriado.class));
     }
 
@@ -168,7 +168,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(feriadoAutomacaoClient.buscarFeriadosEstaduais(2023, "PR"))
             .thenReturn(umaListFeriadoAutomacao());
-        when(ufService.findById(1)).thenReturn(umUf());
+        when(ufRepository.findByOrderByNomeAsc()).thenReturn(umaListUf());
         when(importacaoAutomaticaFeriadoRepository.save(any(ImportacaoFeriado.class)))
             .thenReturn(new ImportacaoFeriado());
         doThrow(new ValidacaoException("Já existe feriado com os mesmos dados."))
@@ -184,7 +184,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosEstaduais(2023, "PR");
-        verify(ufService).findById(1);
+        verify(ufRepository).findByOrderByNomeAsc();
         verify(importacaoAutomaticaFeriadoRepository).save(any(ImportacaoFeriado.class));
     }
 
@@ -213,7 +213,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(feriadoAutomacaoClient.buscarFeriadosEstaduais(2023, "PR"))
             .thenReturn(List.of());
-        when(ufService.findById(1)).thenReturn(umUf());
+        when(ufRepository.findByOrderByNomeAsc()).thenReturn(umaListUf());
         when(importacaoAutomaticaFeriadoRepository.save(any(ImportacaoFeriado.class)))
             .thenReturn(new ImportacaoFeriado());
 
@@ -227,14 +227,14 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosEstaduais(2023, "PR");
-        verify(ufService).findById(1);
+        verify(ufRepository).findByOrderByNomeAsc();
         verify(importacaoAutomaticaFeriadoRepository).save(any(ImportacaoFeriado.class));
     }
 
     @Test
     public void importarFeriadosAutomacaoEstaduais_deveLancarException_seHouverFalhaNaChamadaDoClient() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(ufService.findById(1)).thenReturn(umUf());
+        when(ufRepository.findByOrderByNomeAsc()).thenReturn(umaListUf());
         when(importacaoAutomaticaFeriadoRepository.save(any(ImportacaoFeriado.class)))
             .thenReturn(new ImportacaoFeriado());
         when(feriadoAutomacaoClient.buscarFeriadosEstaduais(2023, "PR"))
@@ -250,7 +250,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosEstaduais(2023, "PR");
-        verify(ufService).findById(1);
+        verify(ufRepository).findByOrderByNomeAsc();
         verify(importacaoAutomaticaFeriadoRepository).save(any(ImportacaoFeriado.class));
     }
 
