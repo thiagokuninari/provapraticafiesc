@@ -40,10 +40,10 @@ public class EquipeVendasService {
             if (!usuarioIds.isEmpty()) {
                 return equipeVendasClient.getUsuarioEEquipeByUsuarioIds(usuarioIds);
             }
-            return null;
+            return Map.of();
         } catch (Exception ex) {
             log.warn("Erro ao obter a equipe de venda dos usuários", ex);
-            return null;
+            return Map.of();
         }
     }
 }

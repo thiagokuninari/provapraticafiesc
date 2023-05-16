@@ -198,7 +198,7 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
-    public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+    private void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
         var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
 
         usuarios.forEach(usuario -> {
