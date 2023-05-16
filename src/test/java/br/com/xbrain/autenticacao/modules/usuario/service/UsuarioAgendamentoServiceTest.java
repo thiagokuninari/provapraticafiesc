@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
@@ -236,7 +235,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
-    public void recuperarUsuariosDisponiveisParaDistribuicao_deveLancarIntegracaoException_quandoApiIndisponivel() {
+    public void recuperarUsuariosDisponiveisParaDistribuicao_naoDeveLancarException_quandoNaoEncontrarEquipeVenda() {
         when(usuarioService.getUsuariosAtivosByIds(anyList())).thenReturn(List.of(9991, 9992, 9993, 9994, 9995));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoCoordenadorComercial());
         when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
@@ -244,11 +243,11 @@ public class UsuarioAgendamentoServiceTest {
         when(usuarioRepository.findById(eq(9993))).thenReturn(umUsuarioId9993());
         when(usuarioRepository.findById(eq(9994))).thenReturn(umUsuarioId9994());
         when(usuarioRepository.findById(eq(9995))).thenReturn(umUsuarioId9995());
-        doThrow(IntegracaoException.class).when(equipeVendasService).getUsuarioEEquipeByUsuarioIds(anyList());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(anyList())).thenReturn(Map.of());
 
-        assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> usuarioAgendamentoService
-                .recuperarUsuariosDisponiveisParaDistribuicao(999));
+        assertThatCode(() -> usuarioAgendamentoService
+                .recuperarUsuariosDisponiveisParaDistribuicao(999))
+            .doesNotThrowAnyException();
 
         verify(equipeVendasService, times(1))
             .getUsuarioEEquipeByUsuarioIds(List.of(9991, 9992, 9993, 9994, 9995));
@@ -340,23 +339,6 @@ public class UsuarioAgendamentoServiceTest {
 
         assertThat(actual).isEqualTo(expected);
     }
-
-    /*
-    @Test
-    public void popularEquipeVendasId_naoDeveLancarException_quandoNaoEncontrarTodos() {
-        var umResultMap = new HashMap<Integer, Integer>();
-        umResultMap.put(130, 1);
-        umResultMap.put(132, 1);
-        umResultMap.put(133, 2);
-        umResultMap.put(135, 3);
-
-        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(anyList())).thenReturn(umResultMap);
-
-        assertThatCode(() -> usuarioAgendamentoService.popularEquipeVendasId(umaListaUsuarioAgenteAutorizadoResponse()))
-            .doesNotThrowAnyException();
-
-        verify(equipeVendasService, times(1)).getUsuarioEEquipeByUsuarioIds(anyList());
-    }*/
 
     private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {
         return List.of(
