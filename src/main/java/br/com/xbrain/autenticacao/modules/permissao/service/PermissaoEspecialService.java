@@ -62,16 +62,6 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public PermissaoEspecial remover(int usuarioId, int funcionalidadeId, int usuarioBaixaId) {
-        return repository
-            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)
-            .map(permissao -> {
-                permissao.baixar(usuarioBaixaId);
-                return repository.save(permissao);
-            })
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
-    }
-
     public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaIds) {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
