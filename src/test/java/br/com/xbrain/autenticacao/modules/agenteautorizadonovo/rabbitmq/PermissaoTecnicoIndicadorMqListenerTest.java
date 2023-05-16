@@ -29,7 +29,7 @@ public class PermissaoTecnicoIndicadorMqListenerTest {
 
         listener.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(service, times(1)).adicionarPermissaoTecnicoIndicador(eq(dto));
+        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class PermissaoTecnicoIndicadorMqListenerTest {
 
         listener.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(service, times(1)).adicionarPermissaoTecnicoIndicador(eq(dto));
+        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class PermissaoTecnicoIndicadorMqListenerTest {
 
         listener.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(service, times(1)).removerPermissaoTecnicoIndicador(eq(dto));
+        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
     }
 
     @Test
@@ -56,6 +56,6 @@ public class PermissaoTecnicoIndicadorMqListenerTest {
 
         listener.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(service, times(1)).removerPermissaoTecnicoIndicador(eq(dto));
+        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
     }
 }

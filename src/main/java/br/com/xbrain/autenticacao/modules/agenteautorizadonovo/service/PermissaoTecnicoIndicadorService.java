@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.PermissaoTecnicoIndicadorDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -24,25 +25,27 @@ public class PermissaoTecnicoIndicadorService {
     private final PermissaoEspecialService permissaoEspecialService;
     private final UsuarioService usuarioService;
 
+    public void atualizarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
+        if (dto.getIsAdicionarPermissao().equals(Eboolean.V)) {
+            adicionarPermissaoTecnicoIndicador(dto);
+        } else {
+            removerPermissaoTecnicoIndicador(dto);
+        }
+    }
+
     public void adicionarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
         log.info("Adicionando permissão de técnico indicador aos usuários do agente autorizado {}",
             dto.getAgenteAutorizadoId());
 
-        try {
-            var permissoes = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
-                .stream()
-                .filter(usuario -> !validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
-                .map(usuario -> PermissaoEspecial.of(
-                    usuario.getId(), PERMISSAO_TECNICO_INDICADOR, dto.getUsuarioAutenticadoId()))
-                .collect(toList());
+        var permissoes = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
+            .stream()
+            .filter(usuario -> !validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
+            .map(usuario -> PermissaoEspecial.of(
+                usuario.getId(), PERMISSAO_TECNICO_INDICADOR, dto.getUsuarioAutenticadoId()))
+            .collect(toList());
 
-            if (!isEmpty(permissoes)) {
-                permissaoEspecialService.save(permissoes);
-            }
-        } catch (Exception ex) {
-            log.error(
-                "Erro ao adicionar permissão de técnico indicador aos usuários do agente autorizado {}",
-                dto.getAgenteAutorizadoId(), ex);
+        if (!isEmpty(permissoes)) {
+            permissaoEspecialService.save(permissoes);
         }
     }
 
@@ -50,21 +53,15 @@ public class PermissaoTecnicoIndicadorService {
         log.info("Removendo permissão de técnico indicador dos usuários do agente autorizado {}",
             dto.getAgenteAutorizadoId());
 
-        try {
-            var usuarios = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
-                .stream()
-                .filter(usuario -> validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
-                .collect(toList());
-            
-            if (!isEmpty(usuarios)) {
-                permissaoEspecialService.deletarPermissoesEspeciaisBy(
-                    List.of(PERMISSAO_TECNICO_INDICADOR),
-                    usuarios.stream().map(Usuario::getId).collect(toList()));
-            }
-        } catch (Exception ex) {
-            log.error(
-                "Erro ao remover permissão de técnico indicador dos usuários do agente autorizado {}",
-                dto.getAgenteAutorizadoId(), ex);
+        var usuarios = usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
+            .stream()
+            .filter(usuario -> validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
+            .collect(toList());
+        
+        if (!isEmpty(usuarios)) {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(
+                List.of(PERMISSAO_TECNICO_INDICADOR),
+                usuarios.stream().map(Usuario::getId).collect(toList()));
         }
     }
 

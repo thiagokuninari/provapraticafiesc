@@ -36,7 +36,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
     private CargoRepository cargoRepository;
 
     @Test
-    public void adicionarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitado() {
+    public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitado() {
         when(usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
             .thenReturn(List.of(new Usuario(3)));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
@@ -44,13 +44,13 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
 
-        service.adicionarPermissaoTecnicoIndicador(dto);
+        service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, times(1)).save(anyList());
     }
 
     @Test
-    public void adicionarPermissaoTecnicoIndicador_naoDeveAdicionarPermissao_quandoUsuarioPossuirPermissao() {
+    public void atualizarPermissaoTecnicoIndicador_naoDeveAdicionarPermissao_quandoUsuarioPossuirPermissao() {
         when(usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
             .thenReturn(List.of(new Usuario(3)));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
@@ -60,13 +60,13 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
 
-        service.adicionarPermissaoTecnicoIndicador(dto);
+        service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, never()).save(eq(permissoes));
     }
 
     @Test
-    public void removerPermissaoTecnicoIndicador_deveRemoverPermissao_quandoUsuarioPossuirPermissao() {
+    public void atualizarPermissaoTecnicoIndicador_deveRemoverPermissao_quandoUsuarioPossuirPermissao() {
         when(usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
             .thenReturn(List.of(new Usuario(3)));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
@@ -74,14 +74,14 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
 
-        service.removerPermissaoTecnicoIndicador(dto);
+        service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, times(1))
             .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(3)));
     }
 
     @Test
-    public void removerPermissaoTecnicoIndicador_naoDeveRemoverPermissao_quandoUsuarioNaoPossuirPermissao() {
+    public void atualizarPermissaoTecnicoIndicador_naoDeveRemoverPermissao_quandoUsuarioNaoPossuirPermissao() {
         when(usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
             .thenReturn(List.of(new Usuario(3)));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
@@ -89,7 +89,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
 
-        service.removerPermissaoTecnicoIndicador(dto);
+        service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, never())
             .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(3)));
