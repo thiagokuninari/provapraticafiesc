@@ -31,31 +31,4 @@ public class PermissaoTecnicoIndicadorMqListenerTest {
 
         verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
     }
-
-    @Test
-    public void atualizarPermissaoTecnicoIndicador_naoDeveAdicionarPermissaoAosUsuarios_quandoUsuarioJaPossuirPermissao() {
-        var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
-
-        listener.atualizarPermissaoTecnicoIndicador(dto);
-
-        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
-    }
-
-    @Test
-    public void atualizarPermissaoTecnicoIndicador_deveRemoverPermissaoDosUsuarios_quandoSolicitado() {
-        var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
-
-        listener.atualizarPermissaoTecnicoIndicador(dto);
-
-        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
-    }
-
-    @Test
-    public void atualizarPermissaoTecnicoIndicador_naoDeveRemoverPermissaoDosUsuarios_quandoUsuarioNaoPossuirPermissao() {
-        var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
-
-        listener.atualizarPermissaoTecnicoIndicador(dto);
-
-        verify(service, times(1)).atualizarPermissaoTecnicoIndicador(eq(dto));
-    }
 }

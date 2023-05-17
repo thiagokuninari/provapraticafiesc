@@ -2877,4 +2877,17 @@ public class UsuarioServiceTest {
 
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
+
+    @Test
+    public void buscarUsuariosTabulacaoTecnicoIndicador_deveRetornarUsuarios_quandoExistirem() {
+        var cargos = List.of(new Cargo(3005), new Cargo(3006));
+        var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).situacao(ESituacao.A).build();
+
+        when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
+        when(usuarioRepository.findByIdInAndCargoInAndSituacao(List.of(1, 2, 3), cargos, ESituacao.A))
+            .thenReturn(List.of(usuario));
+
+        assertThat(usuarioService.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
+            .isNotEmpty();
+    }
 }

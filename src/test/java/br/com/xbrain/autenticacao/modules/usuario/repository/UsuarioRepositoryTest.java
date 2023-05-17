@@ -215,8 +215,8 @@ public class UsuarioRepositoryTest {
     @Test
     public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
         assertThat(repository.obterIdsPorUsuarioCadastroId(100))
-            .hasSize(4)
-            .containsExactly(200, 300, 400, 500);
+            .hasSize(6)
+            .containsExactly(200, 300, 400, 500, 600, 700);
     }
 
     @Test
@@ -312,9 +312,20 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findByIdInAndCargoIn_deveRetornarVendedoresTelevendas_quandoPassadoIdsDosUsuariosAndCargos() {
+    public void findByIdInAndCargoIn_deveRetornarUsuarios_quandoInformarIdsDosUsuariosAndCargos() {
         var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
-        assertThat(repository.findByIdInAndCargoIn(List.of(500), List.of(cargo)))
+        assertThat(repository.findByIdInAndCargoIn(List.of(500, 600, 700), List.of(cargo)))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(600, "USUARIO 600", "USUARIO_600@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
+    }
+
+    @Test
+    public void findByIdInAndCargoInAndSituacao_deveRetornarUsuariosAtivos_quandoInformarIdsAndCargosAndSituacao() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoInAndSituacao(List.of(500, 600, 700), List.of(cargo), ESituacao.A))
             .extracting("id", "nome", "email")
             .containsExactly(
                 Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"));
