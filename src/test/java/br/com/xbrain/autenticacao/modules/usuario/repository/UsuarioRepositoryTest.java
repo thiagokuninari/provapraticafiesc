@@ -323,11 +323,12 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findByIdInAndCargoInAndSituacao_deveRetornarUsuariosAtivos_quandoInformarIdsAndCargosAndSituacao() {
+    public void findByIdInAndCargoInAndSituacaoNot_deveRetornarUsuariosNaoRealocados_quandoInformarIdsAndCargosAndSituacao() {
         var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
-        assertThat(repository.findByIdInAndCargoInAndSituacao(List.of(500, 600, 700), List.of(cargo), ESituacao.A))
+        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), ESituacao.R))
             .extracting("id", "nome", "email")
             .containsExactly(
-                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"));
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
     }
 }

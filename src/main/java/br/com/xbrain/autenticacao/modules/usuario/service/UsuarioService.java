@@ -2530,9 +2530,9 @@ public class UsuarioService {
     }
 
     public List<Usuario> buscarUsuariosTabulacaoTecnicoIndicador(List<Integer> usuarioIds) {
-        return repository.findByIdInAndCargoInAndSituacao(
+        return repository.findByIdInAndCargoInAndSituacaoNot(
             usuarioIds,
             cargoRepository.findByCodigoIn(LISTA_CARGOS_TECNICO_INDICADOR),
-            ESituacao.A);
+            ESituacao.R);
     }
 }
