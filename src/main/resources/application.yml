@@ -329,6 +329,9 @@ zuul:
     integracao-vendas:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.integracao-vendas.url}
+    funil-prospeccao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.funil-prospeccao.url}
     gestao-colaborador-pol:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.gestao-colaborador-pol.url}
