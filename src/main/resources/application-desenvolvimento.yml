@@ -32,6 +32,8 @@ app-config:
       url: http://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       url: http://172.10.10.45:8086
+    funil-prospeccao:
+      url: http://172.10.10.109:8304
     gestao-colaborador-pol:
       url: http://gestao-colaborador-pol-api:8310
 
