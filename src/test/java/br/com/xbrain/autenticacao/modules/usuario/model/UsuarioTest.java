@@ -94,7 +94,6 @@ public class UsuarioTest {
         assertFalse(usuario.permiteEditar(usuarioAutenticado));
     }
 
-
     @Test
     public void hasLoginNetSales_deveRetornarFalse_seUsuarioPossuirLoginNetSalesNulo() {
         assertThat(umUsuarioComLoginNetSales(null).hasLoginNetSales()).isFalse();
