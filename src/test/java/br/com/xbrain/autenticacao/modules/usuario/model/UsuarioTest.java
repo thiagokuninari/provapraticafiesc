@@ -78,9 +78,22 @@ public class UsuarioTest {
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
-        assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+        var usuarioAutenticado = umUsuarioAutenticado(2, OPERACAO, COORDENADOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(COORDENADOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertTrue(usuario.permiteEditar(usuarioAutenticado));
     }
+
+    @Test
+    public void permiteEditar_deveRetornarFalse_quandoUsuarioAutenticadoForSupervisor() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertFalse(usuario.permiteEditar(usuarioAutenticado));
+    }
+
 
     @Test
     public void hasLoginNetSales_deveRetornarFalse_seUsuarioPossuirLoginNetSalesNulo() {

@@ -475,9 +475,9 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
+        return cargo != null && cargo.getCodigo() != null
             && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
-            OPERACAO_TELEVENDAS)
+                OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -521,8 +521,9 @@ public class Usuario {
     @JsonIgnore
     public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
         if (usuarioAutenticado.isUsuarioEquipeVendas()) {
-            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO) && !usuarioAutenticado.isSupervisorOperacao();
         }
+
         return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
 
