@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class CacheConfig {
 
     public static final String FERIADOS_DATA_CACHE_NAME = "feriadoDataCidadeUf";
+    public static final String CIDADES_DISTRITOS_CACHE_NAME = "cidadesDistritos";
 
     @Bean
     public CacheManager concurrentCacheManager() {

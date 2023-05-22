@@ -10,8 +10,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Integer>,
-        CidadeRepositoryCustom {
+public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Integer>, CidadeRepositoryCustom {
 
     List<Cidade> findCidadeByUfId(Integer idUf, Sort sort);
 
@@ -29,6 +28,4 @@ public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Int
     Optional<Cidade> findCidadeByCodigoIbge(String codigoIbge);
 
     List<Cidade> findAllByUfIdInOrderByNome(List<Integer> estadosIds);
-
-    List<Cidade> findCidadeByUfIdInOrderByNome(List<Integer> ufIds);
 }

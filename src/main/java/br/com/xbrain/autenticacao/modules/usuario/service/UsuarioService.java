@@ -7,13 +7,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -232,6 +227,8 @@ public class UsuarioService {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
+    private CidadeService cidadeService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -271,11 +268,33 @@ public class UsuarioService {
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
-        return repository.findComCidade(usuarioId)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO)
-            .stream()
-            .map(CidadeResponse::of)
-            .collect(Collectors.toList());
+        var cidades = repository
+            .findComCidade(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
+        if (!cidades.isEmpty()) {
+            var cidadesResponse = CidadeService.getCidadesResponse(cidades);
+            var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+            definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+
+            return cidadesResponse;
+        }
+
+        return List.of();
+    }
+
+    private void definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(List<Integer> cidadesPaiIds,
+                                                                                List<CidadeResponse> cidadesResponse) {
+        if (!cidadesPaiIds.isEmpty()) {
+            var cidadesPai = cidadeService.getAllCidadesByIds(cidadesPaiIds);
+
+            cidadesResponse
+                .stream()
+                .filter(cidadeResponse ->
+                    CidadeService.hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidadesPai));
+        }
     }
 
     public Usuario findCompleteById(int id) {
@@ -337,11 +356,13 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        var pages = repository.findAll(predicate.build(), pageRequest);
+
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
+
         return pages;
     }
 
@@ -1738,11 +1759,14 @@ public class UsuarioService {
         return repository.getUsuariosIdsByNivel(nivel);
     }
 
-    public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
-        Usuario usuario = findComplete(usuarioId);
-        return usuario.getCidades().stream()
-            .map(c -> UsuarioCidadeDto.of(c.getCidade()))
-            .collect(Collectors.toList());
+    public List<CidadeResponse> getCidadesByUsuarioId(Integer usuarioId) {
+        var usuario = findComplete(usuarioId);
+        var cidadesResponse = getCidadesResponseByUsuarioCidades(usuario.getCidades());
+        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+        definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+
+        return cidadesResponse;
     }
 
     @Transactional
@@ -2111,9 +2135,25 @@ public class UsuarioService {
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
+        var cidades = usuarioCidadeRepository
+            .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
+                .orElseThrow(() -> EX_NAO_ENCONTRADO));
 
-        return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
-            .orElseThrow(PermissaoException::new));
+        var cidadesResponse = getCidadesResponseByUsuarioCidades(cidades);
+        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+        definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+
+        return UsuarioCidadeDto.ofCidadesResponse(cidadesResponse);
+    }
+
+    private List<CidadeResponse> getCidadesResponseByUsuarioCidades(Set<UsuarioCidade> usuarioCidades) {
+        return usuarioCidades
+            .stream()
+            .map(usuarioCidade -> CidadeResponse.of(usuarioCidade.getCidade()))
+            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorUsuarioCidades(cidadeResponse, usuarioCidades))
+            .sorted(Comparator.comparing(CidadeResponse::getNome))
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {

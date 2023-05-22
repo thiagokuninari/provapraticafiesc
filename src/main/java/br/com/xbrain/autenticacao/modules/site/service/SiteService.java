@@ -12,9 +12,11 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.*;
+import br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -25,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.querydsl.core.types.Predicate;
@@ -38,23 +41,20 @@ import org.springframework.util.CollectionUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.util.*;
-
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Transactional
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class SiteService {
 
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
+    private static final NotFoundException EX_NAO_ENCONTRADO =
+        new NotFoundException("Site não encontrado.");
     private static final ValidacaoException EX_SITE_EXISTENTE =
         new ValidacaoException("Site já cadastrado anteriormente com esse nome.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
+
     @Autowired
     private SiteRepository siteRepository;
     @Autowired
@@ -67,6 +67,8 @@ public class SiteService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private CallService callService;
+    @Autowired
+    private CidadeService cidadeService;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -84,7 +86,7 @@ public class SiteService {
         return siteRepository.findAll(filtrarPorUsuarioXbrainOuMso(usuarioAutenticado))
             .stream()
             .map(site -> SelectResponse.of(site.getId(), site.getNome()))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -109,7 +111,7 @@ public class SiteService {
     public void setFiltrosHierarquia(Integer usuarioId, CodigoCargo codigoCargo, CodigoDepartamento codigoDepartamento,
                                      SitePredicate filtros) {
 
-        var hierarquia = getHierarquia(codigoCargo, codigoDepartamento);
+        var hierarquia = EHierarquiaSite.getHierarquia(codigoCargo, codigoDepartamento);
 
         switch (hierarquia) {
             case TODOS_VISUALIZAR_EDITAR:
@@ -130,16 +132,16 @@ public class SiteService {
 
     public List<Integer> getSuperioresDoUsuario(Integer usuarioId) {
         return usuarioService.getSuperioresDoUsuario(usuarioId)
-                .stream()
-                .map(UsuarioHierarquiaResponse::getId)
-                .collect(toList());
+            .stream()
+            .map(UsuarioHierarquiaResponse::getId)
+            .collect(Collectors.toList());
     }
 
     public List<Integer> getSubordinadosAbaixoDiretor(Integer usuarioId) {
         return usuarioService.getSubordinadosDoUsuario(usuarioId)
-                .stream()
-                .map(UsuarioSubordinadoDto::getId)
-                .collect(toList());
+            .stream()
+            .map(UsuarioSubordinadoDto::getId)
+            .collect(Collectors.toList());
     }
 
     private Predicate filtrarPorUsuarioXbrainOuMso(UsuarioAutenticado usuarioAutenticado) {
@@ -155,7 +157,7 @@ public class SiteService {
         return siteRepository.findBySituacaoAtiva(filtros.toPredicate().build())
             .stream()
             .map(site -> SelectResponse.of(site.getId(), site.getNome()))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -164,7 +166,7 @@ public class SiteService {
             .getSupervisores()
             .stream()
             .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
@@ -176,7 +178,7 @@ public class SiteService {
             .stream()
             .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId()))
             .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public Site save(SiteRequest request) {
@@ -230,7 +232,7 @@ public class SiteService {
     public void inativar(Integer id) {
         validarInativacao(id);
         var site = findById(id);
-        if (Objects.equals(site.getSituacao(), A)) {
+        if (Objects.equals(site.getSituacao(), ESituacao.A)) {
             site.inativar();
         }
     }
@@ -242,15 +244,48 @@ public class SiteService {
             .orElseGet(() -> ufRepository.buscarEstadosNaoAtribuidosEmSites(estadosPermitidos))
             .stream()
             .map(estado -> SelectResponse.of(estado.getId(), estado.getNome()))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds, Integer siteIgnoradoId) {
+        var cidadesDisponiveis = buscarCidadesDisponiveis(estadosIds, siteIgnoradoId);
 
-        return buscarCidadesDisponiveis(estadosIds, siteIgnoradoId)
-            .stream()
-            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
-            .collect(toList());
+        if (!cidadesDisponiveis.isEmpty()) {
+            var cidadesResponse = CidadeService.getCidadesResponse(cidadesDisponiveis);
+            var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+            definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(cidadesPaiIds, new HashSet<>(cidadesResponse));
+
+            return cidadesResponse
+                .stream()
+                .map(cidadeResponse -> SelectResponse.of(cidadeResponse.getId(), cidadeResponse.getNomeComCidadePaiEUf()))
+                .collect(Collectors.toList());
+        }
+
+        return List.of();
+    }
+
+    private void definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(List<Integer> cidadesPaiIds,
+                                                                         Set<CidadeResponse> cidadesResponse) {
+        if (!cidadesPaiIds.isEmpty()) {
+            var cidadesPai = cidadeService.getAllCidadesByIds(cidadesPaiIds);
+
+            cidadesResponse
+                .stream()
+                .filter(cidadeResponse ->
+                    CidadeService.hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidadesPai));
+        }
+    }
+
+    public SiteDetalheResponse getSiteDetalheResponseById(Integer id) {
+        var siteDetalheResponse = SiteDetalheResponse.of(findById(id));
+        var cidadesResponse = new ArrayList<>(siteDetalheResponse.getCidades());
+        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+        definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(cidadesPaiIds, siteDetalheResponse.getCidades());
+
+        return siteDetalheResponse;
     }
 
     private void validarInativacao(Integer siteId) {
@@ -273,7 +308,7 @@ public class SiteService {
             buscarCidadesDisponiveis(siteRequest.getEstadosIds(), siteRequest.getId())
                 .stream()
                 .map(Cidade::getId)
-                .collect(toList())
+                .collect(Collectors.toList())
         );
     }
 
@@ -287,7 +322,7 @@ public class SiteService {
 
     private Predicate filtrarPorSituacaoAndCidadesIdInAndIdNot(SiteRequest siteRequest) {
         return new SitePredicate()
-            .comSituacao(A)
+            .comSituacao(ESituacao.A)
             .comCidades(siteRequest.getCidadesIds())
             .excetoId(Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
             .build();
@@ -306,7 +341,7 @@ public class SiteService {
         return siteRepository.findByEstadoId(estadoId)
             .stream()
             .map(site -> SelectResponse.of(site.getId(), site.getNome()))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public List<SelectResponse> getSitesPorPermissao(Usuario usuario) {
@@ -315,7 +350,7 @@ public class SiteService {
         return siteRepository.findBySituacaoAtiva(sitePredicate.build())
             .stream()
             .map(site -> SelectResponse.of(site.getId(), site.getNome()))
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public void adicionarDiscadora(Integer discadoraId, List<Integer> sites) {
@@ -347,31 +382,31 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioSiteResponse> buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List<Integer>
-                                                                                                     usuariosSuperioresIds) {
+    @SuppressWarnings("LineLength")
+    public List<UsuarioSiteResponse> buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
         return usuarioService
-            .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
+            .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(usuariosSuperioresIds, Set.of(CodigoCargo.ASSISTENTE_OPERACAO.name()))
             .stream()
             .map(UsuarioSiteResponse::of)
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioSiteResponse> buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer
                                                                                                              usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
                 .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
-                        List.of(usuarioSuperiorId), Set.of(OPERACAO_TELEVENDAS.name())), null)
+                    List.of(usuarioSuperiorId), Set.of(CodigoCargo.OPERACAO_TELEVENDAS.name())), null)
             .stream()
             .map(UsuarioSiteResponse::of)
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public List<Integer> buscarCoordenadoresIdsAtivosDoUsuarioId(Integer usuarioId) {
-        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, COORDENADOR_OPERACAO)
+        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, CodigoCargo.COORDENADOR_OPERACAO)
             .stream()
             .filter(usuario -> ESituacao.A.getDescricao().toUpperCase().equals(usuario.getStatus()))
             .map(UsuarioHierarquiaResponse::getId)
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 
     public SiteCidadeResponse buscarSiteCidadePorCidadeUf(String cidade, String uf) {
@@ -435,6 +470,6 @@ public class SiteService {
         return siteRepository.findAll(filtros.toPredicate().build())
             .stream()
             .map(SiteResponse::of)
-            .collect(toList());
+            .collect(Collectors.toList());
     }
 }

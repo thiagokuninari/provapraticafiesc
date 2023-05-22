@@ -11,24 +11,33 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.config.CacheConfig.CIDADES_DISTRITOS_CACHE_NAME;
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 
+@Slf4j
 @Service
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-    
+
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -126,10 +135,14 @@ public class CidadeService {
     }
 
     public List<SelectResponse> buscarCidadesPorEstadosIds(List<Integer> estadosIds) {
-        return cidadeRepository.findAllByUfIdInOrderByNome(estadosIds)
-            .stream()
-            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
-            .collect(Collectors.toList());
+        if (!estadosIds.isEmpty()) {
+            return getCidadesResponse(cidadeRepository.findAllByUfIdInOrderByNome(estadosIds))
+                .stream()
+                .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComCidadePaiEUf()))
+                .collect(Collectors.toList());
+        }
+
+        return List.of();
     }
 
     public CidadeSiteResponse getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
@@ -151,9 +164,17 @@ public class CidadeService {
     }
 
     public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
-        return cidadeRepository.findCidadeByUfIdInOrderByNome(ufIds).stream()
-            .map(CidadeUfResponse::of)
-            .collect(Collectors.toList());
+        if (!ufIds.isEmpty()) {
+            var cidades = cidadeRepository.findAllByUfIdInOrderByNome(ufIds);
+
+            return cidades
+                .stream()
+                .map(CidadeUfResponse::of)
+                .map(cidadeUfResponse -> CidadeUfResponse.definirNomeCidadePai(cidadeUfResponse, cidades))
+                .collect(Collectors.toList());
+        }
+
+        return List.of();
     }
 
     public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
@@ -185,10 +206,118 @@ public class CidadeService {
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
         if (!cidadesId.isEmpty()) {
             var predicate = new CidadePredicate()
-                .comCidadeId(cidadesId)
+                .comCidadesId(cidadesId)
                 .build();
+
             return cidadeRepository.findCodigoIbgeRegionalByCidade(predicate);
         }
-        return new ArrayList<CodigoIbgeRegionalResponse>();
+
+        return List.of();
+    }
+
+    public List<CidadeResponse> getAll(Integer regionalId, Integer ufId) {
+        var predicate = new CidadePredicate()
+            .comRegionalId(regionalId)
+            .comUfId(ufId)
+            .build();
+
+        var cidades = getCidadesByPredicate(predicate);
+
+        return converterCidadeEmCidadeResponseEDefinirNomeCidadePai(cidades);
+    }
+
+    public CidadeResponse getCidadeById(Integer cidadeId) {
+        var cidade = Optional.ofNullable(cidadeRepository.findOne(cidadeId))
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
+        var cidadeResponse = CidadeResponse.of(cidade);
+
+        if (cidadeResponse.getFkCidade() != null) {
+            var cidadePai = cidadeRepository.findOne(cidade.getFkCidade());
+            cidadeResponse.setCidadePai(cidadePai.getNome());
+        }
+
+        return cidadeResponse;
+    }
+
+    @Cacheable(CIDADES_DISTRITOS_CACHE_NAME)
+    public Map<Integer, CidadeResponse> getCidadesDistritos(Eboolean apenasDistritos) {
+        var predicate = new CidadePredicate().comDistritos(apenasDistritos).build();
+        var cidades = getCidadesByPredicate(predicate);
+        var cidadesResponse = converterCidadeEmCidadeResponseEDefinirNomeCidadePai(cidades);
+
+        return cidadesResponse
+            .stream()
+            .collect(Collectors.toMap(CidadeResponse::getId, cidadeResponse -> cidadeResponse));
+    }
+
+    @CacheEvict(
+        cacheManager = "concurrentCacheManager",
+        cacheNames = CIDADES_DISTRITOS_CACHE_NAME,
+        allEntries = true)
+    public void flushCacheCidadesDistritos() {
+        log.info("Flush Cache Cidades Distritos");
+    }
+
+    public static List<Integer> getCidadesPaiIdsByCidadesResponse(List<CidadeResponse> cidadesResponse) {
+        return cidadesResponse
+            .stream()
+            .filter(cidadeResponse -> hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
+            .map(CidadeResponse::getFkCidade)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    public static boolean hasFkCidadeSemNomeCidadePai(Integer fkCidade, String nomeCidadePai) {
+        return fkCidade != null && nomeCidadePai == null;
+    }
+
+    public List<Cidade> getAllCidadesByIds(List<Integer> cidadesIds) {
+        if (!ObjectUtils.isEmpty(cidadesIds)) {
+            var cidadesIdsDistinct = cidadesIds.stream().distinct().collect(Collectors.toList());
+
+            var predicate = new CidadePredicate()
+                .comCidadesId(cidadesIdsDistinct)
+                .build();
+
+            return getCidadesByPredicate(predicate);
+        }
+
+        return List.of();
+    }
+
+    public static List<CidadeResponse> getCidadesResponse(List<Cidade> cidades) {
+        return cidades
+            .stream()
+            .map(CidadeResponse::of)
+            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidades))
+            .sorted(Comparator.comparing(CidadeResponse::getNome))
+            .collect(Collectors.toList());
+    }
+
+    private void definirNomeCidadePaiQuandoCidadePaiNaoEstiverNaListaDeCidadeResponse(List<Integer> cidadesPaiIds,
+                                                                                      List<CidadeResponse> cidadesResponse) {
+        if (!cidadesPaiIds.isEmpty()) {
+            var cidadesPai = getAllCidadesByIds(cidadesPaiIds);
+
+            cidadesResponse
+                .stream()
+                .filter(cidadeResponse ->
+                    hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidadesPai));
+        }
+    }
+
+    private List<CidadeResponse> converterCidadeEmCidadeResponseEDefinirNomeCidadePai(List<Cidade> cidades) {
+        var cidadesResponse = getCidadesResponse(cidades);
+        var cidadesPaiIds = getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+
+        definirNomeCidadePaiQuandoCidadePaiNaoEstiverNaListaDeCidadeResponse(cidadesPaiIds, cidadesResponse);
+
+        return cidadesResponse;
+    }
+
+    private List<Cidade> getCidadesByPredicate(Predicate predicate) {
+        return cidadeRepository.findAllByPredicate(predicate);
     }
 }

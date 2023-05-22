@@ -108,9 +108,9 @@ public class UsuarioGerenciaController {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
 
-    @GetMapping("/{idUsuario}/cidades")
-    public List<UsuarioCidadeDto> getCidadesByUsuario(@PathVariable Integer idUsuario) {
-        return service.getCidadeByUsuario(idUsuario);
+    @GetMapping("{idUsuario}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable Integer idUsuario) {
+        return service.getCidadesByUsuarioId(idUsuario);
     }
 
     @PutMapping("/acesso/email")
