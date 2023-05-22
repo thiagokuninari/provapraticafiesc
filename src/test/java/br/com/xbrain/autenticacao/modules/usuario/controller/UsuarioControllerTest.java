@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -51,13 +52,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
+@Sql("classpath:/tests_database.sql")
 public class UsuarioControllerTest {
+
     private static final String URL_USUARIOS_AGENDAMENTOS = "/api/usuarios/distribuicao/agendamentos/";
     private static final String USUARIOS_ENDPOINT = "/api/usuarios";
 
@@ -180,22 +182,79 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/100/cidades")
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/{id}/cidades", 100))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findCidadesByUsuario(100);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarOk_quandoEncontrarTodasAsCidadesDoUsuario() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/{id}/cidades", 100)
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
+
+        verify(usuarioService).findCidadesByUsuario(100);
     }
 
     @Test
-    public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/101/cidades")
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarOk_quandoUsuarioNaoPossuirNenhumaCidade() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/{id}/cidades", 101)
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(usuarioService).findCidadesByUsuario(101);
+    }
+
+    @Test
+    @SneakyThrows
+    public void findCidadesDoUsuarioLogado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/cidades"))
+            .andExpect(status().isUnauthorized());
+
+        verify(autenticacaoService, never()).getUsuarioAutenticadoId();
+        verify(usuarioService, never()).findCidadesDoUsuarioLogado();
+    }
+
+    @Test
+    @SneakyThrows
+    public void findCidadesDoUsuarioLogado_deveRetornarBadRequest_quandoNaoEncontrarPorUsuario() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/cidades")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Usuário não encontrado.")));
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verify(usuarioService).findCidadesDoUsuarioLogado();
+    }
+
+    @Test
+    @SneakyThrows
+    public void findCidadesDoUsuarioLogado_deveRetornarOk_quandoEncontrarPorUsuarioComCidadesAtreladas() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(109));
+
+        mvc.perform(get(USUARIOS_ENDPOINT + "/cidades")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_SUPERVISOR)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].idCidade", is(3237)))
+            .andExpect(jsonPath("$[0].nomeCidade", is("ARAPONGAS")))
+            .andExpect(jsonPath("$[1].idCidade", is(5578)))
+            .andExpect(jsonPath("$[1].nomeCidade", is("LONDRINA")))
+            .andExpect(jsonPath("$[2].idCidade", is(3426)))
+            .andExpect(jsonPath("$[2].nomeCidade", is("MARINGA")));
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verify(usuarioService).findCidadesDoUsuarioLogado();
     }
 
     @Test
@@ -305,7 +364,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", is(366)))
+            .andExpect(jsonPath("$.id", is(130)))
             .andExpect(jsonPath("$.nome", is("Mso Analista Adm Claro Pessoal")))
             .andExpect(jsonPath("$.email", is(MSO_ANALISTAADM_CLAROMOVEL_PESSOAL)))
             .andExpect(jsonPath("$.situacao", is("A")));
@@ -460,7 +519,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", is(366)))
+            .andExpect(jsonPath("$.id", is(130)))
             .andExpect(jsonPath("$.nome", is("Mso Analista Adm Claro Pessoal")))
             .andExpect(jsonPath("$.email", is(MSO_ANALISTAADM_CLAROMOVEL_PESSOAL)))
             .andExpect(jsonPath("$.situacao", is("A")));

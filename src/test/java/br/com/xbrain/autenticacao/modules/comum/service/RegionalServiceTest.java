@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,11 +12,10 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+import static br.com.xbrain.autenticacao.modules.comum.helper.RegionalHelper.listaNovasRegionaisIds;
+import static br.com.xbrain.autenticacao.modules.comum.helper.RegionalHelper.umaRegionalDto;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -35,23 +33,26 @@ public class RegionalServiceTest {
     @Test
     public void getAllByUsuarioId_deveRetornarRegionaisSulESp_doUsuarioInformadoPeloParametro() {
         assertThat(regionalService.getAllByUsuarioId(1))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1027, "RPS"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1027, "RPS"),
+                tuple(1031, "RSI")
+            );
     }
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionalLeste_doUsuarioInformadoPeloParametro() {
         assertThat(regionalService.getAllByUsuarioId(2))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1025, "RNE"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(tuple(1025, "RNE"));
     }
 
     @Test
     public void findById_deveRetornarUmaRegional_seExistir() {
         assertThat(regionalService.findById(1))
-            .isEqualTo(umRegionalDto());
+            .isEqualTo(umaRegionalDto());
     }
 
     @Test
@@ -63,14 +64,7 @@ public class RegionalServiceTest {
 
     @Test
     public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
-        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(List.of(1025, 1027));
-    }
-
-    RegionalDto umRegionalDto() {
-        RegionalDto regionalDto = new RegionalDto();
-        regionalDto.setId(1);
-        regionalDto.setNome("LESTE");
-        regionalDto.setSituacao(A);
-        return regionalDto;
+        assertThat(regionalService.getNovasRegionaisIds())
+            .isEqualTo(listaNovasRegionaisIds());
     }
 }

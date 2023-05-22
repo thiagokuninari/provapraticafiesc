@@ -219,23 +219,42 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarCidadesDisponiveisPorEstadosIds_cidadesDisponiveis_quandoNaoVinculadasEmOutrosSites() {
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarUnauthorized_quandoInformarTokenInvalido() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
-            .param("estadosIds", "1")
-            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+                .param("estadosIds", "1")
+                .header("Authorization", getAccessToken(mvc, "VENDEDORTESTE@XBRAIN.COM")))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarBadRequest_quandoNaoInformarParametroEstadosIds() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarOk_quandoCidadesNaoVinculadasEmOutrosSites() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis")
+                .param("estadosIds", "1")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     @SneakyThrows
-    public void buscarCidadesSemSitePorUsuarioEUfE_cidadesDisponiveisEComSiteEditado_quandoEditarSite() {
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarOk_quandoEditarSite() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
-            .param("estadosIds", "1")
-            .param("siteIgnoradoId", "100")
-            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+                .param("estadosIds", "1")
+                .param("siteIgnoradoId", "100")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].value", is(5578)))
+            .andExpect(jsonPath("$[0].label", is("LONDRINA - PR")));
     }
 
     @Test
@@ -327,10 +346,25 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void getDetalheSiteById_deveRetornarUmSiteCompleto() {
+    public void getDetalheSiteById_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/{id}/detalhe", 100))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getDetalheSiteById_deveRetornarNotFound_quandoNaoEncontrarPorSiteId() {
+        mvc.perform(get(API_URI + "/{id}/detalhe", 99)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Site não encontrado.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getDetalheSiteById_deveRetornarOk_quandoEncontrarPorSiteId() {
         mvc.perform(get(API_URI + "/{id}/detalhe", 100)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
-            .andExpect(status().isOk())
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(100)))
             .andExpect(jsonPath("$.nome", is("São Paulo")))
@@ -425,7 +459,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/estados-disponiveis")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(jsonPath("$", hasSize(7)));
     }
 
     @Test

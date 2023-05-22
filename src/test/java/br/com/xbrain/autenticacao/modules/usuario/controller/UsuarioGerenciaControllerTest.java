@@ -67,17 +67,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.thymeleaf.util.StringUtils.concat;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
 @Sql("classpath:/tests_database.sql")
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
-    private static final int ID_USUARIO_VENDEDOR = 430;
     private static final String API_URI = "/api/usuarios/gerencia";
+
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -201,32 +201,33 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void getAll_deveNaoRetornarOsUsuariosXbrain_quandoForNivelMso() throws Exception {
+    @SneakyThrows
+    public void getAll_deveNaoRetornarOsUsuariosXbrain_quandoForNivelMso() {
         mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
-                .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
-                .andExpect(jsonPath("$.content[2].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
-                .andExpect(jsonPath("$.content[3].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.content[4].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
-                .andExpect(jsonPath("$.content[5].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
-                .andExpect(jsonPath("$.content[6].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())))
-                .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
-                .andExpect(jsonPath("$.content[7].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
-                .andExpect(jsonPath("$.content[8].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")))
-                .andExpect(jsonPath("$.content[9].tiposFeeder", empty()));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(10)))
+            .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
+            .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
+            .andExpect(jsonPath("$.content[2].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
+            .andExpect(jsonPath("$.content[3].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[4].nome", is("Mso Analista Adm Claro Pessoal")))
+            .andExpect(jsonPath("$.content[4].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())))
+            .andExpect(jsonPath("$.content[5].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+            .andExpect(jsonPath("$.content[5].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[6].nome", is("Operacao Supervisor NET")))
+            .andExpect(jsonPath("$.content[6].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
+            .andExpect(jsonPath("$.content[7].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
+            .andExpect(jsonPath("$.content[8].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")))
+            .andExpect(jsonPath("$.content[9].tiposFeeder", empty()));
     }
 
     @Test
@@ -509,12 +510,54 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarAsCidadesAtreladasAoUsuario() throws Exception {
-        mvc.perform(get(API_URI + "/100/cidades")
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/{idUsuario}/cidades", 300))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).getCidadesByUsuarioId(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarBadRequest_quandoUsuarioNaoEncontrado() {
+        mvc.perform(get(API_URI + "/{idUsuario}/cidades", 999)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Usuário não encontrado.")));
+
+        verify(usuarioService).getCidadesByUsuarioId(999);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarOk_quandoUsuarioNaoTiverCidadesAtreladas() {
+        mvc.perform(get(API_URI + "/{idUsuario}/cidades", 130)
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isEmpty());
+
+        verify(usuarioService).getCidadesByUsuarioId(130);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesByUsuario_deveRetornarOk_quandoUsuarioPossuirCidadesAtreladas() {
+        mvc.perform(get(API_URI + "/{idUsuario}/cidades", 109)
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].id", is(3237)))
+            .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
+            .andExpect(jsonPath("$[1].id", is(5578)))
+            .andExpect(jsonPath("$[1].nome", is("LONDRINA")))
+            .andExpect(jsonPath("$[2].id", is(3426)))
+            .andExpect(jsonPath("$[2].nome", is("MARINGA")));
+
+        verify(usuarioService).getCidadesByUsuarioId(109);
     }
 
     @Test
