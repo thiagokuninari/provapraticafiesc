@@ -6,10 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Objects;
+
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CidadeUfResponse {
 
     private Integer cidadeId;
@@ -17,6 +20,8 @@ public class CidadeUfResponse {
     private String uf;
     private String ufSigla;
     private Integer ufId;
+    private Integer fkCidade;
+    private String cidadePai;
 
     public static CidadeUfResponse of(Cidade cidade) {
         return CidadeUfResponse.builder()
@@ -25,6 +30,17 @@ public class CidadeUfResponse {
             .uf(cidade.getNomeUf())
             .ufSigla(cidade.getUf().getUf())
             .ufId(cidade.getIdUf())
+            .fkCidade(cidade.getFkCidade())
             .build();
+    }
+
+    public static CidadeUfResponse definirNomeCidadePai(CidadeUfResponse cidadeUfResponse, List<Cidade> cidades) {
+        cidades
+            .stream()
+            .filter(cidade -> Objects.equals(cidade.getId(), cidadeUfResponse.getFkCidade()))
+            .findFirst()
+            .ifPresent(cidade -> cidadeUfResponse.setCidadePai(cidade.getNome()));
+
+        return cidadeUfResponse;
     }
 }

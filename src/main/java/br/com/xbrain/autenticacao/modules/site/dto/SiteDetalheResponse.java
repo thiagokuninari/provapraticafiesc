@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,34 +39,34 @@ public class SiteDetalheResponse {
             .nome(site.getNome())
             .timeZone(site.getTimeZone())
             .situacao(site.getSituacao())
-            .coordenadoresNomes(getCoordenadoresNomes(site.getCoordenadores()))
-            .supervisoresNomes(getSupervisoresNomes(site.getSupervisores()))
+            .coordenadoresNomes(getNomes(site.getCoordenadores()))
+            .supervisoresNomes(getNomes(site.getSupervisores()))
             .estados(getEstados(site.getEstados()))
             .cidades(getCidades(site.getCidades()))
             .build();
     }
 
-    private static Set<String> getCoordenadoresNomes(Set<Usuario> coordenadores) {
-        return coordenadores.stream()
+    private static Set<String> getNomes(Set<Usuario> usuarios) {
+        return usuarios
+            .stream()
             .map(Usuario::getNome)
             .collect(Collectors.toSet());
     }
 
-    private static Set<String> getSupervisoresNomes(Set<Usuario> supervisores) {
-        return supervisores.stream()
-            .map(Usuario::getNome)
-            .collect(Collectors.toSet());
-    }
-
-    private static Set<UfResponse> getEstados(Set<Uf> coordenadores) {
-        return coordenadores.stream()
+    private static Set<UfResponse> getEstados(Set<Uf> estados) {
+        return estados
+            .stream()
             .map(UfResponse::parse)
             .collect(Collectors.toSet());
     }
 
-    private static Set<CidadeResponse> getCidades(Set<Cidade> coordenadores) {
-        return coordenadores.stream()
+    private static Set<CidadeResponse> getCidades(Set<Cidade> cidades) {
+        List<Cidade> listaCidades = new ArrayList<>(cidades);
+
+        return cidades
+            .stream()
             .map(CidadeResponse::of)
+            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, listaCidades))
             .collect(Collectors.toSet());
     }
 }

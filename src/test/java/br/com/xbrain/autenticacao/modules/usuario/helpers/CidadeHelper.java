@@ -529,6 +529,10 @@ public class CidadeHelper {
         return CidadeResponse.of(cidadeMaringa());
     }
 
+    public static CidadeResponse cidadeResponsePolvilhoSemCidadePai() {
+        return CidadeResponse.of(distritoPolvilho());
+    }
+
     public static CidadeResponse cidadeResponsePolvilhoComCidadePai() {
         var cidadeResponse = CidadeResponse.of(distritoPolvilho());
         cidadeResponse.setCidadePai("CAJAMAR");
