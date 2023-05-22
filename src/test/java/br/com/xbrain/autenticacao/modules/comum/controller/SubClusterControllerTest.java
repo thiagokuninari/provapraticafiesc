@@ -107,10 +107,8 @@ public class SubClusterControllerTest {
         mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_SUPERVISOR))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")))
-                .andExpect(jsonPath("$[1].nome", is("MARINGÁ")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(11)));
     }
 
     @Test

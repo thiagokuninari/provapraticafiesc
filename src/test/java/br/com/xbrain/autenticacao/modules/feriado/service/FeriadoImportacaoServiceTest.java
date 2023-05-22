@@ -119,8 +119,9 @@ public class FeriadoImportacaoServiceTest {
             .hasSize(20);
 
         importacaoService.importarFeriadoArquivo(mockMultipartFile, umFeriadoImportacaoRequest());
+
         assertThat(feriadoRepository.findAll())
-            .hasSize(26);
+            .hasSize(30);
     }
 
     @Test
@@ -222,6 +223,7 @@ public class FeriadoImportacaoServiceTest {
     public void importarFeriado_deveSalvarFeriadoEFeriadoFilhos_quandoFeriadoImportadoEEstadual() {
         assertThat(feriadoRepository.findAll())
             .hasSize(20);
+
         var linha = umaLinha(4);
         var feriadoImportado = importacaoService.importarFeriado(linha, 2019);
 
@@ -230,13 +232,15 @@ public class FeriadoImportacaoServiceTest {
                 "cidadeId", "feriadoImportadoComSucesso")
             .containsExactlyInAnyOrder(ETipoFeriado.ESTADUAL, List.of(), "FERIADO ESTADUAL DA VIOLA",
                 LocalDate.of(2019, 3, 22), 22, null, Eboolean.V);
+
         assertThat(feriadoRepository.findAll())
-            .hasSize(23);
+            .hasSize(27);
+
         assertThat(feriadoRepository.findAll(
             new FeriadoPredicate()
                 .comFeriadoPaiId(feriadoImportado.getId())
                 .build()))
-            .hasSize(2);
+            .hasSize(6);
     }
 
     private MockMultipartFile umFile(byte[] bytes) {

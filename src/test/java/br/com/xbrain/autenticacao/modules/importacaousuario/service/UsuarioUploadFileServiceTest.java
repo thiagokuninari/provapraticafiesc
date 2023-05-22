@@ -301,14 +301,16 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void deveResetarSenhaQuandoResetarSenhaForTrue() {
-        Usuario usuario = getUsuario(366);
+        var usuario = getUsuario(130);
+        assertEquals(Eboolean.F, usuario.getAlterarSenha());
 
-        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
-        UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(18),
+        var usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(18),
                 new UsuarioImportacaoRequest(false, false));
-        assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco");
-        usuario = getUsuario(366);
-        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
+
+        assertEquals("Usuário já salvo no banco", usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0));
+        usuario = getUsuario(130);
+
+        assertEquals(Eboolean.F, usuario.getAlterarSenha());
         assertEquals(usuario.getCpf(), usuarioImportacaoPlanilha.getCpf());
     }
 
