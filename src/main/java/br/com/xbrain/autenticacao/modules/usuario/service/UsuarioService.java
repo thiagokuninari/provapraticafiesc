@@ -266,6 +266,13 @@ public class UsuarioService {
             .forceLoad();
     }
 
+    public UsuarioDto getUsuarioById(int id) {
+        var usuario = findByIdComAa(id);
+        return  UsuarioDto.of(
+            usuario,
+            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+    }
+
     public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(Integer cargoId) {
         return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
     }

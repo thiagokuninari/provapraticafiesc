@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -69,8 +68,6 @@ public class UsuarioGerenciaControllerTest {
     private MockMvc mvc;
     @MockBean
     private UsuarioService usuarioService;
-    @MockBean
-    private AutenticacaoService autenticacaoService;
 
     @Test
     @SneakyThrows
@@ -329,6 +326,39 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).save(usuario, foto);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getById_deveSalvarComFoto_quandoSolicitado() {
+        mvc.perform(get(API_URI + "/1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getUsuarioById(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void getById_deveRetornarForbidden_quandoSemPermissao() {
+        mvc.perform(get(API_URI + "/1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getById_deveRetornarUnauthorized_quandoUsuarioSemAutorizacao() {
+        mvc.perform(get(API_URI + "/1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 
     @Test
