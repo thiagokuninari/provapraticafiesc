@@ -1,43 +1,50 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioBackofficeDto;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_usuario_backoffice.sql"})
+@WebMvcTest(controllers = UsuarioGerenciaController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class UsuarioGerenciaBackofficeControllerTest {
 
     private static final String API_URI_BACKOFFICE = "/api/usuarios/gerencia/backoffice";
@@ -46,34 +53,31 @@ public class UsuarioGerenciaBackofficeControllerTest {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private EmailService emailService;
-    @MockBean
     private AutenticacaoService autenticacaoService;
     @MockBean
-    private CargoSuperiorRepository cargoSuperiorRepository;
+    private UsuarioService service;
 
     @Test
-    public void save_deveRetornarUsuarioSalvo_quandoNivelForBackoffice() throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarUsuarioSalvo_quandoNivelForBackoffice() {
         var usuario = umUsuarioDtoBackoffice();
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
         mvc.perform(post(API_URI_BACKOFFICE)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(usuario))
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").isNotEmpty());
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isOk());
 
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(service).salvarUsuarioBackoffice(any());
     }
 
     @Test
-    public void save_badRequest_quandoValidarOsCamposObrigatorios() throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_badRequest_quandoValidarOsCamposObrigatorios() {
         mvc.perform(post(API_URI_BACKOFFICE)
-            .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(6)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -83,191 +87,69 @@ public class UsuarioGerenciaBackofficeControllerTest {
                 "O campo email é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.")));
+
+        verifyNoMoreInteractions(service);
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoGerenteCsu()
-        throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void save_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
+        var usuario = umUsuarioDtoBackoffice();
 
-        var gerenteCsu = umUsuarioAutenticadoNivelBackoffice();
-        gerenteCsu.setId(1000);
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isForbidden());
 
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(113, 112, 111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(gerenteCsu);
-
-        mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(5)))
-            .andExpect(jsonPath("$.content[0].id", is(1000)))
-            .andExpect(jsonPath("$.content[0].email", is("GERENTE_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1001)))
-            .andExpect(jsonPath("$.content[1].email", is("COORD_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1002)))
-            .andExpect(jsonPath("$.content[2].email", is("SUPERVISOR_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[3].id", is(1003)))
-            .andExpect(jsonPath("$.content[3].email", is("ANALISTA_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[4].id", is(1004)))
-            .andExpect(jsonPath("$.content[4].email", is("OPERADOR_CSU@NET.COM.BR")));
-
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(gerenteCsu.getCargoId()));
+        verifyNoMoreInteractions(service);
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoCoordenadorCsu()
-        throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void save_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+        var usuario = umUsuarioDtoBackoffice();
 
-        var coordCsu = umUsuarioAutenticadoNivelBackoffice();
-        coordCsu.setId(1001);
-        coordCsu.setCargoId(113);
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isUnauthorized());
 
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(112, 111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(coordCsu);
-
-        mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(4)))
-            .andExpect(jsonPath("$.content[0].id", is(1001)))
-            .andExpect(jsonPath("$.content[0].email", is("COORD_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1002)))
-            .andExpect(jsonPath("$.content[1].email", is("SUPERVISOR_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1003)))
-            .andExpect(jsonPath("$.content[2].email", is("ANALISTA_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[3].id", is(1004)))
-            .andExpect(jsonPath("$.content[3].email", is("OPERADOR_CSU@NET.COM.BR")));
-
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(coordCsu.getCargoId()));
+        verifyNoMoreInteractions(service);
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoSupervisorCsu()
-        throws Exception {
-
-        var supervisorCsu = umUsuarioAutenticadoNivelBackoffice();
-        supervisorCsu.setId(1002);
-        supervisorCsu.setCargoId(112);
-
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(supervisorCsu);
-
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getAll_deveRetornarUsuariosBackOffice_quandoUsuarioPossuirPermissao() {
         mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(3)))
-            .andExpect(jsonPath("$.content[0].id", is(1002)))
-            .andExpect(jsonPath("$.content[0].email", is("SUPERVISOR_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1003)))
-            .andExpect(jsonPath("$.content[1].email", is("ANALISTA_CSU@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1004)))
-            .andExpect(jsonPath("$.content[2].email", is("OPERADOR_CSU@NET.COM.BR")));
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(supervisorCsu.getCargoId()));
+        verify(service).getAll(any(), any());
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoGerenteMotiva()
-        throws Exception {
-
-        var gerenteMotiva = umUsuarioAutenticadoNivelBackoffice();
-        gerenteMotiva.setId(1005);
-        gerenteMotiva.setOrganizacaoId(9);
-
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(113, 112, 111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(gerenteMotiva);
-
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void getAll_deveRetornarForbidden_quandoUsuarioSemPermissao() {
         mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(5)))
-            .andExpect(jsonPath("$.content[0].id", is(1005)))
-            .andExpect(jsonPath("$.content[0].email", is("GERENTE_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1006)))
-            .andExpect(jsonPath("$.content[1].email", is("COORD_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1007)))
-            .andExpect(jsonPath("$.content[2].email", is("SUPERVISOR_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[3].id", is(1008)))
-            .andExpect(jsonPath("$.content[3].email", is("ANALISTA_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[4].id", is(1009)))
-            .andExpect(jsonPath("$.content[4].email", is("OPERADOR_MOTIVA@NET.COM.BR")));
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
 
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(gerenteMotiva.getCargoId()));
+        verifyNoMoreInteractions(service);
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoCoordenadorMotiva()
-        throws Exception {
-
-        var coordMotiva = umUsuarioAutenticadoNivelBackoffice();
-        coordMotiva.setId(1006);
-        coordMotiva.setOrganizacaoId(9);
-
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(112, 111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(coordMotiva);
-
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAll_deveRetornarUnauthorized_quandoSemAutorizacao() {
         mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(4)))
-            .andExpect(jsonPath("$.content[0].id", is(1006)))
-            .andExpect(jsonPath("$.content[0].email", is("COORD_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1007)))
-            .andExpect(jsonPath("$.content[1].email", is("SUPERVISOR_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1008)))
-            .andExpect(jsonPath("$.content[2].email", is("ANALISTA_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[3].id", is(1009)))
-            .andExpect(jsonPath("$.content[3].email", is("OPERADOR_MOTIVA@NET.COM.BR")));
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
 
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(coordMotiva.getCargoId()));
-    }
-
-    @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoSupervisorMotiva()
-        throws Exception {
-
-        var supervisorMotiva = umUsuarioAutenticadoNivelBackoffice();
-        supervisorMotiva.setId(1007);
-        supervisorMotiva.setOrganizacaoId(9);
-
-        when(cargoSuperiorRepository.getCargosHierarquia(any()))
-            .thenReturn(List.of(111, 110));
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(supervisorMotiva);
-
-        mvc.perform(get(API_URI_GERENCIA)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(3)))
-            .andExpect(jsonPath("$.content[0].id", is(1007)))
-            .andExpect(jsonPath("$.content[0].email", is("SUPERVISOR_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[1].id", is(1008)))
-            .andExpect(jsonPath("$.content[1].email", is("ANALISTA_MOTIVA@NET.COM.BR")))
-            .andExpect(jsonPath("$.content[2].id", is(1009)))
-            .andExpect(jsonPath("$.content[2].email", is("OPERADOR_MOTIVA@NET.COM.BR")));
-
-        verify(cargoSuperiorRepository, atLeastOnce()).getCargosHierarquia(eq(supervisorMotiva.getCargoId()));
+        verifyNoMoreInteractions(service);
     }
 
     private UsuarioBackofficeDto umUsuarioDtoBackoffice() {

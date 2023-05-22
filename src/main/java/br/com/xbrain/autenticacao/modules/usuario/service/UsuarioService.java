@@ -336,13 +336,14 @@ public class UsuarioService {
         return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());
     }
 
-    public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
+    public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
-        return pages;
+
+        return pages.map(UsuarioConsultaDto::convertFrom);
     }
 
     public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
@@ -467,7 +468,8 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario request, MultipartFile foto) {
+    public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
+        var request = UsuarioDto.convertFrom(usuario);
         if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
@@ -1480,13 +1482,15 @@ public class UsuarioService {
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
-    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
-        return repository.getUsuariosFilter(
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
+        var usuarios =  repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .build());
+
+        return UsuarioHierarquiaResponse.convertTo(usuarios);
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
@@ -1935,7 +1939,8 @@ public class UsuarioService {
             agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
-    public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
+    public void exportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
+        var usuarios = getAllForCsv(filtros);
         if (!CsvUtils.setCsvNoHttpResponse(
             getCsv(usuarios),
             CsvUtils.createFileName(USUARIOS_CSV.name()),

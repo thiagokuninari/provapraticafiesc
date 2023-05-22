@@ -56,9 +56,7 @@ public class UsuarioSiteServiceTest {
                 TestBuilders.umUsuario(2, CodigoCargo.SUPERVISOR_OPERACAO)));
 
         assertThat(service.getUsuariosDaHierarquiaDoUsuarioLogado())
-            .isEqualTo(List.of(
-                TestBuilders.umUsuario(1, CodigoCargo.GERENTE_OPERACAO),
-                TestBuilders.umUsuario(2, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .isEqualTo(List.of(1, 2));
     }
 
     @Test

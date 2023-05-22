@@ -188,8 +188,11 @@ public class UsuarioSiteService {
             .collect(Collectors.toList());
     }
 
-    public List<Usuario> getUsuariosDaHierarquiaDoUsuarioLogado() {
-        return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
+    public List<Integer> getUsuariosDaHierarquiaDoUsuarioLogado() {
+        return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado()
+            .stream()
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioNomeResponse> getVendedoresDaHierarquiaPorSite(Integer siteId,

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -11,12 +12,16 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.INDICE_ZERO;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private Environment environment;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -83,12 +88,20 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/horarios-acesso/**").hasAnyRole(CodigoFuncionalidade.AUT_20009.name())
             .antMatchers("/api/organizacao-empresa/**", "/api/organizacao-empresa-historico/**",
                 "/api/nivel-empresa/**", "/api/modalidade-empresa/**").hasRole(
-                    CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
+                CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
             .anyRequest().authenticated();
     }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        if (isAmbienteTeste()) {
+            resources.stateless(false);
+        }
         resources.tokenStore(tokenStore);
+    }
+
+    private boolean isAmbienteTeste() {
+        var profile = environment.getActiveProfiles()[INDICE_ZERO];
+        return profile.equals("test");
     }
 }
