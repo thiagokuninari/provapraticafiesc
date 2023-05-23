@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import lombok.SneakyThrows;
@@ -40,8 +39,6 @@ public class UsuarioHistoricoControllerTest {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private AutenticacaoService autenticacaoService;
-    @MockBean
     private UsuarioHistoricoService usuarioHistoricoService;
 
     @Test
@@ -57,7 +54,7 @@ public class UsuarioHistoricoControllerTest {
 
     @Test
     @SneakyThrows
-    public void getHistoricoDoUsuario_deveBuscarHistoricoDoUsuario_seUsuarioSemAutorizacao() {
+    public void getHistoricoDoUsuario_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(get("/api/usuario-historico/100")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());

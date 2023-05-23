@@ -344,8 +344,8 @@ public class UsuarioService {
     }
 
     public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        var pages = repository.findAll(predicate.build(), pageRequest);
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }

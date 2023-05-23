@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static helpers.Usuarios.ADMIN;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,12 +69,12 @@ public class UsuarioSiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void editarCoordenadorSite_deveEditarCoordenadorSite_quandoSolicitado() {
+    public void editarCoordenadorSite_deveEditarCoordenadorSite_seUsuarioAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/coordenador")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioSiteService).buscarCoordenadoresDisponiveisEVinculadosAoSite(any());
+        verify(usuarioSiteService).buscarCoordenadoresDisponiveisEVinculadosAoSite(1);
     }
 
     @Test
@@ -90,7 +89,7 @@ public class UsuarioSiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void getUsuariosIdsDaHierarquiaDoUsuarioLogado_unauthorized_seUsuarioNaoAutenticado() {
+    public void getUsuariosIdsDaHierarquiaDoUsuarioLogado_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/hierarquia-usuario-logado"))
             .andExpect(status().isUnauthorized());
 
@@ -100,7 +99,7 @@ public class UsuarioSiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarIds_quandoSolicitado() {
+    public void getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarIds_seUsuarioAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/hierarquia-usuario-logado"))
             .andExpect(status().isOk());
 
@@ -109,7 +108,7 @@ public class UsuarioSiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_unauthorized_seUsuarioNaoAutenticado() {
+    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/100/vendedores-hierarquia-usuario-logado")
                 .param("buscarInativo", "false"))
             .andExpect(status().isUnauthorized());
@@ -120,7 +119,7 @@ public class UsuarioSiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_ok_seUsuarioAutenticado() {
+    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_deveBuscarVendedores_seUsuarioAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/100/vendedores-hierarquia-usuario-logado")
                 .param("buscarInativo", "true"))
             .andExpect(status().isOk());
@@ -211,7 +210,7 @@ public class UsuarioSiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void getVendoresDoSiteIdPorHierarquiaComEquipe_ok_seUsuarioAutenticado() {
+    public void getVendoresDoSiteIdPorHierarquiaComEquipe_deveBuscarVendedoresPorSite_seUsuarioAutenticado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/100/vendedores-hierarquia")
                 .param("usuarioId", "1")
                 .param("buscarInativo", "true")
@@ -283,6 +282,62 @@ public class UsuarioSiteControllerTest {
     @WithAnonymousUser
     public void getUsuariosIdsDaHierarquiaDoUsuarioLogado_deveRetornarUnauthorized_seUsuarioNaoAutorizado() {
         mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/hierarquia-usuario-logado")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioSiteService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void buscarCoordenadorSite_deveRetornarCoordenadoresVinculadosAoSite_seUsuarioAutenticado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/coordenador")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioSiteService).buscarCoordenadoresDisponiveisEVinculadosAoSite(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void buscarCoordenadorSite_deveRetornarUnauthorized_seUsuarioNaoAutorizado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/coordenador")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioSiteService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void buscarSupervisorSite_deveRetornarSupervisoresVinculadosAoSite_seUsuarioAutenticado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/supervisor")
+                .param("coordenadoresIds", "1, 2")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioSiteService).buscarSupervisoresDisponiveisEVinculadosAoSite(List.of(1, 2), 1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void buscarSupervisorSite_deveRetornarBadRequest_seParametroCoordenadoresIdsNaoImformado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/supervisor")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verifyNoMoreInteractions(usuarioSiteService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void buscarSupervisorSite_deveRetornarUnauthorized_seUsuarioNaoAutorizado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/editar/1/supervisor")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 

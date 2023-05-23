@@ -39,7 +39,7 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{id}")
-    public UsuarioDto getById(@PathVariable("id") int id) {
+    public UsuarioDto getById(@PathVariable int id) {
         return service.getUsuarioById(id);
     }
 

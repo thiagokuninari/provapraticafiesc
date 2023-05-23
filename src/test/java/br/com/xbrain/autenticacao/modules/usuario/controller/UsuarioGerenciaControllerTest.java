@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -28,11 +29,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -62,8 +65,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
-    private static final int ID_USUARIO_VENDEDOR = 430;
     private static final String API_URI = "/api/usuarios/gerencia";
+    private static final String API_URI_BACKOFFICE = "/api/usuarios/gerencia/backoffice";
     @Autowired
     private MockMvc mvc;
     @MockBean
@@ -83,6 +86,26 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).save(usuario, null);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarBadRequest_seCamposObrigatoriosNaoPreenchidos() {
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(new UsuarioDto()))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo unidadesNegociosId é obrigatório.",
+                "O campo empresasId é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo loginNetSales may not be empty")));
     }
 
     @Test
@@ -108,6 +131,68 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBackoffice_deveRetornarUsuarioSalvo_quandoNivelForBackoffice() {
+        var usuario = umUsuarioDtoBackoffice();
+
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBackoffice_badRequest_quandoValidarOsCamposObrigatorios() {
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(6)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo cpf é obrigatório.",
+                "O campo nascimento é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void save_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
+        var usuario = umUsuarioDtoBackoffice();
+
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void save_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+        var usuario = umUsuarioDtoBackoffice();
+
+        mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void alterar_deveRetornarOk_seUsuarioTiverPermissao() {
         var usuario = umUsuarioParaAtualizacao("Pedro", 431, 10, 3, "122.861.350-88");
         mvc.perform(put(API_URI)
@@ -115,7 +200,21 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).save(any());
+        verify(usuarioService).save(UsuarioDto.convertFrom(usuario));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void alterar_deveRetornarBadRequest_seAlgumCampoEstiverComSizeMaiorQueOPermitido() {
+        var usuario = umUsuarioParaAtualizacao("Pedro", 431, 10, 3, "122.861.350-88");
+        usuario.setNome("Exemplo de um nome grande demais ".repeat(6));
+        mvc.perform(put(API_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isBadRequest());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 
     @Test
@@ -194,7 +293,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getAll(any(), any());
+        verify(usuarioService).getAll(any(PageRequest.class), any(UsuarioFiltros.class));
     }
 
     @Test
@@ -210,7 +309,7 @@ public class UsuarioGerenciaControllerTest {
                         .build())))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getUsuariosCargoSuperior(any(), anyList());
+        verify(usuarioService).getUsuariosCargoSuperior(4, List.of(1, 5578));
     }
 
     @Test
@@ -253,7 +352,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getAll(any(), any());
+        verify(usuarioService).getAll(any(PageRequest.class), any(UsuarioFiltros.class));
     }
 
     @Test
@@ -276,26 +375,6 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void save_deveRetornarBadRequest_seCamposObrigatoriosNaoPreenchidos() {
-        mvc.perform(MockMvcRequestBuilders
-                .fileUpload(API_URI)
-                .file(umUsuario(new UsuarioDto()))
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(7)))
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome é obrigatório.",
-                "O campo email é obrigatório.",
-                "O campo unidadesNegociosId é obrigatório.",
-                "O campo empresasId é obrigatório.",
-                "O campo cargoId é obrigatório.",
-                "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty")));
     }
 
     @Test
@@ -373,7 +452,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).saveUsuarioConfiguracao(any());
+        verify(usuarioService).saveUsuarioConfiguracao(dto);
     }
 
     @Test
@@ -435,7 +514,36 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
             .andExpect(status().isOk());
 
-        verify(usuarioService).inativar(any(UsuarioInativacaoDto.class));
+        verify(usuarioService).inativar(umUsuarioParaInativar());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativar_deveRetornarBadRequest_seCamposObrigatoriosNaoPreenchidos() {
+        mvc.perform(post(API_URI + "/inativar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(new UsuarioInativacaoDto())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo idUsuario é obrigatório.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativar_deveRetornarBadRequest_seAlgumCampoEstiverComSizeMaiorQueOPermitido() {
+        var usuarioInativacao = umUsuarioParaInativar();
+        usuarioInativacao.setObservacao("exemplo de uma descrição grande".repeat(20));
+        mvc.perform(post(API_URI + "/inativar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(new UsuarioInativacaoDto())))
+            .andExpect(status().isBadRequest());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 
     @Test
@@ -468,10 +576,39 @@ public class UsuarioGerenciaControllerTest {
     public void ativar_deveAtivarUsuario_seUsuarioPossuirAutorizacao() {
         mvc.perform(put(API_URI + "/ativar")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
+                .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
             .andExpect(status().isOk());
 
         verify(usuarioService).ativar(any(UsuarioAtivacaoDto.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void ativar_deveRetornarBadRequest_seCamposObrigatoriosNaoPreenchidos() {
+        mvc.perform(put(API_URI + "/ativar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(new UsuarioAtivacaoDto())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo idUsuario é obrigatório.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void ativar_deveRetornarBadRequest_seAlgumCampoEstiverComSizeMaiorQueOPermitido() {
+        var usuarioAtivacao = umUsuarioParaAtivar();
+        usuarioAtivacao.setObservacao("exemplo de uma descrição grande".repeat(20));
+        mvc.perform(put(API_URI + "/ativar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuarioAtivacao)))
+            .andExpect(status().isBadRequest());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 
     @Test
@@ -606,7 +743,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoEmail())))
             .andExpect(status().isOk());
 
-        verify(usuarioService).alterarDadosAcessoEmail(any());
+        verify(usuarioService).alterarDadosAcessoEmail(umRequestDadosAcessoEmail());
     }
 
     @Test
@@ -641,7 +778,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
             .andExpect(status().isOk());
 
-        verify(usuarioService).alterarDadosAcessoSenha(any());
+        verify(usuarioService).alterarDadosAcessoSenha(umRequestDadosAcessoSenha());
     }
 
     @Test
@@ -695,7 +832,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).exportUsuariosToCsv(any(), any());
+        verify(usuarioService).exportUsuariosToCsv(any(UsuarioFiltros.class), any(HttpServletResponse.class));
     }
 
     @Test
@@ -730,7 +867,110 @@ public class UsuarioGerenciaControllerTest {
                 .param("cpf", "48503182076"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).validarSeUsuarioCpfEmailNaoCadastrados(any());
+        verify(usuarioService)
+            .validarSeUsuarioCpfEmailNaoCadastrados(any(UsuarioExistenteValidacaoRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getUsuariosHierarquia_deveBuscarUsuariosHierarquia_seUsuarioAutenticado() {
+
+        mvc.perform(get(API_URI + "/hierarquia/1"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getUsuariosHierarquia(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void getUsuariosHierarquia_deveRetornarForbidden_seUsuarioSemPermissao() {
+
+        mvc.perform(get(API_URI + "/hierarquia/1"))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosHierarquia_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+
+        mvc.perform(get(API_URI + "/hierarquia/1"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getByEmail_deveBuscarUsuarioPorEmail_seUsuarioAutenticado() {
+
+        mvc.perform(get(API_URI)
+                .param("email", "teste"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findByEmail("teste");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void getByEmail_deveRetornarForbidden_seUsuarioSemPermissao() {
+
+        mvc.perform(get(API_URI)
+                .param("email", "teste"))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getByEmail_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+
+        mvc.perform(get(API_URI)
+                .param("email", "teste"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void limparCpf_deveLimparCpfUsuario_seUsuarioAutenticado() {
+
+        mvc.perform(put(API_URI + "/limpar-cpf/1"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).limparCpfUsuario(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void limparCpf_deveRetornarForbidden_seUsuarioSemPermissao() {
+
+        mvc.perform(put(API_URI + "/limpar-cpf/1"))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void limparCpf_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+
+        mvc.perform(put(API_URI + "/limpar-cpf/1"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
@@ -756,6 +996,13 @@ public class UsuarioGerenciaControllerTest {
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         dto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        return dto;
+    }
+
+    private UsuarioAtivacaoDto umUsuarioParaAtivar() {
+        var dto = new UsuarioAtivacaoDto();
+        dto.setIdUsuario(ID_USUARIO_HELPDESK);
+        dto.setObservacao("Teste inativação");
         return dto;
     }
 
@@ -786,6 +1033,17 @@ public class UsuarioGerenciaControllerTest {
     private MockMultipartFile umUsuario(UsuarioDto usuario) throws Exception {
         var json = convertObjectToJsonString(usuario).getBytes(StandardCharsets.UTF_8);
         return new MockMultipartFile("usuario", "json", "application/json", json);
+    }
+
+    private UsuarioBackofficeDto umUsuarioDtoBackoffice() {
+        var usuario = new UsuarioBackofficeDto();
+        usuario.setNome("USUARIO BACKOFFICE");
+        usuario.setCargoId(110);
+        usuario.setEmail("usuarioBackoffice@gmail.com");
+        usuario.setDepartamentoId(69);
+        usuario.setCpf("870.371.018-18");
+        usuario.setNascimento(LocalDate.of(2000, 1, 1));
+        return usuario;
     }
 
     private UsuarioDto umUsuarioParaAtualizacao(String nome, Integer id, Integer cargo, Integer departamento, String cpf) {
