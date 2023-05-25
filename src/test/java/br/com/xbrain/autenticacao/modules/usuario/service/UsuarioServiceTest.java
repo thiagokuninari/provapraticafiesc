@@ -1675,7 +1675,8 @@ public class UsuarioServiceTest {
                 tuple("PAP", "PAP"),
                 tuple("PAP_PME", "PAP PME"),
                 tuple("PAP_PREMIUM", "PAP PREMIUM"),
-                tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
+                tuple("INSIDE_SALES_PME", "INSIDE SALES PME"),
+                tuple("PAP_CONDOMINIO", "PAP CONDOMINIO")
             );
     }
 

@@ -11,7 +11,8 @@ public enum ETipoCanal {
     PAP(1, "PAP"),
     PAP_PME(2, "PAP PME"),
     PAP_PREMIUM(3, "PAP Premium"),
-    INSIDE_SALES_PME(4, "Inside Sales PME");
+    INSIDE_SALES_PME(4, "Inside Sales PME"),
+    PAP_CONDOMINIO(5, "PAP CONDOMINIO");
 
     @NotNull
     private final Integer id;
