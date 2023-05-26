@@ -100,6 +100,7 @@ public class UsuarioDto implements Serializable {
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
     private List<Integer> agentesAutorizadosIds;
+    private Integer antigoSocioPrincipalId;
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
