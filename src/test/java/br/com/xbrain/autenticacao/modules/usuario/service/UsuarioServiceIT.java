@@ -32,6 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,8 +54,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -116,6 +117,8 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
+    @Captor
+    private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
 
     @Before
     public void setUp() {
@@ -1526,9 +1529,15 @@ public class UsuarioServiceIT {
 
     @Test
     public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrue() {
-        usuarioService.saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal());
+        assertThatCode(() -> usuarioService
+            .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
+            .doesNotThrowAnyException();
 
-        verify(sender).sendSuccessAtualizarSocioPrincipal(any(UsuarioDto.class));
+        verify(sender).sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+
+        assertThat(usuarioDtoCaptor.getValue())
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
+            .containsExactlyInAnyOrder(List.of(50, 55), 32);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
@@ -1587,6 +1596,7 @@ public class UsuarioServiceIT {
             .agentesAutorizadosIds(List.of(50, 55))
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .antigoSocioPrincipalId(32)
             .build();
     }
 
