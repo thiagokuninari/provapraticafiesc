@@ -277,7 +277,8 @@ app-config:
 #      url: http://localhost:8087
       url: http://192.168.50.1:6530
     feriado-automacao:
-      url: http://localhost:5846
+#      url: http://localhost:5846
+      url: http://192.168.50.4:8078
 
 flyway:
   enabled: true
