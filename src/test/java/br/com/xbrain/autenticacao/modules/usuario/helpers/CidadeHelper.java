@@ -9,28 +9,11 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CidadeHelper {
-
-    public static List<Integer> listaCidadesIdsDoParanaSemValoresDuplicados() {
-        return List.of(
-            3248, 3270, 3272, 3287, 3312, 3426, 5578
-        );
-    }
-
-    public static List<Integer> listaCidadesIdsDoParanaComValoresDuplicados() {
-        return List.of(
-            3248, 3248, 3248, 3270, 3272, 3287, 3312, 3312, 3426, 3426, 5578, 5578
-        );
-    }
-
-    public static List<Integer> listaFkCidadesDoCidadesSqlComDistinct() {
-        return List.of(
-            4864, 1765, 4498, 5128, 723, 736, 46, 527, 2921, 3426, 5107, 5578, 436, 3652, 409, 4903, 3423, 1443, 5604, 3425, 879
-        );
-    }
 
     public static List<Cidade> umaListaApenasCidades() {
         return umaListaComCidadesEDistritos()
@@ -506,10 +489,6 @@ public class CidadeHelper {
         return cidadeResponse;
     }
 
-    public static CidadeResponse cidadeResponseJordanesiaSemCidadePai() {
-        return CidadeResponse.of(distritoJordanesia());
-    }
-
     public static CidadeResponse cidadeResponseJordanesiaComCidadePai() {
         var cidadeResponse = CidadeResponse.of(distritoJordanesia());
         cidadeResponse.setCidadePai("CAJAMAR");
@@ -529,15 +508,23 @@ public class CidadeHelper {
         return CidadeResponse.of(cidadeMaringa());
     }
 
-    public static CidadeResponse cidadeResponsePolvilhoSemCidadePai() {
-        return CidadeResponse.of(distritoPolvilho());
-    }
-
     public static CidadeResponse cidadeResponsePolvilhoComCidadePai() {
         var cidadeResponse = CidadeResponse.of(distritoPolvilho());
         cidadeResponse.setCidadePai("CAJAMAR");
 
         return cidadeResponse;
+    }
+
+    public static Map<Integer, CidadeResponse> umMapApenasDistritosComCidadePai() {
+        var cidades = umaListaApenasCidades()
+            .stream()
+            .collect(Collectors.toMap(Cidade::getId, cidade -> cidade));
+
+        return umaListaApenasDistritos()
+            .stream()
+            .map(CidadeResponse::of)
+            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidades))
+            .collect(Collectors.toMap(CidadeResponse::getId, cidadeResponse -> cidadeResponse));
     }
 
     public static List<CodigoIbgeRegionalResponse> umaListaCodigoIbgeRegionalResponse() {

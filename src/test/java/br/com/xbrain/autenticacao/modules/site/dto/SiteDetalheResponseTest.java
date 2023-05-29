@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.site.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.helper.UfHelper;
-import br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper;
 import org.junit.Test;
 
 import java.util.Set;
@@ -25,15 +24,7 @@ public class SiteDetalheResponseTest {
                 Set.of("NOME USUARIO SITE COORDENADOR"),
                 Set.of("NOME USUARIO SITE SUPERVISOR"),
                 Set.of(UfHelper.ufResponseSaoPaulo()),
-                Set.of(
-                    CidadeHelper.cidadeResponseAldeia(),
-                    CidadeHelper.cidadeResponseBarueri(),
-                    CidadeHelper.cidadeResponseJardimBelval(),
-                    CidadeHelper.cidadeResponseJardimSilveira(),
-                    CidadeHelper.cidadeResponseJordanesiaSemCidadePai(),
-                    CidadeHelper.cidadeResponseLins(),
-                    CidadeHelper.cidadeResponsePolvilhoSemCidadePai()
-                )
+                null
             );
     }
 }

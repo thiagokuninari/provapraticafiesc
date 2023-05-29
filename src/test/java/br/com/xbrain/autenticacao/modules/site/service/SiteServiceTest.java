@@ -242,7 +242,7 @@ public class SiteServiceTest {
 
         verify(cidadeRepository).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), anyList());
         verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -258,7 +258,7 @@ public class SiteServiceTest {
 
         verify(cidadeRepository).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
         verify(cidadeRepository, never()).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), anyList());
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -267,6 +267,8 @@ public class SiteServiceTest {
             .thenReturn(umUsuarioAutenticado());
         when(cidadeRepository.buscarCidadesVinculadasAoUsuarioSemSite(any(), eq(List.of(2))))
             .thenReturn(listaCidadesDeSaoPaulo());
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(2), null))
             .extracting("value", "label")
@@ -287,7 +289,7 @@ public class SiteServiceTest {
 
         verify(cidadeRepository).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), eq(List.of(2)));
         verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
     @Test
@@ -296,8 +298,8 @@ public class SiteServiceTest {
             .thenReturn(umUsuarioAutenticado());
         when(cidadeRepository.buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), eq(List.of(1)), any()))
             .thenReturn(listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa());
-        when(cidadeService.getAllCidadesByIds(List.of(5578)))
-            .thenReturn(List.of(cidadeLondrina()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1), 1))
             .extracting("value", "label")
@@ -317,7 +319,7 @@ public class SiteServiceTest {
 
         verify(cidadeRepository).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(Predicate.class), eq((List.of(1))), eq(1));
         verify(cidadeRepository, never()).buscarCidadesVinculadasAoUsuarioSemSite(any(), any());
-        verify(cidadeService).getAllCidadesByIds(List.of(5578));
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
     @Test
@@ -742,7 +744,31 @@ public class SiteServiceTest {
             .withMessage("Site não encontrado.");
 
         verify(siteRepository).findById(200);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getSiteDetalheResponseById_deveRetornarSiteDetalheResponseSemCidades_quandoSiteNaoPossuirCidadesAtreladas() {
+        var site = umSiteCompletoComCidadesSemDistritos();
+        site.setCidades(Set.of());
+
+        when(siteRepository.findById(201)).thenReturn(Optional.of(site));
+
+        assertThat(service.getSiteDetalheResponseById(201))
+            .extracting("id", "nome", "timeZone", "situacao", "coordenadoresNomes", "supervisoresNomes", "estados", "cidades")
+            .containsExactly(
+                201,
+                "SITE COMPLETO 201",
+                ETimeZone.BRT,
+                ESituacao.A,
+                Set.of("NOME USUARIO SITE COORDENADOR"),
+                Set.of("NOME USUARIO SITE SUPERVISOR"),
+                Set.of(UfHelper.ufResponseSaoPaulo(), UfHelper.ufResponseParana()),
+                null
+            );
+
+        verify(siteRepository).findById(201);
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -767,13 +793,15 @@ public class SiteServiceTest {
             );
 
         verify(siteRepository).findById(201);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     public void getSiteDetalheResponseById_deveRetornarSiteDetalheResponseComDistritosENomeCidadePai_quandoEncontrarPorSiteId() {
-        when(siteRepository.findById(200)).thenReturn(Optional.of(umSiteCompleto()));
-        when(cidadeService.getAllCidadesByIds(List.of(4903))).thenReturn(List.of(CidadeHelper.cidadeCajamar()));
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.of(umSiteCompleto()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         var siteDetalheResponse = service.getSiteDetalheResponseById(200);
 
@@ -792,18 +820,18 @@ public class SiteServiceTest {
         assertThat(siteDetalheResponse.getCidades())
             .containsExactlyInAnyOrderElementsOf(
                 Set.of(
-                    CidadeHelper.cidadeResponseLins(),
-                    CidadeHelper.cidadeResponseAldeia(),
-                    CidadeHelper.cidadeResponseBarueri(),
-                    CidadeHelper.cidadeResponseJardimBelval(),
-                    CidadeHelper.cidadeResponseJardimSilveira(),
-                    CidadeHelper.cidadeResponsePolvilhoComCidadePai(),
-                    CidadeHelper.cidadeResponseJordanesiaComCidadePai()
+                    cidadeResponseLins(),
+                    cidadeResponseAldeia(),
+                    cidadeResponseBarueri(),
+                    cidadeResponseJardimBelval(),
+                    cidadeResponseJardimSilveira(),
+                    cidadeResponsePolvilhoComCidadePai(),
+                    cidadeResponseJordanesiaComCidadePai()
                 )
             );
 
         verify(siteRepository).findById(200);
-        verify(cidadeService).getAllCidadesByIds(List.of(4903));
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
     private Site umReagendamentoConfiguracaoResponse(Integer id) {

@@ -6,15 +6,12 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UfResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +39,6 @@ public class SiteDetalheResponse {
             .coordenadoresNomes(getNomes(site.getCoordenadores()))
             .supervisoresNomes(getNomes(site.getSupervisores()))
             .estados(getEstados(site.getEstados()))
-            .cidades(getCidades(site.getCidades()))
             .build();
     }
 
@@ -57,16 +53,6 @@ public class SiteDetalheResponse {
         return estados
             .stream()
             .map(UfResponse::parse)
-            .collect(Collectors.toSet());
-    }
-
-    private static Set<CidadeResponse> getCidades(Set<Cidade> cidades) {
-        List<Cidade> listaCidades = new ArrayList<>(cidades);
-
-        return cidades
-            .stream()
-            .map(CidadeResponse::of)
-            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, listaCidades))
             .collect(Collectors.toSet());
     }
 }

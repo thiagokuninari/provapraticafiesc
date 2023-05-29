@@ -9,12 +9,12 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -30,9 +30,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialSer
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
-import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -75,9 +73,11 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -172,7 +172,6 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
 
         verify(usuarioRepository).findComCidade(101214);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
     }
 
     @Test
@@ -182,18 +181,18 @@ public class UsuarioServiceTest {
         assertThat(usuarioService.findCidadesByUsuario(101214)).isEmpty();
 
         verify(usuarioRepository).findComCidade(101214);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
     }
 
     @Test
     public void findCidadesByUsuario_deveRetornarListaCidadeResponse_quandoUsuarioPossuirCidadesAtreladas() {
         when(usuarioRepository.findComCidade(101214))
-            .thenReturn(Optional.of(CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa()));
-        when(cidadeService.getAllCidadesByIds(List.of(5578)))
-            .thenReturn(List.of(CidadeHelper.cidadeLondrina()));
+            .thenReturn(Optional.of(listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(usuarioService.findCidadesByUsuario(101214))
             .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .hasSize(11)
             .containsExactly(
                 tuple(30650, "BELA VISTA DO PIQUIRI", 1, "PARANA", 1027, "RPS", 3272, "CAMPINA DA LAGOA"),
                 tuple(3272, "CAMPINA DA LAGOA", 1, "PARANA", 1027, "RPS", null, null),
@@ -209,7 +208,6 @@ public class UsuarioServiceTest {
             );
 
         verify(usuarioRepository).findComCidade(101214);
-        verify(cidadeService).getAllCidadesByIds(List.of(5578));
     }
 
     @Test
@@ -2825,23 +2823,6 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    private List<EquipeVendaUsuarioResponse> listaVazia() {
-        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
-        return lista;
-    }
-
-    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
-        return Usuario.builder().id(1)
-            .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(3))
-            .build();
-    }
-
-    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
-        return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
-    }
-
     @Test
     public void saveFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
         var umCargo = Cargo.builder()
@@ -2877,25 +2858,22 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
 
         verify(usuarioRepository).findComplete(101112);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     public void getCidadesByUsuarioId_deveRetornarListaVazia_quandoEncontrarUsuarioQueNaoTenhaCidadesAtreladas() {
-        when(usuarioRepository.findComplete(181920))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuarioSemCidades()));
+        when(usuarioRepository.findComplete(181920)).thenReturn(Optional.of(umUsuarioSemCidades()));
 
-        assertThat(usuarioService.getCidadesByUsuarioId(181920))
-            .isEmpty();
+        assertThat(usuarioService.getCidadesByUsuarioId(181920)).isEmpty();
 
         verify(usuarioRepository).findComplete(181920);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     public void getCidadesByUsuarioId_deveRetornarListaCidadeResponseComCidadesSemDistritos_quandoEncontrarCidadesDoUsuario() {
-        when(usuarioRepository.findComplete(121314))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuarioComCidades()));
+        when(usuarioRepository.findComplete(121314)).thenReturn(Optional.of(umUsuarioComCidades()));
 
         assertThat(usuarioService.getCidadesByUsuarioId(121314))
             .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
@@ -2910,16 +2888,14 @@ public class UsuarioServiceTest {
             );
 
         verify(usuarioRepository).findComplete(121314);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void getCidadesByUsuarioId_deveRetornarListaCidadeResponseComDistritosENomeCidadePai_quandoEncontrarCidadesDoUsuario() {
-        when(usuarioRepository.findComplete(151617))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuarioComDistritos()));
-        when(cidadeService.getAllCidadesByIds(List.of(5578)))
-            .thenReturn(List.of(CidadeHelper.cidadeLondrina()));
+        when(usuarioRepository.findComplete(151617)).thenReturn(Optional.of(umUsuarioComDistritos()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V)).thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(usuarioService.getCidadesByUsuarioId(151617))
             .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
@@ -2934,7 +2910,7 @@ public class UsuarioServiceTest {
             );
 
         verify(usuarioRepository).findComplete(151617);
-        verify(cidadeService).getAllCidadesByIds(List.of(5578));
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
     @Test
@@ -2944,8 +2920,8 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
 
         verify(autenticacaoService).getUsuarioAutenticadoId();
-        verify(usuarioCidadeRepository, never()).findUsuarioCidadesByUsuarioId(any());
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(usuarioCidadeRepository);
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -2957,15 +2933,13 @@ public class UsuarioServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticadoId();
         verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     public void findCidadesDoUsuarioLogado_deveRetornarListaUsuarioCidadeDtoComCidades_quandoEncontrarCidadesDoUsuario() {
-        when(autenticacaoService.getUsuarioAutenticadoId())
-            .thenReturn(Optional.of(101112));
-        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112))
-            .thenReturn(UsuarioCidadeHelper.listaUsuarioCidadesDoParana());
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101112));
+        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112)).thenReturn(listaUsuarioCidadesDoParana());
 
         assertThat(usuarioService.findCidadesDoUsuarioLogado())
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional", "fkCidade", "cidadePai")
@@ -2981,18 +2955,15 @@ public class UsuarioServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticadoId();
         verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
-        verify(cidadeService, never()).getAllCidadesByIds(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void findCidadesDoUsuarioLogado_deveRetornarListaUsuarioCidadeDtoComDistritosENomeCidadePai_quandoEncontrarCidadesDoUsuario() {
-        when(autenticacaoService.getUsuarioAutenticadoId())
-            .thenReturn(Optional.of(101112));
-        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112))
-            .thenReturn(UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina());
-        when(cidadeService.getAllCidadesByIds(List.of(5578)))
-            .thenReturn(List.of(CidadeHelper.cidadeLondrina()));
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101112));
+        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112)).thenReturn(listaUsuarioCidadeDeDistritosDeLondrina());
+        when(cidadeService.getCidadesDistritos(Eboolean.V)).thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(usuarioService.findCidadesDoUsuarioLogado())
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional", "fkCidade", "cidadePai")
@@ -3008,6 +2979,6 @@ public class UsuarioServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticadoId();
         verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
-        verify(cidadeService).getAllCidadesByIds(List.of(5578));
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 }

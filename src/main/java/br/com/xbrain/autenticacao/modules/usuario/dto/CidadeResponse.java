@@ -3,16 +3,13 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -37,23 +34,20 @@ public class CidadeResponse {
         return response;
     }
 
-    public static CidadeResponse definirNomeCidadePaiPorCidades(CidadeResponse cidadeResponse, List<Cidade> cidades) {
-        cidades
-            .stream()
-            .filter(cidade -> Objects.equals(cidade.getId(), cidadeResponse.getFkCidade()))
-            .findFirst()
-            .ifPresent(cidade -> cidadeResponse.setCidadePai(cidade.getNome()));
+    public static CidadeResponse definirNomeCidadePaiPorCidades(CidadeResponse cidadeResponse,
+                                                                Map<Integer, Cidade> cidades) {
+        if (cidades.containsKey(cidadeResponse.fkCidade)) {
+            cidadeResponse.setCidadePai(cidades.get(cidadeResponse.fkCidade).getNome());
+        }
 
         return cidadeResponse;
     }
 
-    public static CidadeResponse definirNomeCidadePaiPorUsuarioCidades(CidadeResponse cidadeResponse,
-                                                                       Set<UsuarioCidade> usuarioCidades) {
-        usuarioCidades
-            .stream()
-            .filter(usuarioCidade -> Objects.equals(usuarioCidade.getCidade().getId(), cidadeResponse.getFkCidade()))
-            .findFirst()
-            .ifPresent(usuarioCidade -> cidadeResponse.setCidadePai(usuarioCidade.getCidade().getNome()));
+    public static CidadeResponse definirNomeCidadePaiPorDistritos(CidadeResponse cidadeResponse,
+                                                                  Map<Integer, CidadeResponse> distritos) {
+        if (distritos.containsKey(cidadeResponse.id)) {
+            cidadeResponse.setCidadePai(distritos.get(cidadeResponse.id).cidadePai);
+        }
 
         return cidadeResponse;
     }

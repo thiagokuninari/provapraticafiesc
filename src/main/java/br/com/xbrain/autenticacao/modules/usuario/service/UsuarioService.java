@@ -86,6 +86,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
@@ -273,28 +275,16 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         if (!cidades.isEmpty()) {
-            var cidadesResponse = CidadeService.getCidadesResponse(cidades);
-            var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+            var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
 
-            definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+            cidadesResponse
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos));
 
             return cidadesResponse;
         }
 
         return List.of();
-    }
-
-    private void definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(List<Integer> cidadesPaiIds,
-                                                                                List<CidadeResponse> cidadesResponse) {
-        if (!cidadesPaiIds.isEmpty()) {
-            var cidadesPai = cidadeService.getAllCidadesByIds(cidadesPaiIds);
-
-            cidadesResponse
-                .stream()
-                .filter(cidadeResponse ->
-                    CidadeService.hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
-                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidadesPai));
-        }
     }
 
     public Usuario findCompleteById(int id) {
@@ -1761,12 +1751,12 @@ public class UsuarioService {
 
     public List<CidadeResponse> getCidadesByUsuarioId(Integer usuarioId) {
         var usuario = findComplete(usuarioId);
-        var cidadesResponse = getCidadesResponseByUsuarioCidades(usuario.getCidades());
-        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
 
-        definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+        if (usuario.getCidades().isEmpty()) {
+            return List.of();
+        }
 
-        return cidadesResponse;
+        return getCidadesResponseByUsuarioCidades(usuario.getCidades());
     }
 
     @Transactional
@@ -2139,21 +2129,31 @@ public class UsuarioService {
             .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
                 .orElseThrow(() -> EX_NAO_ENCONTRADO));
 
-        var cidadesResponse = getCidadesResponseByUsuarioCidades(cidades);
-        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+        if (cidades.isEmpty()) {
+            return List.of();
+        }
 
-        definirNomeCidadePaiQuandoCidadePaiNaoEstiverAtreladaAoUsuario(cidadesPaiIds, cidadesResponse);
+        var cidadesResponse = getCidadesResponseByUsuarioCidades(cidades);
 
         return UsuarioCidadeDto.ofCidadesResponse(cidadesResponse);
     }
 
     private List<CidadeResponse> getCidadesResponseByUsuarioCidades(Set<UsuarioCidade> usuarioCidades) {
-        return usuarioCidades
+        var cidadesResponse = usuarioCidades
             .stream()
             .map(usuarioCidade -> CidadeResponse.of(usuarioCidade.getCidade()))
-            .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorUsuarioCidades(cidadeResponse, usuarioCidades))
             .sorted(Comparator.comparing(CidadeResponse::getNome))
             .collect(Collectors.toList());
+
+        if (cidadesResponse.stream().anyMatch(cidadeResponse ->
+            hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))) {
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
+
+            cidadesResponse
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos));
+        }
+
+        return cidadesResponse;
     }
 
     public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {

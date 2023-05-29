@@ -21,14 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaFkCidadesDoCidadesSqlComDistinct;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.OPERACAO_ASSISTENTE;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -386,8 +385,7 @@ public class CidadeControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(cidadeService, never())
-            .getCodigoIbgeRegionalByCidade(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -398,8 +396,7 @@ public class CidadeControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
 
-        verify(cidadeService, never())
-            .getCodigoIbgeRegionalByCidade(anyList());
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -488,6 +485,46 @@ public class CidadeControllerTest {
 
         verify(cidadeService)
             .getAll(null, null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoNaoExistirPorRegionalId() {
+        mvc.perform(get(URL + "/todas")
+                .param("regionalId", "500")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(cidadeService)
+            .getAll(500, null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoNaoExistirPorUfId() {
+        mvc.perform(get(URL + "/todas")
+                .param("ufId", "50")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(cidadeService)
+            .getAll(null, 50);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoNaoExistirPorRegionalIdComUfId() {
+        mvc.perform(get(URL + "/todas")
+                .param("regionalId", "500")
+                .param("ufId", "50")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(cidadeService)
+            .getAll(500, 50);
     }
 
     @Test
@@ -693,7 +730,7 @@ public class CidadeControllerTest {
 
         assertThat(mapCache.size(), is(108));
 
-        verifyNoMoreInteractions(cidadeService);
+        verifyZeroInteractions(cidadeService);
 
         cidadeService.flushCacheCidadesDistritos();
     }
@@ -716,8 +753,6 @@ public class CidadeControllerTest {
 
         verify(cidadeService)
             .getCidadesDistritos(Eboolean.V);
-        verify(cidadeService)
-            .getAllCidadesByIds(listaFkCidadesDoCidadesSqlComDistinct());
 
         //Consulta usando informações no cache
         var resultCache = mvc.perform(get(URL + "/distritos")
@@ -732,7 +767,7 @@ public class CidadeControllerTest {
 
         assertThat(mapCache.size(), is(63));
 
-        verifyNoMoreInteractions(cidadeService);
+        verifyZeroInteractions(cidadeService);
 
         cidadeService.flushCacheCidadesDistritos();
     }
@@ -769,7 +804,7 @@ public class CidadeControllerTest {
 
         assertThat(mapCache.size(), is(45));
 
-        verifyNoMoreInteractions(cidadeService);
+        verifyZeroInteractions(cidadeService);
 
         cidadeService.flushCacheCidadesDistritos();
     }
@@ -780,8 +815,7 @@ public class CidadeControllerTest {
         mvc.perform(delete(URL + "/distritos/limpar-cache"))
             .andExpect(status().isUnauthorized());
 
-        verify(cidadeService, never())
-            .flushCacheCidadesDistritos();
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
@@ -793,8 +827,7 @@ public class CidadeControllerTest {
             .andExpect(jsonPath("$[*].message",
                 containsInAnyOrder("Usuário sem permissão sobre a entidade requisitada.")));
 
-        verify(cidadeService, never())
-            .flushCacheCidadesDistritos();
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test

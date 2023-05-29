@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
@@ -42,6 +43,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 
 @Slf4j
 @Service
@@ -247,17 +251,17 @@ public class SiteService {
             .collect(Collectors.toList());
     }
 
-    public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds, Integer siteIgnoradoId) {
+    public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds,
+                                                                               Integer siteIgnoradoId) {
         var cidadesDisponiveis = buscarCidadesDisponiveis(estadosIds, siteIgnoradoId);
 
         if (!cidadesDisponiveis.isEmpty()) {
-            var cidadesResponse = CidadeService.getCidadesResponse(cidadesDisponiveis);
-            var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
-
-            definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(cidadesPaiIds, new HashSet<>(cidadesResponse));
+            var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidadesDisponiveis);
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
 
             return cidadesResponse
                 .stream()
+                .map(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos))
                 .map(cidadeResponse -> SelectResponse.of(cidadeResponse.getId(), cidadeResponse.getNomeComCidadePaiEUf()))
                 .collect(Collectors.toList());
         }
@@ -265,27 +269,31 @@ public class SiteService {
         return List.of();
     }
 
-    private void definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(List<Integer> cidadesPaiIds,
-                                                                         Set<CidadeResponse> cidadesResponse) {
-        if (!cidadesPaiIds.isEmpty()) {
-            var cidadesPai = cidadeService.getAllCidadesByIds(cidadesPaiIds);
-
-            cidadesResponse
-                .stream()
-                .filter(cidadeResponse ->
-                    CidadeService.hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))
-                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorCidades(cidadeResponse, cidadesPai));
-        }
-    }
-
     public SiteDetalheResponse getSiteDetalheResponseById(Integer id) {
-        var siteDetalheResponse = SiteDetalheResponse.of(findById(id));
-        var cidadesResponse = new ArrayList<>(siteDetalheResponse.getCidades());
-        var cidadesPaiIds = CidadeService.getCidadesPaiIdsByCidadesResponse(cidadesResponse);
+        var site = findById(id);
+        var siteDetalheResponse = SiteDetalheResponse.of(site);
+        var cidades = new ArrayList<>(site.getCidades());
 
-        definirNomeCidadePaiQuandoCidadePaiNaoForAtreladaAoSite(cidadesPaiIds, siteDetalheResponse.getCidades());
+        if (!cidades.isEmpty()) {
+            var cidadesResponse = definirCidadePai(cidades);
+            siteDetalheResponse.setCidades(new HashSet<>(cidadesResponse));
+        }
 
         return siteDetalheResponse;
+    }
+
+    private List<CidadeResponse> definirCidadePai(List<Cidade> cidades) {
+        var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
+
+        if (cidadesResponse.stream().anyMatch(cidadeResponse ->
+            hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))) {
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
+
+            cidadesResponse
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos));
+        }
+
+        return cidadesResponse;
     }
 
     private void validarInativacao(Integer siteId) {

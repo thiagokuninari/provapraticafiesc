@@ -11,13 +11,12 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
-
+import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import com.querydsl.core.types.Predicate;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +41,8 @@ public class CidadeServiceTest {
     private RegionalService regionalService;
     @Mock
     private AutenticacaoService autenticacaoService;
+    @Mock
+    private CidadeService self;
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
@@ -153,25 +154,13 @@ public class CidadeServiceTest {
     }
 
     @Test
-    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoFkCidadeForNull() {
-        assertFalse(hasFkCidadeSemNomeCidadePai(null, null));
-    }
-
-    @Test
-    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoNomeCidadePaiNaoForNull() {
-        assertFalse(hasFkCidadeSemNomeCidadePai(5578, "LONDRINA"));
-    }
-
-    @Test
-    public void hasFkCidadeSemNomeCidadePai_deveRetornarTrue_quandoFkCidadeNaoForNullENomeCidadePaiForNull() {
-        assertTrue(hasFkCidadeSemNomeCidadePai(5578, null));
-    }
-
-    @Test
-    public void getAll_deveRetornarListaCompletaDasCidadesComDistritos_quandoInformarParametrosNull() {
+    public void getAll_deveRetornarListaCidadeResponseCompletaDasCidadesComDistritos_quandoInformarParametrosNull() {
         var booleanBuilder = new CidadePredicate().build();
 
-        when(cidadeRepository.findAllByPredicate(booleanBuilder)).thenReturn(umaListaComCidadesEDistritos());
+        when(cidadeRepository.findAllByPredicate(booleanBuilder))
+            .thenReturn(umaListaComCidadesEDistritos());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.getAll(null, null)).hasSize(30);
 
@@ -180,10 +169,43 @@ public class CidadeServiceTest {
     }
 
     @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorRegionalId() {
+        var booleanBuilder = new CidadePredicate().comRegionalId(500).build();
+
+        assertThat(service.getAll(500, null)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorUfId() {
+        var booleanBuilder = new CidadePredicate().comUfId(50).build();
+
+        assertThat(service.getAll(null, 50)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorRegionalIdComUfId() {
+        var booleanBuilder = new CidadePredicate().comRegionalId(500).comUfId(50).build();
+
+        assertThat(service.getAll(500, 50)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
     public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasRegionalId() {
         var predicate = new CidadePredicate().comRegionalId(1027).build();
 
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.getAll(1027, null))
             .hasSize(14)
@@ -206,14 +228,16 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findAllByPredicate(predicate);
-        verifyNoMoreInteractions(cidadeRepository);
     }
 
     @Test
     public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasUfId() {
         var predicate = new CidadePredicate().comUfId(2).build();
 
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(listaCidadesDeSaoPaulo());
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDeSaoPaulo());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.getAll(null, 2))
             .hasSize(12)
@@ -234,14 +258,16 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findAllByPredicate(predicate);
-        verifyNoMoreInteractions(cidadeRepository);
     }
 
     @Test
     public void getAll_deveRetornarListaCidadeResponse_quandoInformarRegionalIdUfIdECidadePaiEstiverNaMesmaLista() {
         var predicate = new CidadePredicate().comRegionalId(1027).comUfId(1).build();
 
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.getAll(1027, 1))
             .hasSize(14)
@@ -264,18 +290,16 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findAllByPredicate(predicate);
-        verifyNoMoreInteractions(cidadeRepository);
     }
 
     @Test
     public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasRegionalIdUfIdECidadePaiNaoEstiverNaMesmaLista() {
         var predicate = new CidadePredicate().comRegionalId(1031).comUfId(2).build();
 
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(listaCidadesComUfSaoPauloERegionalSci());
-
-        var predicateCidadesPai = new CidadePredicate().comCidadesId(List.of(4864, 4903)).build();
-
-        when(cidadeRepository.findAllByPredicate(predicateCidadesPai)).thenReturn(listaCidadesPaiSaoPauloComOutraRegional());
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesComUfSaoPauloERegionalSci());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.getAll(1031, 2))
             .hasSize(10)
@@ -294,14 +318,23 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findAllByPredicate(predicate);
-        verify(cidadeRepository).findAllByPredicate(predicateCidadesPai);
     }
 
     @Test
     public void buscarCidadesPorEstadosIds_deveRetornarListaVazia_quandoListaEstadosIdsForVazia() {
         assertThat(service.buscarCidadesPorEstadosIds(List.of())).isEmpty();
 
-        verify(cidadeRepository, never()).findAllByUfIdInOrderByNome(anyList());
+        verifyZeroInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void buscarCidadesPorEstadosIds_deveRetornarListaVazia_quandoNaoExistirPorEstadosIds() {
+        var estadosIds = List.of(50, 51);
+
+        assertThat(service.buscarCidadesPorEstadosIds(estadosIds)).isEmpty();
+
+        verify(cidadeRepository).findAllByUfIdInOrderByNome(estadosIds);
+        verifyZeroInteractions(self);
     }
 
     @Test
@@ -310,6 +343,8 @@ public class CidadeServiceTest {
 
         when(cidadeRepository.findAllByUfIdInOrderByNome(estadosIds))
             .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
 
         assertThat(service.buscarCidadesPorEstadosIds(List.of(1)))
             .hasSize(14)
@@ -332,6 +367,21 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findAllByUfIdInOrderByNome(estadosIds);
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoFkCidadeForNull() {
+        assertFalse(hasFkCidadeSemNomeCidadePai(null, null));
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoNomeCidadePaiNaoForNull() {
+        assertFalse(hasFkCidadeSemNomeCidadePai(5578, "LONDRINA"));
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarTrue_quandoFkCidadeNaoForNullENomeCidadePaiForNull() {
+        assertTrue(hasFkCidadeSemNomeCidadePai(5578, null));
     }
 
     @Test
@@ -365,12 +415,6 @@ public class CidadeServiceTest {
 
         verify(cidadeRepository).findOne(30910);
         verify(cidadeRepository).findOne(5578);
-    }
-
-    public void getAllCidadesByIds_deveRetornarListaVazia_quandoCidadesIdsForNull() {
-        assertThat(service.getAllCidadesByIds(null)).isEmpty();
-
-        verify(cidadeRepository, never()).findAllByPredicate(any());
     }
 
     @Test
@@ -409,44 +453,11 @@ public class CidadeServiceTest {
     }
 
     @Test
-    public void getAllCidadesByIds_deveRetornarListaVazia_quandoCidadesIdsForVazio() {
-        assertThat(service.getAllCidadesByIds(List.of())).isEmpty();
-
-        verify(cidadeRepository, never()).findAllByPredicate(any());
-    }
-
-    @Test
-    @SuppressWarnings("LineLength")
-    public void getAllCidadesByIds_deveRetornarListaCidadesAplicandoDistinctAntesDeConsultarNoBanco_quandoInformarListaCidadesIdsComValoresDuplicados() {
-        var predicate = new CidadePredicate().comCidadesId(listaCidadesIdsDoParanaSemValoresDuplicados()).build();
-
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(listaCidadesDoParana());
-
-        assertThat(service.getAllCidadesByIds(listaCidadesIdsDoParanaComValoresDuplicados()))
-            .hasSize(7)
-            .extracting("id", "nome")
-            .containsExactly(
-                tuple(3248, "BANDEIRANTES"),
-                tuple(3270, "CAMBE"),
-                tuple(3272, "CAMPINA DA LAGOA"),
-                tuple(3287, "CASCAVEL"),
-                tuple(3312, "CURITIBA"),
-                tuple(5578, "LONDRINA"),
-                tuple(3426, "MARINGA")
-            );
-
-        verify(cidadeRepository).findAllByPredicate(predicate);
-        verify(cidadeRepository, never()).findAllByPredicate(new CidadePredicate().comCidadesId(listaCidadesIdsDoParanaComValoresDuplicados()).build());
-    }
-
-    @Test
     public void getCidadesDistritos_deveRetornarMapApenasComDistritos_quandoInformarApenasDistritosComoV() {
         var predicate = new CidadePredicate().comDistritos(Eboolean.V).build();
-
         when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(umaListaApenasDistritos());
 
         var predicateCidadesPai = new CidadePredicate().comCidadesId(umaListaApenasFkCidadeDosDistritos()).build();
-
         when(cidadeRepository.findAllByPredicate(predicateCidadesPai)).thenReturn(umaListaApenasCidades());
 
         assertThat(service.getCidadesDistritos(Eboolean.V)).hasSize(15);
@@ -459,7 +470,6 @@ public class CidadeServiceTest {
     @Test
     public void getCidadesDistritos_deveRetornarMapApenasComCidades_quandoInformarApenasDistritosComoF() {
         var predicate = new CidadePredicate().comDistritos(Eboolean.F).build();
-
         when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(umaListaApenasCidades());
 
         assertThat(service.getCidadesDistritos(Eboolean.F)).hasSize(15);
@@ -470,14 +480,19 @@ public class CidadeServiceTest {
 
     @Test
     public void getCidadesDistritos_deveRetornarMapDeCidadesComDistritos_quandoInformarApenasDistritosComoNull() {
-        var predicate = new CidadePredicate().build();
+        var predicate = new CidadePredicate().comDistritos(null).build();
+        var predicateCidadesPai = new CidadePredicate().comCidadesId(List.of(4864, 3272, 5578, 4903)).build();
 
-        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(umaListaComCidadesEDistritos());
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(umaListaComCidadesEDistritos());
+        when(cidadeRepository.findAllByPredicate(predicateCidadesPai))
+            .thenReturn(List.of(cidadeCampinaDaLagoa(), cidadeBarueri(), cidadeCajamar(), cidadeLondrina()));
 
-        assertThat(service.getCidadesDistritos(null)).hasSize(30);
+        assertThat(service.getCidadesDistritos(null))
+            .hasSize(30);
 
         verify(cidadeRepository).findAllByPredicate(predicate);
-        verifyNoMoreInteractions(cidadeRepository);
+        verify(cidadeRepository).findAllByPredicate(predicateCidadesPai);
     }
 
     @Test
