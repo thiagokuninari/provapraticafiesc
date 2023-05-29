@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -147,12 +148,6 @@ public class UsuarioService {
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
-    private static final List<CodigoCargo> LISTA_CARGOS_TECNICO_INDICADOR = List.of(
-        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
-        AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
-        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS_RECEPTIVO, AGENTE_AUTORIZADO_SOCIO, AGENTE_AUTORIZADO_COORDENADOR,
-        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS_RECEPTIVO, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
-        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS);
 
     @Autowired
     private UsuarioRepository repository;
@@ -238,6 +233,8 @@ public class UsuarioService {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
+    private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1039,6 +1036,8 @@ public class UsuarioService {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            permissaoTecnicoIndicadorService
+                .atualizarPermissaoParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -1057,6 +1056,8 @@ public class UsuarioService {
                 configurarDataReativacao(usuarioMqRequest);
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                permissaoTecnicoIndicadorService
+                    .atualizarPermissaoParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1119,11 +1120,14 @@ public class UsuarioService {
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
         usuario.removerCaracteresDoCpf();
         salvarUsuarioRemanejado(usuario);
+        permissaoTecnicoIndicadorService.removerPermissaoDosUsuarios(List.of(usuario.getId()));
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .atualizarPermissaoParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -2527,12 +2531,5 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
-    }
-
-    public List<Usuario> buscarUsuariosTabulacaoTecnicoIndicador(List<Integer> usuarioIds) {
-        return repository.findByIdInAndCargoInAndSituacaoNot(
-            usuarioIds,
-            cargoRepository.findByCodigoIn(LISTA_CARGOS_TECNICO_INDICADOR),
-            ESituacao.R);
     }
 }
