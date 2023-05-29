@@ -2,19 +2,19 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
 import br.com.xbrain.autenticacao.modules.comum.service.GrupoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/grupos")
+@RequiredArgsConstructor
 public class GrupoController {
 
-    @Autowired
-    private GrupoService service;
+    private final GrupoService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public List<GrupoDto> getAtivosPorRegional(@RequestParam(required = false) Integer regionalId) {
         if (regionalId != null) {
             return service.getAllByRegionalId(regionalId);

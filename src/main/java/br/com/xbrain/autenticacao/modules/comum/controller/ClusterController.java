@@ -2,17 +2,17 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.service.ClusterService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/clusters")
+@RequiredArgsConstructor
 public class ClusterController {
 
-    @Autowired
-    private ClusterService service;
+    private final ClusterService service;
 
     @GetMapping
     public List<ClusterDto> getAtivosPorGrupo(@RequestParam(required = false) Integer grupoId) {
