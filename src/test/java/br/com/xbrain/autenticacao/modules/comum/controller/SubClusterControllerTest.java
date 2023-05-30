@@ -194,5 +194,7 @@ public class SubClusterControllerTest {
         mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
+
+        verify(subClusterService).getAllSubclustersByUsuarioAutenticado();
     }
 }
