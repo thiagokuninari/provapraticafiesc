@@ -212,6 +212,7 @@ public class TestBuilders {
             .nome("FULANO " + id.toString())
             .cargoCodigo(codigoCargo)
             .nivel(nivel)
+            .nivelCodigo(nivel)
             .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
             .build();
     }
