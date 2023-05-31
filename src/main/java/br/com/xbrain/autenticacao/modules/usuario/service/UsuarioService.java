@@ -345,9 +345,13 @@ public class UsuarioService {
         return pages;
     }
 
-    public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
-        var predicate = filtrarUsuariosPermitidos(filtros);
-        return (List<Usuario>) repository.findAll(predicate.build());
+    public List<UsuarioConsultaDto> getAllXbrainMsoAtivos(Integer idNivel) {
+        var filtro = new UsuarioFiltros();
+        filtro.setNivelId(idNivel);
+        filtro.setSituacoes(List.of(ESituacao.A));
+        var usuarios = repository.findAll(filtro.toPredicate().build());
+        return StreamSupport.stream(usuarios.spliterator(), false)
+            .map(UsuarioConsultaDto::convertFrom).collect(Collectors.toList());
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {

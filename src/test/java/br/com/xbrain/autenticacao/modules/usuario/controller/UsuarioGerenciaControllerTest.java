@@ -671,6 +671,21 @@ public class UsuarioGerenciaControllerTest {
                 "CPF já cadastrado.")));
     }
 
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+        mvc.perform(get(API_URI + "/chamados/usuarios-redirecionamento/2")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarOk_quandoUsuarioForAutorizado() throws Exception {
+        mvc.perform(get(API_URI + "/chamados/usuarios-redirecionamento/2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);

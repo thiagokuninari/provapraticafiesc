@@ -1363,6 +1363,35 @@ public class UsuarioServiceIT {
             .isNull();
     }
 
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarSomenteXBrainsAtivos_quandoExistirem() {
+        assertThat(service.getAllXbrainMsoAtivos(2))
+            .extracting("id", "situacao")
+            .containsExactly(
+                tuple(366, "A"),
+                tuple(368, "A"),
+                tuple(114, "A"),
+                tuple(115, "A"));
+    }
+
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarSomenteMsosAtivos_quandoExistirem() {
+        assertThat(service.getAllXbrainMsoAtivos(4))
+            .extracting("id", "situacao")
+            .containsExactly(
+                tuple(100, "A"),
+                tuple(110, "A"),
+                tuple(121, "A"),
+                tuple(101, "A"),
+                tuple(111, "A"));
+    }
+
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarListaVazia_quandoIdNivelNaoExistirNoBanco() {
+        assertThat(service.getAllXbrainMsoAtivos(30))
+            .isEmpty();
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);

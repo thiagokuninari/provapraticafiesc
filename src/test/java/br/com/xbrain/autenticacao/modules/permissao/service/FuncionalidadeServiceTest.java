@@ -1,5 +1,10 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
+import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -9,18 +14,25 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static helpers.Usuarios.SOCIO_AA;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -35,6 +47,16 @@ public class FuncionalidadeServiceTest {
 
     @Autowired
     private FuncionalidadeService service;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+
+    private static Aplicacao umaAplicacao() {
+        var aplicacao = new Aplicacao();
+        aplicacao.setId(15);
+        aplicacao.setNome("CHAMADO");
+        aplicacao.setCodigo(CodigoAplicacao.CHM);
+        return aplicacao;
+    }
 
     @Test
     public void getPermissoes_permissosDoUsuario_somentePermitidasAoUsuario() {
@@ -92,6 +114,58 @@ public class FuncionalidadeServiceTest {
             .hasSize(13);
     }
 
+    @Test
+    public void getAll_naoDeveRetornarFuncionalidadeAdmChamados_quandoUsuarioNaoTiverPermissaoAdmChamados() {
+        var eviromentMock = Mockito.mock(Environment.class);
+
+        var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+            .id(14001)
+            .nome("Administrador do suporte")
+            .role("CHM_ADM_CHAMADOS")
+            .aplicacao(umaAplicacao())
+
+            .build());
+        var request = mock(HttpServletRequest.class);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNaoAdmSuporte());
+        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
+
+        assertThat(service.getAll(request)).doesNotContain(funcionalidade);
+    }
+
+    @Test
+    public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoUsuarioTiverPermissaoAdmChamados() {
+        var eviromentMock = Mockito.mock(Environment.class);
+
+        var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+            .id(14001)
+            .nome("Administrador do suporte")
+            .role("CHM_ADM_CHAMADOS")
+            .aplicacao(umaAplicacao())
+            .build());
+
+        var request = mock(HttpServletRequest.class);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmSuporte());
+        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
+
+        assertThat(service.getAll(request)).contains(funcionalidade);
+    }
+
+    @Test
+    public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoProfileAtivoNaoForProducao() {
+
+        var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+            .id(14001)
+            .nome("Administrador do suporte")
+            .role("CHM_ADM_CHAMADOS")
+            .aplicacao(umaAplicacao())
+            .build());
+
+        var request = mock(HttpServletRequest.class);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmSuporte());
+
+        assertThat(service.getAll(request)).contains(funcionalidade);
+    }
+
     private Usuario umUsuarioSocio() {
         return Usuario
             .builder()
@@ -135,6 +209,35 @@ public class FuncionalidadeServiceTest {
         return Nivel.builder()
             .id(1)
             .codigo(CodigoNivel.OPERACAO)
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoNaoAdmSuporte() {
+        return UsuarioAutenticado
+            .builder()
+            .id(1)
+            .nome("USUARIO")
+            .email("USUARIO@TESTE.COM")
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
+            .nivelCodigo(CodigoNivel.XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_EMULAR_USUARIO.getRole())))
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoAdmSuporte() {
+        return UsuarioAutenticado
+            .builder()
+            .id(1)
+            .nome("USUARIO")
+            .email("USUARIO@TESTE.COM")
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
+            .nivelCodigo(CodigoNivel.XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_EMULAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(CHM_ADM_CHAMADOS.getRole())))
             .build();
     }
 }
