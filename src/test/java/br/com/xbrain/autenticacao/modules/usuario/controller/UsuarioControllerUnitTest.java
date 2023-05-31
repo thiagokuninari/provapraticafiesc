@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -130,6 +131,34 @@ public class UsuarioControllerUnitTest {
             .andExpect(jsonPath("$[1].nome").value("JOAO"));
     }
 
+    @Test
+    @SneakyThrows
+    public void getSubordinadosAndAasDoUsuario_deveRetornarSubordinadosDoUsuario_quandoTudoOk() {
+        when(usuarioService.getSubordinadosAndAasDoUsuario(false))
+            .thenReturn(umaListaDeUsuariosHierarquiaDtos(1, 2));
+
+        mvc.perform(get("/api/usuarios/hierarquia/subordinados-aas")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].cpf").value("12345678911"))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].cnpj").value("87389372672"));
+
+        verify(usuarioService, times(1))
+            .getSubordinadosAndAasDoUsuario(eq(false));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getSubordinadosAndAasDoUsuario_deveRetornarUnathorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/usuarios/hierarquia/subordinados-aas")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
     private List<UsuarioDistribuicaoResponse> umaListaUsuarioDistribuicaoResponse() {
         return List.of(
             UsuarioDistribuicaoResponse.builder()
@@ -141,5 +170,28 @@ public class UsuarioControllerUnitTest {
                 .nome("JOAO")
                 .build()
         );
+    }
+
+    private List<UsuarioHierarquiaDto> umaListaDeUsuariosHierarquiaDtos(Integer id, Integer outroId) {
+        return List.of(umUsuarioHierarquiaDto(id),
+            umOutroUsuarioHierarquiaDto(outroId));
+    }
+
+    private UsuarioHierarquiaDto umUsuarioHierarquiaDto(Integer id) {
+        return UsuarioHierarquiaDto.builder()
+            .id(id)
+            .razaoSocialNome("Uma razao social")
+            .situacao("Ativo")
+            .cpf("12345678911")
+            .build();
+    }
+
+    private UsuarioHierarquiaDto umOutroUsuarioHierarquiaDto(Integer id) {
+        return UsuarioHierarquiaDto.builder()
+            .id(id)
+            .razaoSocialNome("Uma outra razao social")
+            .situacao("CONTRATO ATIVO")
+            .cnpj("87389372672")
+            .build();
     }
 }

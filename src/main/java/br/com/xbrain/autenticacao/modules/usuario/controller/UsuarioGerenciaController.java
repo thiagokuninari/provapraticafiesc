@@ -55,6 +55,11 @@ public class UsuarioGerenciaController {
             .map(UsuarioConsultaDto::convertFrom);
     }
 
+    @GetMapping("chamados/usuarios-redirecionamento/{idNivel}")
+    public List<UsuarioConsultaDto> getAllXbrainMsoAtivos(@PathVariable Integer idNivel) {
+        return service.getAllXbrainMsoAtivos(idNivel);
+    }
+
     @GetMapping("/hierarquia/{nivelId}")
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(@PathVariable int nivelId) {
         return service.getUsuariosHierarquia(nivelId);

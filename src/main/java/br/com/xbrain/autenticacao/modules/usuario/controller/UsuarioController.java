@@ -182,6 +182,12 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuario(id);
     }
 
+    @GetMapping("/hierarquia/subordinados-aas")
+    public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(
+        @RequestParam(required = false, defaultValue = "false") boolean incluirInativos) {
+        return usuarioService.getSubordinadosAndAasDoUsuario(incluirInativos);
+    }
+
     @GetMapping("/hierarquia/subordinados/gerente/{id}")
     public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(id);
@@ -340,14 +346,14 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
-    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
+    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) { //AQUI
         usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
     }
 
     @GetMapping(value = "/resetar-senha")
     public void resetarSenha(@RequestParam String token) {
         usuarioServiceEsqueciSenha.resetarSenha(token);
-    }
+    } //AQUI 2
 
     @PutMapping("inativar-colaboradores")
     public void inativarColaboradores(@RequestParam String cnpj) {

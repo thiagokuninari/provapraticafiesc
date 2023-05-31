@@ -25,7 +25,7 @@ public enum CodigoFuncionalidade {
     CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
     CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
     CHM_ABRIR_CHAMADO("Abrir chamado"),
-    CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
+    CHM_ADM_CHAMADOS("Administrador do suporte"),
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
     MLG_5013("Distribuir Agendamentos Proprietários"),

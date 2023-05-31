@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -14,10 +15,12 @@ import java.util.List;
 public class FuncionalidadeController {
 
     @Autowired
+    private HttpServletRequest request;
+    @Autowired
     private FuncionalidadeService service;
 
     @RequestMapping(method = RequestMethod.GET)
     public List<FuncionalidadeResponse> getAll() {
-        return service.getAll();
+        return service.getAll(request);
     }
 }
