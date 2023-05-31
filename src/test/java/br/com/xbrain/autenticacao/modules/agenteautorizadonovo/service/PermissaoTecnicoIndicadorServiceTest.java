@@ -5,6 +5,9 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -126,5 +129,134 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         assertThat(service.buscarUsuariosTabulacaoTecnicoIndicador(List.of(1, 2, 3)))
             .isNotEmpty();
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarPermissao_seUsuarioForNovoCadastro() {
+        var request = UsuarioMqRequest.builder()
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+
+        verify(permissaoEspecialService, times(1)).save(anyList());
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seAaNaoForTecnicoIndicador() {
+        var request = UsuarioMqRequest.builder()
+            .tecnicoIndicador(false)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+
+        verify(permissaoEspecialService, never()).save(anyList());
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seUsuarioNaoPossuirCargoValido() {
+        var request = UsuarioMqRequest.builder()
+            .id(4)
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_ASSISTENTE)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+
+        verify(permissaoEspecialService, never()).save(anyList());
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seUsuarioJaPossuirPermissao() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+
+        var request = UsuarioMqRequest.builder()
+            .id(4)
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+
+        verify(permissaoEspecialService, never()).save(anyList());
+    }
+
+    @Test
+    public void removerPermissaoTecnicoIndicadorDoUsuario_deveRemoverPermissao_seSituacaoForRealocado() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+
+        var usuario = UsuarioDto.builder().id(4).situacao(ESituacao.R).build();
+
+        service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
+
+        verify(permissaoEspecialService, times(1))
+            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+    }
+
+    @Test
+    public void removerPermissaoTecnicoIndicadorDoUsuario_deveRemoverPermissao_seCargoNaoForValido() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+
+        var usuario = UsuarioDto.builder()
+            .id(4)
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_ASSISTENTE)
+            .build();
+
+        service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
+
+        verify(permissaoEspecialService, times(1))
+            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+    }
+
+    @Test
+    public void removerPermissaoTecnicoIndicadorDoUsuario_naoDeveRemoverPermissao_seForNovoCadastro() {
+        var usuario = UsuarioDto.builder()
+            .id(null)
+            .situacao(ESituacao.A)
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO)
+            .build();
+
+        service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
+
+        verify(permissaoEspecialService, never())
+            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+    }
+
+    @Test
+    public void removerPermissaoTecnicoIndicadorDoUsuario_naoDeveRemoverPermissao_seNaoPossuirPermissao() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(false);
+
+        var usuario = UsuarioDto.builder()
+            .id(4)
+            .situacao(ESituacao.R)
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_GERENTE)
+            .build();
+
+        service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
+
+        verify(permissaoEspecialService, never())
+            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+    }
+
+    @Test
+    public void removerPermissaoTecnicoIndicadorDoUsuario_naoDeveRemoverPermissao_sePossuirCargoValido() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+
+        var usuario = UsuarioDto.builder()
+            .id(4)
+            .situacao(ESituacao.A)
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_GERENTE)
+            .build();
+
+        service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
+
+        verify(permissaoEspecialService, never())
+            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
     }
 }

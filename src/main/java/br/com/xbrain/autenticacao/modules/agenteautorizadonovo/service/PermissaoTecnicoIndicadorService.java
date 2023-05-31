@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static java.util.stream.Collectors.toList;
@@ -46,21 +48,28 @@ public class PermissaoTecnicoIndicadorService {
         }
     }
 
-    public void atualizarPermissaoParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest request) {
-        log.info("Adicionando permissão de técnico indicador ao usuário {}", usuario.getId());
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto usuarioDto, UsuarioMqRequest usuarioMqRequest) {
+        log.info("Mussi [Adicionar][UsuarioDto]: {}", usuarioDto);
+        log.info("Mussi [Adicionar][UsuarioMqRequest]: {}", usuarioMqRequest);
+        if (usuarioMqRequest.isTecnicoIndicador()
+            && LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioMqRequest.getCargo())
+            && (usuarioMqRequest.isNovoCadastro() || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
+            var permissoes = List.of(PermissaoEspecial.of(
+                usuarioDto.getId(), PERMISSAO_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId()));
+            salvarPermissoesEspeciais(permissoes);
+            log.info("Mussi [Adicionado][Permissoes]: {}", permissoes);
+        }
+    }
 
-        if (request.isTecnicoIndicador()) {
-            if (LISTA_CARGOS_TECNICO_INDICADOR.contains(usuario.getCargoCodigo())) {
-                if (!validarUsuarioComPermissaoTecnicoIndicador(usuario.getId())) {
-                    var permissao = PermissaoEspecial.of(
-                        usuario.getId(), PERMISSAO_TECNICO_INDICADOR, usuario.getUsuarioCadastroId());
-                    salvarPermissoesEspeciais(List.of(permissao));
-                }
-            } else {
-                if (!request.isNovoCadastro() && validarUsuarioComPermissaoTecnicoIndicador(usuario.getId())) {
-                    removerPermissaoDosUsuarios(List.of(usuario.getId()));
-                }
-            }
+    @Transactional
+    public void removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto usuarioDto) {
+        log.info("Mussi [Remover][Usuario]: {}", usuarioDto);
+        if (usuarioDto.getId() != null
+            && validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId())
+            && (usuarioDto.getSituacao() == ESituacao.R
+                || !LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioDto.getCargoCodigo()))) {
+            removerPermissaoDosUsuarios(List.of(usuarioDto.getId()));
+            log.info("Mussi [Permissao Removida]");
         }
     }
 
@@ -87,10 +96,7 @@ public class PermissaoTecnicoIndicadorService {
             .filter(usuario -> validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
             .collect(toList());
         
-        if (!isEmpty(usuarios)) {
-            removerPermissaoDosUsuarios(
-                usuarios.stream().map(Usuario::getId).collect(toList()));
-        }
+        removerPermissaoDosUsuarios(usuarios.stream().map(Usuario::getId).collect(toList()));
     }
 
     public List<Usuario> buscarUsuariosTabulacaoTecnicoIndicador(List<Integer> usuarioIds) {
@@ -105,14 +111,16 @@ public class PermissaoTecnicoIndicadorService {
             usuarioId, PERMISSAO_TECNICO_INDICADOR);
     }
 
-    public void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
+    private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
         if (!isEmpty(permissoesEspeciais)) {
             permissaoEspecialService.save(permissoesEspeciais);
         }
     }
 
-    public void removerPermissaoDosUsuarios(List<Integer> usuariosIds) {
-        permissaoEspecialService.deletarPermissoesEspeciaisBy(
-            List.of(PERMISSAO_TECNICO_INDICADOR), usuariosIds);
+    private void removerPermissaoDosUsuarios(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(
+                List.of(PERMISSAO_TECNICO_INDICADOR), usuariosIds);
+        }
     }
 }

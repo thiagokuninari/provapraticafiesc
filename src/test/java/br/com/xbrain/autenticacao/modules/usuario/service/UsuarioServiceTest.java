@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -9,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
@@ -160,6 +162,8 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
 
     @Test
     public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
@@ -2870,11 +2874,55 @@ public class UsuarioServiceTest {
             .email("EMAIL@TEST.COM")
             .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
             .situacao(ESituacao.A)
+            .tecnicoIndicador(true)
             .build();
         var expectedDto = umUsuarioDtoSender();
 
         usuarioService.saveFromQueue(usuarioMqRequest);
 
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(permissaoTecnicoIndicadorService, times(1))
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+    }
+
+    @Test
+    public void updateFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
+        var umCargo = Cargo.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .build();
+
+        when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
+            .thenReturn(umCargo);
+        when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
+        when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        var expectedDto = umUsuarioDtoSender();
+        expectedDto.setUnidadeNegocioId(null);
+        expectedDto.setAlterarSenha(null);
+        expectedDto.setHierarquiasId(null);
+        expectedDto.setTiposFeeder(null);
+        var usuarioMqRequest = UsuarioMqRequest.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .situacao(ESituacao.A)
+            .tecnicoIndicador(true)
+            .build();
+
+        usuarioService.updateFromQueue(usuarioMqRequest);
+
+        verify(feederService, times(1)).removerPermissoesEspeciais(eq(List.of(1)));
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(permissaoTecnicoIndicadorService, times(1))
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 }

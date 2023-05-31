@@ -488,6 +488,8 @@ public class UsuarioService {
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
+            permissaoTecnicoIndicadorService
+                .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
             repository.saveAndFlush(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
@@ -1037,7 +1039,7 @@ public class UsuarioService {
             }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             permissaoTecnicoIndicadorService
-                .atualizarPermissaoParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -1057,7 +1059,7 @@ public class UsuarioService {
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 permissaoTecnicoIndicadorService
-                    .atualizarPermissaoParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1120,14 +1122,15 @@ public class UsuarioService {
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
         usuario.removerCaracteresDoCpf();
         salvarUsuarioRemanejado(usuario);
-        permissaoTecnicoIndicadorService.removerPermissaoDosUsuarios(List.of(usuario.getId()));
+        permissaoTecnicoIndicadorService
+            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
         permissaoTecnicoIndicadorService
-            .atualizarPermissaoParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
