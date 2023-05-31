@@ -107,14 +107,14 @@ public class UsuarioGerenciaControllerTest {
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
         mvc.perform(get(API_URI)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
     public void save_deveDarUnauthorized_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(post(API_URI)
-            .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
@@ -122,8 +122,8 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     public void save_deveRetornarForbidden_quandoNaoTiverPermissaoParaGerenciaDeUsuario() {
         mvc.perform(post(API_URI)
-            .header("Authorization", getAccessToken(mvc, HELP_DESK))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
     }
 
@@ -166,7 +166,7 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden());
     }
 
     @Test
@@ -174,10 +174,10 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.nivelId", notNullValue()));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
+            .andExpect(jsonPath("$.nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.nivelId", notNullValue()));
     }
 
     @Test
@@ -185,9 +185,9 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
+            .andExpect(jsonPath("$.nome", is("HELPDESK")));
     }
 
     @Test
@@ -195,9 +195,9 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(10)))
+            .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
     @Test
@@ -205,46 +205,46 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
-                .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
-                .andExpect(jsonPath("$.content[2].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
-                .andExpect(jsonPath("$.content[3].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.content[4].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
-                .andExpect(jsonPath("$.content[5].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
-                .andExpect(jsonPath("$.content[6].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())))
-                .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
-                .andExpect(jsonPath("$.content[7].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
-                .andExpect(jsonPath("$.content[8].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")))
-                .andExpect(jsonPath("$.content[9].tiposFeeder", empty()));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(10)))
+            .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
+            .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
+            .andExpect(jsonPath("$.content[2].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
+            .andExpect(jsonPath("$.content[3].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+            .andExpect(jsonPath("$.content[4].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
+            .andExpect(jsonPath("$.content[5].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
+            .andExpect(jsonPath("$.content[6].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())))
+            .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
+            .andExpect(jsonPath("$.content[7].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
+            .andExpect(jsonPath("$.content[8].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")))
+            .andExpect(jsonPath("$.content[9].tiposFeeder", empty()));
     }
 
     @Test
     public void getAll_deveRetornarUsuarios_quandoFiltroForComOrganizacaoId() throws Exception {
         mvc.perform(get(API_URI + "?organizacaoId=2")
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
-                .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
-                .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
-                .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
-                .andExpect(jsonPath("$.content[2].email",
-                    is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")))
-                .andExpect(jsonPath("$.content[2].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())));
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(3)))
+            .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
+            .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
+            .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
+            .andExpect(jsonPath("$.content[2].email",
+                is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")))
+            .andExpect(jsonPath("$.content[2].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())));
     }
 
     @Test
@@ -253,14 +253,14 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(
-                        UsuarioCargoSuperiorPost
-                                .builder()
-                                .cidadeIds(List.of(1, 5578))
-                                .build())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .cidadeIds(List.of(1, 5578))
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+            .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
@@ -271,9 +271,9 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(4)))
-                .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(4)))
+            .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
     @Test
@@ -286,10 +286,10 @@ public class UsuarioGerenciaControllerTest {
                 .param("situacoes", "A")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
-                .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.content[1].situacao", is("A")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(3)))
+            .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.content[1].situacao", is("A")));
     }
 
     @Test
@@ -302,8 +302,8 @@ public class UsuarioGerenciaControllerTest {
                 .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
@@ -311,8 +311,8 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "?nome=ADMIN")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
@@ -321,9 +321,9 @@ public class UsuarioGerenciaControllerTest {
                 .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].nome", is("INATIVO")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)))
+            .andExpect(jsonPath("$.content[0].nome", is("INATIVO")));
     }
 
     @Test
@@ -332,28 +332,19 @@ public class UsuarioGerenciaControllerTest {
                 .param("situacoes", "R")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].nome", is("REALOCADO")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(2)))
+            .andExpect(jsonPath("$.content[0].nome", is("REALOCADO")));
     }
 
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-            .fileUpload(API_URI)
-            .file(umUsuario(new UsuarioDto()))
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(7)))
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome é obrigatório.",
-                "O campo email é obrigatório.",
-                "O campo unidadesNegociosId é obrigatório.",
-                "O campo empresasId é obrigatório.",
-                "O campo cargoId é obrigatório.",
-                "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty")));
+                .fileUpload(API_URI)
+                .file(umUsuario(new UsuarioDto()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -365,8 +356,8 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(request))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
     }
 
     @Test
@@ -378,8 +369,8 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(request))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test
@@ -390,13 +381,13 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(usuario))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
         verify(fileService, times(0)).uploadFotoUsuario(any(), any());
 
         List<Usuario> usuarios = Lists.newArrayList(
-                repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
+            repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
@@ -412,13 +403,13 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(usuario))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
         verify(fileService, times(1)).uploadFotoUsuario(any(), any());
 
         List<Usuario> usuarios = Lists.newArrayList(
-                repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
+            repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
@@ -434,7 +425,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -446,7 +437,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         Usuario usuario = repository.findComplete(100).orElse(new Usuario());
         Assert.assertEquals(usuario.getConfiguracao().getRamal(), Integer.valueOf(6666));
     }
@@ -458,7 +449,7 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(umUsuarioParaEditar()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
@@ -471,7 +462,7 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(umUsuarioParaEditar()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
@@ -484,7 +475,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
     }
@@ -494,7 +485,7 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(put(API_URI + "/100/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
@@ -503,9 +494,9 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "/100/permissoes")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", is(not(empty()))))
-                .andExpect(jsonPath("$.permissoesEspeciais", hasSize(3)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.permissoesCargoDepartamento", is(not(empty()))))
+            .andExpect(jsonPath("$.permissoesEspeciais", hasSize(3)));
     }
 
     @Test
@@ -513,8 +504,8 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "/100/cidades")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
@@ -523,7 +514,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoEmail())))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         verify(emailService, times(2)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
@@ -535,7 +526,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -544,7 +535,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
@@ -558,7 +549,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(objTest)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
@@ -570,7 +561,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -578,10 +569,10 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "/101/supervisor")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(104)))
-                .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(104)))
+            .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
     }
 
     @Test
@@ -589,8 +580,8 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "/101/supervisores")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
@@ -599,50 +590,50 @@ public class UsuarioGerenciaControllerTest {
         String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/csv; charset=UTF-8"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("text/csv; charset=UTF-8"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
         assertEquals(
-                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
-                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
-                        + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A;;;;;;;;\n"
-                        + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A;;;;;;;;", csv);
+            "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
+                + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
+                + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
+                + "X-Brain. Claro Residencial;X-Brain. Claro TV;A;;;;;;;;\n"
+                + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
+                + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A;;;;;;;;", csv);
     }
 
     @Test
     public void getCsv_CsvFormatadoCorretamente_QuandoUsuarioNaoPossuirEmpresaEUnidadeNegocio() throws Exception {
         doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
-                .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
+            .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
 
         String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/csv; charset=UTF-8"))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("text/csv; charset=UTF-8"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
         assertEquals("\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
-                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
-                        + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + ";;A;;;;;;;;\n"
-                        + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + ";;A;;;;;;;;", csv);
+            + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
+            + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
+            + ";;A;;;;;;;;\n"
+            + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
+            + ";;A;;;;;;;;", csv);
     }
 
     @Test
     public void validarSeUsuarioNovoCadastro_deveRetornarTrue_quandoEmailECpfNaoExistem() throws Exception {
 
         mvc.perform(get(API_URI + "/existir/usuario")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .param("email", "JOHN@GMAIL.COM")
-            .param("cpf", "48503182076"))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("email", "JOHN@GMAIL.COM")
+                .param("cpf", "48503182076"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Boolean.TRUE)));
     }
@@ -651,9 +642,9 @@ public class UsuarioGerenciaControllerTest {
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
 
         mvc.perform(get(API_URI + "/existir/usuario")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .param("cpf", "48503182076")
-            .param("email", "HELPDESK@XBRAIN.COM.BR"))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "48503182076")
+                .param("email", "HELPDESK@XBRAIN.COM.BR"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Email já cadastrado.")));
@@ -663,9 +654,9 @@ public class UsuarioGerenciaControllerTest {
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoCpfCadastrado() throws Exception {
 
         mvc.perform(get(API_URI + "/existir/usuario")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .param("cpf", "99898798782")
-            .param("email", "JOHN@GMAIL.COM"))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "99898798782")
+                .param("email", "JOHN@GMAIL.COM"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "CPF já cadastrado.")));
@@ -674,15 +665,15 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void getAllXbrainMsoAtivos_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
         mvc.perform(get(API_URI + "/chamados/usuarios-redirecionamento/2")
-            .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getAllXbrainMsoAtivos_deveRetornarOk_quandoUsuarioForAutorizado() throws Exception {
         mvc.perform(get(API_URI + "/chamados/usuarios-redirecionamento/2")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
 
@@ -768,7 +759,7 @@ public class UsuarioGerenciaControllerTest {
             .build();
 
         when(agenteAutorizadoNovoClient.getAaByCpnj(Matchers.anyMap()))
-                .thenReturn(response);
+            .thenReturn(response);
     }
 
     private void mockResponseUsuariosAgenteAutorizado() {
@@ -779,75 +770,75 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(105));
 
         when(agenteAutorizadoNovoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
-                .thenReturn(response);
+            .thenReturn(response);
     }
 
     private MockMultipartFile umFileFoto() throws Exception {
         byte[] bytes = toByteArray(getFileInputStream("foto_usuario/file.png"));
         return new MockMultipartFile("foto",
-                LocalDateTime.now().toString().concat("file.png"),
-                "image/png",
-                bytes);
+            LocalDateTime.now().toString().concat("file.png"),
+            "image/png",
+            bytes);
     }
 
     private InputStream getFileInputStream(String file) throws Exception {
         return new ByteArrayInputStream(
-                Files.readAllBytes(Paths.get(
-                        getClass().getClassLoader().getResource(file)
-                                .getPath())));
+            Files.readAllBytes(Paths.get(
+                getClass().getClassLoader().getResource(file)
+                    .getPath())));
     }
 
     private List<UsuarioCsvResponse> doisUsuariosCsvResponse() {
         return asList(
-                UsuarioCsvResponse.builder()
-                        .id(1)
-                        .nome("Usuario Csv")
-                        .email("usuario_csv@xbrain.com.br")
-                        .telefone("(43) 2323-1782")
-                        .cpf("75400072062")
-                        .cargo("Vendedor")
-                        .departamento("Comercial")
-                        .unidadesNegocios("X-Brain. Claro Residencial")
-                        .empresas("X-Brain. Claro TV")
-                        .situacao(ESituacao.A)
-                        .build(),
-                UsuarioCsvResponse.builder()
-                        .id(2)
-                        .nome("Usuario Teste")
-                        .email("usuario_teste@xbrain.com.br")
-                        .telefone("(43) 4575-5878")
-                        .cpf("04803828083")
-                        .cargo("Vendedor")
-                        .departamento("Comercial")
-                        .unidadesNegocios("X-Brain. Residencial e Combos")
-                        .empresas("X-Brain. Claro TV")
-                        .situacao(ESituacao.A)
-                        .build()
+            UsuarioCsvResponse.builder()
+                .id(1)
+                .nome("Usuario Csv")
+                .email("usuario_csv@xbrain.com.br")
+                .telefone("(43) 2323-1782")
+                .cpf("75400072062")
+                .cargo("Vendedor")
+                .departamento("Comercial")
+                .unidadesNegocios("X-Brain. Claro Residencial")
+                .empresas("X-Brain. Claro TV")
+                .situacao(ESituacao.A)
+                .build(),
+            UsuarioCsvResponse.builder()
+                .id(2)
+                .nome("Usuario Teste")
+                .email("usuario_teste@xbrain.com.br")
+                .telefone("(43) 4575-5878")
+                .cpf("04803828083")
+                .cargo("Vendedor")
+                .departamento("Comercial")
+                .unidadesNegocios("X-Brain. Residencial e Combos")
+                .empresas("X-Brain. Claro TV")
+                .situacao(ESituacao.A)
+                .build()
         );
     }
 
     private List<UsuarioCsvResponse> doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios() {
         return asList(
-                UsuarioCsvResponse.builder()
-                        .id(1)
-                        .nome("Usuario Csv")
-                        .email("usuario_csv@xbrain.com.br")
-                        .telefone("(43) 2323-1782")
-                        .cpf("75400072062")
-                        .cargo("Vendedor")
-                        .departamento("Comercial")
-                        .situacao(ESituacao.A)
-                        .build(),
-                UsuarioCsvResponse.builder()
-                        .id(2)
-                        .nome("Usuario Teste")
-                        .email("usuario_teste@xbrain.com.br")
-                        .telefone("(43) 4575-5878")
-                        .cpf("04803828083")
-                        .cargo("Vendedor")
-                        .departamento("Comercial")
-                        .situacao(ESituacao.A)
-                        .build()
+            UsuarioCsvResponse.builder()
+                .id(1)
+                .nome("Usuario Csv")
+                .email("usuario_csv@xbrain.com.br")
+                .telefone("(43) 2323-1782")
+                .cpf("75400072062")
+                .cargo("Vendedor")
+                .departamento("Comercial")
+                .situacao(ESituacao.A)
+                .build(),
+            UsuarioCsvResponse.builder()
+                .id(2)
+                .nome("Usuario Teste")
+                .email("usuario_teste@xbrain.com.br")
+                .telefone("(43) 4575-5878")
+                .cpf("04803828083")
+                .cargo("Vendedor")
+                .departamento("Comercial")
+                .situacao(ESituacao.A)
+                .build()
         );
     }
 }
