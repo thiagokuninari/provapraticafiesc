@@ -49,27 +49,22 @@ public class PermissaoTecnicoIndicadorService {
     }
 
     public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto usuarioDto, UsuarioMqRequest usuarioMqRequest) {
-        log.info("Mussi [Adicionar][UsuarioDto]: {}", usuarioDto);
-        log.info("Mussi [Adicionar][UsuarioMqRequest]: {}", usuarioMqRequest);
         if (usuarioMqRequest.isTecnicoIndicador()
             && LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioMqRequest.getCargo())
             && (usuarioMqRequest.isNovoCadastro() || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
             var permissoes = List.of(PermissaoEspecial.of(
                 usuarioDto.getId(), PERMISSAO_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId()));
             salvarPermissoesEspeciais(permissoes);
-            log.info("Mussi [Adicionado][Permissoes]: {}", permissoes);
         }
     }
 
     @Transactional
     public void removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto usuarioDto) {
-        log.info("Mussi [Remover][Usuario]: {}", usuarioDto);
         if (usuarioDto.getId() != null
             && validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId())
             && (usuarioDto.getSituacao() == ESituacao.R
                 || !LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioDto.getCargoCodigo()))) {
             removerPermissaoDosUsuarios(List.of(usuarioDto.getId()));
-            log.info("Mussi [Permissao Removida]");
         }
     }
 
