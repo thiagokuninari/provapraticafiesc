@@ -74,6 +74,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
@@ -576,7 +577,7 @@ public class UsuarioServiceTest {
     @Test
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
         usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice());
 
@@ -590,7 +591,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
         var usaurio = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
         Assertions.assertThat(usaurio)
             .extracting("cpf")
@@ -607,7 +608,7 @@ public class UsuarioServiceTest {
     @Test
     public void salvarUsuarioBackoffice_validacaoException_quandoCpfExistente() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(usuarioRepository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
@@ -624,7 +625,7 @@ public class UsuarioServiceTest {
     @Test
     public void salvarUsuarioBackoffice_validacaoException_quandoEmailExistente() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
@@ -641,7 +642,7 @@ public class UsuarioServiceTest {
     @Test
     public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
@@ -1761,6 +1762,10 @@ public class UsuarioServiceTest {
 
         when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuarioCompleto));
 
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         usuarioCompleto.setNome("AA Teste Dois");
 
         assertThatCode(() -> usuarioService.save(usuarioCompleto)).doesNotThrowAnyException();
@@ -1804,6 +1809,10 @@ public class UsuarioServiceTest {
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of());
 
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(), 1)))
             .doesNotThrowAnyException();
     }
@@ -1816,6 +1825,10 @@ public class UsuarioServiceTest {
 
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         assertThatCode(() -> usuarioService
             .save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)))
@@ -1830,6 +1843,10 @@ public class UsuarioServiceTest {
 
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         assertThatCode(() -> usuarioService
             .save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)))
@@ -1861,6 +1878,11 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1910,6 +1932,11 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of());
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
                     CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1922,6 +1949,11 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
                 OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1936,6 +1968,11 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
@@ -1949,6 +1986,11 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
@@ -1967,6 +2009,10 @@ public class UsuarioServiceTest {
         when(autenticacaoService.getUsuarioAutenticadoId())
             .thenReturn(Optional.of(101112));
 
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
             .doesNotThrowAnyException();
 
@@ -1978,6 +2024,10 @@ public class UsuarioServiceTest {
     public void save_naoDeveAtualizarUsuarioCadastroId_quandoUsuarioJaPossuirUsuarioCadastro() {
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso()));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         Assertions.assertThatCode(() -> usuarioService.save(umUsuarioMso()))
             .doesNotThrowAnyException();
@@ -2864,6 +2914,10 @@ public class UsuarioServiceTest {
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        doReturn(umUsuarioAutenticadoNivelBackoffice())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)

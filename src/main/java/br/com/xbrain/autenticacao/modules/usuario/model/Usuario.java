@@ -632,6 +632,14 @@ public class Usuario {
             || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
     }
 
+    public boolean isSupervisorOperacao() {
+        return cargo != null && cargo.getCodigo() == SUPERVISOR_OPERACAO;
+    }
+
+    public boolean isAssistenteOperacao() {
+        return cargo != null && cargo.getCodigo() == ASSISTENTE_OPERACAO;
+    }
+
     public Integer numeroTentativasLoginSenhaIncorreta() {
         return this.historicosSenhaIncorretas.size();
     }

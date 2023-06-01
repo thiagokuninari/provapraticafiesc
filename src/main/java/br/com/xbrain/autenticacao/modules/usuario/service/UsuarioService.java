@@ -628,8 +628,21 @@ public class UsuarioService {
     }
 
     private void configurarCadastro(Usuario usuario) {
+        validarSupervisorNaHierarquia(usuario);
         tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
         tratarCidadesUsuario(usuario);
+    }
+
+    private void validarSupervisorNaHierarquia(Usuario usuario) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var isSupervisorOuAssistente = usuarioAutenticado.isSupervisorOperacao()
+            || usuarioAutenticado.isAssistenteOperacao();
+        var isUsuarioAssistenteOuSupervisor = usuario.isSupervisorOperacao() || usuario.isAssistenteOperacao();
+
+        if (ObjectUtils.isEmpty(usuario.getHierarquiasId()) && isSupervisorOuAssistente
+            && !isUsuarioAssistenteOuSupervisor) {
+            usuario.setHierarquiasId(List.of(usuarioAutenticado.getId()));
+        }
     }
 
     private void tratarUsuarioBackoffice(Usuario usuario) {
