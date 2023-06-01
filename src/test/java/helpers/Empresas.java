@@ -14,7 +14,7 @@ public class Empresas {
         Empresa empresa = new Empresa();
         empresa.setId(id);
         empresa.setNome(nome);
-        empresa.setUnidadeNegocio(new UnidadeNegocio(id));
+        empresa.setUnidadeNegocio(new UnidadeNegocio(1));
         return empresa;
     }
 
