@@ -301,7 +301,7 @@ public class FeriadoService {
         }
     }
 
-    public void validarSeFeriadoAutomacaoJaCadastado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
+    public boolean validarSeFeriadoNaoCadastrado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
         var predicate = new FeriadoPredicate()
             .comNome(feriadoAutomacao.getNome())
             .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
@@ -311,9 +311,8 @@ public class FeriadoService {
             .excetoExcluidos()
             .excetoFeriadosFilhos()
             .build();
-        if (repository.existsByPredicate(predicate)) {
-            throw EX_FERIADO_JA_CADASTRADO;
-        }
+
+        return !repository.existsByPredicate(predicate);
     }
 
     @CacheEvict(

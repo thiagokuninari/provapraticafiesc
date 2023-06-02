@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum ESituacaoFeriadoAutomacao {
 
     EM_IMPORTACAO("EM IMPORTAÇÃO"),
-    IMPORTADO("IMPORTADO");
+    IMPORTADO("IMPORTADO"),
+    ERRO_IMPORTACAO("ERRO DE IMPORTACAO");
 
     private String descricao;
 }

@@ -267,4 +267,15 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             )
             .fetch();
     }
+
+    @Override
+    public List<Cidade> findCidadesByUfId(Integer ufId) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf, uf1)
+            .fetchJoin()
+            .where(uf1.id.eq(ufId))
+            .orderBy(cidade.nome.asc())
+            .fetch();
+    }
 }

@@ -17,18 +17,17 @@ import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoAutomacaoClient
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
@@ -40,7 +39,6 @@ public class ImportacaoAutomaticaFeriadoService {
 
     private static final Set<String> FERIADOS_QUE_NAO_CADASTRAM = new HashSet<>(
         Arrays.asList("Sexta Feira Santa", "Corpus Christi"));
-
     private final FeriadoAutomacaoClient feriadoAutomacaoClient;
     private final AutenticacaoService autenticacaoService;
     private final FeriadoService feriadoService;
@@ -48,6 +46,9 @@ public class ImportacaoAutomaticaFeriadoService {
     private final ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaRepository;
     private final CidadeService cidadeService;
     private final UfRepository ufRepository;
+    private final CidadeRepository cidadeRepository;
+    @Value("${app-config.upload-async}")
+    private boolean uploadAsync;
 
     private List<FeriadoAutomacao> consultarFeriadosNacionais(Integer ano) {
         try {
@@ -80,77 +81,122 @@ public class ImportacaoAutomaticaFeriadoService {
         }
     }
 
-    @Transactional
     public void importarFeriadosAutomacaoMunicipais(FeriadoRequest request) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         validarAutorizacaoGerenciamentoFeriados(usuarioAutenticado);
-        var importado = importacaoAutomaticaRepository.save(
+        var importacaoFeriado = importacaoAutomaticaRepository.save(
             ImportacaoFeriado.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticado));
 
-        var cidades = cidadeService.getAllCidadeByUf(request.getEstadoId());
-        log.info("Importando feriados");
-        cidades.forEach(cidade -> {
-            preencherInformacoes(request, cidade);
-            var feriados = consultarFeriadosMunicipais(request).stream()
-                .filter(feriado -> !FERIADOS_QUE_NAO_CADASTRAM.contains(feriado.getNome()))
-                .collect(Collectors.toList());
-
-            cadastrarFeriados(feriados, usuarioAutenticado, request, importado);
-        });
-
-        importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
-        importacaoAutomaticaRepository.save(importado);
-        log.info("Usuario importação cadastrado com sucesso");
+        if (uploadAsync) {
+            CompletableFuture.runAsync(() -> processarFeriadosMunicipaisAsync(request, usuarioAutenticado, importacaoFeriado))
+                .exceptionally(ex -> {
+                    log.error("Erro ao importar feriados municipais", ex);
+                    importacaoFeriado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO);
+                    importacaoAutomaticaRepository.save(importacaoFeriado);
+                    return null;
+                });
+        } else {
+            processarFeriadosMunicipaisAsync(request, usuarioAutenticado, importacaoFeriado);
+        }
     }
 
-    @Transactional
     public void importarFeriadosAutomacaoEstaduais(FeriadoRequest request) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         validarAutorizacaoGerenciamentoFeriados(usuarioAutenticado);
-        var importado = importacaoAutomaticaRepository.save(
+        var importacaoFeriado = importacaoAutomaticaRepository.save(
             ImportacaoFeriado.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticado));
 
-        var ufs = ufRepository.findByOrderByNomeAsc();
-        ufs.forEach(uf -> {
-            var feriados = consultarFeriadosEstaduais(request.getAno(), uf.getUf());
-            validarFeriadosEstaduais(feriados);
-            cadastrarFeriados(feriados, usuarioAutenticado, request, importado);
-        });
-
-        importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
-        importacaoAutomaticaRepository.save(importado);
-        log.info("Usuario importação cadastrado com sucesso");
+        if (uploadAsync) {
+            CompletableFuture.runAsync(() -> processarFeriadosEstaduaisAsync(request, usuarioAutenticado, importacaoFeriado))
+                .exceptionally(ex -> {
+                    log.error("Erro ao importar feriados estaduais", ex);
+                    importacaoFeriado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO);
+                    importacaoAutomaticaRepository.save(importacaoFeriado);
+                    return null;
+                });
+        } else {
+            processarFeriadosEstaduaisAsync(request, usuarioAutenticado, importacaoFeriado);
+        }
     }
 
-    @Transactional
     public void importarFeriadosAutomacaoNacionais(FeriadoRequest request) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         validarAutorizacaoGerenciamentoFeriados(usuarioAutenticado);
         var importado = importacaoAutomaticaRepository.save(
             ImportacaoFeriado.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticado));
 
-        var feriados = consultarFeriadosNacionais(request.getAno());
-        cadastrarFeriados(feriados, usuarioAutenticado, request, importado);
+        var feriados = consultarFeriadosNacionais(request.getAno()).stream()
+            .filter(feriado -> feriado != null
+                && feriadoService.validarSeFeriadoNaoCadastrado(feriado, request))
+            .collect(Collectors.toList());
+
+        validarSeTodosFeriadosJaCadastrados(feriados);
+        cadastrarFeriados(feriados, usuarioAutenticado.getId(), request, importado);
 
         importado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
         importacaoAutomaticaRepository.save(importado);
         log.info("Usuario importação cadastrado com sucesso");
     }
 
-    private void cadastrarFeriados(List<FeriadoAutomacao> feriadosAutomacao, UsuarioAutenticado usuario,
+    private void cadastrarFeriados(List<FeriadoAutomacao> feriadosAutomacao, Integer usuarioId,
                                    FeriadoRequest request, ImportacaoFeriado importacaoFeriado) {
         log.info("Importando feriados");
         feriadosAutomacao.forEach(feriado -> {
-            feriadoService.validarSeFeriadoAutomacaoJaCadastado(feriado, request);
-            feriadoRepository.save(Feriado.ofAutomacao(feriado, usuario.getId(), request, importacaoFeriado));
+            feriadoRepository.save(Feriado.ofAutomacao(feriado, usuarioId, request, importacaoFeriado));
         });
+
         log.info("Feriados importados com sucesso");
     }
 
-    private void validarFeriadosEstaduais(List<FeriadoAutomacao> feriados) {
-        if (feriados.isEmpty()) {
-            throw new ValidacaoException("Não ha feriados para importar");
-        }
+    private void processarFeriadosMunicipaisAsync(FeriadoRequest request, UsuarioAutenticado usuarioAutenticado,
+                                                  ImportacaoFeriado importacaoFeriado) {
+        var cidades = cidadeRepository.findCidadesByUfId(request.getEstadoId());
+        List<FeriadoAutomacao> feriados = new ArrayList<>();
+
+        log.info("Importando feriados");
+        cidades.forEach(cidade -> {
+            preencherInformacoes(request, cidade);
+
+            var feriadosNaoCadastrados = consultarFeriadosMunicipais(request).stream()
+                .filter(feriado -> feriado != null
+                    && !FERIADOS_QUE_NAO_CADASTRAM.contains(feriado.getNome())
+                    && feriadoService.validarSeFeriadoNaoCadastrado(feriado, request))
+                .collect(Collectors.toList());
+
+            cadastrarFeriados(feriadosNaoCadastrados, usuarioAutenticado.getId(), request, importacaoFeriado);
+            feriados.addAll(feriadosNaoCadastrados);
+        });
+
+        validarSeTodosFeriadosJaCadastrados(feriados);
+        importacaoFeriado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
+        importacaoAutomaticaRepository.save(importacaoFeriado);
+
+        log.info("Quantidade de feriados importados: {}", feriados.size());
+        log.info("Usuario importação cadastrado com sucesso");
+    }
+
+    public void processarFeriadosEstaduaisAsync(FeriadoRequest request, UsuarioAutenticado usuarioAutenticado,
+                                                ImportacaoFeriado importacaoFeriado) {
+        var ufs = ufRepository.findByOrderByNomeAsc();
+        List<FeriadoAutomacao> feriados = new ArrayList<>();
+
+        log.info("Importando feriados");
+        ufs.forEach(uf -> {
+            var feriadosNaoCadastrados = consultarFeriadosEstaduais(request.getAno(), uf.getUf()).stream()
+                .filter(feriado -> feriado != null
+                    && feriadoService.validarSeFeriadoNaoCadastrado(feriado, request))
+                .collect(Collectors.toList());
+
+            cadastrarFeriados(feriadosNaoCadastrados, usuarioAutenticado.getId(), request, importacaoFeriado);
+            feriados.addAll(feriadosNaoCadastrados);
+        });
+
+        validarSeTodosFeriadosJaCadastrados(feriados);
+        importacaoFeriado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
+        importacaoAutomaticaRepository.save(importacaoFeriado);
+
+        log.info("Quantidade de feriados importados: {}", feriados.size());
+        log.info("Usuario importação cadastrado com sucesso");
     }
 
     private void preencherInformacoes(FeriadoRequest request, Cidade cidade) {
@@ -168,6 +214,12 @@ public class ImportacaoAutomaticaFeriadoService {
     private void validarAutorizacaoGerenciamentoFeriados(UsuarioAutenticado usuario) {
         if (!usuario.hasPermissao(CodigoFuncionalidade.CTR_2050)) {
             throw new ValidacaoException("Usuario sem permissao para gerenciamento de feriados");
+        }
+    }
+
+    private void validarSeTodosFeriadosJaCadastrados(List<FeriadoAutomacao> feriadosNaoCadastrados) {
+        if (feriadosNaoCadastrados.isEmpty()) {
+            throw new ValidacaoException("Feriados ja cadastrados");
         }
     }
 }
