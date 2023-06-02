@@ -237,7 +237,7 @@ public class UsuarioTest {
     }
 
     @Test
-    public void isNivelReceptivoo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
+    public void isNivelReceptivo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(VENDEDOR_RECEPTIVO, RECEPTIVO).isNivelReceptivo())
             .isTrue();
     }
@@ -246,6 +246,26 @@ public class UsuarioTest {
     public void isNivelReceptivo_deveRetornarFalse_seUsuarioNaoPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
             .isFalse();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(SUPERVISOR_OPERACAO, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isTrue();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isFalse();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(ASSISTENTE_OPERACAO, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isTrue();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isFalse();
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {
