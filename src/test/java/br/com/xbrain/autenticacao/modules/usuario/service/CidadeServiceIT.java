@@ -1,15 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.config.CacheConfig;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
@@ -17,9 +20,8 @@ import java.util.List;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {CidadeService.class, CacheConfig.class})
 public class CidadeServiceIT {
 
     @Autowired
@@ -28,6 +30,12 @@ public class CidadeServiceIT {
     private CacheManager cacheManager;
     @MockBean
     private CidadeRepository repository;
+    @MockBean
+    private RegionalService regionalService;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Test
     public void getCidadesDistritos_deveConsultarDoCache_quandoInformarApenasDistritosComoF() {
