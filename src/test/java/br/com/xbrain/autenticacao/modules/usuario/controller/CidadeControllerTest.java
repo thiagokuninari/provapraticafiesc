@@ -127,14 +127,10 @@ public class CidadeControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.cidadeId", is(5578)))
             .andExpect(jsonPath("$.cidadeNome", is("LONDRINA")))
-            .andExpect(jsonPath("$.subclusterId", is(189)))
-            .andExpect(jsonPath("$.subclusterNome", is("LONDRINA")))
-            .andExpect(jsonPath("$.clusterId", is(45)))
-            .andExpect(jsonPath("$.clusterNome", is("NORTE DO PARANÁ")))
-            .andExpect(jsonPath("$.grupoId", is(20)))
-            .andExpect(jsonPath("$.grupoNome", is("NORTE DO PARANÁ")))
-            .andExpect(jsonPath("$.regionalId", is(3)))
-            .andExpect(jsonPath("$.regionalNome", is("SUL")));
+            .andExpect(jsonPath("$.ufId", is(1)))
+            .andExpect(jsonPath("$.ufNome", is("PARANA")))
+            .andExpect(jsonPath("$.regionalId", is(1027)))
+            .andExpect(jsonPath("$.regionalNome", is("RPS")));
     }
 
     @Test

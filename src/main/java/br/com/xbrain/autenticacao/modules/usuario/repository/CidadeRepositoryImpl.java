@@ -77,19 +77,13 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .select(Projections.constructor(ClusterizacaoDto.class,
                 cidade.id,
                 cidade.nome,
-                subCluster.id,
-                subCluster.nome,
-                cluster.id,
-                cluster.nome,
-                grupo.id,
-                grupo.nome,
+                uf1.id,
+                uf1.nome,
                 regional.id,
                 regional.nome))
             .from(cidade)
-            .innerJoin(cidade.subCluster, subCluster)
-            .innerJoin(subCluster.cluster, cluster)
-            .innerJoin(cluster.grupo, grupo)
-            .innerJoin(grupo.regional, regional)
+            .innerJoin(cidade.uf, uf1)
+            .innerJoin(cidade.regional, regional)
             .where(cidade.id.eq(id))
             .fetchOne();
     }
