@@ -640,6 +640,10 @@ public class Usuario {
         return cargo != null && cargo.getCodigo() == ASSISTENTE_OPERACAO;
     }
 
+    public boolean isCargoAgenteAutorizado() {
+        return cargo != null && cargo.getCodigo() != null && cargo.getCodigo().name().contains("AGENTE_AUTORIZADO");
+    }
+
     public Integer numeroTentativasLoginSenhaIncorreta() {
         return this.historicosSenhaIncorretas.size();
     }
