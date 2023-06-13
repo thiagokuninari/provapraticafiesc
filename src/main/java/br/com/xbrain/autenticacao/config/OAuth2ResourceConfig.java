@@ -17,6 +17,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private CorsConfigFilter corsConfigFilter;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -43,7 +45,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         };
 
         http
-            .addFilterBefore(new CorsConfigFilter(), ChannelProcessingFilter.class)
+            .addFilterBefore(corsConfigFilter, ChannelProcessingFilter.class)
             .requestMatchers()
             .antMatchers("/**")
             .and()

@@ -27,6 +27,7 @@ spring:
 
 app-config:
   upload-async: false
+  url-origin-cors: http://localhost
 
 flyway:
   enabled: false
