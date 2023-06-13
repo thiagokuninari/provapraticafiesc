@@ -268,6 +268,36 @@ public class UsuarioTest {
         assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isFalse();
     }
 
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarTrue_seUsuarioForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarFalse_seUsuarioNaoForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isCargoAgenteAutorizado()).isFalse();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(CLIENTE_LOJA_FUTURO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isFalse();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(IMPORTADOR_CARGAS, FEEDER).isCargoImportadorCargas()).isTrue();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, FEEDER).isCargoImportadorCargas()).isFalse();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

@@ -2036,6 +2036,48 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_deveSetarIdDoUsuarioAutenticado_quandoUsuarioAutenticadoForSupervisor() {
+        var vendedor = umUsuario();
+        vendedor.setSituacao(ESituacao.A);
+        vendedor.setUsuariosHierarquia(new HashSet<>());
+        vendedor.setEmail("vendedortest@xbrain.com.br");
+        vendedor.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+
+        doReturn(Optional.of(vendedor))
+            .when(usuarioRepository)
+            .findById(1);
+
+        doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThat(usuarioService.save(vendedor))
+            .extracting(UsuarioDto::getHierarquiasId)
+            .isEqualTo(List.of(100));
+    }
+
+    @Test
+    public void save_deveSetarIdDoUsuarioAutenticado_quandoUsuarioAutenticadoForAssistente() {
+        var vendedor = umUsuario();
+        vendedor.setSituacao(ESituacao.A);
+        vendedor.setUsuariosHierarquia(new HashSet<>());
+        vendedor.setEmail("vendedortest@xbrain.com.br");
+        vendedor.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+
+        doReturn(Optional.of(vendedor))
+            .when(usuarioRepository)
+            .findById(1);
+
+        doReturn(umUsuarioAutenticado(100, "OPERACAO", ASSISTENTE_OPERACAO, AUT_VISUALIZAR_GERAL))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThat(usuarioService.save(vendedor))
+            .extracting(UsuarioDto::getHierarquiasId)
+            .isEqualTo(List.of(100));
+    }
+
+    @Test
     public void buscarTodosVendedoresReceptivos_deveRetornarVendedoresReceptivoComoSelectResponse_quandoValido() {
         when(usuarioRepository.findAllVendedoresReceptivos())
             .thenReturn(List.of(umVendedorReceptivo()));
@@ -2914,10 +2956,6 @@ public class UsuarioServiceTest {
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
-
-        doReturn(umUsuarioAutenticadoNivelBackoffice())
-            .when(autenticacaoService)
-            .getUsuarioAutenticado();
 
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)

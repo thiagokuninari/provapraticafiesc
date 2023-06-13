@@ -634,7 +634,7 @@ public class UsuarioService {
     }
 
     private void validarSupervisorNaHierarquia(Usuario usuario) {
-        if (!usuario.isCargoAgenteAutorizado()) {
+        if (!usuario.isCargoAgenteAutorizado() && !usuario.isCargoLojaFuturo() && !usuario.isCargoImportadorCargas()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
             var isSupervisorOuAssistente = usuarioAutenticado.isSupervisorOperacao()
                 || usuarioAutenticado.isAssistenteOperacao();
@@ -1033,7 +1033,7 @@ public class UsuarioService {
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
-            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
@@ -1044,6 +1044,7 @@ public class UsuarioService {
             } else {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
+
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {

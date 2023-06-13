@@ -644,6 +644,14 @@ public class Usuario {
         return cargo != null && cargo.getCodigo() != null && cargo.getCodigo().name().contains("AGENTE_AUTORIZADO");
     }
 
+    public boolean isCargoLojaFuturo() {
+        return cargo != null && cargo.getCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public boolean isCargoImportadorCargas() {
+        return cargo != null && cargo.getCodigo() == IMPORTADOR_CARGAS;
+    }
+
     public Integer numeroTentativasLoginSenhaIncorreta() {
         return this.historicosSenhaIncorretas.size();
     }
