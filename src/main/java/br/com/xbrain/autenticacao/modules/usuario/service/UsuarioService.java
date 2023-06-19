@@ -628,7 +628,6 @@ public class UsuarioService {
     }
 
     private void configurarCadastro(Usuario usuario) {
-        validarSupervisorNaHierarquia(usuario);
         tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
         tratarCidadesUsuario(usuario);
     }
@@ -862,6 +861,7 @@ public class UsuarioService {
     }
 
     private void validar(Usuario usuario) {
+        validarSupervisorNaHierarquia(usuario);
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
         usuario.verificarPermissaoCargoSobreCanais();

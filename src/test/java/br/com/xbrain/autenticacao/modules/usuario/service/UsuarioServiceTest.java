@@ -74,6 +74,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
@@ -342,6 +343,10 @@ public class UsuarioServiceTest {
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .build();
 
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário sem permissão para o cargo com os canais.");
@@ -350,6 +355,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailConterCedilha() {
         var usuario = Usuario.builder().email("emailç@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -358,6 +368,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailConterAcento() {
         var usuario = Usuario.builder().email("émail@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -366,6 +381,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailInvertidoAsOrdens() {
         var usuario = Usuario.builder().email("email.com@gmail").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -374,6 +394,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemArroba() {
         var usuario = Usuario.builder().email("emailgmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -382,6 +407,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailComDoisArrobas() {
         var usuario = Usuario.builder().email("email@@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -390,6 +420,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemPonto() {
         var usuario = Usuario.builder().email("email@gmailcom").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -398,6 +433,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisPonto() {
         var usuario = Usuario.builder().email("email@gmail.").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -406,6 +446,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterEntreArrobaEPonto() {
         var usuario = Usuario.builder().email("email@.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -414,6 +459,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterAntesPonto() {
         var usuario = Usuario.builder().email(".com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -422,6 +472,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterAntesArroba() {
         var usuario = Usuario.builder().email("@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -430,6 +485,11 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisArroba() {
         var usuario = Usuario.builder().email("email@").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
@@ -437,6 +497,10 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveLancarExcecao_quandoEmailComCaracteresEspeciais() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         var emailsComCaracteresEspeciais = List.of("asteristico*@test.com", "!exclamacao@gmail.com",
             "#hashtag@gmail.com", "&ecomercial@gmail.com", "(parentese@gmail.com", ")parentese@gmail.com",
             "=igual@gmail.com", "/barra@gmail.com", "{chave@gmail.com", "}chave@gmail.com", "[colchete@gmail.com",
@@ -1748,6 +1812,10 @@ public class UsuarioServiceTest {
                 .cnpj("00.000.0000/0001-00")
                 .build()));
 
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)))
@@ -1781,6 +1849,10 @@ public class UsuarioServiceTest {
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
 
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(), 1)))
             .withMessage("Não é possível remover o canal Ativo Local, "
@@ -1794,6 +1866,10 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)));
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)))
@@ -1861,6 +1937,11 @@ public class UsuarioServiceTest {
         when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of(1));
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
@@ -1898,6 +1979,11 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of(1));
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
@@ -1915,6 +2001,11 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of(1));
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
