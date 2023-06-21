@@ -24,7 +24,7 @@ public class ImportacaoAutomaticaRepositoryTest {
     private ImportacaoAutomaticaFeriadoRepository repository;
 
     @Test
-    public void findAllImportacaoHistorico_deveRetornarHistoricoDeImportacoes_seHouverRegistros() {
+    public void findAll_deveRetornarHistoricoDeImportacoes_seHouverRegistros() {
         assertThat(repository.findAll(new FeriadoPredicate().build(), new PageRequest()))
             .extracting("id", "situacaoFeriadoAutomacao", "usuarioCadastroId",
                 "usuarioCadastroNome")
@@ -35,7 +35,7 @@ public class ImportacaoAutomaticaRepositoryTest {
     }
 
     @Test
-    public void findAllImportacaoHistorico_deveRetornarImportacoesComErro_sePassadosComoParametro() {
+    public void findAll_deveRetornarImportacoesComErro_sePassadosComoParametro() {
         var predicate = new FeriadoPredicate();
         predicate.comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO);
 
@@ -47,7 +47,7 @@ public class ImportacaoAutomaticaRepositoryTest {
     }
 
     @Test
-    public void findAllImportacaoHistorico_deveRetornarPageVazia_seNaoHouverRegistros() {
+    public void findAll_deveRetornarPageVazia_seNaoHouverRegistros() {
         var predicate = new FeriadoPredicate();
         predicate.comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.EM_IMPORTACAO);
 
