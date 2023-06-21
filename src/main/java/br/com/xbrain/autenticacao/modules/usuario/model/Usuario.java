@@ -475,9 +475,9 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
+        return cargo != null && cargo.getCodigo() != null
             && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
-            OPERACAO_TELEVENDAS)
+                OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -521,8 +521,9 @@ public class Usuario {
     @JsonIgnore
     public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
         if (usuarioAutenticado.isUsuarioEquipeVendas()) {
-            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO) && !usuarioAutenticado.isSupervisorOperacao();
         }
+
         return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
 
@@ -629,6 +630,26 @@ public class Usuario {
     public boolean isGeradorLeadsOuClienteLojaFuturo() {
         return getCargoCodigo() == GERADOR_LEADS
             || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public boolean isSupervisorOperacao() {
+        return cargo != null && cargo.getCodigo() == SUPERVISOR_OPERACAO;
+    }
+
+    public boolean isAssistenteOperacao() {
+        return cargo != null && cargo.getCodigo() == ASSISTENTE_OPERACAO;
+    }
+
+    public boolean isCargoAgenteAutorizado() {
+        return cargo != null && cargo.getCodigo() != null && cargo.getCodigo().name().contains("AGENTE_AUTORIZADO");
+    }
+
+    public boolean isCargoLojaFuturo() {
+        return cargo != null && cargo.getCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public boolean isCargoImportadorCargas() {
+        return cargo != null && cargo.getCodigo() == IMPORTADOR_CARGAS;
     }
 
     public Integer numeroTentativasLoginSenhaIncorreta() {

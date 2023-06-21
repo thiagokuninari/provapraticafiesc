@@ -7,11 +7,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -146,8 +142,8 @@ public class UsuarioService {
     private static final ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
-    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
-        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
+    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
+        List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
 
     @Autowired
@@ -347,8 +343,8 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        var pages = repository.findAll(predicate.build(), pageRequest);
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
@@ -685,6 +681,21 @@ public class UsuarioService {
         tratarCidadesUsuario(usuario);
     }
 
+    private void validarSupervisorNaHierarquia(Usuario usuario) {
+        if (!usuario.isCargoAgenteAutorizado() && !usuario.isCargoLojaFuturo() && !usuario.isCargoImportadorCargas()) {
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+            var isSupervisorOuAssistente = usuarioAutenticado.isSupervisorOperacao()
+                || usuarioAutenticado.isAssistenteOperacao();
+            var isUsuarioAssistenteOuSupervisor = usuario.isSupervisorOperacao() || usuario.isAssistenteOperacao();
+
+            if (ObjectUtils.isEmpty(usuario.getHierarquiasId())
+                && isSupervisorOuAssistente
+                && !isUsuarioAssistenteOuSupervisor) {
+                usuario.setHierarquiasId(List.of(usuarioAutenticado.getId()));
+            }
+        }
+    }
+
     private void tratarUsuarioBackoffice(Usuario usuario) {
         usuario.setOrganizacao(Optional.ofNullable(usuario.getOrganizacao())
             .orElse(new Organizacao(autenticacaoService.getUsuarioAutenticado().getOrganizacaoId())));
@@ -893,12 +904,13 @@ public class UsuarioService {
             .ifPresent(usuario -> {
                 if (ObjectUtils.isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
-                    throw new ValidacaoException("Email já cadastrado.");
+                    throw EMAIL_CADASTRADO_EXCEPTION;
                 }
             });
     }
 
     private void validar(Usuario usuario) {
+        validarSupervisorNaHierarquia(usuario);
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
@@ -1070,7 +1082,7 @@ public class UsuarioService {
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
-            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
@@ -1081,6 +1093,7 @@ public class UsuarioService {
             } else {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
+
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
@@ -1374,7 +1387,7 @@ public class UsuarioService {
             .ifPresent(u -> {
                 if (ObjectUtils.isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
-                    throw new ValidacaoException("Email já cadastrado.");
+                    throw EMAIL_CADASTRADO_EXCEPTION;
                 }
             });
     }
@@ -1995,7 +2008,7 @@ public class UsuarioService {
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
         filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
-        UsuarioPredicate predicate = filtros.toPredicate();
+        var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
@@ -2008,12 +2021,10 @@ public class UsuarioService {
             ? CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL
             : CARGOS_PARA_INTEGRACAO_D2D;
 
-        return IntStream.concat(
-                equipeVendaD2dService
-                    .getUsuariosPermitidos(cargos)
-                    .stream()
-                    .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
-                IntStream.of(autenticacaoService.getUsuarioId()))
+        var usuariosIdsDaEquipe = equipeVendaD2dService.getUsuariosPermitidos(cargos)
+            .stream()
+            .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId);
+        return IntStream.concat(usuariosIdsDaEquipe, IntStream.of(autenticacaoService.getUsuarioId()))
             .boxed()
             .collect(toList());
     }

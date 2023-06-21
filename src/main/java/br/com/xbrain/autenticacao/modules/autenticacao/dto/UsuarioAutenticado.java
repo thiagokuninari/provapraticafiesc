@@ -169,15 +169,15 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isCoordenadorOperacao() {
-        return cargoCodigo.equals(COORDENADOR_OPERACAO);
+        return cargoCodigo == COORDENADOR_OPERACAO;
     }
 
     public boolean isGerenteOperacao() {
-        return cargoCodigo.equals(GERENTE_OPERACAO);
+        return cargoCodigo == GERENTE_OPERACAO;
     }
 
     public boolean isSupervisorOperacao() {
-        return cargoCodigo.equals(SUPERVISOR_OPERACAO);
+        return cargoCodigo == SUPERVISOR_OPERACAO;
     }
 
     public boolean isExecutivo() {
@@ -213,7 +213,7 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isOperadorTelevendasAtivoLocal() {
         return cargoCodigo.equals(OPERACAO_TELEVENDAS)
-                && hasCanal(ECanal.ATIVO_PROPRIO);
+            && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 
     public void validarAdministrador() {

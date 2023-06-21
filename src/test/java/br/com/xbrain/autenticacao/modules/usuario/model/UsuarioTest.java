@@ -78,8 +78,20 @@ public class UsuarioTest {
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
-        assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+        var usuarioAutenticado = umUsuarioAutenticado(2, OPERACAO, COORDENADOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(COORDENADOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertTrue(usuario.permiteEditar(usuarioAutenticado));
+    }
+
+    @Test
+    public void permiteEditar_deveRetornarFalse_quandoUsuarioAutenticadoForSupervisor() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertFalse(usuario.permiteEditar(usuarioAutenticado));
     }
 
     @Test
@@ -225,7 +237,7 @@ public class UsuarioTest {
     }
 
     @Test
-    public void isNivelReceptivoo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
+    public void isNivelReceptivo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(VENDEDOR_RECEPTIVO, RECEPTIVO).isNivelReceptivo())
             .isTrue();
     }
@@ -234,6 +246,56 @@ public class UsuarioTest {
     public void isNivelReceptivo_deveRetornarFalse_seUsuarioNaoPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
             .isFalse();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(SUPERVISOR_OPERACAO, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isTrue();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isFalse();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(ASSISTENTE_OPERACAO, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isTrue();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isFalse();
+    }
+
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarTrue_seUsuarioForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarFalse_seUsuarioNaoForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isCargoAgenteAutorizado()).isFalse();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(CLIENTE_LOJA_FUTURO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isFalse();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(IMPORTADOR_CARGAS, FEEDER).isCargoImportadorCargas()).isTrue();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, FEEDER).isCargoImportadorCargas()).isFalse();
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {

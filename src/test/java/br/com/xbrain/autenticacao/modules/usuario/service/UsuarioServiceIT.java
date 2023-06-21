@@ -155,6 +155,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void updateFromQueue_deveRemoverPermissoesFeeder_quandoHouverIndevidamenteEAaForFeeder() {
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
             .removerPermissoesEspeciais(List.of(371));
@@ -162,7 +166,12 @@ public class UsuarioServiceIT {
 
     @Test
     public void updateFromQueue_deveAddPermissoesFeeder_quandoHouver() {
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
+
         verify(feederService, times(1))
             .adicionarPermissaoFeederParaUsuarioNovo(any(UsuarioDto.class), eq(umUsuarioMqRequestComFeeder()));
     }
@@ -188,9 +197,13 @@ public class UsuarioServiceIT {
 
     @Test
     public void deveSalvarUsuarioEEnviarParaFila() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        var usuarioMqRequest = umUsuario();
         service.saveFromQueue(usuarioMqRequest);
-        UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
+        var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
         verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
@@ -202,6 +215,10 @@ public class UsuarioServiceIT {
         var usuarioMqRequest = umUsuario();
         usuarioMqRequest.setCargo(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
         usuarioMqRequest.setEquipeTecnica(true);
+
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
 
         service.saveFromQueue(usuarioMqRequest);
         var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
@@ -1629,6 +1646,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void saveFromQueue_salvarEEnviarParaFilaDeSocioPrincipalSalvoComSucesso_quandoFlagSocioPrincipalForTrue() {
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
 
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
@@ -1656,6 +1677,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void saveFromQueue_salvarEEnviarParaFilaClienteLojaFuturoSalvoComSucesso_quandoCargoClienteLojaFuturo() {
+        doReturn(umUsuarioAutenticado())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         usuarioService.saveFromQueue(umUsuarioMqRequestClienteLojaFuturo());
 
         verify(sender).sendSuccessLojaFuturo(any(UsuarioDto.class));
