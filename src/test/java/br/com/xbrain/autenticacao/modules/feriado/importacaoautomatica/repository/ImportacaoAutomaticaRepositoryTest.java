@@ -25,14 +25,13 @@ public class ImportacaoAutomaticaRepositoryTest {
 
     @Test
     public void findAllImportacaoHistorico_deveRetornarHistoricoDeImportacoes_seHouverRegistros() {
-        assertThat(repository.findAllImportacaoHistorico(new PageRequest(), new FeriadoPredicate().build()))
+        assertThat(repository.findAll(new FeriadoPredicate().build(), new PageRequest()))
             .extracting("id", "situacaoFeriadoAutomacao", "usuarioCadastroId",
                 "usuarioCadastroNome")
             .containsExactlyInAnyOrder(
                 tuple(1, ESituacaoFeriadoAutomacao.IMPORTADO, 1, "FIORILLO"),
                 tuple(2, ESituacaoFeriadoAutomacao.IMPORTADO, 1, "FIORILLO"),
-                tuple(3, ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO, 1, "FIORILLO")
-            );
+                tuple(3, ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO, 1, "FIORILLO"));
     }
 
     @Test
@@ -40,12 +39,11 @@ public class ImportacaoAutomaticaRepositoryTest {
         var predicate = new FeriadoPredicate();
         predicate.comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO);
 
-        assertThat(repository.findAllImportacaoHistorico(new PageRequest(), predicate.build()))
+        assertThat(repository.findAll(predicate.build(), new PageRequest()))
             .extracting("id", "situacaoFeriadoAutomacao", "usuarioCadastroId",
                 "usuarioCadastroNome")
             .containsExactlyInAnyOrder(
-                tuple(3, ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO, 1, "FIORILLO")
-            );
+                tuple(3, ESituacaoFeriadoAutomacao.ERRO_IMPORTACAO, 1, "FIORILLO"));
     }
 
     @Test
@@ -53,7 +51,6 @@ public class ImportacaoAutomaticaRepositoryTest {
         var predicate = new FeriadoPredicate();
         predicate.comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.EM_IMPORTACAO);
 
-        assertThat(repository.findAllImportacaoHistorico(new PageRequest(), predicate.build()))
-            .isEmpty();
+        assertThat(repository.findAll(predicate.build(), new PageRequest())).isEmpty();
     }
 }

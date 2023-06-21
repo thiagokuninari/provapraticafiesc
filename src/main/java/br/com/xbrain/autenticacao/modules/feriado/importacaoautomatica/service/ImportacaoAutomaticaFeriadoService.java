@@ -202,7 +202,7 @@ public class ImportacaoAutomaticaFeriadoService {
     }
 
     public Page<ImportacaoFeriadoHistoricoResponse> getAllImportacaoHistorico(PageRequest pageRequest, FeriadoFiltros filtros) {
-        return importacaoAutomaticaRepository.findAllImportacaoHistorico(pageRequest, filtros.toPredicate().build())
+        return importacaoAutomaticaRepository.findAll(filtros.toPredicate().build(), pageRequest)
             .map(ImportacaoFeriadoHistoricoResponse::convertFrom);
     }
 

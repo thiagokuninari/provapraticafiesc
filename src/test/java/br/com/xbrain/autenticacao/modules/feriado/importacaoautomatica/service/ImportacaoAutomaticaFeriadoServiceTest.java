@@ -337,18 +337,16 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         var filtros = new FeriadoFiltros();
         filtros.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
 
-        when(importacaoAutomaticaFeriadoRepository.findAllImportacaoHistorico(new PageRequest(), filtros.toPredicate()
-            .build())).thenReturn(umaPageImportacaoHistorico());
+        when(importacaoAutomaticaFeriadoRepository.findAll(filtros.toPredicate().build(), new PageRequest()))
+            .thenReturn(umaPageImportacaoHistorico());
 
         assertThat(service.getAllImportacaoHistorico(new PageRequest(), filtros))
             .extracting("id", "usuarioCadastroId", "situacaoFeriadoAutomacao")
             .containsExactlyInAnyOrder(
                 tuple(1, 1, ESituacaoFeriadoAutomacao.IMPORTADO),
-                tuple(2, 1, ESituacaoFeriadoAutomacao.IMPORTADO)
-            );
+                tuple(2, 1, ESituacaoFeriadoAutomacao.IMPORTADO));
 
-        verify(importacaoAutomaticaFeriadoRepository).findAllImportacaoHistorico(new PageRequest(),
-            filtros.toPredicate().build());
+        verify(importacaoAutomaticaFeriadoRepository).findAll(filtros.toPredicate().build(), new PageRequest());
     }
 
     @Test
@@ -356,13 +354,12 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         var filtros = new FeriadoFiltros();
         filtros.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
 
-        when(importacaoAutomaticaFeriadoRepository.findAllImportacaoHistorico(new PageRequest(), filtros.toPredicate()
-            .build())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        when(importacaoAutomaticaFeriadoRepository.findAll(filtros.toPredicate().build(), new PageRequest()))
+            .thenReturn(new PageImpl<>(Collections.emptyList()));
 
         assertThat(service.getAllImportacaoHistorico(new PageRequest(), filtros)).isEmpty();
 
-        verify(importacaoAutomaticaFeriadoRepository).findAllImportacaoHistorico(new PageRequest(),
-            filtros.toPredicate().build());
+        verify(importacaoAutomaticaFeriadoRepository).findAll(filtros.toPredicate().build(), new PageRequest());
     }
 
     private static Page<ImportacaoFeriado> umaPageImportacaoHistorico() {
