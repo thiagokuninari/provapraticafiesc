@@ -90,6 +90,10 @@ public class CustomRepository<T> {
         return new PageImpl<T>(content, pageable, total);
     }
 
+    protected Page<T> findAll(Pageable pageable, JPAQuery<T> query) {
+        return new PageImpl<>(querydsl.applyPagination(pageable, query).fetch(), pageable, query.distinct().fetchCount());
+    }
+
     public Page<T> findAll(List<JoinDescriptor> joinDescriptors, Predicate predicate, Pageable pageable, Sort... sorts) {
 
         final JPAQuery<Object> countQuery = createQuery(predicate);

@@ -2,11 +2,14 @@ package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.repository.ImportacaoAutomaticaFeriadoRepository;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
@@ -20,13 +23,16 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feriado.helper.FeriadoHelper.*;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -324,5 +330,53 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosNacionais(2023);
         verify(importacaoAutomaticaFeriadoRepository).save(any(ImportacaoFeriado.class));
+    }
+
+    @Test
+    public void getAllImportacaoHistorico_deveRetornarPageDeHistoricos_seSolicitado() {
+        var filtros = new FeriadoFiltros();
+        filtros.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
+
+        when(importacaoAutomaticaFeriadoRepository.findAllImportacaoHistorico(new PageRequest(), filtros.toPredicate()
+            .build())).thenReturn(umaPageImportacaoHistorico());
+
+        assertThat(service.getAllImportacaoHistorico(new PageRequest(), filtros))
+            .extracting("id", "usuarioCadastroId", "situacaoFeriadoAutomacao")
+            .containsExactlyInAnyOrder(
+                tuple(1, 1, ESituacaoFeriadoAutomacao.IMPORTADO),
+                tuple(2, 1, ESituacaoFeriadoAutomacao.IMPORTADO)
+            );
+
+        verify(importacaoAutomaticaFeriadoRepository).findAllImportacaoHistorico(new PageRequest(),
+            filtros.toPredicate().build());
+    }
+
+    @Test
+    public void getAllImportacaoHistorico_deveRetornarPageVazia_seNaoHouverHistoricos() {
+        var filtros = new FeriadoFiltros();
+        filtros.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
+
+        when(importacaoAutomaticaFeriadoRepository.findAllImportacaoHistorico(new PageRequest(), filtros.toPredicate()
+            .build())).thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        assertThat(service.getAllImportacaoHistorico(new PageRequest(), filtros)).isEmpty();
+
+        verify(importacaoAutomaticaFeriadoRepository).findAllImportacaoHistorico(new PageRequest(),
+            filtros.toPredicate().build());
+    }
+
+    private static Page<ImportacaoFeriado> umaPageImportacaoHistorico() {
+        return new PageImpl<>(
+            List.of(umFeriadoImportacaoHistorico(1),
+                umFeriadoImportacaoHistorico(2)
+            ));
+    }
+
+    private static ImportacaoFeriado umFeriadoImportacaoHistorico(Integer id) {
+        return ImportacaoFeriado.builder()
+            .id(id)
+            .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO)
+            .usuarioCadastroId(1)
+            .build();
     }
 }

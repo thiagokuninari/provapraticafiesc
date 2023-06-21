@@ -7,7 +7,9 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
+import br.com.xbrain.autenticacao.modules.feriado.dto.ImportacaoFeriadoHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.repository.ImportacaoAutomaticaFeriadoRepository;
@@ -18,12 +20,13 @@ import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
-import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,7 +47,6 @@ public class ImportacaoAutomaticaFeriadoService {
     private final FeriadoService feriadoService;
     private final FeriadoRepository feriadoRepository;
     private final ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaRepository;
-    private final CidadeService cidadeService;
     private final UfRepository ufRepository;
     private final CidadeRepository cidadeRepository;
     @Value("${app-config.upload-async}")
@@ -197,6 +199,11 @@ public class ImportacaoAutomaticaFeriadoService {
 
         log.info("Quantidade de feriados importados: {}", feriados.size());
         log.info("Usuario importação cadastrado com sucesso");
+    }
+
+    public Page<ImportacaoFeriadoHistoricoResponse> getAllImportacaoHistorico(PageRequest pageRequest, FeriadoFiltros filtros) {
+        return importacaoAutomaticaRepository.findAllImportacaoHistorico(pageRequest, filtros.toPredicate().build())
+            .map(ImportacaoFeriadoHistoricoResponse::convertFrom);
     }
 
     private void preencherInformacoes(FeriadoRequest request, Cidade cidade) {

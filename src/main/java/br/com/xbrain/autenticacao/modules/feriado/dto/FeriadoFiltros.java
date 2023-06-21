@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.dto;
 
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,7 @@ public class FeriadoFiltros {
     private LocalDate dataInicio;
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFim;
+    private ESituacaoFeriadoAutomacao situacaoFeriadoAutomacao;
 
     @JsonIgnore
     public FeriadoPredicate toPredicate() {
@@ -34,6 +36,7 @@ public class FeriadoFiltros {
             .comPeriodoDeDataFeriado(dataInicio, dataFim)
             .comCidade(cidadeId, estadoId)
             .comEstado(estadoId)
+            .comSituacaoFeriadoAutomacao(situacaoFeriadoAutomacao)
             .excetoFeriadosFilhos()
             .excetoExcluidos();
     }
