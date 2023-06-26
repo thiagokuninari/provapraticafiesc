@@ -344,11 +344,22 @@ public class UsuarioService {
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         var predicate = filtrarUsuariosPermitidos(filtros);
+        validarCargoUsuarioAutenticado(predicate);
+
         var pages = repository.findAll(predicate.build(), pageRequest);
+
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
+
         return pages;
+    }
+
+    private void validarCargoUsuarioAutenticado(UsuarioPredicate predicate) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        if (usuario.isAssistenteOperacao()) {
+            predicate.semCargoCodigo(COORDENADOR_OPERACAO);
+        }
     }
 
     public List<UsuarioConsultaDto> getAllXbrainMsoAtivos(Integer idNivel) {
@@ -441,7 +452,7 @@ public class UsuarioService {
     public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(boolean incluirInativos) {
         var usuario = UsuarioHierarquiaDto
             .of(repository.findById(autenticacaoService.getUsuarioId())
-            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
 
         var subordinados = UsuarioHierarquiaDto.ofUsuarioSubordinadoDtoList(
             repository.getUsuariosCompletoSubordinados(usuario.getId()));

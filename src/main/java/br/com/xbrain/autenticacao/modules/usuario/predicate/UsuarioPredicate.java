@@ -173,6 +173,14 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate semCargoCodigo(CodigoCargo cargo) {
+        if (cargo != null) {
+            builder.and(usuario.cargo.codigo.ne(cargo));
+        }
+
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
