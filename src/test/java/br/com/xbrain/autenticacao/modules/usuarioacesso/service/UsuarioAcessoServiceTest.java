@@ -199,7 +199,7 @@ public class UsuarioAcessoServiceTest {
             .getUsuariosLogadosAtualPorIds(eq(List.of(101, 201)));
         verify(usuarioRepository, times(1))
             .findAll(eq(new UsuarioPredicate()
-                .comOrganizacaoId(6)
+                .comOrganizacaoEmpresaId(6)
                 .comCodigosCargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
                 .isAtivo(Eboolean.V)
                 .build()));

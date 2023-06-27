@@ -178,7 +178,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoGerenteMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoGerenteMotiva()
         throws Exception {
 
         var gerenteMotiva = umUsuarioAutenticadoNivelBackoffice();
@@ -211,7 +211,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoCoordenadorMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoCoordenadorMotiva()
         throws Exception {
 
         var coordMotiva = umUsuarioAutenticadoNivelBackoffice();
@@ -242,7 +242,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoSupervisorMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoSupervisorMotiva()
         throws Exception {
 
         var supervisorMotiva = umUsuarioAutenticadoNivelBackoffice();

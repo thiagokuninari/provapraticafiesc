@@ -77,7 +77,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        getOrganizacao(usuario);
+        getOrganizacaoEmpresa(usuario);
     }
 
     public UsuarioAutenticado(Usuario usuario,
@@ -101,11 +101,11 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        getOrganizacao(usuario);
+        getOrganizacaoEmpresa(usuario);
     }
 
-    private void getOrganizacao(Usuario usuario) {
-        Optional.ofNullable(usuario.getOrganizacao())
+    private void getOrganizacaoEmpresa(Usuario usuario) {
+        Optional.ofNullable(usuario.getOrganizacaoEmpresa())
             .ifPresent(organizacao -> {
                 this.organizacaoId = organizacao.getId();
                 this.organizacaoCodigo = organizacao.getCodigo();

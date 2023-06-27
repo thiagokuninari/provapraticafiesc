@@ -12,6 +12,6 @@ public class NivelResponseTest {
     public void of_deveRetornarNivelResponse_seSolicitado() {
         assertThat(NivelResponse.of(OrganizacaoEmpresaHelper.umNivel()))
             .extracting("id", "nome", "codigo")
-            .containsExactly(1, "VAREJO", CodigoNivel.VAREJO.name());
+            .containsExactly(1, "BACKOFFICE", CodigoNivel.BACKOFFICE.name());
     }
 }

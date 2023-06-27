@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
@@ -16,7 +17,7 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping(value = "api/organizacao-empresa")
+@RequestMapping(value = "api/organizacoes")
 public class OrganizacaoEmpresaController {
 
     @Autowired
@@ -64,5 +65,10 @@ public class OrganizacaoEmpresaController {
     @GetMapping("por-nivel")
     public List<OrganizacaoEmpresaResponse> findByNivel(@NotNull @RequestParam Integer nivelId) {
         return service.findAllByNivelId(nivelId);
+    }
+
+    @GetMapping("select")
+    public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return service.getAllSelect(filtros);
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
@@ -10,15 +11,20 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.*;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -35,6 +41,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSend
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
@@ -51,6 +58,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -1032,7 +1040,7 @@ public class UsuarioServiceTest {
             .nome("Backoffice")
             .cargo(new Cargo(110))
             .departamento(new Departamento(69))
-            .organizacao(new Organizacao(5))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(5))
             .cpf("097.238.645-92")
             .email("usuario@teste.com")
             .telefone("43995565661")
@@ -1217,7 +1225,7 @@ public class UsuarioServiceTest {
     public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForReceptivo() {
         var umUsuarioComLogin = 1000;
         var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
-        user.setOrganizacao(Organizacao.builder().codigo("ATENTO").build());
+        user.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("ATENTO").build());
         user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build());
         when(usuarioRepository.findById(umUsuarioComLogin))
             .thenReturn(Optional.of(user));
@@ -1450,12 +1458,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, true))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -1464,12 +1472,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, false))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -2022,7 +2030,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2038,7 +2046,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2054,7 +2062,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2280,4 +2288,521 @@ public class UsuarioServiceTest {
 
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
+
+    private Usuario outroUsuarioNivelOpCanalAa() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .codigo(CodigoEmpresa.CLARO_TV)
+                .build()))
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .build();
+        return usuario;
+    }
+
+    private UsuarioResponse outroUsuarioNivelOpCanalAaResponse() {
+        var usuarioResponse = UsuarioResponse
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .rg(null)
+            .telefone(null)
+            .telefone02(null)
+            .telefone03(null)
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .dataCadastro(null)
+            .codigoNivel(OPERACAO)
+            .nomeNivel("OPERACAO")
+            .codigoDepartamento(null)
+            .codigoCargo(EXECUTIVO_HUNTER)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .permissoes(null)
+            .nascimento(null)
+            .aaId(null)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .tipoCanal(null)
+            .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
+            .build();
+
+        return usuarioResponse;
+    }
+
+    private Canal umCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    private Canal umOutroCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.VAREJO)
+            .build();
+    }
+
+    private AgenteAutorizadoUsuarioDto umAgenteAutorizadoUsuarioDto() {
+        return AgenteAutorizadoUsuarioDto
+            .builder()
+            .usuarioId(2)
+            .cnpj("78300110000166")
+            .razaoSocial("Razao Social")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioOperacaoCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(1)
+            .nome("Usuario_1_teste")
+            .email("usuario1@teste.com")
+            .telefone("999999999")
+            .cpf("11111111111")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Operação")
+            .hierarquia("hierarquia")
+            .razaoSocial("razaoSocial")
+            .cnpj("cnpj")
+            .organizacaoEmpresa("organizacao")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioAaCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(2)
+            .nome("Usuario_2_teste")
+            .email("usuario2@teste.com")
+            .telefone("999999998")
+            .cpf("22222222222")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Agente Autorizado")
+            .organizacaoEmpresa("organizacao")
+            .build();
+    }
+
+    private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
+        return UsuarioDtoVendas
+            .builder()
+            .id(id)
+            .build();
+    }
+
+    private Usuario umUsuarioCompleto(CodigoCargo codigoCargo, Integer idCargo,
+                                      CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .email("email@email.com")
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(idCargo)
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(departamento)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(canal)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo,
+                                      CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .email("email@email.com")
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(situacao)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(idCargo)
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(departamento)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(canal)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(OPERACAO_TELEVENDAS)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                    .nome("AGENTE AUTORIZADO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(int cargoId, CodigoNivel nivel, int departamentoId) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .nome(nivel.name())
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .id(departamentoId)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario outroUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umVendedorReceptivo() {
+        var usuario = umUsuarioCompleto();
+        var cargo = Cargo.builder()
+            .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
+            .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
+            .build();
+        var organizacaoEmpresa = OrganizacaoEmpresa.builder().id(1).nome("Org teste").build();
+        usuario.setCargo(cargo);
+        usuario.setOrganizacaoEmpresa(organizacaoEmpresa);
+        return usuario;
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoInativo() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (INATIVO)"))
+            .value(vendedorReceptivo.getId())
+            .build();
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoRealocado() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (REALOCADO)"))
+            .value(vendedorReceptivo.getId())
+            .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltro() {
+        return UsuarioFiltros.builder()
+            .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+            .canal(ECanal.D2D_PROPRIO)
+            .build();
+    }
+
+    private UsuarioAtivacaoDto umUsuarioAtivacaoDto() {
+        return UsuarioAtivacaoDto.builder()
+            .idUsuario(10)
+            .idUsuarioAtivacao(20)
+            .observacao("Teste")
+            .build();
+    }
+
+    private Usuario umUsuarioSocioPrincipalEAa() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        return usuario;
+    }
+
+    private List<EquipeVendaUsuarioResponse> listaVazia() {
+        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
+        return lista;
+    }
+
+    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
+        return Usuario.builder().id(1)
+            .cargo(new Cargo(cargoId))
+            .departamento(new Departamento(3))
+            .build();
+    }
+
+    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
+        return EquipeVendaUsuarioResponse.builder().id(1)
+            .build();
+    }
+
 }

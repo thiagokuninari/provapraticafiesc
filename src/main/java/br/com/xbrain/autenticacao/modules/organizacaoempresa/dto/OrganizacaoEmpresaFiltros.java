@@ -2,12 +2,11 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate.OrganizacaoEmpresaPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -15,20 +14,20 @@ import java.util.List;
 @AllArgsConstructor
 public class OrganizacaoEmpresaFiltros {
 
-    private Integer id;
-    private String razaoSocial;
-    private String cnpj;
+    private Integer organizacaoId;
+    private String nome;
     private Integer nivelId;
-    private List<Integer> modalidadesEmpresaIds;
     private ESituacaoOrganizacaoEmpresa situacao;
+    private CodigoNivel codigoNivel;
+    private String codigo;
 
     public OrganizacaoEmpresaPredicate toPredicate() {
         return new OrganizacaoEmpresaPredicate()
-            .comId(id)
-            .comRazaoSocial(razaoSocial)
-            .comCnpj(cnpj)
+            .comId(organizacaoId)
+            .comNome(nome)
             .comNivel(nivelId)
-            .comModalidades(modalidadesEmpresaIds)
-            .comSituacao(situacao);
+            .comSituacao(situacao)
+            .comCodigoNivel(codigoNivel)
+            .comCodigo(codigo);
     }
 }

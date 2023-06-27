@@ -40,12 +40,12 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
-import static br.com.xbrain.autenticacao.modules.comum.model.QOrganizacao.organizacao;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
@@ -118,7 +118,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .join(usuario.departamento).fetchJoin()
                 .leftJoin(usuario.empresas).fetchJoin()
                 .leftJoin(usuario.canais).fetchJoin()
-                .leftJoin(usuario.organizacao).fetchJoin()
+                .leftJoin(usuario.organizacaoEmpresa).fetchJoin()
                 .where(usuario.id.eq(id))
                 .distinct()
                 .fetchOne()
@@ -615,7 +615,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.dataUltimoAcesso,
                     usuario.loginNetSales,
                     nivel.nome,
-                    organizacao.nome,
+                    organizacaoEmpresa.nome,
                     stringTemplate(CONCATENA_STRINGS, usuarioHierarquia.usuarioSuperior.nome)
                 )
             )
@@ -625,7 +625,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
             .leftJoin(usuario.empresas, empresa)
             .leftJoin(cargo.nivel, nivel)
-            .leftJoin(usuario.organizacao, organizacao)
+            .leftJoin(usuario.organizacaoEmpresa, organizacaoEmpresa)
             .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
             .leftJoin(usuarioHierarquia.usuarioSuperior)
             .where(predicate)
@@ -641,7 +641,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 usuario.dataUltimoAcesso,
                 usuario.loginNetSales,
                 nivel.nome,
-                organizacao.nome)
+                organizacaoEmpresa.nome)
             .fetch();
     }
 

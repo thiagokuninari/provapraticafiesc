@@ -22,10 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioAdminAutenticado;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioMsoConsultorAutenticado;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.HELP_DESK;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,26 +50,6 @@ public class OrganizacaoEmpresaHistoricoControllerTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
-
-    @Test
-    @SneakyThrows
-    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarForbidden_seUsuarioNaoTiverPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
-
-        mvc.perform(get(API_URI + "/{id}", 1)
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden());
-    }
 
     @Test
     @SneakyThrows

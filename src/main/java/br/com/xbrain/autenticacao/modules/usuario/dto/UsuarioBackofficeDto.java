@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -50,8 +50,8 @@ public class UsuarioBackofficeDto {
         var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioBackoffice, usuario);
         Optional.ofNullable(usuarioBackoffice.getOrganizacaoId())
-            .map(Organizacao::new)
-            .ifPresent(usuario::setOrganizacao);
+            .map(OrganizacaoEmpresa::new)
+            .ifPresent(usuario::setOrganizacaoEmpresa);
         usuario.setCargo(new Cargo(usuarioBackoffice.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioBackoffice.getDepartamentoId()));
         usuario.setNascimento(usuarioBackoffice.getNascimento().atStartOfDay());

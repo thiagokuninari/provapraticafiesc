@@ -8,10 +8,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -227,7 +227,7 @@ public class UsuarioServiceHelper {
             .hierarquia("hierarquia")
             .razaoSocial("razaoSocial")
             .cnpj("cnpj")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -247,7 +247,7 @@ public class UsuarioServiceHelper {
             .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
             .loginNetSales("loginNetSales")
             .nivel("Agente Autorizado")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -562,9 +562,9 @@ public class UsuarioServiceHelper {
             .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
             .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
             .build();
-        var organizacao = Organizacao.builder().id(1).nome("Org teste").build();
+        var organizacao = OrganizacaoEmpresa.builder().id(1).nome("Org teste").build();
         usuario.setCargo(cargo);
-        usuario.setOrganizacao(organizacao);
+        usuario.setOrganizacaoEmpresa(organizacao);
         return usuario;
     }
 
@@ -677,7 +677,7 @@ public class UsuarioServiceHelper {
             .nome("Backoffice")
             .cargo(new Cargo(110))
             .departamento(new Departamento(69))
-            .organizacao(new Organizacao(5))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(5))
             .cpf("097.238.645-92")
             .email("usuario@teste.com")
             .telefone("43995565661")

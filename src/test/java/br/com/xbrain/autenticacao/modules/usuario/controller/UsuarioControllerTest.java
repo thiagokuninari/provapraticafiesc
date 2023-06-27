@@ -1316,12 +1316,12 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(true));
     }
 
     @Test
     @SneakyThrows
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
         mvc.perform(get("/api/usuarios")
                 .param("organizacaoId", "5")
                 .param("buscarInativos", "true")
@@ -1330,12 +1330,12 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(true));
     }
 
     @Test
     @SneakyThrows
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
         mvc.perform(get("/api/usuarios")
                 .param("organizacaoId", "5")
                 .param("buscarInativos", "false")
@@ -1344,7 +1344,7 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(false));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(false));
     }
 
     @Test

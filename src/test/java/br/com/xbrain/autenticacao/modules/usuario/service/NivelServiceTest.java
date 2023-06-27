@@ -174,6 +174,6 @@ public class NivelServiceTest {
     public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
         assertThat(service.getPermitidosParaOrganizacao())
             .extracting("codigo")
-            .contains(CodigoNivel.VAREJO.name(), CodigoNivel.RECEPTIVO.name());
+            .contains(CodigoNivel.RECEPTIVO.name(), CodigoNivel.BACKOFFICE.name());
     }
 }
