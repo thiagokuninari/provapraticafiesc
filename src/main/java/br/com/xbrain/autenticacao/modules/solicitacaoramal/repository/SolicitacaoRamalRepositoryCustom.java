@@ -12,6 +12,8 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate);
 
+    Page<SolicitacaoRamal> findAllByUsuarioIdIn(List<Integer> usuariosIds, Pageable pageable, Predicate predicate);
+
     Page<SolicitacaoRamal> findAllGerenciaAa(Pageable pageable, Predicate predicate);
 
     Page<SolicitacaoRamal> findAllGerenciaD2d(Pageable pageable, Predicate predicate);
@@ -21,6 +23,9 @@ public interface SolicitacaoRamalRepositoryCustom {
     List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(Integer aaId);
 
     List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(Integer subCanalId);
+
+    List<SolicitacaoRamal> findAllByUsuariosIdsAndSubCanalIdAndSituacaoPendenteOuEmAndamento(
+        List<Integer> usuarioId, Integer subCanalId);
 
     Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId);
 

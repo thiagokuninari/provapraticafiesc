@@ -36,6 +36,20 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
+    public Page<SolicitacaoRamal> findAllByUsuarioIdIn(List<Integer> usuariosId, Pageable pageable, Predicate predicate) {
+        var solicitacoes = new JPAQueryFactory(entityManager)
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.usuario.id.in(usuariosId)
+                .and(predicate))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        return new PageImpl<>(solicitacoes);
+    }
+
+    @Override
     public Page<SolicitacaoRamal> findAllGerenciaAa(Pageable pageable, Predicate predicate) {
         final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
         List<SolicitacaoRamal> solicitacoes = new JPAQueryFactory(entityManager)
@@ -136,6 +150,19 @@ public class SolicitacaoRamalRepositoryImpl
             .select(solicitacaoRamal)
             .from(solicitacaoRamal)
             .where(solicitacaoRamal.subCanal.id.eq(subCanalId)
+                .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                    .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
+            .fetch();
+    }
+
+    @Override
+    public List<SolicitacaoRamal> findAllByUsuariosIdsAndSubCanalIdAndSituacaoPendenteOuEmAndamento(
+        List<Integer> usuarioId, Integer subCanalId) {
+        return new JPAQueryFactory(entityManager)
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.usuario.id.in(usuarioId)
+                .and(solicitacaoRamal.subCanal.id.eq(subCanalId))
                 .and(solicitacaoRamal.situacao.eq(PENDENTE)
                     .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
             .fetch();

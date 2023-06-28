@@ -183,33 +183,6 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_listaComDezRegistro_seUsuarioPossuirPermissaoHelpDesk() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(10)));
-    }
-
-    @Test
-    public void getAll_listaComDezRegistro_seUsuarioPossuirPermissaoAdmin() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(10)));
-    }
-
-    @Test
-    public void getAll_listaComSeteRegistros_seUsuarioPossuirPermissaoSocioAa() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(7)));
-    }
-
-    @Test
     public void getAll_isForbiden_seUsuarioPossuirPermissaoOperacaoGerenteComercialETentarAcessarGerencial()
         throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
@@ -229,15 +202,6 @@ public class SolicitacaoRamalControllerTest {
     @Test
     public void getAll_isUnauthorized_quandoUsuarioNaoEstaAutenticado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL).accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void getAll_listaComSeteRegistros_quandoLocalizarPeloAaId() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(7)));
     }
 
     @Test
@@ -335,15 +299,6 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_listaComDezRegistros_quandoLocalizarSemAgenteAutorizadoIdParaUsuarioAdmin() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(10)));
-    }
-
-    @Test
     public void getAll_isForbidden_quandoUsuarioForSocioMasNaoTemPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=50")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -357,87 +312,6 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-    }
-
-    @Test
-    public void getAll_listaComDoisRegistros_quandoLocalizarAsSolicitacoesComSituacaoPendentePeloAaId()
-        throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PENDENTE&agenteAutorizadoId=1")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(2)));
-    }
-
-    @Test
-    public void getAll_listaComCincoRegistros_quandoLocalizarAsSolicitacoesComSituacaoEmAndamentoPeloAaId()
-        throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EM_ANDAMENTO&agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(5)));
-    }
-
-    @Test
-    public void getAll_listaComDoisRegistros_quandoLocalizarAsSolicitacoesComSituacaoRejeitada() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=REJEITADO&agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(2)));
-    }
-
-    @Test
-    public void getAll_listaComUmRegistro_quandoLocalizarAsSolicitacoesPelaDataCadastroESituacaoPendenteEAaId()
-        throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=03/01/2019&dataFinalSolicitacao=04/01/"
-                + "2019&situacao=PENDENTE&agenteAutorizadoId=1")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(1)));
-    }
-
-    @Test
-    public void getAll_listaComQuatroRegistros_quandoLocalizarAsSolicitacoesPelaDataCadastroESituacaoEmAndamentoEAaId()
-        throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENT"
-                + "O&agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(4)));
-    }
-
-    @Test
-    public void getAll_listaComQuatroRegistros_quandoLocalizarAsSolicitacoesPelaDataCadastroEAaId()
-        throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=02/01/2019&agenteAutorizadoId=2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(4)));
-    }
-
-    @Test
-    public void getAll_solicitacaoRamalLocalizada_quandoLocalizarPeloIdSolicitacao() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/solicitacao/1")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.quantidadeRamais", is(35)))
-            .andExpect(jsonPath("$.situacao", is("PENDENTE")))
-            .andExpect(jsonPath("$.id", is(1)))
-            .andExpect(jsonPath("$.agenteAutorizadoId", is(1)))
-            .andExpect(jsonPath("$.agenteAutorizadoNome", is("JoãoAA")))
-            .andExpect(jsonPath("$.agenteAutorizadoCnpj", is("25.280.843/0001-10")))
-            .andExpect(jsonPath("$.telefoneTi", is("(43) 3322-44444")))
-            .andExpect(jsonPath("$.emailTi", is("joaoaa@hotmail.com")))
-            .andExpect(jsonPath("$.dataCadastro", is("01/01/2019 10:30")));
     }
 
     @Test

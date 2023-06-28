@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamal
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.BooleanBuilder;
@@ -74,6 +75,8 @@ public class SolicitacaoRamalService {
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UsuarioService usuarioService;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
@@ -91,7 +94,9 @@ public class SolicitacaoRamalService {
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroObrigatorios(filtros);
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
+        var equipeIds = getUsuariosIdsEquipe(autenticacaoService.getUsuarioId());
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioIdIn(equipeIds,
+            pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
@@ -99,6 +104,12 @@ public class SolicitacaoRamalService {
             .collect(Collectors.toList()),
             pageable,
             solicitacoes.getTotalElements());
+    }
+
+    private List<Integer> getUsuariosIdsEquipe(Integer usuarioId) {
+        var equipeIds = usuarioService.getUsuariosHierarquiaByUsuarioId(usuarioId);
+
+        return equipeIds;
     }
 
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {

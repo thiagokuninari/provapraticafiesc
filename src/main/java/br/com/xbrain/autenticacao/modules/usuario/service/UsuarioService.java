@@ -349,6 +349,10 @@ public class UsuarioService {
         return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
     }
 
+    public List<Integer> getUsuariosHierarquiaByUsuarioId(Integer usuarioId) {
+        return repository.getUsuariosHierarquiaByUsuarioId(usuarioId);
+    }
+
     public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
         var usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
         if (incluirProprio) {
@@ -356,6 +360,10 @@ public class UsuarioService {
         }
 
         return usuariosSubordinados;
+    }
+
+    public List<Integer> getIdDosUsuariosSuperiores(Integer usuarioId) {
+        return repository.getUsuariosSuperiores(usuarioId);
     }
 
     public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario) {

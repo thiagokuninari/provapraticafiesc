@@ -116,7 +116,8 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void getAll_deveListarSolicitacoes_seTodosOsParametrosPreenchidos() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(repository.findAllByUsuarioIdIn(any(), any(PageRequest.class), any(Predicate.class)))
+            .thenReturn((umaPageSolicitacaoRamal()));
         when(usuarioService.findComplete(1)).thenReturn(Usuario.builder().id(1).nome("teste").build());
 
         var filtros = new SolicitacaoRamalFiltros();
