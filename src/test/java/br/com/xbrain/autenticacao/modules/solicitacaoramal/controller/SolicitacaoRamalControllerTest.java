@@ -147,14 +147,14 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
             solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
-        Assert.assertEquals(6, resultList.size());
+        Assert.assertEquals(7, resultList.size());
     }
 
     @Test
     public void enviarEmailSolicitacoesQueVaoExpirar_enviarEmailFoiInvocadoQuatroVezes_quandoSolicitacaoForExpirar() {
         solicitacaoRamalService.enviarEmailSolicitacoesQueVaoExpirar();
 
-        verify(emailService, times(6)).enviarEmailTemplate(anyList(), any(), any(), any());
+        verify(emailService, times(7)).enviarEmailTemplate(anyList(), any(), any(), any());
     }
 
     @Test
@@ -171,7 +171,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(1)));
+            .andExpect(jsonPath("$.content", hasSize(2)));
     }
 
     @Test
@@ -180,6 +180,15 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getAll_deveRetornarOk_quandoTiverPermissao() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     @Test
