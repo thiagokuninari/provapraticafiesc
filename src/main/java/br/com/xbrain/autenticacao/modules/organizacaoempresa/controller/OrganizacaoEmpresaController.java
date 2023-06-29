@@ -57,9 +57,9 @@ public class OrganizacaoEmpresaController {
         return OrganizacaoEmpresaResponse.of(service.update(id, request));
     }
 
-    @GetMapping("nivel")
-    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(@NotNull @RequestParam Integer nivelId) {
-        return service.findAllAtivosByNivelId(nivelId);
+    @GetMapping("consultar-ativos")
+    public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
+        return service.findAllAtivos(filtros);
     }
 
     @GetMapping("por-nivel")

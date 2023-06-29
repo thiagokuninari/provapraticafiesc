@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.model;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
@@ -48,6 +49,10 @@ public class OrganizacaoEmpresa {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
 
+    @Column(name = "CANAL")
+    @Enumerated(EnumType.STRING)
+    private ECanal canal;
+
     public static OrganizacaoEmpresa of(OrganizacaoEmpresaRequest request, Integer usuarioId, Nivel nivel) {
         return OrganizacaoEmpresa.builder()
             .nome(request.getNome())
@@ -56,6 +61,7 @@ public class OrganizacaoEmpresa {
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(new Usuario(usuarioId))
             .codigo(request.getCodigo())
+            .canal(request.getCanal())
             .build();
     }
 

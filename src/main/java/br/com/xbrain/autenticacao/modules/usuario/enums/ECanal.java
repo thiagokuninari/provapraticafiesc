@@ -13,7 +13,7 @@ public enum ECanal {
     ATIVO_PROPRIO("Ativo Local Próprio", Boolean.TRUE),
     ATIVO("Ativo", Boolean.FALSE),
     ATP("Atp", Boolean.FALSE),
-    VAREJO( "Varejo", Boolean.TRUE),
+    VAREJO("Varejo", Boolean.TRUE),
     INTERNET("Internet", Boolean.TRUE);
 
     @Getter
@@ -28,7 +28,7 @@ public enum ECanal {
 
     public static List<ECanal> getCanaisAtivos() {
         return Stream.of(ECanal.values())
-                .filter(ECanal::isAtivo)
-                .collect(Collectors.toList());
+            .filter(ECanal::isAtivo)
+            .collect(Collectors.toList());
     }
 }
