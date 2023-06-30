@@ -119,7 +119,7 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comECanal_organizacaoEmpresaPredicate_quandoCanalNaoNullENaoVazio() {
+    public void comECanal_deveMontarPredicate_quandoCanalNaoNullENaoVazio() {
         var predicate = new OrganizacaoEmpresaPredicate()
             .comECanal(ECanal.INTERNET)
             .build();
@@ -128,7 +128,7 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comECanal_organizacaoEmpresaPredicate_quandoCanalNull() {
+    public void comECanal_naoDeveMontarPredicate_quandoCanalNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
             .comECanal(null)
             .build();

@@ -61,7 +61,7 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
     }
 
     public OrganizacaoEmpresaPredicate comECanal(ECanal canal) {
-        if (nonNull(canal)) {
+        if (canal != null) {
             builder.and(organizacaoEmpresa.canal.eq(canal));
         }
         return this;

@@ -39,9 +39,6 @@ public class  OrganizacaoEmpresaService {
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-    private static final ValidacaoException CAMPO_NIVEL_OBRIGATORIO =
-        new ValidacaoException("O campo nível Id é obrigatório!");
-
     @Autowired
     private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
 
@@ -185,7 +182,7 @@ public class  OrganizacaoEmpresaService {
 
     private void validarFiltrosConsultaAtivos(OrganizacaoEmpresaFiltros filtros) {
         if (filtros.getNivelId() == null) {
-            throw CAMPO_NIVEL_OBRIGATORIO;
+            throw new ValidacaoException("O campo nível Id é obrigatório!");
         }
     }
 }
