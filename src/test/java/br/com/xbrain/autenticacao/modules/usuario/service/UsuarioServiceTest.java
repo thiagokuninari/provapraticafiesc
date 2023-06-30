@@ -76,10 +76,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -1891,7 +1891,8 @@ public class UsuarioServiceTest {
                 tuple("PAP", "PAP"),
                 tuple("PAP_PME", "PAP PME"),
                 tuple("PAP_PREMIUM", "PAP PREMIUM"),
-                tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
+                tuple("INSIDE_SALES_PME", "INSIDE SALES PME"),
+                tuple("PAP_CONDOMINIO", "PAP CONDOMINIO")
             );
     }
 
@@ -2641,6 +2642,28 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.getUsuariosOperacaoCanalAa(codigoNivel))
             .containsExactly(outroUsuarioNivelOpCanalAaResponse());
+    }
+
+    @Test
+    public void findByCpf_deveRetornarUsuarioSubCanalNivelResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanal()));
+
+        when(usuarioRepository.findTop1UsuarioByCpf(any())).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findByCpf("11122233344"))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(1, PAP, "PAP")));
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
+    @Test
+    public void findByCpf_deveRetornarNovoObjeto_seUsuarioNaoExistir() {
+        assertThat(usuarioService.findByCpf("00000000000")).isEqualTo(new UsuarioSubCanalNivelResponse());
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

@@ -2435,6 +2435,14 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotFoundException("O usuário " + usuarioId + " não foi encontrado.")));
     }
 
+    public UsuarioSubCanalNivelResponse findByCpf(String cpf) {
+        return repository.findTop1UsuarioByCpf(cpf)
+            .stream()
+            .map(UsuarioSubCanalNivelResponse::of)
+            .findFirst()
+            .orElse(new UsuarioSubCanalNivelResponse());
+    }
+
     public List<PermissaoEspecial> getPermissoesEspeciaisDoUsuario(Integer usuarioId, Integer usuarioCadastroId,
                                                                    List<Integer> funcionalidadesIds) {
         return funcionalidadesIds.stream()
