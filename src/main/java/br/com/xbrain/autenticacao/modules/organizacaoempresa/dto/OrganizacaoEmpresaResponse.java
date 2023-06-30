@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class OrganizacaoEmpresaResponse {
     private NivelResponse nivel;
     private ESituacaoOrganizacaoEmpresa situacao;
     private String codigo;
+    private ECanal canal;
 
     public static OrganizacaoEmpresaResponse of(OrganizacaoEmpresa organizacaoEmpresa) {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();
@@ -27,6 +29,7 @@ public class OrganizacaoEmpresaResponse {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaResponse);
             organizacaoEmpresaResponse.setNome(organizacaoEmpresa.getNome());
             organizacaoEmpresaResponse.setNivel(organizacaoEmpresa.getNivelIdNome().orElse(null));
+            organizacaoEmpresaResponse.setCanal(organizacaoEmpresa.getCanal());
         }
         return organizacaoEmpresaResponse;
     }

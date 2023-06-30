@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrga
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
@@ -14,9 +15,9 @@ public class OrganizacaoEmpresaResponseTest {
     @Test
     public void of_deveRetornarOrganizacaoEmpresaResponse_seSolicitado() {
         assertThat(OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa()))
-            .extracting("id", "nome", "nivel", "situacao", "codigo")
+            .extracting("id", "nome", "nivel", "situacao", "codigo", "canal")
             .containsExactly(1, "Organizacao 1", OrganizacaoEmpresaHelper.umNivelResponse(),
-                ESituacaoOrganizacaoEmpresa.A, "codigo");
+                ESituacaoOrganizacaoEmpresa.A, "codigo", ECanal.INTERNET);
     }
 
     private static OrganizacaoEmpresa umaOrganizacaoEmpresa() {
@@ -31,6 +32,7 @@ public class OrganizacaoEmpresaResponseTest {
                 .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .codigo("codigo")
+            .canal(ECanal.INTERNET)
             .build();
     }
 }

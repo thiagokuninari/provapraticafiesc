@@ -243,7 +243,7 @@ public class OrganizacaoEmpresaControllerTest {
 
     @Test
     @SneakyThrows
-    public void _deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
+    public void findAllAtivos_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAdminAutenticado());
 
@@ -258,21 +258,6 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(jsonPath("$[0].situacao", is("A")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].situacao", is("A")));
-    }
-
-    @Test
-    @SneakyThrows
-    public void teste() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAdminAutenticado());
-
-        when(organizacaoEmpresaService.findAllAtivos(any()))
-            .thenReturn(umaListaOrganizacaoEmpresaResponse());
-
-        mockMvc.perform(get(API_URI + "/consultar-ativos")
-                .header("Authorization", getAccessToken(mockMvc, ADMIN))
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
     }
 
     @Test
