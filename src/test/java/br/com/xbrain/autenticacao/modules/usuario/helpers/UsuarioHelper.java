@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -17,6 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
@@ -79,6 +84,16 @@ public class UsuarioHelper {
             .email("email@email.com")
             .usuariosHierarquia(new HashSet<>())
             .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario umUsuario() {
+        return Usuario
+            .builder()
+            .id(100)
+            .nome("NED STARK")
+            .cargo(umCargo())
+            .subCanais(Set.of(umSubCanal()))
             .build();
     }
 
@@ -160,6 +175,69 @@ public class UsuarioHelper {
         );
 
         return usuario;
+    }
+
+    public static Cargo umCargo() {
+        return Cargo
+            .builder()
+            .id(50)
+            .codigo(ADMINISTRADOR)
+            .nome("ADMINISTRADOR")
+            .situacao(A)
+            .nivel(umNivelXbrain())
+            .build();
+    }
+
+    public static Nivel umNivelXbrain() {
+        return Nivel
+            .builder()
+            .id(4)
+            .codigo(XBRAIN)
+            .nome("X-BRAIN")
+            .situacao(A)
+            .build();
+    }
+
+    public static Usuario umUsuarioOperacaoComSubCanal(Set<SubCanal> subCanais) {
+        return Usuario.builder()
+            .id(101112)
+            .cargo(Cargo.builder()
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .subCanais(subCanais)
+            .usuarioCadastro(umUsuarioMsoConsultor(Set.of()))
+            .build();
+    }
+
+    public static Usuario umUsuarioMsoConsultor(Set<SubCanal> subCanais) {
+        return Usuario.builder()
+            .id(23)
+            .cargo(Cargo.builder()
+                .codigo(MSO_CONSULTOR)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(MSO)
+                    .situacao(ESituacao.A)
+                    .nome("MSO")
+                    .build())
+                .build())
+            .subCanais(subCanais)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioOperacaoDto() {
+        return UsuarioDto.builder()
+            .nome("VENDEDOR OPERACAO D2D")
+            .nivelId(1)
+            .nivelCodigo(OPERACAO)
+            .subCanaisId(Set.of(3))
+            .build();
     }
 
     public static UsuarioDto umUsuarioDto(Integer usuarioId, String usuarioEmail) {
@@ -247,6 +325,7 @@ public class UsuarioHelper {
             .hierarquiasId(List.of())
             .recuperarSenhaTentativa(0)
             .tiposFeeder(Set.of())
+            .subCanaisId(Set.of())
             .build();
     }
 }

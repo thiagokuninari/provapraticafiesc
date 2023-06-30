@@ -17,13 +17,100 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VAREJO_VENDEDOR;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.VAREJO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UsuarioDtoTest {
+
+    @Test
+    public void convertFrom_deveRetornarNivelCodigo_quandoCadastrarUsuario() {
+        assertThat(UsuarioDto.convertFrom(umUsuarioOperacaoDto()))
+            .extracting("nome", "nivelCodigo", "subCanaisId")
+            .containsExactly("VENDEDOR OPERACAO D2D", OPERACAO, Set.of(3));
+    }
+
+    @Test
+    public void hasCanalD2dProprio_deveRetornarFalse_quandoUsuarioNaoPossuirCanalD2dProprio() {
+        var usuarioDto = UsuarioDto.builder()
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
+
+        assertFalse(usuarioDto.hasCanalD2dProprio());
+    }
+
+    @Test
+    public void hasCanalD2dProprio_deveRetornarTrue_quandoUsuarioPossuirCanalD2dProprio() {
+        var usuarioDto = UsuarioDto.builder()
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertTrue(usuarioDto.hasCanalD2dProprio());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoIdECargoCodigoForemNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(null)
+            .cargoCodigo(null)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoCargoCodigoForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1)
+            .cargoCodigo(null)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoIdForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(null)
+            .cargoCodigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarTrue_quandoUsuarioPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1)
+            .cargoCodigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .build();
+
+        assertTrue(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasSubCanaisId_deveRetornarFalse_quandoUsuarioNaoPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .subCanaisId(Set.of())
+            .build();
+
+        assertFalse(usuarioDto.hasSubCanaisId());
+    }
+
+    @Test
+    public void hasSubCanaisId_deveRetornarTrue_quandoUsuarioPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .subCanaisId(Set.of(1, 2, 3, 4))
+            .build();
+
+        assertTrue(usuarioDto.hasSubCanaisId());
+    }
 
     @Test
     public void convertFrom_deveRetornarFeeders_quandoCadastrarUsuarioNivelMso() {
@@ -133,6 +220,7 @@ public class UsuarioDtoTest {
             .hierarquiasId(List.of(65))
             .canais(Set.of(ECanal.VAREJO))
             .recuperarSenhaTentativa(0)
+            .subCanaisId(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -353,6 +441,7 @@ public class UsuarioDtoTest {
             .canais(Set.of(ECanal.VAREJO))
             .recuperarSenhaTentativa(0)
             .permiteEditarCompleto(true)
+            .subCanaisId(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);

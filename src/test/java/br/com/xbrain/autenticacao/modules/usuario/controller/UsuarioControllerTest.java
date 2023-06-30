@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -15,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
@@ -81,6 +83,10 @@ public class UsuarioControllerTest {
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @MockBean
     private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
+    @MockBean
+    private FeederService feederService;
+    @MockBean
+    private SubCanalService subCanalService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
         return new UsuarioExecutivoResponse(id, email, nome);
@@ -1427,7 +1433,7 @@ public class UsuarioControllerTest {
         mvc.perform(get("/api/usuarios/tipos-canal")
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$", hasSize(5)))
             .andExpect(jsonPath("$[0].value", is(ETipoCanal.PAP.toString())))
             .andExpect(jsonPath("$[0].label", is(ETipoCanal.PAP.getDescricao().toUpperCase())))
             .andExpect(jsonPath("$[1].value", is(ETipoCanal.PAP_PME.toString())))
@@ -1435,7 +1441,9 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[2].value", is(ETipoCanal.PAP_PREMIUM.toString())))
             .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
             .andExpect(jsonPath("$[3].value", is(ETipoCanal.INSIDE_SALES_PME.toString())))
-            .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())));
+            .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[4].value", is(ETipoCanal.PAP_CONDOMINIO.toString())))
+            .andExpect(jsonPath("$[4].label", is(ETipoCanal.PAP_CONDOMINIO.getDescricao().toUpperCase())));
     }
 
     @Test
@@ -1509,5 +1517,104 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonString(listaIds)))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findByUsuarioId_deveRetornarOk_quandoUsuarioExistir() {
+        mvc.perform(get("/api/usuarios/{usuarioId}/subcanal/nivel", 100)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.nivel", is("XBRAIN")))
+            .andExpect(jsonPath("$.subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$.subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$.subCanais[0].nome", is("PAP")))
+            .andExpect(jsonPath("$.subCanais[0].situacao", is("A")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(100));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findByUsuarioId_deveRetornarNotFound_quandoUsuarioNaoExistir() {
+        mvc.perform(get("/api/usuarios/{usuarioId}/subcanal/nivel", 500)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$[0].message", is("O usuário " + 500 + " não foi encontrado.")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(500));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosById_deveRetornarListaDeUsuarioResponse_quandoUsuariosCadastrados() {
+        mvc.perform(post(USUARIOS_ENDPOINT + "/buscar-todos")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .content(String.valueOf(List.of(100, 101)))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$[0].codigoNivel", is("XBRAIN")))
+            .andExpect(jsonPath("$[0].subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$[0].subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$[0].subCanais[0].nome", is("PAP")))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$[1].codigoNivel", is("XBRAIN")))
+            .andExpect(jsonPath("$[1].subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$[1].subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$[1].subCanais[0].nome", is("PAP")));
+
+        verify(usuarioService, times(1)).getUsuariosByIdsTodasSituacoes(List.of(100, 101));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosById_deveRetornarListaVaziaDeUsuarioResponse_quandoUsuariosNaoCadastrados() {
+        mvc.perform(post(USUARIOS_ENDPOINT + "/buscar-todos")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .content(String.valueOf(List.of(1, 2)))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(usuarioService, times(1)).getUsuariosByIdsTodasSituacoes(List.of(1, 2));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosById_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(post(USUARIOS_ENDPOINT + "/buscar-todos")
+                .content(String.valueOf(List.of(1, 2)))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).getUsuariosByIdsTodasSituacoes(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findByCpf_deveRetornarOk_quandoUsuarioExistir() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/cpf")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "38957979875"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findByCpf(eq("38957979875"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findByCpf_naoDeveRetornarNotFound_quandoUsuarioNaoExistir() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/cpf")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "00000000000"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findByCpf(eq("00000000000"));
     }
 }

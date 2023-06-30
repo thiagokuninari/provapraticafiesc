@@ -54,7 +54,7 @@ public class CargoService {
             .collect(Collectors.toList());
     }
 
-    public  List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
+    public List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate().comNivel(nivelId);
         return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
     }
@@ -101,7 +101,8 @@ public class CargoService {
                 .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
                 .build())
             .stream()
-            .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ", cargo.getNome(), cargo.getNivel().getNome())))
+            .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ",
+                 cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 
