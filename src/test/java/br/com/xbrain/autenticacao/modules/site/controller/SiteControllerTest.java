@@ -126,7 +126,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void findById_deveRetornarSaoPaulo_quandoBuscarPorId() {
+    public void getById_deveRetornarSaoPaulo_quandoBuscarPorId() {
         mvc.perform(get(API_URI + "/100")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
@@ -142,7 +142,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void findById_notFound_quandoBuscarPorIdENaoExistir() {
+    public void getById_notFound_quandoBuscarPorIdENaoExistir() {
         mvc.perform(get(API_URI + "/999")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isNotFound())
