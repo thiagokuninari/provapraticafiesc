@@ -38,7 +38,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/gerencia/existir/usuario",
             "/api/cep/**",
             "/api/usuarios/usuario-funil-prospeccao",
-            "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
             "/api/sites/permitidos",
             "/api/horarios-acesso/status/**"
