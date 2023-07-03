@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.util.ObjectUtils;
@@ -61,6 +62,13 @@ public class CargoPredicate extends PredicateBase {
 
     private CargoPredicate comCanais(Set<CodigoCargo> canais) {
         builder.and(cargo.codigo.in(canais));
+        return this;
+    }
+
+    public CargoPredicate comCanal(ECanal canal) {
+        if (canal != null) {
+            builder.and(cargo.canais.contains(canal));
+        }
         return this;
     }
 
