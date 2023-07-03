@@ -66,7 +66,9 @@ public class CargoPredicate extends PredicateBase {
     }
 
     public CargoPredicate comCanal(ECanal canal) {
-        builder.and(cargo.canais.contains(canal));
+        if (canal != null) {
+            builder.and(cargo.canais.contains(canal));
+        }
         return this;
     }
 

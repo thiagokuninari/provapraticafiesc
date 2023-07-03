@@ -107,7 +107,7 @@ public class CargoServiceTest {
     }
 
     @Test
-    public void getPermitidosPorNivelECanaisPermitidos_cargosPermitidosParaAqueleCanal_quandoCanalForInternet() {
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarCargosPermitidosParaAqueleCanal_quandoCanalForInternet() {
         mockUmUsuarioGerenteVisualizarGeral();
 
         var predicate = new CargoPredicate()

@@ -18,4 +18,14 @@ public class CargoPredicateTest {
         var expected = new BooleanBuilder(cargo.canais.contains(ECanal.INTERNET));
         assertThat(predicate).isEqualTo(expected);
     }
+
+    @Test
+    public void comCanal_deveIgnorarTodosOsRegistros_quandoCanalForNull() {
+        var predicate = new CargoPredicate()
+            .comCanal(null)
+            .build();
+
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
 }
