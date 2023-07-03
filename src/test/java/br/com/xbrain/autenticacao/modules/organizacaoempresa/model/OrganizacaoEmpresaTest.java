@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
@@ -18,8 +19,9 @@ public class OrganizacaoEmpresaTest {
     @Test
     public void of_deveRetornarObjetoCorreto_quandoRecebeOrganizacaoEmpresa() {
         assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build()))
-            .extracting("nome", "nivel", "situacao")
-            .containsExactly("Organizacao 1", OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
+            .extracting("nome", "nivel", "situacao", "canal")
+            .containsExactly("Organizacao 1", OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A,
+                ECanal.INTERNET);
     }
 
     @Test
@@ -58,6 +60,7 @@ public class OrganizacaoEmpresaTest {
             .nome("Organizacao 1")
             .nivelId(1)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .canal(ECanal.INTERNET)
             .build();
     }
 

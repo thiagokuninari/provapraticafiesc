@@ -134,9 +134,16 @@ public class  OrganizacaoEmpresaService {
             .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
     }
 
-    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
-        var organizacoes = organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
-            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+    public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
+        validarFiltrosConsultaAtivos(filtros);
+
+        var predicate = filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build();
+
+        var organizacoes = organizacaoEmpresaRepository
+            .findAll(predicate)
+            .stream().map(OrganizacaoEmpresaResponse::of)
+            .collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(organizacoes)) {
             throw EX_NAO_ENCONTRADO;
         }
@@ -171,5 +178,11 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresaResponse getById(Integer id) {
         return OrganizacaoEmpresaResponse.of(organizacaoEmpresaRepository.findById(id)
             .orElseThrow(() -> EX_NAO_ENCONTRADO));
+    }
+
+    private void validarFiltrosConsultaAtivos(OrganizacaoEmpresaFiltros filtros) {
+        if (filtros.getNivelId() == null) {
+            throw new ValidacaoException("O campo nível Id é obrigatório!");
+        }
     }
 }

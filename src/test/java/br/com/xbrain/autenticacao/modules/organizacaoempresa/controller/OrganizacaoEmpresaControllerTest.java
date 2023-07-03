@@ -243,15 +243,15 @@ public class OrganizacaoEmpresaControllerTest {
 
     @Test
     @SneakyThrows
-    public void findAllAtivosByNivelId_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
+    public void findAllAtivos_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAdminAutenticado());
 
-        when(organizacaoEmpresaService.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
-        mockMvc.perform(get(API_URI + "/nivel")
+        when(organizacaoEmpresaService.findAllAtivos(any())).thenReturn(umaListaOrganizacaoEmpresaResponse());
+
+        mockMvc.perform(get(API_URI + "/consultar-ativos")
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
-                .param("nivelId", "100")
-                .accept(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].id", is(1)))

@@ -310,30 +310,48 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findAllByNivelIdAndSituacao_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
-        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
-            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+    public void findAllAtivos_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
+        var filtros = OrganizacaoEmpresaFiltros.builder().nivelId(1).build();
 
-        Assertions.assertThat(service.findAllAtivosByNivelId(1))
+        doReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()))
+            .when(organizacaoEmpresaRepository)
+                .findAll(filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build());
+
+        Assertions.assertThat(service.findAllAtivos(filtros))
             .extracting("id", "nome", "nivel")
             .containsExactly(
                 tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
 
         verify(organizacaoEmpresaRepository, times(1))
-            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+            .findAll(any(Predicate.class));
     }
 
     @Test
-    public void findAllByNivelIdAndSituacao_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
-        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
-            .thenReturn(List.of());
+    public void findAllAtivos_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        var filtros = OrganizacaoEmpresaFiltros.builder().nivelId(1).build();
+
+        doReturn(List.of())
+            .when(organizacaoEmpresaRepository)
+                .findAll(filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build());
 
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.findAllAtivosByNivelId(1))
+            .isThrownBy(() -> service.findAllAtivos(filtros))
             .withMessage("Organização não encontrada.");
 
         verify(organizacaoEmpresaRepository, times(1))
-            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+            .findAll(any(Predicate.class));
+    }
+
+    @Test
+    public void findAllAtivos_deveLancarValidacaoException_quandoNivelIdNaoInformado() {
+        var filtros = OrganizacaoEmpresaFiltros.builder().build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findAllAtivos(filtros))
+            .withMessage("O campo nível Id é obrigatório!");
+
+        verify(organizacaoEmpresaRepository, never())
+            .findAll(any(Predicate.class));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate;
 
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
@@ -114,6 +115,24 @@ public class OrganizacaoEmpresaPredicateTest {
             .comCodigo("codigo")
             .build();
         var expected = new BooleanBuilder(organizacaoEmpresa.codigo.containsIgnoreCase("codigo"));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comECanal_deveMontarPredicate_quandoCanalNaoNullENaoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comECanal(ECanal.INTERNET)
+            .build();
+        var expected = new BooleanBuilder(organizacaoEmpresa.canal.eq(ECanal.INTERNET));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comECanal_naoDeveMontarPredicate_quandoCanalNull() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comECanal(null)
+            .build();
+        var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 }

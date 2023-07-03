@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate.OrganizacaoEmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class OrganizacaoEmpresaFiltros {
     private ESituacaoOrganizacaoEmpresa situacao;
     private CodigoNivel codigoNivel;
     private String codigo;
+    private ECanal canal;
 
     public OrganizacaoEmpresaPredicate toPredicate() {
         return new OrganizacaoEmpresaPredicate()
@@ -28,6 +30,7 @@ public class OrganizacaoEmpresaFiltros {
             .comNivel(nivelId)
             .comSituacao(situacao)
             .comCodigoNivel(codigoNivel)
-            .comCodigo(codigo);
+            .comCodigo(codigo)
+            .comECanal(canal);
     }
 }

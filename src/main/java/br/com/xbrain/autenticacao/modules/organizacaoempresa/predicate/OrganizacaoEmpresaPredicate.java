@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate;
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Optional;
@@ -57,6 +58,12 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
             builder.and(organizacaoEmpresa.nivel.codigo.eq(codigoNivel));
         }
         return this;
+    }
 
+    public OrganizacaoEmpresaPredicate comECanal(ECanal canal) {
+        if (canal != null) {
+            builder.and(organizacaoEmpresa.canal.eq(canal));
+        }
+        return this;
     }
 }
