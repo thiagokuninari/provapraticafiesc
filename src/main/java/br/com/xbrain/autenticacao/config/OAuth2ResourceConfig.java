@@ -40,8 +40,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
-            "/api/sites/permitidos",
-            "/api/horarios-acesso/status/**" // remover dos endpoints publics
+            "/api/sites/permitidos"
         };
 
         http
