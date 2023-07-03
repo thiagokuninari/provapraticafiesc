@@ -83,7 +83,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
             .antMatchers("/api/usuario-acesso/inativar").hasRole(CodigoFuncionalidade.AUT_INATIVAR_USUARIOS_SEM_ACESSO.name())
             .antMatchers("/api/horarios-acesso/**", "/api/horarios-acesso/status/**")
-            .hasAnyRole(CodigoFuncionalidade.AUT_20009.name(), CodigoFuncionalidade.AUT_20017.name())
+            .hasAnyRole(CodigoFuncionalidade.AUT_20009.name(), CodigoFuncionalidade.AUT_20024.name())
             .antMatchers("/api/organizacao-empresa/**", "/api/organizacao-empresa-historico/**",
                 "/api/nivel-empresa/**", "/api/modalidade-empresa/**").hasRole(
                     CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
