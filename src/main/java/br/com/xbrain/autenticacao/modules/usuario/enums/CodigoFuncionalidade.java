@@ -40,6 +40,7 @@ public enum CodigoFuncionalidade {
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
     AUT_20010("Adicionar novo usuário"),
+    AUT_20017("Visualizar status do Horário de Acesso"),
     VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo");
 
     @Getter
