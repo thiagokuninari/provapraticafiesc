@@ -288,7 +288,6 @@ public class UsuarioTest {
         assertThat(usuarioAtivo(ASSISTENTE_RELACIONAMENTO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
     }
 
-
     @Test
     public void isCargoLojaFuturo_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
         assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isFalse();
