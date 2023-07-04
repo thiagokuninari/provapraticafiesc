@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.br.CNPJ;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @Data
 @Builder
@@ -20,8 +22,7 @@ public class OrganizacaoEmpresaRequest {
 
     @NotNull
     private String razaoSocial;
-    @CNPJ
-    @NotNull
+    @NotBlank
     private String cnpj;
     @NotNull
     private Integer nivelId;
@@ -31,6 +32,6 @@ public class OrganizacaoEmpresaRequest {
     private ESituacaoOrganizacaoEmpresa situacao;
 
     public String getCnpjSemMascara() {
-        return CnpjUtils.getNumerosCnpj(cnpj);
+        return isNotBlank(cnpj) ? CnpjUtils.getNumerosCnpj(cnpj) : "";
     }
 }

@@ -38,6 +38,11 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
+    public static OrganizacaoEmpresa organizacaoEmpresaNull() {
+        return OrganizacaoEmpresa.builder()
+            .build();
+    }
+
     public static byte[] convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
