@@ -260,7 +260,6 @@ public class FeriadoControllerTest {
             .andExpect(jsonPath("$.error", is("unauthorized")));
 
         verify(service, never()).buscarTotalDeFeriadosPorMesAno();
-
     }
 
     @Test

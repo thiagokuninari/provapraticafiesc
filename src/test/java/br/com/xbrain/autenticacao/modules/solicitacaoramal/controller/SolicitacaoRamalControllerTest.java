@@ -93,7 +93,6 @@ public class SolicitacaoRamalControllerTest {
             .andExpect(status().isOk());
 
         verify(service).getDadosAgenteAutorizado(any());
-
     }
 
     @Test
@@ -432,7 +431,6 @@ public class SolicitacaoRamalControllerTest {
             .andExpect(jsonPath("$.[0].descricao", is("ESCRITÓRIO")))
             .andExpect(jsonPath("$.[1].codigo", is("HOME_OFFICE")))
             .andExpect(jsonPath("$.[1].descricao", is("HOME OFFICE")));
-
     }
 
     @Test

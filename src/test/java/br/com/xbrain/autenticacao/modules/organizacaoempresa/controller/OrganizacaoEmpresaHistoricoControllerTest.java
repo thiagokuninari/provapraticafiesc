@@ -76,7 +76,6 @@ public class OrganizacaoEmpresaHistoricoControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
     public void getHistoricoDaOrganizacaoEmpresa_deveRetornarOk_quandoDadosValidos() {
-
         mvc.perform(get(API_URI + "/{id}", 1)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());

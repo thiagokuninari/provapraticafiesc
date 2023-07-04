@@ -355,6 +355,7 @@ public class OrganizacaoEmpresaControllerTest {
     @WithAnonymousUser
     public void findByNivel_deveRetornarUnauthorized_quandoNaoPassarToken() {
         when(service.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+
         mockMvc.perform(get(API_URI + "/por-nivel")
                 .param("nivelId", "100")
                 .accept(MediaType.APPLICATION_JSON))
@@ -368,6 +369,7 @@ public class OrganizacaoEmpresaControllerTest {
     @SneakyThrows
     public void findByNivel_deveRetornarForbidden_quandoNaoTiverPermissao() {
         when(service.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+
         mockMvc.perform(get(API_URI + "/por-nivel")
                 .param("nivelId", "100")
                 .accept(MediaType.APPLICATION_JSON))

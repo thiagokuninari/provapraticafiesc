@@ -54,7 +54,6 @@ public class ImportacaoUsuarioControllerTest {
     @Test
     @SneakyThrows
     public void uploadUsuario_deveRetornarBadRequest_quandoNaoInformarCampoUsuarioImportacaoJson() {
-
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload("/api/importacao-usuarios")
                 .file(new MockMultipartFile("file", "planilha.xlsx",
@@ -68,7 +67,6 @@ public class ImportacaoUsuarioControllerTest {
     @Test
     @SneakyThrows
     public void uploadUsuario_deveRetornarBadRequest_quandoNaoInformarCampoFile() {
-
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload("/api/importacao-usuarios")
                 .param("usuarioImportacaoJson",
@@ -84,7 +82,6 @@ public class ImportacaoUsuarioControllerTest {
     @Test
     @SneakyThrows
     public void uploadUsuario_deveRetornarOk_quandoDadosValidos() {
-
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload("/api/importacao-usuarios")
                 .file(new MockMultipartFile("file", "planilha.xlsx",

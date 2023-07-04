@@ -90,7 +90,6 @@ public class SiteControllerTest {
             .andExpect(status().isOk());
 
         verify(service).getAll(any(), any());
-
     }
 
     @Test
