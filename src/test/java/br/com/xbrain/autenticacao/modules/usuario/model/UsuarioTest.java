@@ -279,9 +279,15 @@ public class UsuarioTest {
     }
 
     @Test
-    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForClienteLojaFuturo() {
         assertThat(usuarioAtivo(CLIENTE_LOJA_FUTURO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
     }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForAssistenteRelacionamento() {
+        assertThat(usuarioAtivo(ASSISTENTE_RELACIONAMENTO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
+    }
+
 
     @Test
     public void isCargoLojaFuturo_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
