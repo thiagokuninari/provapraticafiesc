@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -11,12 +12,18 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
+import java.util.Arrays;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.TEST;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private Environment environment;
     @Autowired
     private CorsConfigFilter corsConfigFilter;
 
@@ -86,12 +93,19 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/horarios-acesso/**").hasAnyRole(CodigoFuncionalidade.AUT_20009.name())
             .antMatchers("/api/organizacao-empresa/**", "/api/organizacao-empresa-historico/**",
                 "/api/nivel-empresa/**", "/api/modalidade-empresa/**").hasRole(
-                    CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
+                CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
             .anyRequest().authenticated();
     }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        if (isActiveProfileTest()) {
+            resources.stateless(false);
+        }
         resources.tokenStore(tokenStore);
+    }
+
+    private boolean isActiveProfileTest() {
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase(TEST));
     }
 }
