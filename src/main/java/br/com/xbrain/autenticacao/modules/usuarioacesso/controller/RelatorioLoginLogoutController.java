@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.RelatorioLoginLogoutService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/relatorio-login-logout")
 public class RelatorioLoginLogoutController {
 
-    @Autowired
-    private RelatorioLoginLogoutService service;
+    private final RelatorioLoginLogoutService service;
 
     @GetMapping("hoje")
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(
