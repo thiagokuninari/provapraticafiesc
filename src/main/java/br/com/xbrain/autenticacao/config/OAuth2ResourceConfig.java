@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -11,6 +12,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
@@ -18,7 +21,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     @Autowired
     private TokenStore tokenStore;
     @Autowired
-    private CorsConfigFilter corsConfigFilter;
+    private Environment environment;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -44,7 +47,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         };
 
         http
-            .addFilterBefore(corsConfigFilter, ChannelProcessingFilter.class)
+            .addFilterBefore(new CorsConfigFilter(), ChannelProcessingFilter.class)
             .requestMatchers()
             .antMatchers("/**")
             .and()
@@ -82,8 +85,10 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
             .antMatchers("/api/usuario-acesso/inativar").hasRole(CodigoFuncionalidade.AUT_INATIVAR_USUARIOS_SEM_ACESSO.name())
-            .antMatchers("/api/horarios-acesso/**", "/api/horarios-acesso/status/**")
+            .antMatchers("/api/horarios-acesso", "/api/horarios-acesso/{id}/**")
             .hasAnyRole(CodigoFuncionalidade.AUT_20009.name(), CodigoFuncionalidade.AUT_20024.name())
+            .antMatchers("/api/horarios-acesso/status", "/api/horarios-acesso/status/{siteId}")
+            .hasAnyRole(CodigoFuncionalidade.AUT_20024.name())
             .antMatchers("/api/organizacao-empresa/**", "/api/organizacao-empresa-historico/**",
                 "/api/nivel-empresa/**", "/api/modalidade-empresa/**").hasRole(
                     CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
@@ -92,6 +97,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        if (isActiveProfileTest()) {
+            resources.stateless(false);
+        }
         resources.tokenStore(tokenStore);
+    }
+
+    private boolean isActiveProfileTest() {
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase("test"));
     }
 }

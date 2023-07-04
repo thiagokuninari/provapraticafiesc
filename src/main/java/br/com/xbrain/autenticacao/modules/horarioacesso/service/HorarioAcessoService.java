@@ -21,8 +21,6 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
@@ -50,22 +48,14 @@ public class HorarioAcessoService {
 
     private final Environment environment;
 
-    @Autowired
-    private HorarioAcessoRepository repository;
-    @Autowired
-    private HorarioAtuacaoRepository atuacaoRepository;
-    @Autowired
-    private HorarioHistoricoRepository historicoRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private SiteService siteService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
-    @Autowired
-    private CallService callService;
-    @Autowired
-    private NotificacaoApiService notificacaoApiService;
+    private final HorarioAcessoRepository repository;
+    private final HorarioAtuacaoRepository atuacaoRepository;
+    private final HorarioHistoricoRepository historicoRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final SiteService siteService;
+    private final DataHoraAtual dataHoraAtual;
+    private final CallService callService;
+    private final NotificacaoApiService notificacaoApiService;
 
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
         var horariosAcesso = repository.findAll(filtros.toPredicate().build(), pageable)

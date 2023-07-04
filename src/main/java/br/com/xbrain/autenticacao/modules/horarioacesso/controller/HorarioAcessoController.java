@@ -5,17 +5,18 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/horarios-acesso")
+@RequiredArgsConstructor
 public class HorarioAcessoController {
 
-    @Autowired
-    private HorarioAcessoService service;
+    private final HorarioAcessoService service;
 
     @GetMapping
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
