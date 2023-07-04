@@ -3,18 +3,18 @@ package br.com.xbrain.autenticacao.modules.cep.controller;
 import br.com.xbrain.autenticacao.modules.cep.dto.ConsultaCepResponse;
 import br.com.xbrain.autenticacao.modules.cep.service.ConsultaCepService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "api/cep")
 public class CepController {
 
-    @Autowired
-    private ConsultaCepService consultaCepService;
+    private final ConsultaCepService consultaCepService;
 
     @GetMapping("{cep}")
     public ResponseEntity<CidadeUfResponse> buscarCidadeEstado(@PathVariable String cep) {
