@@ -154,7 +154,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     @SneakyThrows
-    public void getHistoricos_deveRetornar_quandoTiverPermissao() {
+    public void getHistoricos_deveRetornarForbidden_quandoNaoTiverPermissao() {
         when(service.getHistoricos(any(PageRequest.class), anyInt())).thenReturn(umaListaHorarioHistoricoResponse());
 
         mvc.perform(get(URL + "/1/historico")
@@ -169,7 +169,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
-    public void getHistoricos_deveRetornarListaHorarioAcessoResponse_quandoTiverPermissao() {
+    public void getHistoricos_deveRetornarOk_quandoTiverPermissao() {
         when(service.getHistoricos(any(PageRequest.class), anyInt())).thenReturn(umaListaHorarioHistoricoResponse());
 
         mvc.perform(get(URL + "/1/historico")

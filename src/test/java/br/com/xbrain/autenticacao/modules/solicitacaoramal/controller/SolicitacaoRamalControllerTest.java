@@ -71,7 +71,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getDadosAgenteAutorizado_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getDadosAgenteAutorizado_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/dados-agente-autorizado/2"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -98,7 +98,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAllHistoricoBySolicitacaoId_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getAllHistoricoBySolicitacaoId_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/historico/1"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -121,7 +121,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getSolicitacaoById_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getSolicitacaoById_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/solicitacao/1"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -142,7 +142,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void atualizarSituacao_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void atualizarSituacao_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -196,7 +196,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAllGerencia_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getAllGerencia_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -227,7 +227,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAll_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getAll_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));

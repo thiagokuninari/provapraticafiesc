@@ -250,7 +250,7 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void excluirFeriado_deveRetornarUnauthorizied_quandoNaoExistirUsuarioAutenticado() {
+    public void excluirFeriado_deveRetornarUnauthorized_quandoNaoExistirUsuarioAutenticado() {
         mvc.perform(put(URL_GERENCIAR + "/excluir/10000")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
@@ -284,7 +284,7 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void importarFeriados_deveRetornarUnauthorizied_quandoNaoTiverUsuarioAutenticado() {
+    public void importarFeriados_deveRetornarUnauthorized_quandoNaoTiverUsuarioAutenticado() {
         byte[] bytes = ByteStreams.toByteArray(getFileInputStream("test_importacao_feriado/test_feriado.csv"));
 
         mvc.perform(fileUpload(URL_GERENCIAR + "/importar")

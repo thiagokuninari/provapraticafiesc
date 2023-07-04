@@ -54,7 +54,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getLoginsLogoutsDeHoje_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getLoginsLogoutsDeHoje_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(API_URL + "/hoje")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
                 .param("agenteAutorizadoId", "1"))
@@ -102,7 +102,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getLoginsLogoutsEntreDatas_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getLoginsLogoutsEntreDatas_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(API_URL + "/entre-datas"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
@@ -177,7 +177,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getCsv_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getCsv_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(API_URL + "/csv")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
             .andExpect(status().isUnauthorized())
@@ -231,7 +231,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getColaboradores_deveRetornarAuthorization_quandoNaoPassarToken() {
+    public void getColaboradores_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(API_URL + "/colaboradores")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
             .andExpect(status().isUnauthorized())
@@ -255,7 +255,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
-    public void getColaboradores_deveRetornarOk_quandoCanalNaoInformado() {
+    public void getColaboradores_deveRetornarBadRequest_quandoCanalNaoInformado() {
         mvc.perform(get(API_URL + "/colaboradores")
                 .param("agenteAutorizadoId", "1"))
             .andExpect(status().isBadRequest());

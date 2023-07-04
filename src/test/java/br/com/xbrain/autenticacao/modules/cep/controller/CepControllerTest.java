@@ -83,7 +83,7 @@ public class CepControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarCidadesPorCeps_deveRetornarCidadeEstadoComStatus200_quandoExistir() {
+    public void buscarCidadesPorCeps_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(post(API_URL)
                 .content(convertObjectToJsonBytes(List.of("86080260", "71930000", "16400123")))
                 .contentType(MediaType.APPLICATION_JSON)

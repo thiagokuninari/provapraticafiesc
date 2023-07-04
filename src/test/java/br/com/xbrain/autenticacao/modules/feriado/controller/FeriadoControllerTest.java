@@ -72,7 +72,7 @@ public class FeriadoControllerTest {
 
     @Test
     @SneakyThrows
-    public void consultarFeriadoNacional_consulta_deveRetornaarOK_quandoDadosValidos() {
+    public void consultarFeriadoNacional_consulta_deveRetornarOK_quandoDadosValidos() {
         mvc.perform(get(URL_BASE + "/consulta")
                 .param("data", "07/09/2018")
                 .accept(MediaType.APPLICATION_JSON))
