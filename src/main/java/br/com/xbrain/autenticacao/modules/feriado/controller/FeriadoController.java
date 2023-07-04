@@ -4,18 +4,18 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoRespons
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "api/feriado")
 public class FeriadoController {
 
-    @Autowired
-    private FeriadoService service;
+    private final FeriadoService service;
 
     @GetMapping("/consulta")
     public boolean consultarFeriadoNacional(@RequestParam String data) {
