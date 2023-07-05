@@ -1,16 +1,11 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
-import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
-import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,16 +49,6 @@ public class HorarioAcessoControllerTest {
     @MockBean
     private HorarioAcessoService service;
     @MockBean
-    private HorarioAcessoRepository repository;
-    @MockBean
-    private HorarioAtuacaoRepository atuacaoRepository;
-    @MockBean
-    private AutenticacaoService autenticacaoService;
-    @MockBean
-    private SiteService siteService;
-    @MockBean
-    private DataHoraAtual dataHoraAtual;
-    @MockBean
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private TokenStore tokenStore;
@@ -95,7 +80,6 @@ public class HorarioAcessoControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
     public void getHorariosAcesso_deveRetornarOk_quandoTiverPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umAdmin());
         mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());

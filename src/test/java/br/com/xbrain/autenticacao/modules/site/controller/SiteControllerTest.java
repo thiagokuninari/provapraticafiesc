@@ -7,9 +7,7 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteDiscadoraRequest;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.helper.SiteHelper;
-import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,10 +48,6 @@ public class SiteControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    @MockBean
-    private SiteRepository repository;
-    @MockBean
-    private UsuarioService usuarioService;
     @MockBean
     private SiteService service;
     @MockBean

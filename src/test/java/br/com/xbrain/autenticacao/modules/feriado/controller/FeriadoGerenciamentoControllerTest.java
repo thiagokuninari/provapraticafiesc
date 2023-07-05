@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
@@ -9,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoImportacaoService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
-import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -59,10 +57,6 @@ public class FeriadoGerenciamentoControllerTest {
     private FeriadoService service;
     @MockBean
     private FeriadoImportacaoService feriadoImportacaoService;
-    @MockBean
-    private CallService callService;
-    @MockBean
-    private MailingService mailingService;
     @MockBean
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean

@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.cep.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.cep.client.ConsultaCepClient;
 import br.com.xbrain.autenticacao.modules.cep.service.ConsultaCepService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import lombok.SneakyThrows;
@@ -35,8 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CepControllerTest {
 
     private static final String API_URL = "/api/cep";
-    @MockBean
-    private ConsultaCepClient consultaCepClient;
+
     @Autowired
     private MockMvc mvc;
     @MockBean

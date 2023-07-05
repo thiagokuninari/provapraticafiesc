@@ -41,8 +41,6 @@ public class ModalidadeEmpresaControllerTest {
     @MockBean
     private ModalidadeEmpresaService service;
     @MockBean
-    private AutenticacaoService autenticacaoService;
-    @MockBean
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private TokenStore tokenStore;

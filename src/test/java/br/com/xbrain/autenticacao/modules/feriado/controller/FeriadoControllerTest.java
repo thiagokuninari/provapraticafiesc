@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import lombok.SneakyThrows;
@@ -35,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FeriadoControllerTest {
 
     private static final String URL_BASE = "/api/feriado";
-    private static final String URL_GERENCIAR = "/api/feriado/gerenciar";
 
     @Autowired
     private MockMvc mvc;
@@ -45,8 +43,6 @@ public class FeriadoControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private TokenStore tokenStore;
-    @MockBean
-    private DataHoraAtual dataHoraAtual;
 
     @Test
     @SneakyThrows

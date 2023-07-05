@@ -1,18 +1,11 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
-import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -48,24 +41,10 @@ public class SolicitacaoRamalControllerTest {
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
     private static final String GERENCIAR_SOLICITACAO_RAMAL = "CTR_2034";
-    @MockBean
-    private SolicitacaoRamalService service;
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private SolicitacaoRamalHistoricoService historicoService;
-    @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @MockBean
-    private EquipeVendasService equipeVendasService;
-    @MockBean
-    private EmailService emailService;
-    @MockBean
-    private CallService callService;
-    @MockBean
-    private SocioService socioService;
+    private SolicitacaoRamalService service;
     @MockBean
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean

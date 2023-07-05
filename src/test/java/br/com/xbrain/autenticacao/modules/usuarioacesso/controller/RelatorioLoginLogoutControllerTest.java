@@ -23,7 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
-import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umRelatorio;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umaListaLoginLogoutResponse;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
