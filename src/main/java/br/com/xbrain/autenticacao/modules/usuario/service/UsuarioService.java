@@ -1490,8 +1490,7 @@ public class UsuarioService {
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
         var isEstruturaLojaFuturoOuClienteCargoNotLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())
-            ? !agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()).equals("LOJA_FUTURO")
-            : false;
+            && !agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()).equals("LOJA_FUTURO");
 
         if (ObjectUtils.isEmpty(usuario.getCpf()) && !CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
