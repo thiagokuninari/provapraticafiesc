@@ -46,12 +46,4 @@ public class LoginLogoutHelper {
             .usuariosIds(Lists.newArrayList(1, 2, 3))
             .build();
     }
-
-    public static RelatorioLoginLogoutRequest umRelatorioNull() {
-        return RelatorioLoginLogoutRequest.builder()
-            .dataInicial(null)
-            .dataFinal(null)
-            .usuariosIds(List.of())
-            .build();
-    }
 }

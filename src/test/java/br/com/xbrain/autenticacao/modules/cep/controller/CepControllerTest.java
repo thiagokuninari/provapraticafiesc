@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,7 +54,7 @@ public class CepControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).consultarCep(any());
+        verify(service).consultarCep("86080-260");
     }
 
     @Test
@@ -65,7 +64,7 @@ public class CepControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).consultarCep(any());
+        verify(service).consultarCep("86080-260");
     }
 
     @Test
@@ -73,23 +72,23 @@ public class CepControllerTest {
     @WithAnonymousUser
     public void buscarCidadesPorCeps_deveRetornarOk_quandoNaoPassarToken() {
         mvc.perform(post(API_URL)
-                .content(convertObjectToJsonBytes(List.of("86080260", "71930000", "16400123")))
+                .content(convertObjectToJsonBytes(List.of()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).consultarCeps(any());
+        verify(service).consultarCeps(List.of());
     }
 
     @Test
     @SneakyThrows
     public void buscarCidadesPorCeps_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(post(API_URL)
-                .content(convertObjectToJsonBytes(List.of("86080260", "71930000", "16400123")))
+                .content(convertObjectToJsonBytes(List.of()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).consultarCeps(any());
+        verify(service).consultarCeps(List.of());
     }
 }

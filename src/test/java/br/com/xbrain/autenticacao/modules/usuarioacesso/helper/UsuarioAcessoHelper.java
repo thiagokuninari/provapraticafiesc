@@ -37,9 +37,9 @@ public class UsuarioAcessoHelper {
     public static UsuarioLogadoRequest umUsuarioLogadoRequest() {
         return UsuarioLogadoRequest.builder()
             .periodos(umaListaPaLogadoDto())
-            .cargos(Lists.newArrayList(CodigoCargo.SUPERVISOR_OPERACAO, CodigoCargo.ADMINISTRADOR))
+            .cargos(Lists.newArrayList(CodigoCargo.ADMINISTRADOR))
             .organizacaoId(1)
-            .usuariosIds(Lists.newArrayList(1, 2, 3))
+            .usuariosIds(Lists.newArrayList(1))
             .build();
     }
 }

@@ -1,8 +1,11 @@
 package br.com.xbrain.autenticacao.modules.site.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteDiscadoraRequest;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.helper.SiteHelper;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
@@ -83,13 +86,13 @@ public class SiteControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {VISUALIZAR_SITES})
     public void getSites_deveRetornarOk_quandoDadosValidos() {
-        when(service.getAll(any(), any())).thenReturn(new PageImpl<>(List.of()));
+        when(service.getAll(new SiteFiltros(), new PageRequest())).thenReturn(new PageImpl<>(List.of()));
 
         mvc.perform(get(API_URI)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getAll(any(), any());
+        verify(service).getAll(new SiteFiltros(), new PageRequest());
     }
 
     @Test
@@ -139,7 +142,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/estado/{estadoId}", 2))
             .andExpect(status().isOk());
 
-        verify(service).getSitesByEstadoId(any());
+        verify(service).getSitesByEstadoId(2);
     }
 
     @Test
@@ -150,7 +153,7 @@ public class SiteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getAllAtivos(any());
+        verify(service).getAllAtivos(new SiteFiltros());
     }
 
     @Test
@@ -160,7 +163,7 @@ public class SiteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getAllAtivos(any());
+        verify(service).getAllAtivos(new SiteFiltros());
     }
 
     @Test
@@ -170,7 +173,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/supervisores", 101))
             .andExpect(status().isOk());
 
-        verify(service).getAllSupervisoresBySiteId(any());
+        verify(service).getAllSupervisoresBySiteId(101);
     }
 
     @Test
@@ -179,7 +182,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/supervisores", 101))
             .andExpect(status().isOk());
 
-        verify(service).getAllSupervisoresBySiteId(any());
+        verify(service).getAllSupervisoresBySiteId(101);
     }
 
     @Test
@@ -210,7 +213,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 300))
             .andExpect(status().isOk());
 
-        verify(service).getAllSupervisoresByHierarquia(any(), any());
+        verify(service).getAllSupervisoresByHierarquia(100, 300);
     }
 
     @Test
@@ -268,7 +271,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/detalhe", 100))
             .andExpect(status().isOk());
 
-        verify(service).findById(any());
+        verify(service).findById(100);
     }
 
     @Test
@@ -299,7 +302,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/usuarios/ids", 100))
             .andExpect(status().isOk());
 
-        verify(service).getUsuariosIdsBySiteId(any());
+        verify(service).getUsuariosIdsBySiteId(100);
     }
 
     @Test
@@ -328,10 +331,10 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_SITES})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(post(API_URI)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umSiteRequestNull())))
+                .content(convertObjectToJsonBytes(new SiteRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo supervisoresIds é obrigatório.",
@@ -341,6 +344,39 @@ public class SiteControllerTest {
                 "O campo timeZone é obrigatório.")));
 
         verify(service, never()).save(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_SITES})
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioEmpty() {
+        mvc.perform(post(API_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umSiteRequestEmpty())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo supervisoresIds é obrigatório.",
+                "O campo coordenadoresIds é obrigatório.",
+                "O campo estadosIds é obrigatório.")));
+
+        verify(service, never()).save(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_SITES})
+    public void save_deveRetornarOk_quandoDadoObrigatorioBlank() {
+        var requestBlank = umSiteRequest();
+        requestBlank.setNome("   ");
+
+        when(service.save(requestBlank)).thenReturn(umSiteCompleto());
+
+        mvc.perform(post(API_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestBlank)))
+            .andExpect(status().isOk());
+
+        verify(service).save(eq(requestBlank));
     }
 
     @Test
@@ -382,10 +418,10 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_SITES})
-    public void update_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void update_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(put(API_URI)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umSiteRequestNull())))
+                .content(convertObjectToJsonBytes(new SiteRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo supervisoresIds é obrigatório.",
@@ -400,6 +436,39 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_SITES})
+    public void update_deveRetornarBadRequest_quandoDadoObrigatorioListEmpty() {
+        mvc.perform(put(API_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umSiteRequestEmpty())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo supervisoresIds é obrigatório.",
+                "O campo coordenadoresIds é obrigatório.",
+                "O campo estadosIds é obrigatório.")));
+
+        verify(service, never()).update(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_SITES})
+    public void update_deveRetornarOk_quandoDadoObrigatorioStringBlank() {
+        var requestBlank = umSiteRequest();
+        requestBlank.setNome("   ");
+
+        when(service.update(requestBlank)).thenReturn(umSiteCompleto());
+
+        mvc.perform(put(API_URI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestBlank)))
+            .andExpect(status().isOk());
+
+        verify(service).update(requestBlank);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_SITES})
     public void update_deveRetornarOk_quandoDadosValidos() {
         when(service.update(umSiteRequest())).thenReturn(umSiteCompleto());
 
@@ -408,7 +477,7 @@ public class SiteControllerTest {
                 .content(convertObjectToJsonBytes(umSiteRequest())))
             .andExpect(status().isOk());
 
-        verify(service).update(any());
+        verify(service).update(umSiteRequest());
     }
 
     @Test
@@ -439,26 +508,37 @@ public class SiteControllerTest {
         mvc.perform(put(API_URI + "/{id}/inativar", 1))
             .andExpect(status().isOk());
 
-        verify(service).inativar(any());
+        verify(service).inativar(1);
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
     public void buscarEstadosDisponiveis_deveRetornarOk_quandoNaoPassarToken() {
+        mvc.perform(get(API_URI + "/estados-disponiveis")
+                .param("siteIgnoradoId", "1"))
+            .andExpect(status().isOk());
+
+        verify(service).buscarEstadosNaoAtribuidosEmSites(1);
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarEstadosDisponiveis_deveRetornarOk_quandoSiteIgnoradoIdNaoInformado() {
         mvc.perform(get(API_URI + "/estados-disponiveis"))
             .andExpect(status().isOk());
 
-        verify(service).buscarEstadosNaoAtribuidosEmSites(any());
+        verify(service).buscarEstadosNaoAtribuidosEmSites(null);
     }
 
     @Test
     @SneakyThrows
     public void buscarEstadosDisponiveis_deveRetornarOk_quandoDadosValidos() {
-        mvc.perform(get(API_URI + "/estados-disponiveis"))
+        mvc.perform(get(API_URI + "/estados-disponiveis")
+                .param("siteIgnoradoId", "1"))
             .andExpect(status().isOk());
 
-        verify(service).buscarEstadosNaoAtribuidosEmSites(any());
+        verify(service).buscarEstadosNaoAtribuidosEmSites(1);
     }
 
     @Test
@@ -486,20 +566,42 @@ public class SiteControllerTest {
     @WithAnonymousUser
     public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarOk_quandoNaoPassarToken() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
+                .param("estadosIds", "1")
+                .param("siteIgnoradoId", "2"))
+            .andExpect(status().isOk());
+
+        verify(service).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1), 2);
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarBadRequest_quandoEstadosIdsNaoInformado() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis")
+                .param("siteIgnoradoId", "2"))
+            .andExpect(status().isBadRequest());
+
+        verify(service, never()).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarOk_quandoSiteIgnoradoIdsNaoInformado() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis")
                 .param("estadosIds", "1"))
             .andExpect(status().isOk());
 
-        verify(service).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(any(), any());
+        verify(service).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1), null);
     }
 
     @Test
     @SneakyThrows
     public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarOk_quandoDadosValiddos() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
-                .param("estadosIds", "1"))
+                .param("estadosIds", "1")
+                .param("siteIgnoradoId", "2"))
             .andExpect(status().isOk());
 
-        verify(service).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(any(), any());
+        verify(service).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1), 2);
     }
 
     @Test
@@ -635,7 +737,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1"))
             .andExpect(status().isOk());
 
-        verify(service).buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(any());
+        verify(service).buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List.of(1));
     }
 
     @Test
@@ -666,7 +768,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda", 1))
             .andExpect(status().isOk());
 
-        verify(service).buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(any());
+        verify(service).buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1);
     }
 
     @Test

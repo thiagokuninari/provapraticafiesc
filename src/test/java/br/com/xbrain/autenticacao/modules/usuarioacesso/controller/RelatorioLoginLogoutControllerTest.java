@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.RelatorioLoginLogoutService;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -90,13 +92,24 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
-    public void getLoginsLogoutsDeHoje_deveRetornarOK_quandoNaoTiverPermissao() {
+    public void getLoginsLogoutsDeHoje_deveRetornarOK_quandoAgenteAutorizadoIdNaoInformado() {
+        mvc.perform(get(API_URL + "/hoje")
+                .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
+            .andExpect(status().isOk());
+
+        verify(service).getLoginsLogoutsDeHoje(eq(new PageRequest()), eq(ECanal.AGENTE_AUTORIZADO), eq(null));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    public void getLoginsLogoutsDeHoje_deveRetornarOK_quandoDadosValidos() {
         mvc.perform(get(API_URL + "/hoje")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
                 .param("agenteAutorizadoId", "1"))
             .andExpect(status().isOk());
 
-        verify(service).getLoginsLogoutsDeHoje(any(), eq(ECanal.AGENTE_AUTORIZADO), eq(1));
+        verify(service).getLoginsLogoutsDeHoje(eq(new PageRequest()), eq(ECanal.AGENTE_AUTORIZADO), eq(1));
     }
 
     @Test
@@ -113,11 +126,9 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     public void getLoginsLogoutsEntreDatas_deveRetornarBadRequest_quandoDadosObrigatoriosNull() {
-        when(service.buscarAcessosEntreDatasPorUsuarios(umRelatorioNull())).thenReturn(umaListaLoginLogoutResponse());
-
         mvc.perform(post(API_URL + "/entre-datas")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umRelatorioNull())))
+                .content(convertObjectToJsonBytes(new RelatorioLoginLogoutRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo usuariosIds é obrigatório.",
@@ -200,7 +211,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
-    public void getCsv_deveRetornarBadRequest_quandoDadosObrigatoriosNull() {
+    public void getCsv_deveRetornarBadRequest_quandoFiltroComCampoObrigatorioNull() {
         mvc.perform(get(API_URL + "/csv")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
                 .param("agenteAutorizadoId", "1"))
@@ -211,6 +222,34 @@ public class RelatorioLoginLogoutControllerTest {
                 "O campo colaboradoresIds é obrigatório.")));
 
         verify(service, never()).getCsv(any(), any(), any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    public void getCsv_deveRetornarBadRequest_quandoCanalNaoInformado() {
+        mvc.perform(get(API_URL + "/csv")
+                .param("colaboradoresIds", "2")
+                .param("dataInicio", "20/06/2023")
+                .param("dataFim", "29/06/2023")
+                .param("agenteAutorizadoId", "1"))
+            .andExpect(status().isBadRequest());
+
+        verify(service, never()).getCsv(any(), any(), any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    public void getCsv_deveRetornarOK_quandoAgenteAutorizadoIdNaoInformado() {
+        mvc.perform(get(API_URL + "/csv")
+                .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
+                .param("colaboradoresIds", "2")
+                .param("dataInicio", "20/06/2023")
+                .param("dataFim", "29/06/2023"))
+            .andExpect(status().isOk());
+
+        verify(service).getCsv(any(), any(), eq(ECanal.AGENTE_AUTORIZADO), eq(null));
     }
 
     @Test
@@ -261,6 +300,17 @@ public class RelatorioLoginLogoutControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(service, never()).getColaboradores(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    public void getColaboradores_deveRetornarOk_quandoAgenteAutorizadoIdNaoInformado() {
+        mvc.perform(get(API_URL + "/colaboradores")
+                .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
+            .andExpect(status().isOk());
+
+        verify(service).getColaboradores(eq(ECanal.AGENTE_AUTORIZADO), eq(null));
     }
 
     @Test

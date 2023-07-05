@@ -3,11 +3,14 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
@@ -82,17 +85,11 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     public void getDadosAgenteAutorizado_deveRetornarOK_quandoDadosValidos() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(umaListaUsuarioResponse());
-        when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(umaTelefoniaResponse());
-        when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(umaListaRamalResponse());
-        when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(umSocioResponse());
-
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/dados-agente-autorizado/2")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(any())))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getDadosAgenteAutorizado(any());
+        verify(service).getDadosAgenteAutorizado(eq(2));
     }
 
     @Test
@@ -133,10 +130,10 @@ public class SolicitacaoRamalControllerTest {
     @SneakyThrows
     public void getSolicitacaoById_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/solicitacao/1")
-                .content(convertObjectToJsonBytes(anyInt())))
+                .content(convertObjectToJsonBytes(1)))
             .andExpect(status().isOk());
 
-        verify(service).getSolicitacaoById(any());
+        verify(service).getSolicitacaoById(1);
     }
 
     @Test
@@ -166,13 +163,9 @@ public class SolicitacaoRamalControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_SOLICITACAO_RAMAL})
     public void atualizarSituacao_deveRetornarBadRequest_quandoDadosObrigatoriosNaoInformado() {
-        var solicitacao = umaSolicitacaoRamalAtualizarRequest();
-        solicitacao.setIdSolicitacao(null);
-        solicitacao.setSituacao(null);
-
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(solicitacao)))
+                .content(convertObjectToJsonBytes(new SolicitacaoRamalAtualizarStatusRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo idSolicitacao é obrigatório.",
@@ -190,7 +183,7 @@ public class SolicitacaoRamalControllerTest {
                 .content(convertObjectToJsonBytes(umaSolicitacaoRamalAtualizarRequest())))
             .andExpect(status().isOk());
 
-        verify(service).atualizarStatus(any());
+        verify(service).atualizarStatus(umaSolicitacaoRamalAtualizarRequest());
     }
 
     @Test
@@ -221,7 +214,7 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL))
             .andExpect(status().isOk());
 
-        verify(service).getAllGerencia(any(), any());
+        verify(service).getAllGerencia(new PageRequest(), new SolicitacaoRamalFiltros());
     }
 
     @Test
@@ -249,11 +242,14 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     public void getAll_deveRetornarOk_quandoDadosValidos() {
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setAgenteAutorizadoId(1);
+
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getAll(any(), any());
+        verify(service).getAll(new PageRequest(), filtro);
     }
 
     @Test
@@ -270,11 +266,9 @@ public class SolicitacaoRamalControllerTest {
     @Test
     @SneakyThrows
     public void save_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        SolicitacaoRamalRequest request = umaSolicitacaoRamalRequest(null, 7129);
-
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(request)))
+                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequest(null, 7129))))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.error", is("access_denied")));
 
@@ -283,10 +277,10 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     @SneakyThrows
-    public void save_deveRetornarBadRequest_quandoDadosObrigatoriosNaoInformado() {
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequestNull())))
+                .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo melhorHorarioImplantacao é obrigatório.",
@@ -303,15 +297,24 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     @SneakyThrows
-    public void save_deveRetornarCreated_quandoDadosValidos() {
-        SolicitacaoRamalRequest request = umaSolicitacaoRamalRequest(null, 7129);
-
+    public void save_deveRetornarCreated_quandoDadoObrigatorioBlank() {
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(request)))
+                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequestBlank(null))))
             .andExpect(status().isCreated());
 
-        verify(service).save(any());
+        verify(service).save(umaSolicitacaoRamalRequestBlank(null));
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarCreated_quandoDadosValidos() {
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequest(null, 7129))))
+            .andExpect(status().isCreated());
+
+        verify(service).save(umaSolicitacaoRamalRequest(null, 7129));
     }
 
     @Test
@@ -339,10 +342,10 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     @SneakyThrows
-    public void update_deveRetornarBadRequest_quandoDadosObrigatoriosNaoInformado() {
+    public void update_deveRetornarBadRequest_quandoDadosObrigatoriosNull() {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequestNull())))
+                .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo melhorHorarioImplantacao é obrigatório.",
@@ -359,13 +362,24 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     @SneakyThrows
+    public void update_deveRetornarOk_quandoDadosObrigatoriosBlank() {
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequestBlank(1))))
+            .andExpect(status().isOk());
+
+        verify(service).update(umaSolicitacaoRamalRequestBlank(1));
+    }
+
+    @Test
+    @SneakyThrows
     public void update_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umaSolicitacaoRamalRequest(5, 7129))))
             .andExpect(status().isOk());
 
-        verify(service).update(any());
+        verify(service).update(umaSolicitacaoRamalRequest(5, 7129));
     }
 
     @Test
@@ -386,7 +400,7 @@ public class SolicitacaoRamalControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).remover(any());
+        verify(service).remover(1);
     }
 
     @Test
@@ -408,7 +422,7 @@ public class SolicitacaoRamalControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getColaboradoresBySolicitacaoId(any());
+        verify(service).getColaboradoresBySolicitacaoId(1);
     }
 
     @Test
@@ -450,6 +464,6 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcular-data-finalizacao"))
             .andExpect(status().isOk());
 
-        verify(service).calcularDataFinalizacao(any());
+        verify(service).calcularDataFinalizacao(new SolicitacaoRamalFiltros());
     }
 }

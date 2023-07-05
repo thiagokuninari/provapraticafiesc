@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import lombok.SneakyThrows;
@@ -79,12 +81,12 @@ public class OrganizacaoEmpresaControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
     public void getOrganizacaoEmpresa_deveRetornarOk_quandoDadosVaidos() {
-        when(service.getAll(any(), any())).thenReturn(new PageImpl<>(List.of()));
+        when(service.getAll(new OrganizacaoEmpresaFiltros(), new PageRequest())).thenReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get(API_URI))
             .andExpect(status().isOk());
 
-        verify(service).getAll(any(), any());
+        verify(service).getAll(new OrganizacaoEmpresaFiltros(), new PageRequest());
     }
 
     @Test
@@ -146,7 +148,7 @@ public class OrganizacaoEmpresaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mockMvc.perform(post(API_URI)
                 .content(convertObjectToJsonBytes(new OrganizacaoEmpresaRequest()))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -156,6 +158,43 @@ public class OrganizacaoEmpresaControllerTest {
                 "O campo nivelId é obrigatório.",
                 "O campo modalidadesEmpresaIds é obrigatório.",
                 "O campo razaoSocial é obrigatório.",
+                "O campo cnpj may not be empty")));
+
+        verify(service, never()).save(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioListEmpty() {
+        var requestEmpty = organizacaoEmpresaRequest();
+        requestEmpty.setModalidadesEmpresaIds(List.of());
+
+        mockMvc.perform(post(API_URI)
+                .content(convertObjectToJsonBytes(requestEmpty))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo modalidadesEmpresaIds é obrigatório.")));
+
+        verify(service, never()).save(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioStringBlank() {
+        var requestBlank = organizacaoEmpresaRequest();
+        requestBlank.setRazaoSocial("   ");
+        requestBlank.setCnpj("   ");
+
+        mockMvc.perform(post(API_URI)
+                .content(convertObjectToJsonBytes(requestBlank))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo cnpj may not be empty")));
 
         verify(service, never()).save(any());
@@ -265,8 +304,46 @@ public class OrganizacaoEmpresaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void update_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void update_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         when(service.update(5, new OrganizacaoEmpresaRequest())).thenReturn(organizacaoEmpresa());
+
+        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(new OrganizacaoEmpresaRequest())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nivelId é obrigatório.",
+                "O campo modalidadesEmpresaIds é obrigatório.",
+                "O campo razaoSocial é obrigatório.",
+                "O campo cnpj may not be empty")));
+
+        verify(service, never()).update(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
+    public void update_deveRetornarBadRequest_quandoDadoObrigatorioListEmpty() {
+        var requestEmpty = organizacaoEmpresaRequest();
+        requestEmpty.setModalidadesEmpresaIds(List.of());
+
+        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestEmpty)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo modalidadesEmpresaIds é obrigatório.")));
+
+        verify(service, never()).update(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
+    public void update_deveRetornarBadRequest_quandoDadoObrigatorioStringBlank() {
+        var requestBlank = organizacaoEmpresaRequest();
+        requestBlank.setRazaoSocial("   ");
+        requestBlank.setCnpj("  ");
 
         mockMvc.perform(put(API_URI + "/{id}/editar", 5)
                 .contentType(MediaType.APPLICATION_JSON)

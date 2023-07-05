@@ -47,8 +47,14 @@ public class SiteHelper {
             .build();
     }
 
-    public static SiteRequest umSiteRequestNull() {
+    public static SiteRequest umSiteRequestEmpty() {
         return SiteRequest.builder()
+            .nome("Arapa")
+            .timeZone(ETimeZone.BRT)
+            .estadosIds(List.of())
+            .coordenadoresIds(List.of())
+            .supervisoresIds(List.of())
+            .cidadesIds(List.of())
             .build();
     }
 

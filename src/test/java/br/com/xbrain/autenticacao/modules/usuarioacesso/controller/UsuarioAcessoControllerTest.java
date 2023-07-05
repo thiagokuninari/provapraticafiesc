@@ -235,8 +235,7 @@ public class UsuarioAcessoControllerTest {
     @SneakyThrows
     public void getUsuariosLogadosAtual_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(get(ENDPOINT_USUARIO_ACESSO + "/usuarios-logados")
-                .accept(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioLogadoRequest())))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
         verify(service).getUsuariosLogadosAtualPorIds(any());

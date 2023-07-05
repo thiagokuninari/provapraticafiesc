@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
@@ -24,6 +25,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.convertObjectToJsonBytes;
@@ -97,7 +100,7 @@ public class HorarioAcessoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getHorariosAcesso(any(), any());
+        verify(service).getHorariosAcesso(new PageRequest(), new HorarioAcessoFiltros());
     }
 
     @Test
@@ -170,14 +173,14 @@ public class HorarioAcessoControllerTest {
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
     public void getHistoricos_deveRetornarOk_quandoTiverPermissao() {
-        when(service.getHistoricos(any(PageRequest.class), anyInt())).thenReturn(umaListaHorarioHistoricoResponse());
+        when(service.getHistoricos(new PageRequest(), 1)).thenReturn(umaListaHorarioHistoricoResponse());
 
         mvc.perform(get(URL + "/1/historico")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umaListaHorarioHistoricoResponse())))
             .andExpect(status().isOk());
 
-        verify(service).getHistoricos(any(), eq(1));
+        verify(service).getHistoricos(new PageRequest(), 1);
     }
 
     @Test
@@ -206,7 +209,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(post(URL)
                 .content(convertObjectToJsonBytes(new HorarioAcessoRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -216,6 +219,23 @@ public class HorarioAcessoControllerTest {
                 "O campo horariosAtuacao é obrigatório.")));
 
         verify(service, never()).save(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
+    public void save_deveRetornarOK_quandoDadoObrigatorioListEmpty() {
+        var requestEmpty = umHorarioAcessoRequest();
+        requestEmpty.setHorariosAtuacao(List.of());
+
+        when(service.save(requestEmpty)).thenReturn(umHorarioAcesso());
+
+        mvc.perform(post(URL)
+                .content(convertObjectToJsonBytes(requestEmpty))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).save(requestEmpty);
     }
 
     @Test

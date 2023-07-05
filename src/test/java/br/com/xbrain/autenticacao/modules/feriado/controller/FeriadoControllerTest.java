@@ -161,12 +161,23 @@ public class FeriadoControllerTest {
 
     @Test
     @SneakyThrows
-    public void consultaFeriadoComCidade_deveRetornarBadRequest_quandoDataNaoInformada() {
+    public void consultaFeriadoComCidade_deveRetornarBadRequest_quandoDataNull() {
         mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
 
         verify(service, never()).consulta(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultaFeriadoComCidade_deveRetornarOk_quandoDataStringBlank() {
+        mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
+                .param("data", "  ")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).consulta("  ", 1);
     }
 
     @Test
@@ -177,7 +188,7 @@ public class FeriadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).consulta(any(), any());
+        verify(service).consulta("07/09/2018", 1);
     }
 
     @Test
@@ -218,11 +229,12 @@ public class FeriadoControllerTest {
     @SneakyThrows
     public void consultarFeriadoComCidadeUf_deveRetornarOk_quandoParametrosValidos() {
         doReturn(true).when(service).isFeriadoHojeNaCidadeUf(anyString(), anyString());
+
         mvc.perform(get(URL_BASE + "/cidade/Arapongas/PR")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).isFeriadoHojeNaCidadeUf(any(), any());
+        verify(service).isFeriadoHojeNaCidadeUf("Arapongas", "PR");
     }
 
     @Test

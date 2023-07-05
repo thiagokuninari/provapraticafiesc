@@ -43,8 +43,17 @@ public class SolicitacaoRamalHelper {
             .build();
     }
 
-    public static SolicitacaoRamalRequest umaSolicitacaoRamalRequestNull() {
+    public static SolicitacaoRamalRequest umaSolicitacaoRamalRequestBlank(Integer id) {
         return SolicitacaoRamalRequest.builder()
+            .id(id)
+            .quantidadeRamais(38)
+            .agenteAutorizadoId(1)
+            .melhorHorarioImplantacao(LocalTime.of(10, 00))
+            .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
+            .tipoImplantacao("    ")
+            .emailTi("    ")
+            .telefoneTi("    ")
+            .usuariosSolicitadosIds(List.of())
             .build();
     }
 

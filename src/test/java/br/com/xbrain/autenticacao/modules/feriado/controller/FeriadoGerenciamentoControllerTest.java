@@ -2,10 +2,11 @@ package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
-import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoImportacaoService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
@@ -98,7 +99,7 @@ public class FeriadoGerenciamentoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).obterFeriadosByFiltros(any(), any());
+        verify(service).obterFeriadosByFiltros(new PageRequest(), new FeriadoFiltros());
     }
 
     @Test
@@ -163,7 +164,7 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_FERIADOS})
-    public void salvar_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void salvar_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(post(URL_GERENCIAR + "/salvar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new FeriadoRequest())))
@@ -179,13 +180,48 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_FERIADOS})
+    public void salvar_deveRetornarCreated_quandoNomeComMaisDe255Caracteres() {
+        var requestNome256Caracteres = umFeriadoRequest();
+        requestNome256Caracteres.setNome("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            + "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            + "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+        mvc.perform(post(URL_GERENCIAR + "/salvar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestNome256Caracteres)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome precisa ter entre 0 e 255 caracteres.")));
+
+        verify(service, never()).salvarFeriado(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_FERIADOS})
+    public void salvar_deveRetornarCreated_quandoDadoObrigatorioStringBlank() {
+        var requestBlank = umFeriadoRequest();
+        requestBlank.setNome("  ");
+        requestBlank.setDataFeriado("  ");
+
+        mvc.perform(post(URL_GERENCIAR + "/salvar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestBlank)))
+            .andExpect(status().isCreated());
+
+        verify(service).salvarFeriado(requestBlank);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_FERIADOS})
     public void salvar_deveRetornarCreated_quandoUsuarioTiverPermissao() {
         mvc.perform(post(URL_GERENCIAR + "/salvar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umFeriadoRequest())))
             .andExpect(status().isCreated());
 
-        verify(service).salvarFeriado(any());
+        verify(service).salvarFeriado(umFeriadoRequest());
     }
 
     @Test
@@ -216,7 +252,7 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_FERIADOS})
-    public void editar_deveRetornarBadRequest_quandoDadoObrigatorioNaoInformado() {
+    public void editar_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
         mvc.perform(put(URL_GERENCIAR + "/editar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new FeriadoRequest())))
@@ -232,19 +268,48 @@ public class FeriadoGerenciamentoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_FERIADOS})
-    public void editar_deveRetornarOk_quandoUsuarioTiverPermissao() {
-        var feriadoEditado = umFeriadoRequest();
-        feriadoEditado.setId(10000);
-        feriadoEditado.setTipoFeriado(ETipoFeriado.MUNICIPAL);
-        feriadoEditado.setEstadoId(1);
-        feriadoEditado.setCidadeId(5578);
+    public void editar_deveRetornarCreated_quandoNomeComMaisDe255Caracteres() {
+        var requestNome256Caracteres = umFeriadoRequest();
+        requestNome256Caracteres.setNome("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            + "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            + "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
         mvc.perform(put(URL_GERENCIAR + "/editar")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(feriadoEditado)))
+                .content(convertObjectToJsonBytes(requestNome256Caracteres)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome precisa ter entre 0 e 255 caracteres.")));
+
+        verify(service, never()).editarFeriado(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_FERIADOS})
+    public void editar_deveRetornarOk_quandoDadoObrigatorioStringBlank() {
+        var requestBlank = umFeriadoRequest();
+        requestBlank.setNome("  ");
+        requestBlank.setDataFeriado("  ");
+
+        mvc.perform(put(URL_GERENCIAR + "/editar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(requestBlank)))
             .andExpect(status().isOk());
 
-        verify(service).editarFeriado(eq(feriadoEditado));
+        verify(service).editarFeriado(eq(requestBlank));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {GERENCIAR_FERIADOS})
+    public void editar_deveRetornarOk_quandoUsuarioTiverPermissao() {
+        mvc.perform(put(URL_GERENCIAR + "/editar")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umFeriadoRequest())))
+            .andExpect(status().isOk());
+
+        verify(service).editarFeriado(eq(umFeriadoRequest()));
     }
 
     @Test
@@ -278,7 +343,7 @@ public class FeriadoGerenciamentoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).excluirFeriado(any());
+        verify(service).excluirFeriado(10000);
     }
 
     @Test
