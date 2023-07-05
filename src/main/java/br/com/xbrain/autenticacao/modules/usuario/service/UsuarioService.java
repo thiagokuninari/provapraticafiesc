@@ -146,6 +146,8 @@ public class UsuarioService {
     private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
+        "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
 
 
 
@@ -1487,9 +1489,14 @@ public class UsuarioService {
             .findMotivoInativacaoByUsuarioId(usuario.getId())
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
+        var isEstruturaLojaFuturoOuClienteCargoNotLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())
+            ? !agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()).equals("LOJA_FUTURO")
+            : false;
 
-        if (ObjectUtils.isEmpty(usuario.getCpf())) {
+        if (ObjectUtils.isEmpty(usuario.getCpf()) && !CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
+        } else if (isEstruturaLojaFuturoOuClienteCargoNotLojaFuturo) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
         } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO
                 + " Ou email do sócio está divergente do que está inserido no agente autorizado.");

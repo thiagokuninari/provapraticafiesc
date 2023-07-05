@@ -21,4 +21,5 @@ public class AgenteAutorizadoResponse implements Serializable {
     private Eboolean nacional;
     private Integer discadoraId;
     private String situacao;
+    //private String estrutura;
 }

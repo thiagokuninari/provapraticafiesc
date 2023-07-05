@@ -168,7 +168,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoNovoService.getEstrutura(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(USUARIO_SOCIO_ID))
             .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
