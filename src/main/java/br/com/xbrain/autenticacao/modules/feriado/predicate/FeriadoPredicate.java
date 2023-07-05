@@ -3,16 +3,15 @@ package br.com.xbrain.autenticacao.modules.feriado.predicate;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
-import br.com.xbrain.autenticacao.modules.feriado.model.QFeriado;
 import com.querydsl.core.BooleanBuilder;
 
 import java.time.LocalDate;
 
+import static br.com.xbrain.autenticacao.modules.feriado.model.QFeriado.feriado;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class FeriadoPredicate {
 
-    private QFeriado feriado = QFeriado.feriado;
     private BooleanBuilder builder;
 
     public FeriadoPredicate() {
