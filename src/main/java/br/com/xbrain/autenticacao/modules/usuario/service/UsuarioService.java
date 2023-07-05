@@ -1489,12 +1489,12 @@ public class UsuarioService {
             .findMotivoInativacaoByUsuarioId(usuario.getId())
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
-        var isEstruturaLojaFuturoOuClienteCargoNotLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())
-            && !agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()).equals("LOJA_FUTURO");
+        var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
+        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
 
-        if (ObjectUtils.isEmpty(usuario.getCpf()) && !CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo())) {
+        if (ObjectUtils.isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
-        } else if (isEstruturaLojaFuturoOuClienteCargoNotLojaFuturo) {
+        } else if (isClienteLojaFuturo && !isAaEstruturaLojaFuturo) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
         } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO
