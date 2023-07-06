@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -39,12 +40,13 @@ public class HorarioAcessoController {
     }
 
     @GetMapping("status")
-    public boolean getHorarioAcessoStatus() {
-        return service.getStatus();
+    public boolean getHorarioAcessoStatus(@RequestHeader("X-Usuario-Canal") ECanal canal) {
+        return service.getStatus(canal);
     }
 
     @GetMapping("status/{siteId}")
-    public boolean getHorarioAcessoStatusByIdSite(@PathVariable("siteId") int siteId) {
-        return service.getStatus(siteId);
+    public boolean getHorarioAcessoStatusByIdSite(@RequestHeader("X-Usuario-Canal") ECanal canal,
+                                                  @PathVariable("siteId") int siteId) {
+        return service.getStatus(canal, siteId);
     }
 }

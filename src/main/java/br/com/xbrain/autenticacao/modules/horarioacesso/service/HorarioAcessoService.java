@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -135,7 +136,8 @@ public class HorarioAcessoService {
         }
     }
 
-    public boolean getStatus() {
+    public boolean getStatus(ECanal canal) {
+        validarCanal(canal);
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
 
         if (usuario.isOperadorTelevendasAtivoLocal()) {
@@ -159,7 +161,8 @@ public class HorarioAcessoService {
         return true;
     }
 
-    public boolean getStatus(Integer siteId) {
+    public boolean getStatus(ECanal canal, Integer siteId) {
+        validarCanal(canal);
         var horarioAcesso = repository.findBySiteId(siteId)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
@@ -255,5 +258,11 @@ public class HorarioAcessoService {
 
     private boolean isTest() {
         return environment.acceptsProfiles("test");
+    }
+
+    private void validarCanal(ECanal canal) {
+        if (canal != ECanal.ATIVO_PROPRIO) {
+            throw new ValidacaoException("Usuário sem canal autorizado.");
+        }
     }
 }

@@ -164,10 +164,22 @@ public class HorarioAcessoControllerTest {
     @SneakyThrows
     @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
     public void getStatus_deveRetornarOk_quandoUsuarioPossuirPermissao() {
-        when(service.getStatus(anyInt())).thenReturn(false);
+        when(service.getStatus(any())).thenReturn(false);
 
         mvc.perform(get(URL + "/status")
-            .accept(MediaType.APPLICATION_JSON))
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(false)));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatus_deveRetornarException_quandoUsuarioPossuirPermissao() {
+        mvc.perform(get(URL + "/status")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "D2D_PROPRIO"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(false)));
     }
@@ -194,10 +206,11 @@ public class HorarioAcessoControllerTest {
     @SneakyThrows
     @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
     public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() {
-        when(service.getStatus(anyInt())).thenReturn(false);
+        when(service.getStatus(any(), anyInt())).thenReturn(false);
 
         mvc.perform(get(URL + "/status/100")
-            .accept(MediaType.APPLICATION_JSON))
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(false)));
     }

@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,7 +218,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isTrue();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isTrue();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -239,7 +240,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -260,7 +261,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -279,7 +280,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isTrue();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isTrue();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -295,7 +296,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isFalse();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -310,7 +311,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isFalse();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
