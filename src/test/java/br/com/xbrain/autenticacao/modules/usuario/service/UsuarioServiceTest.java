@@ -288,7 +288,7 @@ public class UsuarioServiceTest {
     @Test
     public void ativar_deveLancarException_quandoAaDoUsuarioLojaFuturoNaoPossuiEstruturaLojaFuturo() {
         doReturn(Optional.of(umUsuarioCompleto(ESituacao.I, CLIENTE_LOJA_FUTURO, 120,
-            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)))
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)))
             .when(usuarioRepository)
             .findComplete(anyInt());
 
