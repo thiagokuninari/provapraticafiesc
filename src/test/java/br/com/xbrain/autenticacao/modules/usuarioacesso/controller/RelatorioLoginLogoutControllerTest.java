@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RelatorioLoginLogoutControllerTest {
 
     private static final String API_URL = "/api/relatorio-login-logout";
-    private static final String VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT = "AUT_2100";
+    private static final String VISUALIZAR_RELATORIO_LOGIN_LOGOUT = "AUT_2100";
 
     @Autowired
     private MockMvc mvc;
@@ -81,7 +81,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getLoginsLogoutsDeHoje_deveRetornarBadRequest_quandoCanalNaoInformado() {
         mvc.perform(get(API_URL + "/hoje")
                 .param("agenteAutorizadoId", "1"))
@@ -92,7 +92,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getLoginsLogoutsDeHoje_deveRetornarOK_quandoAgenteAutorizadoIdNaoInformado() {
         mvc.perform(get(API_URL + "/hoje")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
@@ -103,7 +103,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getLoginsLogoutsDeHoje_deveRetornarOK_quandoDadosValidos() {
         mvc.perform(get(API_URL + "/hoje")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
@@ -211,7 +211,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getCsv_deveRetornarBadRequest_quandoFiltroComCampoObrigatorioNull() {
         mvc.perform(get(API_URL + "/csv")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
@@ -227,7 +227,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getCsv_deveRetornarBadRequest_quandoCanalNaoInformado() {
         mvc.perform(get(API_URL + "/csv")
                 .param("colaboradoresIds", "2")
@@ -241,7 +241,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getCsv_deveRetornarOK_quandoAgenteAutorizadoIdNaoInformado() {
         mvc.perform(get(API_URL + "/csv")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
@@ -255,7 +255,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getCsv_deveRetornarOK_quandoDadosValidos() {
         mvc.perform(get(API_URL + "/csv")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
@@ -294,7 +294,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getColaboradores_deveRetornarBadRequest_quandoCanalNaoInformado() {
         mvc.perform(get(API_URL + "/colaboradores")
                 .param("agenteAutorizadoId", "1"))
@@ -305,7 +305,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getColaboradores_deveRetornarOk_quandoAgenteAutorizadoIdNaoInformado() {
         mvc.perform(get(API_URL + "/colaboradores")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
@@ -316,7 +316,7 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {VISUALIZAR_RELATÓRIO_LOGIN_LOGOUT})
+    @WithMockUser(roles = {VISUALIZAR_RELATORIO_LOGIN_LOGOUT})
     public void getColaboradores_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(get(API_URL + "/colaboradores")
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO)
