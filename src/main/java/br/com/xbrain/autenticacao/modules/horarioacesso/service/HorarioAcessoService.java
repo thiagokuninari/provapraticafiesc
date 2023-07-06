@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -46,9 +47,12 @@ public class HorarioAcessoService {
         new ValidacaoException("Usuário fora do horário permitido.");
     public static final UnauthorizedUserException USUARIO_FORA_HORARIO_PERMITIDO =
         new UnauthorizedUserException("Usuário fora do horário permitido.");
+    public static final ValidacaoException CANAL_INVALIDO =
+        new ValidacaoException("O canal informado não é válido.");
+    public static final ValidacaoException USUARIO_SEM_CANAL_VALIDO =
+        new ValidacaoException("Usuário não possui o canal válido.");
 
     private final Environment environment;
-
     private final HorarioAcessoRepository repository;
     private final HorarioAtuacaoRepository atuacaoRepository;
     private final HorarioHistoricoRepository historicoRepository;
@@ -138,6 +142,7 @@ public class HorarioAcessoService {
 
     public boolean getStatus(ECanal canal) {
         validarCanal(canal);
+        validarCanalUsuario();
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
 
         if (usuario.isOperadorTelevendasAtivoLocal()) {
@@ -163,6 +168,7 @@ public class HorarioAcessoService {
 
     public boolean getStatus(ECanal canal, Integer siteId) {
         validarCanal(canal);
+        validarCanalUsuario();
         var horarioAcesso = repository.findBySiteId(siteId)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
@@ -261,8 +267,15 @@ public class HorarioAcessoService {
     }
 
     private void validarCanal(ECanal canal) {
-        if (canal != ECanal.ATIVO_PROPRIO) {
-            throw new ValidacaoException("Usuário sem canal autorizado.");
+        if (canal != ATIVO_PROPRIO) {
+            throw CANAL_INVALIDO;
+        }
+    }
+
+    private void validarCanalUsuario() {
+        var canaisUsuario = autenticacaoService.getUsuarioAutenticado().getCanais();
+        if (!canaisUsuario.contains(ATIVO_PROPRIO)) {
+            throw USUARIO_SEM_CANAL_VALIDO;
         }
     }
 }

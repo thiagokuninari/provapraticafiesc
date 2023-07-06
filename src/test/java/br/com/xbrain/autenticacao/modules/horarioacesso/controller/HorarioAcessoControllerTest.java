@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
@@ -48,6 +49,8 @@ public class HorarioAcessoControllerTest {
     private static final String URL = "/api/horarios-acesso";
     private static final String GERENCIAR_HORARIO_ACESSO = "AUT_20009";
     private static final String VISUALIZAR_STATUS_HORARIO_ACESSO = "AUT_20024";
+    public static final ValidacaoException CANAL_INVALIDO =
+        new ValidacaoException("O canal informado não é válido.");
 
     @Autowired
     private MockMvc mvc;
@@ -176,12 +179,14 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
-    public void getStatus_deveRetornarException_quandoUsuarioPossuirPermissao() {
+    public void getStatus_deveRetornarBadRequest_quandoCanalInformadoNaoForAtivoProprio() {
+        when(service.getStatus(any())).thenThrow(CANAL_INVALIDO);
+
         mvc.perform(get(URL + "/status")
             .accept(MediaType.APPLICATION_JSON)
             .header("X-Usuario-Canal", "D2D_PROPRIO"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(false)));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message", is("O canal informado não é válido.")));
     }
 
     @Test
@@ -200,6 +205,19 @@ public class HorarioAcessoControllerTest {
         mvc.perform(get(URL + "/status/100")
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatusComParametroSiteId_deveRetornarBadRequest_quandoCanalInformadoNaoForAtivoProprio() {
+        when(service.getStatus(any(), anyInt())).thenThrow(CANAL_INVALIDO);
+
+        mvc.perform(get(URL + "/status/100")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message", is("O canal informado não é válido.")));
     }
 
     @Test
