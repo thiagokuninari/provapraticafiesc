@@ -63,7 +63,7 @@ public class  OrganizacaoEmpresaService {
     }
 
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
-        var nivel = validarNivel(request.getNivelId());
+        var nivel = findNivelById(request.getNivelId());
 
         validarNome(request.getNome());
         var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
@@ -104,14 +104,16 @@ public class  OrganizacaoEmpresaService {
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
         var organizacaoEmpresaToUpdate = findById(id);
-        var nivel = validarNivel(request.getNivelId());
-
         validarNomeParaUpdate(request.getNome(), id);
-        OrganizacaoEmpresa.of(request, null, nivel);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
+
+        organizacaoEmpresaToUpdate.setNome(request.getNome());
+        organizacaoEmpresaToUpdate.setCodigo(request.getCodigo());
+
         var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+
         organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
 
         return organizacaoEmpresa;
@@ -129,7 +131,7 @@ public class  OrganizacaoEmpresaService {
         }
     }
 
-    public Nivel validarNivel(Integer id) {
+    public Nivel findNivelById(Integer id) {
         return nivelRepository.findById(id)
             .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
     }

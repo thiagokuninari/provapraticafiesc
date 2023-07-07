@@ -63,26 +63,20 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void findById_notFoundException_quandoNaoExistirOrganizacaoCadastrada() {
-        when(organizacaoEmpresaRepository.findById(any()))
-            .thenReturn(Optional.empty());
-
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.findById(1))
             .withMessage("Organização não encontrada.");
 
-        verify(organizacaoEmpresaRepository, times(1)).findById(eq(1));
+        verify(organizacaoEmpresaRepository).findById(1);
     }
 
     @Test
     public void validarNivel_notFoundException_quandoNaoExistirNivelCadastrada() {
-        when(nivelRepository.findById(any()))
-            .thenReturn(Optional.empty());
-
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.validarNivel(1))
+            .isThrownBy(() -> service.findNivelById(1))
             .withMessage("Nível empresa não encontrada.");
 
-        verify(nivelRepository, times(1)).findById(eq(1));
+        verify(nivelRepository).findById(1);
     }
 
     @Test
@@ -94,7 +88,7 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("id")
             .containsExactly(1);
 
-        verify(organizacaoEmpresaRepository, times(1)).findById(eq(1));
+        verify(organizacaoEmpresaRepository).findById(1);
     }
 
     @Test
@@ -110,26 +104,26 @@ public class OrganizacaoEmpresaServiceTest {
                 tuple(2, "Organizacao 2"),
                 tuple(3, "Organizacao 3")
             );
+
+        verify(organizacaoEmpresaRepository).findAll(any(Predicate.class), any(Pageable.class));
     }
 
     @Test
     public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComAMesmoNome() {
-        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
-        when(organizacaoEmpresaRepository.existsByNomeIgnoreCase(eq("Organizacao 1")))
-            .thenReturn(true);
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+        when(organizacaoEmpresaRepository.existsByNomeIgnoreCase("Organizacao 1")).thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
             .withMessage("Organização já cadastrada com o mesmo nome.");
 
-        verify(organizacaoEmpresaRepository, times(1))
-            .existsByNomeIgnoreCase(eq("Organizacao 1"));
+        verify(organizacaoEmpresaRepository).existsByNomeIgnoreCase("Organizacao 1");
+        verify(nivelRepository).findById(1);
     }
 
     @Test
     public void save_deveSalvarOrganizacaoEmpresa_quandoNivelBackOffice() {
-        when(nivelRepository.findById(eq(2))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
-
+        when(nivelRepository.findById(2)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
             .thenReturn(umaOrganizacaoEmpresaBackoffice(2, "Organizacao 2", "BACKOFFICE"));
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
@@ -138,40 +132,45 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("nome", "nivel.id", "codigo")
             .contains("Organizacao 2", 2, "BACKOFFICE");
 
-        verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
-        verify(sender, times(1)).sendSuccess(any());
-
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(sender).sendSuccess(any());
+        verify(nivelRepository).findById(2);
     }
 
     @Test
     public void save_deveSalvarOrganizacaoEmpresa_quandoNivelReceptivo() {
-        when(nivelRepository.findById(eq(3))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelReceptivo()));
+        when(nivelRepository.findById(3)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelReceptivo()));
 
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
             .thenReturn(umaOrganizacaoEmpresaReceptivo(1, "Organizacao 3", "RECEPTIVO"));
+
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
 
         assertThat(service.save(umaOrganizacaoEmpresaReceptivoRequest()))
             .extracting("nome", "nivel.id", "codigo")
             .contains("Organizacao 3", 3, "RECEPTIVO");
 
-        verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
-        verify(sender, times(1)).sendSuccess(any());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(sender).sendSuccess(any());
+        verify(nivelRepository).findById(3);
     }
 
     @Test
     public void inativar_validacaoException_quandoOrganizacaoEmpresaInativa() {
-        var organizacaoEmpresa = umaOrganizacaoInativa(1, ESituacaoOrganizacaoEmpresa.I);
+        var organizacaoEmpresa = umaOrganizacaoInativa();
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.inativar(1))
             .withMessage("Organização já está inativa.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
     }
 
     @Test
     public void inativar_deveInativarESalvarHistorico_quandoOrganizacaoEmpresaAtiva() {
-        var organizacaoEmpresa = umaOrganizacaoAtiva(1, ESituacaoOrganizacaoEmpresa.A);
+        var organizacaoEmpresa = umaOrganizacaoAtiva();
+
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
 
@@ -180,108 +179,127 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
 
-        verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
+        verify(historicoService).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.INATIVACAO), any());
+
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
-        verify(sender, times(1)).sendInativarSituacaoSuccess(any());
 
+        verify(sender).sendInativarSituacaoSuccess(any());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
     public void ativar_validacaoException_quandoOrganizacaoEmpresaAtiva() {
-        var organizacaoEmpresa = umaOrganizacaoAtiva(1, ESituacaoOrganizacaoEmpresa.A);
+        var organizacaoEmpresa = umaOrganizacaoAtiva();
+
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.ativar(1))
             .withMessage("Organização já está ativa.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
     }
 
     @Test
     public void ativar_deveAtivarESalvarHistorico_quandoOrganizacaoEmpresaInativa() {
-        var organizacaoEmpresa = umaOrganizacaoInativa(1, ESituacaoOrganizacaoEmpresa.I);
+        var organizacaoEmpresa = umaOrganizacaoInativa();
+
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
         service.ativar(1);
+
         Assertions.assertThat(service.findById(1))
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
 
-        verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
+        verify(historicoService).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.ATIVACAO), any());
+
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
-        verify(sender, times(1)).sendAtivarSituacaoSuccess(any());
 
+        verify(sender).sendAtivarSituacaoSuccess(any());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
     public void update_notFoundException_quandoNaoExistirOrganizacaoEmpresa() {
-        when(organizacaoEmpresaRepository.findById(1))
-            .thenReturn(Optional.empty());
-
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.update(1, umaOrganizacaoEmpresaRequest()))
             .withMessage("Organização não encontrada.");
 
-        verify(organizacaoEmpresaRepository, times(1)).findById(eq(1));
+        verify(organizacaoEmpresaRepository).findById(1);
     }
 
     @Test
     public void update_deveSalvarOrganizacaoEmpresaBackofficeEGerarHistorico_quandoForChamado() {
-        when(nivelRepository.findById(eq(2))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
         when(organizacaoEmpresaRepository.findById(2)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(2,
             "Organizacao 2", "BACKOFFICE")));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
 
-        service.update(2, umaOrganizacaoEmpresaBackofficeRequest());
+        var request = umaOrganizacaoEmpresaBackofficeRequest();
+        request.setNome("Organizacao 2 alterado");
+
+        service.update(2, request);
         Assertions.assertThat(service.findById(2))
             .extracting("id", "nome", "nivel.id", "situacao")
-            .containsExactlyInAnyOrder(2, "Organizacao 2", 2, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(2, "Organizacao 2 alterado", 2, ESituacaoOrganizacaoEmpresa.A);
 
-        verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
+        verify(historicoService).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
+
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(2, ESituacaoOrganizacaoEmpresa.A);
-        verify(sender, times(1)).sendUpdateSuccess(any());
 
+        verify(sender).sendUpdateSuccess(any());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
-    public void update_deveSalvarOrganizacaoEmpresaReceptivoEGerarHistorico_quandoForChamado() {
-        when(nivelRepository.findById(eq(3))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelReceptivo()));
+    public void update_deveSalvarOrganizacaoEmpresaReceptivoEGerarHistorico_quandoSolicitado() {
         when(organizacaoEmpresaRepository.findById(3)).thenReturn(Optional.of(umaOrganizacaoEmpresaReceptivo(3,
             "Organizacao 3", "RECEPTIVO")));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
 
-        service.update(3, umaOrganizacaoEmpresaReceptivoRequest());
+        var request = umaOrganizacaoEmpresaReceptivoRequest();
+        request.setNome("Organizacao 3 alterado");
+
+        service.update(3, request);
         Assertions.assertThat(service.findById(3))
             .extracting("id", "nome", "nivel.id", "situacao")
-            .containsExactlyInAnyOrder(3, "Organizacao 3", 3, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(3, "Organizacao 3 alterado", 3, ESituacaoOrganizacaoEmpresa.A);
 
-        verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
+        verify(historicoService).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
+
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(3, ESituacaoOrganizacaoEmpresa.A);
-        verify(sender, times(1)).sendUpdateSuccess(any());
 
+        verify(sender).sendUpdateSuccess(any());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
     public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNome() {
-        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1,
             "Organizacao 1", "CODIGO")));
-        when(organizacaoEmpresaRepository.existsByNomeAndIdNot("Organizacao 1", 1)).thenReturn(true);
+        when(organizacaoEmpresaRepository.existsByNomeAndIdNot(anyString(), anyInt())).thenReturn(true);
+
+        var organizacaoEmpresaRequest = umaOrganizacaoEmpresaRequest();
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.update(1, umaOrganizacaoEmpresaRequest()))
+            .isThrownBy(() -> service.update(1, organizacaoEmpresaRequest))
             .withMessage("Organização já cadastrada com o mesmo nome.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndIdNot(organizacaoEmpresaRequest.getNome(), 1);
+        verify(organizacaoEmpresaRepository, never()).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
@@ -294,7 +312,7 @@ public class OrganizacaoEmpresaServiceTest {
             .containsExactly(
                 tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
 
-        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+        verify(organizacaoEmpresaRepository).findAllByNivelId(1);
     }
 
     @Test
@@ -306,7 +324,7 @@ public class OrganizacaoEmpresaServiceTest {
             .isThrownBy(() -> service.findAllByNivelId(1))
             .withMessage("Organização não encontrada.");
 
-        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+        verify(organizacaoEmpresaRepository).findAllByNivelId(1);
     }
 
     @Test
@@ -319,8 +337,7 @@ public class OrganizacaoEmpresaServiceTest {
             .containsExactly(
                 tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
 
-        verify(organizacaoEmpresaRepository, times(1))
-            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+        verify(organizacaoEmpresaRepository).findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A);
     }
 
     @Test
@@ -332,8 +349,7 @@ public class OrganizacaoEmpresaServiceTest {
             .isThrownBy(() -> service.findAllAtivosByNivelId(1))
             .withMessage("Organização não encontrada.");
 
-        verify(organizacaoEmpresaRepository, times(1))
-            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+        verify(organizacaoEmpresaRepository).findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A);
     }
 
     @Test
@@ -341,7 +357,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
         var filtros = OrganizacaoEmpresaFiltros.builder().organizacaoId(1).nome("organizacao 1").build();
 
-        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
+        when(organizacaoEmpresaRepository.findByPredicate(filtros.toPredicate().build()))
             .thenReturn(List.of(umaOrganizacaoEmpresaBackoffice(1, "Organizacao 1",
                 "CODIGO")));
 
@@ -349,6 +365,8 @@ public class OrganizacaoEmpresaServiceTest {
             .hasSize(1)
             .extracting("value", "label")
             .contains(tuple(1, "Organizacao 1"));
+
+        verify(organizacaoEmpresaRepository).findByPredicate(any(Predicate.class));
     }
 
     @Test
@@ -356,14 +374,16 @@ public class OrganizacaoEmpresaServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
         var filtros = OrganizacaoEmpresaFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).organizacaoId(1).build();
 
-        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
+        when(organizacaoEmpresaRepository.findByPredicate(filtros.toPredicate().build()))
             .thenReturn(List.of(umaOrganizacaoEmpresaBackoffice(1, "Organizacao 1",
                 "CODIGO")));
 
         assertThat(service.getAllSelect(filtros))
             .hasSize(1)
-             .extracting("value", "label")
+            .extracting("value", "label")
             .contains(tuple(1, "Organizacao 1"));
+
+        verify(organizacaoEmpresaRepository).findByPredicate(any(Predicate.class));
     }
 
     private UsuarioAutenticado umUsuarioBackoffice() {
@@ -391,14 +411,14 @@ public class OrganizacaoEmpresaServiceTest {
             .build();
     }
 
-    private OrganizacaoEmpresa umaOrganizacaoInativa(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
+    private OrganizacaoEmpresa umaOrganizacaoInativa() {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .situacao(ESituacaoOrganizacaoEmpresa.I)
             .build();
     }
 
-    private OrganizacaoEmpresa umaOrganizacaoAtiva(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
+    private OrganizacaoEmpresa umaOrganizacaoAtiva() {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
@@ -429,6 +449,12 @@ public class OrganizacaoEmpresaServiceTest {
             .build();
     }
 
+    private OrganizacaoEmpresa umaOrganizacaoEmpresaCadastradaId() {
+        return OrganizacaoEmpresa.builder()
+            .id(1)
+            .build();
+    }
+
     public static Usuario umUsuario() {
         var usuario = new Usuario();
         usuario.setId(100);
@@ -441,12 +467,6 @@ public class OrganizacaoEmpresaServiceTest {
         usuarioAutenticado.setId(2);
         usuarioAutenticado.setNome("Thiago");
         return usuarioAutenticado;
-    }
-
-    private OrganizacaoEmpresa umaOrganizacaoEmpresaCadastradaId() {
-        return OrganizacaoEmpresa.builder()
-            .id(1)
-            .build();
     }
 
     public static List<OrganizacaoEmpresa> umaListaOrganizacoesEmpresa() {
