@@ -34,6 +34,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -142,6 +143,8 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
+    public static final List<Integer> FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR =
+        List.of(3046, 15000, 15005, 15012, 16101);
 
     @Autowired
     private UsuarioRepository repository;
@@ -1018,7 +1021,49 @@ public class UsuarioService {
     private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
         if (usuarioMqRequest.isAtualizarSocioPrincipal()) {
             enviarParaFilaDeAtualizarSocioPrincipalSalvo(usuarioDto);
+            atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioMqRequest, usuarioDto);
         }
+    }
+
+    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        var permissoesEspeciais = getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(usuarioDto);
+
+        if (!permissoesEspeciais.isEmpty()) {
+            permissoesEspeciais.forEach(permissao -> criarESalvarPermissaoEspecial(usuarioDto, usuarioMqRequest, permissao));
+        }
+    }
+
+    private List<PermissaoEspecial> getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(
+        UsuarioDto usuarioDto) {
+        return usuarioDto.getAntigoSocioPrincipalId() != null
+            ? permissaoEspecialRepository
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(
+                FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR,
+                usuarioDto.getAntigoSocioPrincipalId())
+            : List.of();
+    }
+
+    private void criarESalvarPermissaoEspecial(UsuarioDto usuarioDto,
+                                               UsuarioMqRequest usuarioMqRequest,
+                                               PermissaoEspecial permissaoEspecial) {
+        Optional.ofNullable(permissaoEspecial.getFuncionalidade())
+            .ifPresent(funcionalidade -> {
+                var novaPermissaoEspecial = criarPermissaoEspecial(
+                    usuarioDto.getId(),
+                    funcionalidade.getId(),
+                    usuarioMqRequest.getUsuarioCadastroId());
+
+                permissaoEspecialRepository.save(novaPermissaoEspecial);
+            });
+    }
+
+    private PermissaoEspecial criarPermissaoEspecial(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
+        return PermissaoEspecial.builder()
+            .funcionalidade(new Funcionalidade(funcionalidadeId))
+            .usuarioCadastro(new Usuario(usuarioCadastroId))
+            .usuario(new Usuario(usuarioId))
+            .dataCadastro(LocalDateTime.now())
+            .build();
     }
 
     @Transactional

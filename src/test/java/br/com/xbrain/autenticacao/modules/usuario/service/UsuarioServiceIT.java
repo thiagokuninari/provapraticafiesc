@@ -15,6 +15,9 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -54,6 +57,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService.FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
@@ -117,8 +121,12 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
+    @MockBean
+    private PermissaoEspecialRepository permissaoEspecialRepository;
     @Captor
     private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
+    @Captor
+    private ArgumentCaptor<PermissaoEspecial> permissaoCaptor;
 
     @Before
     public void setUp() {
@@ -1528,16 +1536,75 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrue() {
+    @SuppressWarnings("LineLength")
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioComPermissoesEspeciais() {
+        doReturn(umaListaFuncFeederEAcompIndicacoesTecnicoVendedor())
+            .when(permissaoEspecialRepository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
+
         assertThatCode(() -> usuarioService
             .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
             .doesNotThrowAnyException();
 
-        verify(sender).sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(sender)
+            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialRepository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
+        verify(permissaoEspecialRepository, times(5))
+            .save(permissaoCaptor.capture());
 
         assertThat(usuarioDtoCaptor.getValue())
             .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
             .containsExactlyInAnyOrder(List.of(50, 55), 32);
+
+        assertThat(permissaoCaptor.getAllValues())
+            .extracting("funcionalidade.id")
+            .containsExactlyInAnyOrder(3046, 15000, 15005, 15012, 16101);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioSemPermissoesEspeciais() {
+        doReturn(List.of())
+            .when(permissaoEspecialRepository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
+
+        assertThatCode(() -> usuarioService
+            .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
+            .doesNotThrowAnyException();
+
+        verify(sender)
+            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialRepository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
+        verify(permissaoEspecialRepository, never())
+            .save(any(PermissaoEspecial.class));
+
+        assertThat(usuarioDtoCaptor.getValue())
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
+            .containsExactlyInAnyOrder(List.of(50, 55), 32);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioIdForNulo() {
+        var umUsuarioMqRequestAntigoSocioIdNulo = umUsuarioMqRequestAtualizarSocioPrincipal();
+        umUsuarioMqRequestAntigoSocioIdNulo.setAntigoSocioPrincipalId(null);
+
+        assertThatCode(() -> usuarioService
+            .saveFromQueue(umUsuarioMqRequestAntigoSocioIdNulo))
+            .doesNotThrowAnyException();
+
+        verify(sender)
+            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialRepository, never())
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(anyList(), anyInt());
+        verify(permissaoEspecialRepository, never())
+            .save(any(PermissaoEspecial.class));
+
+        assertThat(usuarioDtoCaptor.getValue())
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
+            .containsExactlyInAnyOrder(List.of(50, 55), null);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
@@ -1598,6 +1665,24 @@ public class UsuarioServiceIT {
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .antigoSocioPrincipalId(32)
             .build();
+    }
+
+    private PermissaoEspecial umaPermissaoEspecial(Integer funcionalidadeId) {
+        return PermissaoEspecial.builder()
+            .funcionalidade(Funcionalidade
+                .builder()
+                .id(funcionalidadeId)
+                .build())
+            .build();
+    }
+
+    private List<PermissaoEspecial> umaListaFuncFeederEAcompIndicacoesTecnicoVendedor() {
+        return List.of(
+            umaPermissaoEspecial(3046),
+            umaPermissaoEspecial(15000),
+            umaPermissaoEspecial(15005),
+            umaPermissaoEspecial(15012),
+            umaPermissaoEspecial(16101));
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {
