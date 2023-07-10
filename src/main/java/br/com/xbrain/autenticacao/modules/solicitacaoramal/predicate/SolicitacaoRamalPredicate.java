@@ -8,6 +8,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 
@@ -55,6 +56,14 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId) {
         if (subCanalId != null) {
             builder.and(solicitacaoRamal.subCanal.id.eq(subCanalId));
+        }
+
+        return this;
+    }
+
+    public SolicitacaoRamalPredicate comUsuariosIds(List<Integer> usuariosIds) {
+        if (usuariosIds != null) {
+            builder.and(solicitacaoRamal.usuario.id.in(usuariosIds));
         }
 
         return this;

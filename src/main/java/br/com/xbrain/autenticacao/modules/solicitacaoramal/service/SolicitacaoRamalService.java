@@ -19,7 +19,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.google.common.collect.ImmutableMap;
-import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,9 +93,9 @@ public class SolicitacaoRamalService {
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroObrigatorios(filtros);
-        var equipeIds = getUsuariosIdsEquipe(autenticacaoService.getUsuarioId());
-        var solicitacoes = solicitacaoRamalRepository.findAllByUsuarioIdIn(equipeIds,
-            pageable, getBuild(filtros));
+        var usuariosIdsEquipe = getUsuariosIdsEquipe(autenticacaoService.getUsuarioId());
+        var predicate = filtros.toPredicate().comUsuariosIds(usuariosIdsEquipe).build();
+        var solicitacoes = solicitacaoRamalRepository.findAll(pageable, predicate);
 
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
@@ -119,10 +118,6 @@ public class SolicitacaoRamalService {
                 throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
             }
         }
-    }
-
-    private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
-        return filtros.toPredicate().build();
     }
 
     @Transactional

@@ -362,10 +362,6 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
-    public List<Integer> getIdDosUsuariosSuperiores(Integer usuarioId) {
-        return repository.getUsuariosSuperiores(usuarioId);
-    }
-
     public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario) {
         if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             return List.of();
