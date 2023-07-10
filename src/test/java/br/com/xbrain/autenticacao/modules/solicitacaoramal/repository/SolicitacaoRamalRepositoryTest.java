@@ -12,6 +12,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 @ActiveProfiles("test")
@@ -24,7 +26,21 @@ public class SolicitacaoRamalRepositoryTest {
     @Autowired
     private SolicitacaoRamalRepository repository;
 
-    private SolicitacaoRamalFiltros filtros;
+    @Test
+    public void findAll_deveRetornarApenasSolicitacoesDaEquipe_quandoHouverSolicitacao() {
+        var usuariosIdsEquipe = List.of(230);
+        var predicate = new SolicitacaoRamalFiltros().toPredicate()
+            .comUsuariosIds(usuariosIdsEquipe).build();
+        assertEquals(1, repository.findAll(new PageRequest(),predicate).getTotalElements());
+    }
+
+    @Test
+    public void findAll_deveRetornarListaVazia_quandoNaoHouverSolicitacaoDaEquipe() {
+        var usuariosIdsEquipe = List.of(1234);
+        var predicate = new SolicitacaoRamalFiltros().toPredicate()
+            .comUsuariosIds(usuariosIdsEquipe).build();
+        assertEquals(0, repository.findAll(new PageRequest(),predicate).getTotalElements());
+    }
 
     @Test
     public void findAllByAaId_deveRetornarlistaVazia_quandoNaoHouverSolicitacaoComStatusPendenteOuEmAndamento() {

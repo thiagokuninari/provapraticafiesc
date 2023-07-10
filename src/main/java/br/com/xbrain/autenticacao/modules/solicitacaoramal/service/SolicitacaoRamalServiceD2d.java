@@ -128,7 +128,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
             .and(solicitacaoRamal.situacao.eq(PENDENTE)
                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO)));
 
-        return solicitacaoRamalRepository.findAllByPredicate(predicate).size() > 0;
+        return !solicitacaoRamalRepository.findAllByPredicate(predicate).isEmpty();
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {

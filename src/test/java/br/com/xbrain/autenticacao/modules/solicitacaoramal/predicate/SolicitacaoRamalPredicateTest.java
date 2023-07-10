@@ -1,27 +1,19 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolicitacaoRamalPredicateTest {
-
-    @MockBean
-    private SolicitacaoRamalRepository repository;
-
-    @MockBean
-    private AutenticacaoService autenticacaoService;
 
     @Test
     public void comSituacaoSolicitacao_deveMontarPredicate_seHouverSituacao() {
@@ -69,4 +61,15 @@ public class SolicitacaoRamalPredicateTest {
             .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanal.id.eq(1)));
     }
 
+    @Test
+    public void comUsuariosIds_deveMontarPredicate_seHouverIdsNaLista() {
+        assertThat(new SolicitacaoRamalPredicate().comUsuariosIds(List.of(1, 2, 3)).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.usuario.id.in(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void comUsuariosIds_naoDeveMontarPredicate_seUsuariosIdsVazio() {
+        assertThat(new SolicitacaoRamalPredicate().comUsuariosIds(List.of()).build())
+            .isEqualTo(new BooleanBuilder());
+    }
 }

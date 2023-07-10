@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
@@ -62,7 +63,7 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     }
 
     public SolicitacaoRamalPredicate comUsuariosIds(List<Integer> usuariosIds) {
-        if (usuariosIds != null) {
+        if (!CollectionUtils.isEmpty(usuariosIds)) {
             builder.and(solicitacaoRamal.usuario.id.in(usuariosIds));
         }
 
