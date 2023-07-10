@@ -98,7 +98,7 @@ public class RelatorioLoginLogoutControllerTest {
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
             .andExpect(status().isOk());
 
-        verify(service).getLoginsLogoutsDeHoje(eq(new PageRequest()), eq(ECanal.AGENTE_AUTORIZADO), eq(null));
+        verify(service).getLoginsLogoutsDeHoje(new PageRequest(), ECanal.AGENTE_AUTORIZADO, null);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class RelatorioLoginLogoutControllerTest {
                 .param("agenteAutorizadoId", "1"))
             .andExpect(status().isOk());
 
-        verify(service).getLoginsLogoutsDeHoje(eq(new PageRequest()), eq(ECanal.AGENTE_AUTORIZADO), eq(1));
+        verify(service).getLoginsLogoutsDeHoje(new PageRequest(), ECanal.AGENTE_AUTORIZADO,1);
     }
 
     @Test
@@ -311,7 +311,7 @@ public class RelatorioLoginLogoutControllerTest {
                 .header("X-Usuario-Canal", ECanal.AGENTE_AUTORIZADO))
             .andExpect(status().isOk());
 
-        verify(service).getColaboradores(eq(ECanal.AGENTE_AUTORIZADO), eq(null));
+        verify(service).getColaboradores(ECanal.AGENTE_AUTORIZADO, null);
     }
 
     @Test
@@ -323,6 +323,6 @@ public class RelatorioLoginLogoutControllerTest {
                 .param("agenteAutorizadoId", "1"))
             .andExpect(status().isOk());
 
-        verify(service).getColaboradores(eq(ECanal.AGENTE_AUTORIZADO), eq(1));
+        verify(service).getColaboradores(ECanal.AGENTE_AUTORIZADO, 1);
     }
 }

@@ -192,6 +192,7 @@ public class OrganizacaoEmpresaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo cnpj não é um cnpj válido.",
                 "O campo cnpj may not be empty")));
 
         verify(service, never()).save(any());
