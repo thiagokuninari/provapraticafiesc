@@ -95,7 +95,7 @@ public class SolicitacaoRamalService {
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroObrigatorios(filtros);
         var equipeIds = getUsuariosIdsEquipe(autenticacaoService.getUsuarioId());
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioIdIn(equipeIds,
+        var solicitacoes = solicitacaoRamalRepository.findAllByUsuarioIdIn(equipeIds,
             pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
@@ -107,9 +107,7 @@ public class SolicitacaoRamalService {
     }
 
     private List<Integer> getUsuariosIdsEquipe(Integer usuarioId) {
-        var equipeIds = usuarioService.getUsuariosHierarquiaByUsuarioId(usuarioId);
-
-        return equipeIds;
+        return usuarioService.getUsuariosHierarquiaByUsuarioId(usuarioId);
     }
 
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
