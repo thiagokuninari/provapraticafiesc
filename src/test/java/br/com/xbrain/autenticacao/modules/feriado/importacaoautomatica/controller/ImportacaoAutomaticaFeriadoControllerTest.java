@@ -64,7 +64,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).importarFeriadosAutomacaoMunicipais(any());
+        verify(service).importarFeriadosAutomacaoMunicipais(any(), any());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).importarFeriadosAutomacaoEstaduais(any());
+        verify(service).importarFeriadosAutomacaoEstaduais(any(), any());
     }
 
     @Test
@@ -130,7 +130,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).importarFeriadosAutomacaoNacionais(any());
+        verify(service).processarFeriadosNacionais(any(), any());
     }
 
     @Test

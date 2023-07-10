@@ -23,6 +23,7 @@ public class ImportacaoFeriadoHistoricoResponse {
     private ESituacaoFeriadoAutomacao situacaoFeriadoAutomacao;
     private Integer usuarioCadastroId;
     private String usuarioCadastroNome;
+    private String descricao;
 
     public static ImportacaoFeriadoHistoricoResponse convertFrom(ImportacaoFeriado importacaoFeriado) {
         var importacaoHistorico = new ImportacaoFeriadoHistoricoResponse();

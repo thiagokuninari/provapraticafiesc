@@ -75,7 +75,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(feriadoService.validarSeFeriadoNaoCadastrado(listaFeriados.get(1), request))
             .thenReturn(true);
 
-        service.importarFeriadosAutomacaoMunicipais(request);
+        service.importarFeriadosAutomacaoMunicipais(request, umFeriadoImportacao(1));
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosMunicipais(2023, "PR", "londrina");
@@ -99,7 +99,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
             .thenReturn(new ImportacaoFeriado());
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request, umFeriadoImportacao(1)))
             .withMessage("Feriados ja cadastrados");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -122,7 +122,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request, umFeriadoImportacao(1)))
             .withMessage("Usuario sem permissao para gerenciamento de feriados");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -143,7 +143,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoMunicipais(request, umFeriadoImportacao(1)))
             .withMessage("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -169,7 +169,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(feriadoService.validarSeFeriadoNaoCadastrado(listaFeriado.get(1), request))
             .thenReturn(true);
 
-        service.importarFeriadosAutomacaoEstaduais(request);
+        service.importarFeriadosAutomacaoEstaduais(request, umFeriadoImportacao(1));
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient, times(2)).buscarFeriadosEstaduais(2023, "PR");
@@ -191,7 +191,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
             .thenReturn(new ImportacaoFeriado());
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request, umFeriadoImportacao(1)))
             .withMessage("Feriados ja cadastrados");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -214,7 +214,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request, umFeriadoImportacao(1)))
             .withMessage("Usuario sem permissao para gerenciamento de feriados");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -234,7 +234,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request))
+            .isThrownBy(() -> service.importarFeriadosAutomacaoEstaduais(request, umFeriadoImportacao(1)))
             .withMessage("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -261,7 +261,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         when(feriadoService.validarSeFeriadoNaoCadastrado(listaFeriados.get(1), request))
             .thenReturn(true);
 
-        service.importarFeriadosAutomacaoNacionais(request);
+        service.processarFeriadosNacionais(request, umFeriadoImportacao(1));
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(feriadoAutomacaoClient).buscarFeriadosNacionais(2023);
@@ -283,7 +283,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoNacionais(request))
+            .isThrownBy(() -> service.processarFeriadosNacionais(request, umFeriadoImportacao(1)))
             .withMessage("Já existe feriado com os mesmos dados.");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -305,7 +305,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoNacionais(request))
+            .isThrownBy(() -> service.processarFeriadosNacionais(request, umFeriadoImportacao(1)))
             .withMessage("Usuario sem permissao para gerenciamento de feriados");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -324,7 +324,7 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
         request.setAno(2023);
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.importarFeriadosAutomacaoNacionais(request))
+            .isThrownBy(() -> service.processarFeriadosNacionais(request, umFeriadoImportacao(1)))
             .withMessage("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -374,6 +374,13 @@ public class ImportacaoAutomaticaFeriadoServiceTest {
             .id(id)
             .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO)
             .usuarioCadastroId(1)
+            .build();
+    }
+
+    private static ImportacaoFeriado umFeriadoImportacao(Integer id) {
+        return ImportacaoFeriado.builder()
+            .id(id)
+            .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.EM_IMPORTACAO)
             .build();
     }
 }

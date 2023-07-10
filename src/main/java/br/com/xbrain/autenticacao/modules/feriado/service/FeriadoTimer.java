@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service.ImportacaoAutomaticaFeriadoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,9 +13,16 @@ public class FeriadoTimer {
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
     private final FeriadoService feriadoService;
+    private final ImportacaoAutomaticaFeriadoService importacaoService;
 
     @Scheduled(cron = TODO_DIA_AS_DUAS_DA_MANHA, zone = TIME_ZONE)
     public void clearCacheFeriados() {
         feriadoService.flushCacheFeriados();
     }
+
+    @Scheduled(cron = TODO_DIA_AS_DUAS_DA_MANHA, zone = TIME_ZONE)
+    public void importarTodosOsFeriados() {
+        importacaoService.importarTodosOsFeriadoAnuais();
+    }
+
 }

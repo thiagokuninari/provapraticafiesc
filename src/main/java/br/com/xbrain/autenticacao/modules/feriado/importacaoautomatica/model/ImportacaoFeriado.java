@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,12 +41,19 @@ public class ImportacaoFeriado {
     @Column(name = "USUARIO_CADASTRO_NOME")
     private String usuarioCadastroNome;
 
+    @Column(name = "DESCRICAO")
+    private String descricao;
+
     public static ImportacaoFeriado of(ESituacaoFeriadoAutomacao situacao, UsuarioAutenticado usuarioAutenticado) {
         return ImportacaoFeriado.builder()
             .dataCadastro(LocalDateTime.now())
             .situacaoFeriadoAutomacao(situacao)
-            .usuarioCadastroId(usuarioAutenticado.getId())
-            .usuarioCadastroNome(usuarioAutenticado.getNome())
+            .usuarioCadastroId(usuarioAutenticado != null ? usuarioAutenticado.getId() : null)
+            .usuarioCadastroNome(usuarioAutenticado != null ? usuarioAutenticado.getNome() : null)
             .build();
+    }
+
+    public void gerarDescricao(String descricao) {
+        this.descricao = this.descricao.concat("-").concat(descricao);
     }
 }

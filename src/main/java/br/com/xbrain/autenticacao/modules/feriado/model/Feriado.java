@@ -112,8 +112,8 @@ public class Feriado {
         return feriado;
     }
 
-    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, Integer usuarioCadastroId,
-                                      FeriadoRequest request, ImportacaoFeriado importacaoFeriado) {
+    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request,
+                                      ImportacaoFeriado importacaoFeriado) {
         var feriado = new Feriado();
         BeanUtils.copyProperties(feriadoAutomacao, feriado);
         feriado.setDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()));
@@ -128,7 +128,6 @@ public class Feriado {
         }
         feriado.setDataCadastro(LocalDateTime.now());
         feriado.setSituacao(ESituacaoFeriado.ATIVO);
-        feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
         feriado.setImportacaoFeriado(importacaoFeriado);
         return feriado;
     }
