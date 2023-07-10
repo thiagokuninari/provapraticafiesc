@@ -512,8 +512,8 @@ public class UsuarioService {
         }
     }
 
-    private LocalDateTime getDataUltimoAcesso(Integer id) {
-        return repository.findById(id).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION).getDataUltimoAcesso();
+    private Usuario getUsuario(Integer id) {
+        return repository.findById(id).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
     }
 
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
@@ -651,7 +651,8 @@ public class UsuarioService {
         } else {
             atualizarUsuariosParceiros(usuario);
             usuario.setAlterarSenha(Eboolean.F);
-            usuario.setDataUltimoAcesso(getDataUltimoAcesso(usuario.getId()));
+            usuario.setDataUltimoAcesso(getUsuario(usuario.getId()).getDataUltimoAcesso());
+            usuario.setDataReativacao(getUsuario(usuario.getId()).getDataReativacao());
         }
     }
 
