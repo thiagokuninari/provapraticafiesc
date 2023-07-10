@@ -190,7 +190,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getOrganizacaoEmpresa(Usuario usuario) {
-        return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
+        return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getNome() : "";
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {
