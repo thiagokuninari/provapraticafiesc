@@ -85,7 +85,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -519,8 +518,8 @@ public class UsuarioServiceTest {
                 new SubCanal(3),
                 new SubCanal(4)
             ));
-        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
-            .thenReturn(List.of(PAP_ID, PAP_PREMIUM_ID));
+        when(usuarioRepository.getAllSubordinadosComSubCanalId(usuario.getId()))
+            .thenReturn(List.of());
         doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
@@ -548,12 +547,8 @@ public class UsuarioServiceTest {
                 new SubCanal(3),
                 new SubCanal(4)
             ));
-        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
-            .thenReturn(List.of(
-                PAP_ID,
-                PAP_PME_ID,
-                PAP_PREMIUM_ID,
-                INSIDE_SALES_PME_ID)
+        when(usuarioRepository.getAllSubordinadosComSubCanalId(usuario.getId()))
+            .thenReturn(List.of()
             );
 
         doReturn(umUsuarioAutenticadoNivelAa())

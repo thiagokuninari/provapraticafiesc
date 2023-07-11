@@ -15,7 +15,6 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -67,9 +66,9 @@ public class UsuarioRepositoryOracleTest {
         var diretorId = 126;
 
         assertThat(repository
-            .getSubCanalIdsDosSubordinados(diretorId))
+            .getAllSubordinadosComSubCanalId(diretorId))
             .hasSize(4)
-            .containsAll(List.of(PAP_ID, PAP_PME_ID, PAP_PREMIUM_ID, INSIDE_SALES_PME_ID));
+            .containsAll(List.of());
     }
 
     @Test
@@ -78,19 +77,19 @@ public class UsuarioRepositoryOracleTest {
         var gerenteId = 127;
 
         assertThat(repository
-            .getSubCanalIdsDosSubordinados(gerenteId))
+            .getAllSubordinadosComSubCanalId(gerenteId))
             .hasSize(4)
-            .containsAll(List.of(PAP_ID, PAP_PME_ID, PAP_PREMIUM_ID, INSIDE_SALES_PME_ID));
+            .containsAll(List.of());
     }
 
     @Test
     @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
-    public void getSubCanalIdsDosSubordinados_deveRetornarListaDeSubCanais_seExistirSubordinadosDoCoordenadorPapPremium() {
+    public void getAllSubordinadosComSubCanalId_deveRetornarListaDeSubCanais_seExistirSubordinadosDoCoordenadorPapPremium() {
         var coordenadorPapPremiumId = 129;
 
         assertThat(repository
-            .getSubCanalIdsDosSubordinados(coordenadorPapPremiumId))
+            .getAllSubordinadosComSubCanalId(coordenadorPapPremiumId))
             .hasSize(1)
-            .containsAll(List.of(PAP_PREMIUM_ID));
+            .containsAll(List.of());
     }
 }

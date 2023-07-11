@@ -984,12 +984,35 @@ public class UsuarioService {
 
     private void validarSubCanaisSubordinados(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
-            var subordinadosSubCanalIds = repository.getSubCanalIdsDosSubordinados(usuario.getId());
+            var subordinadosComSubCanalId = repository.getAllSubordinadosComSubCanalId(usuario.getId());
 
-            if (!subordinadosSubCanalIds.isEmpty() && !usuario.hasAllSubCanaisDosSubordinados(subordinadosSubCanalIds)) {
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS;
+            if (!subordinadosComSubCanalId.isEmpty() && !usuario.hasAllSubCanaisDosSubordinados(subordinadosComSubCanalId)) {
+                var subordinadosComSubCanaisDiferentes = subordinadosComSubCanalId.stream()
+                    .filter(subordinado -> !usuario.getSubCanaisId().contains(subordinado.getSubCanalId()))
+                    .collect(Collectors.toList());
+                var listaUsuarios = getListaUsuarios(subordinadosComSubCanaisDiferentes);
+                throw new ValidacaoException(
+                    String.format("Usuário não possui sub-canal em comum com usuários subordinados.\n"
+                    + "s%", listaUsuarios));
             }
         }
+    }
+
+    private String getListaUsuarios(List<UsuarioSubCanalId> subordinadosComSubCanaisDiferentes) {
+        var listaUsuarios = new StringBuilder();
+        subordinadosComSubCanaisDiferentes.stream()
+            .filter(subordinado -> subordinado.getSubCanalId() != null)
+            .map(subordinado -> concatenaUsuariosNaLista(listaUsuarios, subordinado));
+        return listaUsuarios.toString();
+    }
+
+    private StringBuilder concatenaUsuariosNaLista(StringBuilder listaUsuarios, UsuarioSubCanalId subordinado) {
+        return listaUsuarios.append(subordinado.getNomeUsuario()
+            + " - " + getETipoCanal(subordinado.getSubCanalId()) + "\n");
+    }
+
+    private ETipoCanal getETipoCanal(Integer subCanalId) {
+        return ETipoCanal.values()[subCanalId - 1];
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -2753,5 +2776,9 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
+    }
+
+    public List<UsuarioSubCanalId> teste(Integer usuarioId) {
+        return repository.getAllSubordinadosComSubCanalId(usuarioId);
     }
 }

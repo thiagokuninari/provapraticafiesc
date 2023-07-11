@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -666,10 +667,10 @@ public class Usuario {
             .allMatch(hierarquiaSubCanalIds::contains);
     }
 
-    public boolean hasAllSubCanaisDosSubordinados(List<Integer> subordinadosSubCanalIds) {
-        return subordinadosSubCanalIds
+    public boolean hasAllSubCanaisDosSubordinados(List<UsuarioSubCanalId> subordinadosComSubCanalIds) {
+        return subordinadosComSubCanalIds
             .stream()
-            .allMatch(this.getSubCanaisId()::contains);
+            .allMatch(subordinado -> this.getSubCanaisId().contains(subordinado.getSubCanalId()));
     }
 
     @JsonIgnore

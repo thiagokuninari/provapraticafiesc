@@ -293,21 +293,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> getSubCanalIdsDosSubordinados(Integer usuarioSuperiorId) {
-        List<BigDecimal> subCanalIds = entityManager
-            .createNativeQuery(" SELECT DISTINCT US.FK_SUBCANAL "
+    public List<UsuarioSubCanalId> getAllSubordinadosComSubCanalId(Integer usuarioSuperiorId) {
+        return jdbcTemplate.query(
+            " SELECT DISTINCT U.NOME AS NOME_USUARIO,"
+                + " US.FK_SUBCANAL AS SUB_CANAL_ID"
                 + " FROM USUARIO_SUBCANAL US "
                 + "  JOIN USUARIO U ON U.ID = US.FK_USUARIO "
                 + "  JOIN USUARIO_HIERARQUIA UH ON UH.FK_USUARIO = U.ID "
                 + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
-                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ")
-            .setParameter("usuarioSuperiorId", usuarioSuperiorId)
-            .getResultList();
-
-        return subCanalIds
-            .stream()
-            .map(BigDecimal::intValue)
-            .collect(Collectors.toList());
+                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ",
+            new MapSqlParameterSource()
+            .addValue("usuarioSuperiorId", usuarioSuperiorId),
+        new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
     }
 
     @Override

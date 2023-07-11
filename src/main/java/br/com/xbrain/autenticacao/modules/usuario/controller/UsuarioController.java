@@ -570,4 +570,9 @@ public class UsuarioController {
     public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
         return usuarioService.findByCpf(cpf);
     }
+
+    @GetMapping("teste/{id}")
+    public List<UsuarioSubCanalId> teste(@PathVariable Integer id) {
+        return usuarioService.teste(id);
+    }
 }

@@ -40,7 +40,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
-    List<Integer> getSubCanalIdsDosSubordinados(Integer usuarioId);
+    List<UsuarioSubCanalId> getAllSubordinadosComSubCanalId(Integer usuarioId);
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
