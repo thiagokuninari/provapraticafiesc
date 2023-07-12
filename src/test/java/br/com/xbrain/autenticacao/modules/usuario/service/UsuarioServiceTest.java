@@ -29,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialSer
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -171,6 +172,8 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -2411,9 +2414,8 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        assertThat(usuarioService.save(vendedor))
-            .extracting(UsuarioDto::getHierarquiasId)
-            .isEqualTo(List.of(100));
+        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor).getBody();
+        assertThat(usuarioDto.getHierarquiasId()).isEqualTo(List.of(100));
     }
 
     @Test
@@ -2432,9 +2434,8 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        assertThat(usuarioService.save(vendedor))
-            .extracting(UsuarioDto::getHierarquiasId)
-            .isEqualTo(List.of(100));
+        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor).getBody();
+        assertThat(usuarioDto.getHierarquiasId()).isEqualTo(List.of(100));
     }
 
     @Test

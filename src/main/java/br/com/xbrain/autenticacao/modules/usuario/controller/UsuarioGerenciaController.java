@@ -6,8 +6,10 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @RestController
 @RequestMapping("api/usuarios/gerencia")
 public class UsuarioGerenciaController {
@@ -26,8 +29,8 @@ public class UsuarioGerenciaController {
     private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
-    public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
-                           @RequestPart(value = "foto", required = false) MultipartFile foto) {
+    public ResponseEntity<?> save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
+                                          @RequestPart(value = "foto", required = false) MultipartFile foto) {
         service.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuario);
 
         return service.save(UsuarioDto.convertFrom(usuario), foto);
@@ -39,8 +42,9 @@ public class UsuarioGerenciaController {
     }
 
     @PutMapping
-    public void alterar(@Validated @RequestBody UsuarioDto usuario) {
-        service.save(UsuarioDto.convertFrom(usuario));
+    public ResponseEntity<?> alterar(@Validated @RequestBody UsuarioDto usuario) {
+        log.info("Testar sem o return ResponseEntity<?> aqui depois");
+        return service.save(UsuarioDto.convertFrom(usuario));
     }
 
     @GetMapping("{id}")

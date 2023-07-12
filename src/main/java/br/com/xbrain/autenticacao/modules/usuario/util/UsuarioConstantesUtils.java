@@ -10,6 +10,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 
 public class UsuarioConstantesUtils {
 
+    public static final int POSICAO_MENOS_UM = -1;
     public static final int POSICAO_ZERO = 0;
     public static final int MAX_CARACTERES_SENHA = 6;
     public static final ESituacao ATIVO = ESituacao.A;

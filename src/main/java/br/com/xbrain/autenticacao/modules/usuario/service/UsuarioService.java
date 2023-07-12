@@ -46,6 +46,8 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -57,8 +59,10 @@ import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -147,8 +151,6 @@ public class UsuarioService {
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
 
-
-
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -235,6 +237,10 @@ public class UsuarioService {
     private SubCanalService subCanalService;
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -520,7 +526,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario request, MultipartFile foto) {
+    public ResponseEntity<?> save(Usuario request, MultipartFile foto) {
         if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
@@ -529,7 +535,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario usuario) {
+    public ResponseEntity<?> save(Usuario usuario) {
         try {
             validar(usuario);
             validarEdicao(usuario);
@@ -548,13 +554,17 @@ public class UsuarioService {
             if (usuario.isIdNivelMso()) {
                 feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
             }
-
-            return UsuarioDto.of(usuario);
+            log.info("getUsuariosComSubCanais = {}", ResponseEntity.ok(usuarioSubCanalObserver.getUsuariosComSubCanais()));
+            log.info("UsuarioDto.of(usuario) = {}", ResponseEntity.ok(UsuarioDto.of(usuario)));
+            return !usuarioSubCanalObserver.getUsuariosComSubCanais().isEmpty()
+                ? ResponseEntity.ok(usuarioSubCanalObserver.getUsuariosComSubCanais())
+                : ResponseEntity.ok(UsuarioDto.of(usuario));
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
+            log.info("CAIU AQUI NO CATCH DO SAVE EM USUARIO_SERVICE");
             throw ex;
         }
     }
@@ -985,34 +995,21 @@ public class UsuarioService {
     private void validarSubCanaisSubordinados(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             var subordinadosComSubCanalId = repository.getAllSubordinadosComSubCanalId(usuario.getId());
-
             if (!subordinadosComSubCanalId.isEmpty() && !usuario.hasAllSubCanaisDosSubordinados(subordinadosComSubCanalId)) {
-                var subordinadosComSubCanaisDiferentes = subordinadosComSubCanalId.stream()
-                    .filter(subordinado -> !usuario.getSubCanaisId().contains(subordinado.getSubCanalId()))
-                    .collect(Collectors.toList());
-                var listaUsuarios = getListaUsuarios(subordinadosComSubCanaisDiferentes);
-                throw new ValidacaoException(
-                    String.format("Usuário não possui sub-canal em comum com usuários subordinados.\n"
-                    + "s%", listaUsuarios));
+                var subordinadosComSubCanaisDiferentes =
+                    getSubordinadosComSubCanaisDiferentes(usuario, subordinadosComSubCanalId);
+                applicationEventPublisher.publishEvent(
+                    new UsuarioSubCanalEvent(this, subordinadosComSubCanaisDiferentes));
+                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS;
             }
         }
     }
 
-    private String getListaUsuarios(List<UsuarioSubCanalId> subordinadosComSubCanaisDiferentes) {
-        var listaUsuarios = new StringBuilder();
-        subordinadosComSubCanaisDiferentes.stream()
-            .filter(subordinado -> subordinado.getSubCanalId() != null)
-            .map(subordinado -> concatenaUsuariosNaLista(listaUsuarios, subordinado));
-        return listaUsuarios.toString();
-    }
-
-    private StringBuilder concatenaUsuariosNaLista(StringBuilder listaUsuarios, UsuarioSubCanalId subordinado) {
-        return listaUsuarios.append(subordinado.getNomeUsuario()
-            + " - " + getETipoCanal(subordinado.getSubCanalId()) + "\n");
-    }
-
-    private ETipoCanal getETipoCanal(Integer subCanalId) {
-        return ETipoCanal.values()[subCanalId - 1];
+    private List<UsuarioSubCanalId> getSubordinadosComSubCanaisDiferentes(Usuario usuario,
+                                                                          List<UsuarioSubCanalId> usuariosComSubCanalId) {
+        return usuariosComSubCanalId.stream()
+            .filter(subordinado -> !usuario.getSubCanaisId().contains(subordinado.getSubCanalId()))
+            .collect(Collectors.toList());
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -1169,7 +1166,7 @@ public class UsuarioService {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
+            usuarioDto = (UsuarioDto) save(UsuarioDto.convertFrom(usuarioDto)).getBody();
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
@@ -2776,9 +2773,5 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
-    }
-
-    public List<UsuarioSubCanalId> teste(Integer usuarioId) {
-        return repository.getAllSubordinadosComSubCanalId(usuarioId);
     }
 }
