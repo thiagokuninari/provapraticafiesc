@@ -129,4 +129,15 @@ public class UsuarioPredicateTest {
         var expected = new BooleanBuilder(usuario.organizacaoEmpresa.id.eq(1));
         assertThat(predicate).isEqualTo(expected);
     }
+
+    @Test
+    public void semCargoCodigo_deveMontarPredicate_quandoSolicitado() {
+        var predicate = new UsuarioPredicate()
+            .semCargoCodigo(CodigoCargo.COORDENADOR_OPERACAO)
+            .build();
+
+        var expected = new BooleanBuilder(usuario.cargo.codigo.ne(CodigoCargo.COORDENADOR_OPERACAO));
+
+        assertThat(predicate).isEqualTo(expected);
+    }
 }

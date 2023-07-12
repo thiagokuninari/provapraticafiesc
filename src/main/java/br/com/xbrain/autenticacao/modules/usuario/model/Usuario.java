@@ -702,7 +702,7 @@ public class Usuario {
     }
 
     public boolean isCargoLojaFuturo() {
-        return cargo != null && cargo.getCodigo() == CLIENTE_LOJA_FUTURO;
+        return cargo != null && (cargo.getCodigo() == CLIENTE_LOJA_FUTURO || cargo.getCodigo() == ASSISTENTE_RELACIONAMENTO);
     }
 
     public boolean isCargoImportadorCargas() {
