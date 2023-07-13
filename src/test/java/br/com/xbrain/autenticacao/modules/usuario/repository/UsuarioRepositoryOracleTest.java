@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,8 +68,31 @@ public class UsuarioRepositoryOracleTest {
 
         assertThat(repository
             .getAllSubordinadosComSubCanalId(diretorId))
-            .hasSize(4)
-            .containsAll(List.of());
+            .hasSize(21)
+            .extracting("nome", "subCanalId")
+            .containsExactly(
+                tuple("COORDENADOR OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP.getId()),
+                tuple("ASSISTENTE OPERACAO INSIDE_SALES_PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("VENDEDOR OPERACAO INSIDE SALES PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP_PME.getId()),
+                tuple("ASSISTENTE OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("GERENTE OPERACAO", ETipoCanal.PAP.getId()),
+                tuple("SUPERVISOR OPERACAO INSIDE SALES PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO PAP PME", ETipoCanal.PAP_PME.getId()),
+                tuple("SUPERVISOR OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("ASSISTENTE OPERACAO PAP PME", ETipoCanal.PAP_PME.getId()),
+                tuple("VENDEDOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("ASSISTENTE OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("VENDEDOR OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("COORDENADOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("GERENTE OPERACAO", ETipoCanal.PAP_PME.getId()),
+                tuple("GERENTE OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("VENDEDOR OPERACAO PAP_PME", ETipoCanal.PAP_PME.getId()),
+                tuple("GERENTE OPERACAO", ETipoCanal.PAP_PREMIUM.getId())
+            );
     }
 
     @Test
@@ -78,8 +102,27 @@ public class UsuarioRepositoryOracleTest {
 
         assertThat(repository
             .getAllSubordinadosComSubCanalId(gerenteId))
-            .hasSize(4)
-            .containsAll(List.of());
+            .hasSize(17)
+            .extracting("nome", "subCanalId")
+            .containsExactly(
+                tuple("COORDENADOR OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP.getId()),
+                tuple("ASSISTENTE OPERACAO INSIDE_SALES_PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("VENDEDOR OPERACAO INSIDE SALES PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP_PME.getId()),
+                tuple("ASSISTENTE OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO INSIDE SALES PME", ETipoCanal.INSIDE_SALES_PME.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO PAP PME", ETipoCanal.PAP_PME.getId()),
+                tuple("SUPERVISOR OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("ASSISTENTE OPERACAO PAP PME", ETipoCanal.PAP_PME.getId()),
+                tuple("VENDEDOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("ASSISTENTE OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("VENDEDOR OPERACAO PAP", ETipoCanal.PAP.getId()),
+                tuple("COORDENADOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("VENDEDOR OPERACAO PAP_PME", ETipoCanal.PAP_PME.getId())
+            );
     }
 
     @Test
@@ -89,7 +132,12 @@ public class UsuarioRepositoryOracleTest {
 
         assertThat(repository
             .getAllSubordinadosComSubCanalId(coordenadorPapPremiumId))
-            .hasSize(1)
-            .containsAll(List.of());
+            .hasSize(3)
+            .extracting("nome", "subCanalId")
+            .containsExactly(
+                tuple("ASSISTENTE OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("VENDEDOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
+                tuple("SUPERVISOR OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId())
+            );
     }
 }

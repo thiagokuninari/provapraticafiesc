@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.POSICAO_MENOS_UM;
+import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.POSICAO_UM;
 
 @Getter
 public class UsuarioSubCanalEvent extends ApplicationEvent {
@@ -20,11 +20,11 @@ public class UsuarioSubCanalEvent extends ApplicationEvent {
                                 List<UsuarioSubCanalId> usuariosComSubCanalId) {
         super(source);
         this.usuarios = usuariosComSubCanalId.stream()
-            .map(usuario -> UsuarioSubCanalDto.of(usuario.getNomeUsuario(), getETipoCanal(usuario.getSubCanalId())))
+            .map(usuario -> UsuarioSubCanalDto.of(usuario.getNome(), getETipoCanal(usuario.getSubCanalId())))
             .collect(Collectors.toList());
     }
 
     private ETipoCanal getETipoCanal(Integer subCanalId) {
-        return ETipoCanal.values()[subCanalId - POSICAO_MENOS_UM];
+        return ETipoCanal.values()[subCanalId - POSICAO_UM];
     }
 }

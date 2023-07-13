@@ -47,7 +47,6 @@ import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
-import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -62,7 +61,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -239,8 +237,6 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
-    @Autowired
-    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -526,7 +522,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public ResponseEntity<?> save(Usuario request, MultipartFile foto) {
+    public UsuarioDto save(Usuario request, MultipartFile foto) {
         if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
@@ -535,7 +531,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public ResponseEntity<?> save(Usuario usuario) {
+    public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
             validarEdicao(usuario);
@@ -554,17 +550,12 @@ public class UsuarioService {
             if (usuario.isIdNivelMso()) {
                 feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
             }
-            log.info("getUsuariosComSubCanais = {}", ResponseEntity.ok(usuarioSubCanalObserver.getUsuariosComSubCanais()));
-            log.info("UsuarioDto.of(usuario) = {}", ResponseEntity.ok(UsuarioDto.of(usuario)));
-            return !usuarioSubCanalObserver.getUsuariosComSubCanais().isEmpty()
-                ? ResponseEntity.ok(usuarioSubCanalObserver.getUsuariosComSubCanais())
-                : ResponseEntity.ok(UsuarioDto.of(usuario));
+            return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
-            log.info("CAIU AQUI NO CATCH DO SAVE EM USUARIO_SERVICE");
             throw ex;
         }
     }
@@ -1166,7 +1157,7 @@ public class UsuarioService {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = (UsuarioDto) save(UsuarioDto.convertFrom(usuarioDto)).getBody();
+            usuarioDto = (UsuarioDto) save(UsuarioDto.convertFrom(usuarioDto));
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);

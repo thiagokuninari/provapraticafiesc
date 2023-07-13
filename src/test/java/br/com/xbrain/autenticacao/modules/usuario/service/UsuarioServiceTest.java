@@ -29,7 +29,8 @@ import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialSer
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.ValidacaoSubCanalException;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -50,11 +51,16 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
@@ -73,7 +79,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
@@ -172,8 +178,6 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
-    @Mock
-    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -358,7 +362,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
+    public void save_naoDeveLancarException_seUsuarioPossuirSubCanal() {
         var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
             10,
             OPERACAO,
@@ -377,7 +381,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
+    public void save_naoDeveLancarException_seUsuarioPossuirSubCanaisECargoDiretor() {
         var usuario = umUsuarioCompleto(DIRETOR_OPERACAO,
             5,
             OPERACAO,
@@ -399,7 +403,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoSupervisor() {
+    public void save_deveLancarException_seUsuarioPossuirSubCanaisECargoSupervisor() {
         var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
             1,
             OPERACAO,
@@ -422,7 +426,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanais() {
+    public void save_deveLancarException_seUsuarioNaoPossuirSubCanais() {
         var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
             1,
             OPERACAO,
@@ -442,7 +446,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisDaHierarquia() {
+    public void save_naoDeveLancarException_seUsuarioPossuirSubCanaisDaHierarquia() {
         var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
             5,
             OPERACAO,
@@ -471,7 +475,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
+    public void save_deveLancarException_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
         var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
             5,
             OPERACAO,
@@ -499,7 +503,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seSuperiorPossuirTodosSubCanaisDosSubordinados() {
+    public void save_naoDeveLancarException_seSuperiorPossuirTodosSubCanaisDosSubordinados() {
         var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
             5,
             OPERACAO,
@@ -531,7 +535,10 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveDispararValidacaoException_seSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+    public void save_deveLancarException_seSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+        var applicationEventPublisher = MockitoPublisherConfiguration.publisher();
+        mockApplicationEventPublisher(applicationEventPublisher);
+
         var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
             5, OPERACAO,
             CodigoDepartamento.COMERCIAL,
@@ -548,19 +555,28 @@ public class UsuarioServiceTest {
                 new SubCanal(1),
                 new SubCanal(2),
                 new SubCanal(3),
-                new SubCanal(4)
+                new SubCanal(4),
+                new SubCanal(5)
             ));
         when(usuarioRepository.getAllSubordinadosComSubCanalId(usuario.getId()))
-            .thenReturn(List.of()
+            .thenReturn(List.of(
+                    UsuarioSubCanalId.of("USUARIO TESTE PAP", PAP.getId()),
+                    UsuarioSubCanalId.of("USUARIO TESTE PAP PME", PAP_PME.getId()),
+                    UsuarioSubCanalId.of("USUARIO TESTE PAP PREMIUM", PAP_PREMIUM.getId()),
+                    UsuarioSubCanalId.of("USUARIO TESTE INSIDE SALES PME", INSIDE_SALES_PME.getId()),
+                    UsuarioSubCanalId.of("USUARIO TESTE PAP CONDOMINIO", PAP_CONDOMINIO.getId())
+                )
             );
 
         doReturn(umUsuarioAutenticadoNivelAa())
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoSubCanalException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário não possui sub-canal em comum com usuários subordinados.");
+
+        verify(applicationEventPublisher, times(1)).publishEvent(any(UsuarioSubCanalEvent.class));
     }
 
     @Test
@@ -2414,7 +2430,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor).getBody();
+        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor);
         assertThat(usuarioDto.getHierarquiasId()).isEqualTo(List.of(100));
     }
 
@@ -2434,7 +2450,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor).getBody();
+        var usuarioDto = (UsuarioDto) usuarioService.save(vendedor);
         assertThat(usuarioDto.getHierarquiasId()).isEqualTo(List.of(100));
     }
 
@@ -3181,5 +3197,19 @@ public class UsuarioServiceTest {
         usuarioService.saveFromQueue(usuarioMqRequest);
 
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+    }
+
+    private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        ReflectionTestUtils.setField(usuarioService, "applicationEventPublisher", applicationEventPublisher);
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
     }
 }

@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +28,7 @@ public class UsuarioGerenciaController {
     private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
-    public ResponseEntity<?> save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
+    public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                                           @RequestPart(value = "foto", required = false) MultipartFile foto) {
         service.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuario);
 
@@ -42,9 +41,9 @@ public class UsuarioGerenciaController {
     }
 
     @PutMapping
-    public ResponseEntity<?> alterar(@Validated @RequestBody UsuarioDto usuario) {
+    public void alterar(@Validated @RequestBody UsuarioDto usuario) {
         log.info("Testar sem o return ResponseEntity<?> aqui depois");
-        return service.save(UsuarioDto.convertFrom(usuario));
+        service.save(UsuarioDto.convertFrom(usuario));
     }
 
     @GetMapping("{id}")

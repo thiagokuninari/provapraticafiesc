@@ -295,7 +295,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioSubCanalId> getAllSubordinadosComSubCanalId(Integer usuarioSuperiorId) {
         return jdbcTemplate.query(
-            " SELECT DISTINCT U.NOME AS NOME_USUARIO,"
+            " SELECT DISTINCT U.NOME AS NOME,"
                 + " US.FK_SUBCANAL AS SUB_CANAL_ID"
                 + " FROM USUARIO_SUBCANAL US "
                 + "  JOIN USUARIO U ON U.ID = US.FK_USUARIO "
