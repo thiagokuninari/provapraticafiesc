@@ -1,20 +1,20 @@
 package br.com.xbrain.autenticacao.modules.usuario.exceptions;
 
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class SubCanalCustomExceptionHandler {
 
-    @Autowired
-    private UsuarioSubCanalObserver usuarioSubCanalObserver;
+    private final UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     @ExceptionHandler(ValidacaoSubCanalException.class)
-    public ResponseEntity<ValidacaoSubCanalException> validationErrors(ValidacaoSubCanalException ex) {
+    public ResponseEntity<ValidacaoSubCanalException> validacaoSubCanalDosSubordinados(ValidacaoSubCanalException ex) {
         var exception = new ValidacaoSubCanalException(ex.getMessage());
         usuarioSubCanalObserver.getUsuariosComSubCanais().forEach(usuarioComSubCanal -> {
             exception.adicionarUsuario(usuarioComSubCanal.getNomeUsuario(), usuarioComSubCanal.getSubCanal());
