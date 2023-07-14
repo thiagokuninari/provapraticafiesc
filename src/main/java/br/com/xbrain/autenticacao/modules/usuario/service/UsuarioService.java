@@ -1157,7 +1157,7 @@ public class UsuarioService {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = (UsuarioDto) save(UsuarioDto.convertFrom(usuarioDto));
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
