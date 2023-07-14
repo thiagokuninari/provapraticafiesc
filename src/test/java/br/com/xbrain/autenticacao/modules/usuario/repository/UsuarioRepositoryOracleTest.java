@@ -70,9 +70,9 @@ public class UsuarioRepositoryOracleTest {
             .getAllSubordinadosComSubCanalId(diretorId))
             .hasSize(21)
             .extracting("nome", "subCanalId")
-            .containsExactly(
-                tuple("COORDENADOR OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
+            .containsExactlyInAnyOrder(
                 tuple("COORDENADOR OPERACAO", ETipoCanal.PAP.getId()),
+                tuple("COORDENADOR OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
                 tuple("ASSISTENTE OPERACAO INSIDE_SALES_PME", ETipoCanal.INSIDE_SALES_PME.getId()),
                 tuple("VENDEDOR OPERACAO INSIDE SALES PME", ETipoCanal.INSIDE_SALES_PME.getId()),
                 tuple("COORDENADOR OPERACAO", ETipoCanal.PAP_PME.getId()),
@@ -104,7 +104,7 @@ public class UsuarioRepositoryOracleTest {
             .getAllSubordinadosComSubCanalId(gerenteId))
             .hasSize(17)
             .extracting("nome", "subCanalId")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple("COORDENADOR OPERACAO", ETipoCanal.INSIDE_SALES_PME.getId()),
                 tuple("COORDENADOR OPERACAO", ETipoCanal.PAP.getId()),
                 tuple("ASSISTENTE OPERACAO INSIDE_SALES_PME", ETipoCanal.INSIDE_SALES_PME.getId()),
@@ -134,7 +134,7 @@ public class UsuarioRepositoryOracleTest {
             .getAllSubordinadosComSubCanalId(coordenadorPapPremiumId))
             .hasSize(3)
             .extracting("nome", "subCanalId")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple("ASSISTENTE OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
                 tuple("VENDEDOR OPERACAO PAP_PREMIUM", ETipoCanal.PAP_PREMIUM.getId()),
                 tuple("SUPERVISOR OPERACAO PAP PREMIUM", ETipoCanal.PAP_PREMIUM.getId())

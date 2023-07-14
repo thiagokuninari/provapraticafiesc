@@ -2,14 +2,11 @@ package br.com.xbrain.autenticacao.modules.usuario.event;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.POSICAO_UM;
 
 @Getter
 public class UsuarioSubCanalEvent extends ApplicationEvent {
@@ -20,11 +17,7 @@ public class UsuarioSubCanalEvent extends ApplicationEvent {
                                 List<UsuarioSubCanalId> usuariosComSubCanalId) {
         super(source);
         this.usuarios = usuariosComSubCanalId.stream()
-            .map(usuario -> UsuarioSubCanalDto.of(usuario.getNome(), getETipoCanal(usuario.getSubCanalId())))
+            .map(UsuarioSubCanalDto::of)
             .collect(Collectors.toList());
-    }
-
-    private ETipoCanal getETipoCanal(Integer subCanalId) {
-        return ETipoCanal.values()[subCanalId - POSICAO_UM];
     }
 }

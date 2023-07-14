@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 
 public class UsuarioServiceHelper {
 

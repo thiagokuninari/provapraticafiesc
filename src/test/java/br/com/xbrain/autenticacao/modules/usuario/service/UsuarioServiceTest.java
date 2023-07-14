@@ -79,11 +79,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
@@ -559,14 +558,7 @@ public class UsuarioServiceTest {
                 new SubCanal(5)
             ));
         when(usuarioRepository.getAllSubordinadosComSubCanalId(usuario.getId()))
-            .thenReturn(List.of(
-                    UsuarioSubCanalId.of("USUARIO TESTE PAP", PAP.getId()),
-                    UsuarioSubCanalId.of("USUARIO TESTE PAP PME", PAP_PME.getId()),
-                    UsuarioSubCanalId.of("USUARIO TESTE PAP PREMIUM", PAP_PREMIUM.getId()),
-                    UsuarioSubCanalId.of("USUARIO TESTE INSIDE SALES PME", INSIDE_SALES_PME.getId()),
-                    UsuarioSubCanalId.of("USUARIO TESTE PAP CONDOMINIO", PAP_CONDOMINIO.getId())
-                )
-            );
+            .thenReturn(umaListaDeUsuarioSubCanalIds());
 
         doReturn(umUsuarioAutenticadoNivelAa())
             .when(autenticacaoService)

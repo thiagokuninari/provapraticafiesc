@@ -17,7 +17,7 @@ public class SubCanalCustomExceptionHandler {
     public ResponseEntity<ValidacaoSubCanalException> validacaoSubCanalDosSubordinados(ValidacaoSubCanalException ex) {
         var exception = new ValidacaoSubCanalException(ex.getMessage());
         usuarioSubCanalObserver.getUsuariosComSubCanais().forEach(usuarioComSubCanal -> {
-            exception.adicionarUsuario(usuarioComSubCanal.getNomeUsuario(), usuarioComSubCanal.getSubCanal());
+            exception.adicionarUsuario(usuarioComSubCanal);
         });
         deletarEvento();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
