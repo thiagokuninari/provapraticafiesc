@@ -205,6 +205,16 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @NotAudited
+    @JsonIgnore
+    @JoinTable(name = "USUARIO_SUBCANAL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBCANAL", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_SUBCANAL"))})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<SubCanal> subCanais;
+
     @Column(name = "TIPO_CANAL")
     @Enumerated(EnumType.STRING)
     private ETipoCanal tipoCanal;
@@ -327,6 +337,15 @@ public class Usuario {
             : null;
     }
 
+    public Set<ETipoCanal> getSubCanaisCodigo() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getCodigo)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
     public List<Integer> getUnidadesNegociosId() {
         if (!Hibernate.isInitialized(unidadesNegocios)) {
             Hibernate.initialize(unidadesNegocios);
@@ -347,6 +366,28 @@ public class Usuario {
                 .map(UnidadeNegocio::new)
                 .collect(Collectors.toList());
         }
+    }
+
+    public Set<Integer> getSubCanaisId() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
+    public void setSubCanaisId(Set<Integer> ids) {
+        if (ids != null) {
+            subCanais = ids
+                .stream()
+                .map(SubCanal::new)
+                .collect(Collectors.toSet());
+        }
+    }
+
+    public boolean hasSubCanalPapPremium() {
+        return getSubCanaisId().contains(ETipoCanal.PAP_PREMIUM.getId());
     }
 
     public Set<UsuarioCidade> getCidades() {
@@ -615,6 +656,22 @@ public class Usuario {
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
 
+    public boolean hasHierarquia() {
+        return !ObjectUtils.isEmpty(hierarquiasId);
+    }
+
+    public boolean hasSubCanaisDaHierarquia(Set<Integer> hierarquiaSubCanalIds) {
+        return this.getSubCanaisId()
+            .stream()
+            .allMatch(hierarquiaSubCanalIds::contains);
+    }
+
+    public boolean hasAllSubCanaisDosSubordinados(List<Integer> subordinadosSubCanalIds) {
+        return subordinadosSubCanalIds
+            .stream()
+            .allMatch(this.getSubCanaisId()::contains);
+    }
+
     @JsonIgnore
     public boolean isNivelVarejo() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
@@ -645,7 +702,7 @@ public class Usuario {
     }
 
     public boolean isCargoLojaFuturo() {
-        return cargo != null && cargo.getCodigo() == CLIENTE_LOJA_FUTURO;
+        return cargo != null && (cargo.getCodigo() == CLIENTE_LOJA_FUTURO || cargo.getCodigo() == ASSISTENTE_RELACIONAMENTO);
     }
 
     public boolean isCargoImportadorCargas() {

@@ -143,4 +143,13 @@ public class EquipeVendaD2dService {
             throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(), EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIO);
         }
     }
+
+    public List<Integer> getSubCanaisDaEquipeVendaD2dByUsuarioId(Integer usuarioId) {
+        try {
+            return equipeVendaD2dClient.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(),
+                EErrors.ERRO_OBTER_SUBCANAIS_USUARIO_DO_EQUIPE_VENDAS);
+        }
+    }
 }

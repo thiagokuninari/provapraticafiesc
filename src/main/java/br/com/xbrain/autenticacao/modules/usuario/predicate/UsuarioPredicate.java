@@ -173,6 +173,14 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate semCargoCodigo(CodigoCargo cargo) {
+        if (cargo != null) {
+            builder.and(usuario.cargo.codigo.ne(cargo));
+        }
+
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
@@ -355,6 +363,20 @@ public class UsuarioPredicate {
     public UsuarioPredicate comCanais(Set<ECanal> canais) {
         if (!isEmpty(canais)) {
             builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSubCanal(Integer subCanalId) {
+        if (nonNull(subCanalId)) {
+            builder.and(usuario.subCanais.any().id.eq(subCanalId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSubCanais(Set<Integer> subCanais) {
+        if (!isEmpty(subCanais)) {
+            builder.and(usuario.subCanais.any().id.in(subCanais));
         }
         return this;
     }

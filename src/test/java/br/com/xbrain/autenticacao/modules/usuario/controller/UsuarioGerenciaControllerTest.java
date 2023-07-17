@@ -7,16 +7,20 @@ import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioClientService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
@@ -51,6 +55,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
@@ -76,8 +81,8 @@ import static org.thymeleaf.util.StringUtils.concat;
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
-    private static final int ID_USUARIO_VENDEDOR = 430;
     private static final String API_URI = "/api/usuarios/gerencia";
+
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -102,6 +107,12 @@ public class UsuarioGerenciaControllerTest {
     private SiteService siteService;
     @MockBean
     private UsuarioClientService usuarioClientService;
+    @SpyBean
+    private CargoService cargoService;
+    @MockBean
+    private FeederService feederService;
+    @MockBean
+    private SubCanalService subCanalService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -125,6 +136,54 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarBadRequest_quandoUsuarioComApenasUmSubCanalEstiverEmEquipeComOutroSubCanal() {
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(1660123)).thenReturn(List.of(3));
+
+        mvc.perform(fileUpload(API_URI)
+                .file(umUsuario(umUsuarioSupervisorD2d()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.")));
+
+        verify(usuarioService, never()).save(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarBadRequest_quandoUsuarioComMaisDeUmSubCanalEstiverEmEquipeComOutroSubCanal() {
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(1660123)).thenReturn(List.of(1, 3));
+
+        mvc.perform(fileUpload(API_URI)
+                .file(umUsuario(umUsuarioCoordenadorD2d()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.")));
+
+        verify(usuarioService, never()).save(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarBadRequest_quandoUsuarioSemCanalD2dEstiverEmEquipeDoCanalD2d() {
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(1660123)).thenReturn(List.of(1));
+
+        mvc.perform(fileUpload(API_URI)
+                .file(umUsuario(umUsuarioQueEraCanalD2dAlterandoParaCanalAtivo()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) do Canal D2D PRÓPRIO.")));
+
+        verify(usuarioService, never()).save(any(), any());
     }
 
     @Test
@@ -242,9 +301,24 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
             .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
             .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
-            .andExpect(jsonPath("$.content[2].email",
-                is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")))
+            .andExpect(jsonPath("$.content[2].email", is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")))
             .andExpect(jsonPath("$.content[2].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())));
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarios_quandoFiltroForComSubCanal() throws Exception {
+        mvc.perform(get(API_URI + "?subCanalId=1")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(4)))
+            .andExpect(jsonPath("$.content[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$.content[0].email", is("ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.content[1].email", is("HELPDESK@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[2].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[2].email", is("operacao_gerente_comercial@net.com.br")))
+            .andExpect(jsonPath("$.content[3].nome", is("INATIVO")))
+            .andExpect(jsonPath("$.content[3].email", is("INATIVO@XBRAIN.COM.BR")));
     }
 
     @Test
@@ -255,12 +329,28 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(
                     UsuarioCargoSuperiorPost
                         .builder()
-                        .cidadeIds(List.of(1, 5578))
+                        .cidadeIds(List.of(5578))
                         .build())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
             .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
+    }
+
+    @Test
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanalAndSubCanal() throws Exception {
+        mvc.perform(post(API_URI + "/cargo-superior/4/D2D_PROPRIO")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("subCanaisId", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .cidadeIds(List.of(1, 5578))
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
@@ -344,7 +434,16 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(new UsuarioDto()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo unidadesNegociosId é obrigatório.",
+                "O campo empresasId é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo loginNetSales may not be empty")));
     }
 
     @Test
@@ -375,7 +474,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveSalvarSemFoto() throws Exception {
-        UsuarioDto usuario = umUsuario("JOAO");
+        var usuario = umUsuario("JOAO"); // deve setar o codigo do cargo
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload(API_URI)
                 .file(umUsuario(usuario))
@@ -396,7 +495,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveSalvarComFoto() throws Exception {
-        UsuarioDto usuario = umUsuario("JOAO");
+        var usuario = umUsuario("JOAO");
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload(API_URI)
                 .file(umFileFoto())
@@ -418,7 +517,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveSalvarAConfiguracaoDoUsuario() throws Exception {
-        UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
+        var dto = new UsuarioConfiguracaoSaveDto();
         dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setRamal(1234);
         mvc.perform(post(API_URI + "/configuracao")
@@ -430,7 +529,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarAConfiguracaoDoUsuario() throws Exception {
-        UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
+        var dto = new UsuarioConfiguracaoSaveDto();
         dto.setUsuarioId(100);
         dto.setRamal(6666);
         mvc.perform(post(API_URI + "/configuracao")
@@ -438,7 +537,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isOk());
-        Usuario usuario = repository.findComplete(100).orElse(new Usuario());
+        var usuario = repository.findComplete(100).orElse(new Usuario());
         Assert.assertEquals(usuario.getConfiguracao().getRamal(), Integer.valueOf(6666));
     }
 
@@ -450,7 +549,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
+        var usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
 
@@ -463,7 +562,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
+        var usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
 
@@ -476,7 +575,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
             .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
+        var usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
     }
 
@@ -520,7 +619,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveNaoTrocarOEmailDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
-        UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
+        var dto = umRequestDadosAcessoSenha();
         dto.setEmailAtual("EMAILERRADO@XBRAIN.COM.BR");
         mvc.perform(put(API_URI + "/acesso/email")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -541,7 +640,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarASenhaDoUsuarioIgnorandoSenhaAtual() throws Exception {
-        UsuarioDadosAcessoRequest objTest = umRequestDadosAcessoSenha();
+        var objTest = umRequestDadosAcessoSenha();
         objTest.setIgnorarSenhaAtual(Boolean.TRUE);
         objTest.setSenhaAtual("");
 
@@ -555,7 +654,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveNaoTrocarASenhaDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
-        UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
+        var dto = umRequestDadosAcessoSenha();
         dto.setSenhaAtual("SENHAINCORRETA");
         mvc.perform(put(API_URI + "/acesso/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -587,7 +686,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void getCsv_CsvFormatadoCorretamente_QuandoRetornadoDoisUsuarios() throws Exception {
         doReturn(doisUsuariosCsvResponse()).when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
-        String csv = mvc.perform(get(API_URI + "/csv")
+        var csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -610,7 +709,7 @@ public class UsuarioGerenciaControllerTest {
         doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
             .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
 
-        String csv = mvc.perform(get(API_URI + "/csv")
+        var csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -629,7 +728,6 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void validarSeUsuarioNovoCadastro_deveRetornarTrue_quandoEmailECpfNaoExistem() throws Exception {
-
         mvc.perform(get(API_URI + "/existir/usuario")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .param("email", "JOHN@GMAIL.COM")
@@ -640,7 +738,6 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
-
         mvc.perform(get(API_URI + "/existir/usuario")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .param("cpf", "48503182076")
@@ -652,7 +749,6 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoCpfCadastrado() throws Exception {
-
         mvc.perform(get(API_URI + "/existir/usuario")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .param("cpf", "99898798782")
@@ -678,7 +774,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
-        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
+        var dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
         dto.setEmailAtual("HELPDESK@XBRAIN.COM.BR");
         dto.setEmailNovo("NOVOEMAIL@XBRAIN.COM.BR");
@@ -686,7 +782,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoSenha() {
-        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
+        var dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
         dto.setAlterarSenha(Eboolean.V);
         dto.setSenhaAtual("123456");
@@ -696,7 +792,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private UsuarioInativacaoDto umUsuarioParaInativar() {
-        UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
+        var dto = new UsuarioInativacaoDto();
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         dto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
@@ -704,7 +800,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private UsuarioDto umUsuarioParaEditar() {
-        Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
+        var usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
         usuario.forceLoad();
         usuario.setNome("JOAOZINHO");
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
@@ -712,9 +808,9 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private UsuarioDto umUsuario(String nome) {
-        UsuarioDto usuario = new UsuarioDto();
+        var usuario = new UsuarioDto();
         usuario.setNome(nome);
-        usuario.setCargoId(3);
+        usuario.setCargoId(2);
         usuario.setDepartamentoId(1);
         usuario.setCpf("097.238.645-92");
         usuario.setUnidadesNegociosId(Arrays.asList(1));
@@ -725,16 +821,17 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 
-    private MockMultipartFile umUsuario(UsuarioDto usuario) throws Exception {
+    private MockMultipartFile umUsuario(UsuarioDto usuario)  {
         byte[] json = convertObjectToJsonString(usuario).getBytes(StandardCharsets.UTF_8);
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
 
     private UsuarioDto umUsuarioParaAtualizacao(String nome, Integer id, Integer cargo, Integer departamento, String cpf) {
-        UsuarioDto usuario = new UsuarioDto();
+        var usuario = new UsuarioDto();
         usuario.setId(id);
         usuario.setNome(nome);
         usuario.setCargoId(cargo);
@@ -747,13 +844,15 @@ public class UsuarioGerenciaControllerTest {
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
-        usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
+        usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO));
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         usuario.setSituacao(ESituacao.A);
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 
     private void mockResponseAgenteAutorizado() {
-        AgenteAutorizadoResponse response = AgenteAutorizadoResponse.builder()
+        var response = AgenteAutorizadoResponse.builder()
             .id("100")
             .cnpj("09.489.617/0001-97")
             .build();
@@ -840,5 +939,56 @@ public class UsuarioGerenciaControllerTest {
                 .situacao(ESituacao.A)
                 .build()
         );
+    }
+
+    private UsuarioDto umUsuarioSupervisorD2d() {
+        return UsuarioDto.builder()
+            .id(1660123)
+            .nome("USUARIO D2D")
+            .email("USUARIOD2D@TESTE.COM")
+            .cpf("442.341.797-95")
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(2))
+            .empresasId(List.of(1, 2, 3, 5))
+            .unidadesNegociosId(List.of(2))
+            .loginNetSales("LOGINUSUARIOD2D")
+            .departamentoId(21)
+            .build();
+    }
+
+    private UsuarioDto umUsuarioCoordenadorD2d() {
+        return UsuarioDto.builder()
+            .id(1660123)
+            .nome("USUARIO D2D")
+            .email("USUARIOD2D@TESTE.COM")
+            .cpf("442.341.797-95")
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.COORDENADOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(2, 3, 4))
+            .empresasId(List.of(1, 2, 3, 5))
+            .unidadesNegociosId(List.of(2))
+            .loginNetSales("LOGINUSUARIOD2D")
+            .departamentoId(21)
+            .build();
+    }
+
+    private UsuarioDto umUsuarioQueEraCanalD2dAlterandoParaCanalAtivo() {
+        return UsuarioDto.builder()
+            .id(1660123)
+            .nome("USUARIO D2D")
+            .email("USUARIOD2D@TESTE.COM")
+            .cpf("442.341.797-95")
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
+            .empresasId(List.of(1, 2, 3, 5))
+            .unidadesNegociosId(List.of(2))
+            .loginNetSales("LOGINUSUARIOD2D")
+            .departamentoId(21)
+            .build();
     }
 }

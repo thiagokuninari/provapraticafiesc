@@ -125,6 +125,11 @@ public class UsuarioController {
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
+    @PostMapping("/buscar-todos")
+    public List<UsuarioResponse> getUsuariosById(@RequestBody List<Integer> ids) {
+        return usuarioService.getUsuariosByIdsTodasSituacoes(ids);
+    }
+
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuarioByNivel(@RequestParam CodigoNivel nivel) {
         return usuarioService.getUsuarioByNivel(nivel);
@@ -554,5 +559,15 @@ public class UsuarioController {
     @GetMapping("permitidos/select/por-filtros")
     public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
+    }
+
+    @GetMapping("{usuarioId}/subcanal/nivel")
+    public UsuarioSubCanalNivelResponse findByUsuarioId(@PathVariable Integer usuarioId) {
+        return usuarioService.findByUsuarioId(usuarioId);
+    }
+
+    @GetMapping("cpf")
+    public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
+        return usuarioService.findByCpf(cpf);
     }
 }

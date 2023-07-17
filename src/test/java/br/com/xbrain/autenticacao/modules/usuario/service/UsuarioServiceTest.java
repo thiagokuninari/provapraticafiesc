@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
@@ -17,10 +18,12 @@ import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
@@ -46,24 +49,34 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
@@ -72,6 +85,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
+import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -136,6 +151,10 @@ public class UsuarioServiceTest {
     @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
+    private CargoService cargoService;
+    @Mock
+    private SubCanalService subCanalService;
+    @Mock
     private FeederService feederService;
     @Mock
     private InativarColaboradorMqSender inativarColaboradorMqSender;
@@ -187,7 +206,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void ativar_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
-        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+        doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -209,7 +228,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void ativar_NaoDeveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
-        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+        doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -228,7 +247,7 @@ public class UsuarioServiceTest {
             .when(usuarioRepository)
             .findComplete(anyInt());
 
-        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+        doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -241,7 +260,7 @@ public class UsuarioServiceTest {
         assertThat(umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
             OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO))
             .extracting("situacao", "cargo.id", "cargo.codigo")
-            .containsExactly(ESituacao.A, 120, OPERACAO_TELEVENDAS);
+            .containsExactly(A, 120, OPERACAO_TELEVENDAS);
     }
 
     @Test
@@ -317,11 +336,15 @@ public class UsuarioServiceTest {
     public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
-                .id(22)
+                .id(6)
+                .codigo(DIRETOR_OPERACAO)
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(new SubCanal(1)))
             .build();
+
+        when(cargoService.findById(anyInt())).thenReturn(usuario.getCargo());
 
         doReturn(umUsuarioAutenticadoNivelAa())
             .when(autenticacaoService)
@@ -330,6 +353,216 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário sem permissão para o cargo com os canais.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            10,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
+        var usuario = umUsuarioCompleto(DIRETOR_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2)
+        ));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().codigo(DIRETOR_OPERACAO).build());
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoSupervisor() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            1,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2)
+        ));
+
+        when(cargoService.findById(anyInt())).thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Não é permitido cadastrar mais de um sub-canal para este cargo.");
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanais() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            1,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canais, deve ser cadastrado no mínimo um.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5))
+            .thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3)
+            ));
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(3),
+            new SubCanal(4)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canal em comum com usuários da hierarquia.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seSuperiorPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2),
+            new SubCanal(3)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
+            .thenReturn(List.of(PAP_ID, PAP_PREMIUM_ID));
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5, OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
+            .thenReturn(List.of(
+                PAP_ID,
+                PAP_PME_ID,
+                PAP_PREMIUM_ID,
+                INSIDE_SALES_PME_ID)
+            );
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canal em comum com usuários subordinados.");
     }
 
     @Test
@@ -550,10 +783,10 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarExecutivosPorSituacao_deveRetornarOsExecutivos() {
-        when(usuarioRepository.findAllExecutivosBySituacao(eq(ESituacao.A)))
+        when(usuarioRepository.findAllExecutivosBySituacao(eq(A)))
             .thenReturn(List.of(umUsuarioExecutivo()));
 
-        assertThat(usuarioService.buscarExecutivosPorSituacao(ESituacao.A))
+        assertThat(usuarioService.buscarExecutivosPorSituacao(A))
             .hasSize(1)
             .extracting("id", "nome")
             .containsExactly(
@@ -592,9 +825,9 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "email", "codigoNivel", "codigoCargo", "codigoDepartamento", "situacao")
             .containsExactly(
                 tuple(1, "JOSÉ", "JOSE@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
-                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, ESituacao.A),
+                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, A),
                 tuple(2, "HIGOR", "HIGOR@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
-                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, ESituacao.A));
+                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, A));
 
         verify(usuarioRepository, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
     }
@@ -685,6 +918,7 @@ public class UsuarioServiceTest {
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(new SubCanal(1)))
             .build();
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -692,17 +926,58 @@ public class UsuarioServiceTest {
             .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
+    private List<Usuario> umaListaUsuariosExecutivosAtivo() {
+        return List.of(
+            Usuario.builder()
+                .id(1)
+                .nome("JOSÉ")
+                .email("JOSE@HOTMAIL.COM")
+                .situacao(A)
+                .departamento(Departamento.builder()
+                    .id(1)
+                    .codigo(CodigoDepartamento.AGENTE_AUTORIZADO)
+                    .build())
+                .cargo(Cargo.builder()
+                    .id(1)
+                    .codigo(CodigoCargo.EXECUTIVO)
+                    .nivel(Nivel.builder()
+                        .id(1)
+                        .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                        .build())
+                    .build())
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .nome("HIGOR")
+                .email("HIGOR@HOTMAIL.COM")
+                .situacao(A)
+                .departamento(Departamento.builder()
+                    .id(1)
+                    .codigo(CodigoDepartamento.AGENTE_AUTORIZADO)
+                    .build())
+                .cargo(Cargo.builder()
+                    .id(1)
+                    .codigo(CodigoCargo.EXECUTIVO)
+                    .nivel(Nivel.builder()
+                        .id(1)
+                        .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                        .build())
+                    .build())
+                .build()
+        );
+    }
+
     @Test
     public void findUsuariosByIds_deveRetonarUsuarios_quandoForPassadoIdsDosUsuarios() {
         when(usuarioRepository.findUsuariosByIds(any()))
             .thenReturn(List.of(
-                umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
+                umUsuarioSituacaoResponse(1, "JONATHAN", A),
                 umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
 
         assertThat(usuarioService.findUsuariosByIds(List.of(1, 2)))
             .extracting("id", "nome", "situacao")
             .containsExactlyInAnyOrder(
-                tuple(1, "JONATHAN", ESituacao.A),
+                tuple(1, "JONATHAN", A),
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
@@ -849,7 +1124,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByCpfAa("31114231827", null);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -869,7 +1144,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByCpfAa("98471883007", true);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -897,7 +1172,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByEmailAa("usuarioativo@email.com", null);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -917,7 +1192,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByEmailAa("usuarioativo@email.com", true);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -1012,7 +1287,7 @@ public class UsuarioServiceTest {
             .id(10)
             .cpf("98471883007")
             .nome("Usuario Ativo")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .email("usuarioativo@email.com")
             .build();
     }
@@ -1056,7 +1331,7 @@ public class UsuarioServiceTest {
                 .nome("Caio")
                 .loginNetSales("H")
                 .email("caio@teste.com")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .build(),
             Usuario.builder()
                 .id(2)
@@ -1127,7 +1402,7 @@ public class UsuarioServiceTest {
                 .nome("RENATO")
                 .telefone("43 3322-0000")
                 .email("RENATO@GMAIL.COM")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .codigoUnidadesNegocio(List.of(
                     CodigoUnidadeNegocio.CLARO_RESIDENCIAL,
                     CodigoUnidadeNegocio.RESIDENCIAL_COMBOS))
@@ -1152,17 +1427,85 @@ public class UsuarioServiceTest {
         when(usuarioRepository
             .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
-                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
-                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
+                umUsuarioResponse(1, "NOME 1", A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", A, ASSISTENTE_OPERACAO)));
 
         assertThat(usuarioService
             .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1), Set.of(ASSISTENTE_OPERACAO.name())))
             .extracting("id", "nome", "situacao", "codigoCargo")
             .containsExactlyInAnyOrder(
-                tuple(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
-                tuple(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
-                tuple(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO));
+                tuple(1, "NOME 1", A, ASSISTENTE_OPERACAO),
+                tuple(2, "NOME 2", A, ASSISTENTE_OPERACAO),
+                tuple(3, "NOME 3", A, ASSISTENTE_OPERACAO));
+    }
+
+    private UsuarioHierarquia umUsuarioHierarquia() {
+        return UsuarioHierarquia.builder()
+            .usuarioSuperior(umUsuarioSuperior())
+            .usuario(new Usuario(100))
+            .usuarioCadastro(new Usuario(103))
+            .dataCadastro(LocalDateTime.now())
+            .build();
+    }
+
+    private Usuario umUsuarioSuperior() {
+        return Usuario.builder()
+            .id(100)
+            .telefone("43 3322-0000")
+            .cpf("097.238.645-92")
+            .situacao(A)
+            .cargo(umCargoSupervisorOperacao())
+            .departamento(umDepartamentoComercial())
+            .nome("RENATO")
+            .email("RENATO@GMAIL.COM")
+            .unidadesNegocios(List.of(
+                umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
+                umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)))
+            .empresas(List.of(umaEmpresa()))
+            .build();
+    }
+
+    private Cargo umCargoSupervisorOperacao() {
+        return Cargo.builder()
+            .id(1)
+            .codigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .nome(CodigoCargo.SUPERVISOR_OPERACAO.name())
+            .situacao(A)
+            .build();
+    }
+
+    private Nivel umNivelOperacao() {
+        return Nivel.builder()
+            .id(1)
+            .codigo(OPERACAO)
+            .nome(OPERACAO.name())
+            .build();
+    }
+
+    private Departamento umDepartamentoComercial() {
+        return Departamento.builder()
+            .id(1)
+            .codigo(CodigoDepartamento.COMERCIAL)
+            .nome(CodigoDepartamento.COMERCIAL.name())
+            .build();
+    }
+
+    private UnidadeNegocio umaUnidadeNegocio(CodigoUnidadeNegocio codigoUnidadeNegocio) {
+        return UnidadeNegocio.builder()
+            .codigo(codigoUnidadeNegocio)
+            .nome(codigoUnidadeNegocio.name())
+            .situacao(A)
+            .build();
+    }
+
+    private Empresa umaEmpresa() {
+        return Empresa.builder()
+            .id(1)
+            .codigo(CodigoEmpresa.CLARO_RESIDENCIAL)
+            .nome(CodigoEmpresa.CLARO_RESIDENCIAL.name())
+            .build();
     }
 
     @Test
@@ -1437,7 +1780,7 @@ public class UsuarioServiceTest {
     @Test
     public void buscarUsuarioSituacaoPorIds_listaDeUsuarioSituacao_seSolicitado() {
         var usuariosSituacao = List.of(
-            UsuarioSituacaoResponse.builder().id(1).nome("NOME 1").situacao(ESituacao.A).build(),
+            UsuarioSituacaoResponse.builder().id(1).nome("NOME 1").situacao(A).build(),
             UsuarioSituacaoResponse.builder().id(2).nome("NOME 2").situacao(ESituacao.I).build(),
             UsuarioSituacaoResponse.builder().id(3).nome("NOME 3").situacao(ESituacao.R).build()
         );
@@ -1476,6 +1819,56 @@ public class UsuarioServiceTest {
                 tuple(1, "NOME UM"));
     }
 
+    private Usuario umUsuarioComLoginNetSales(int id) {
+        return Usuario.builder()
+            .id(id)
+            .nome("UM USUARIO COM LOGIN")
+            .loginNetSales("UM LOGIN NETSALES")
+            .cargo(Cargo.builder()
+                .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
+                .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
+                .build())
+            .cpf("123.456.887-91")
+            .situacao(A)
+            .build();
+    }
+
+    private Usuario umUsuarioSemLoginNetSales(int id) {
+        var usuario = umUsuarioComLoginNetSales(id);
+        usuario.setLoginNetSales(null);
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioDoIdECodigoCargo(int id, CodigoCargo codigoCargo) {
+        return Usuario.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .cargo(Cargo.builder()
+                .codigo(codigoCargo)
+                .nivel(Nivel.builder().codigo(CodigoNivel.XBRAIN).build())
+                .build())
+            .cpf("123.456.887-91")
+            .situacao(A)
+            .build();
+    }
+
+    private Page<Usuario> umaPageUsuario(PageRequest pageRequest, List<Usuario> usuariosList) {
+        return new PageImpl<>(
+            usuariosList,
+            pageRequest,
+            usuariosList.size());
+    }
+
+    private UsuarioPredicate umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List<Integer> ids) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comIds(ids);
+
+        return predicate;
+    }
+
     @Test
     public void ativar_void_quandoDesejarAlterarSituacaoDoUsuarioComId100ParaAtivo() {
         var usuarioInativo = Usuario.builder()
@@ -1489,7 +1882,7 @@ public class UsuarioServiceTest {
 
         usuarioService.ativar(100);
 
-        assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
+        assertThat(usuarioInativo.getSituacao()).isEqualTo(A);
 
         verify(usuarioClientService, times(1)).alterarSituacao(eq(100));
         verify(usuarioRepository).save(usuarioInativo);
@@ -1536,6 +1929,27 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void getUsuariosByIdsTodasSituacoes_deveRetornarListaVazia_quandoRegistrosNaoEncontrados() {
+        var emptyUsersIdsPart = IntStream
+            .rangeClosed(1, 500)
+            .boxed()
+            .collect(Collectors.toList());
+
+        var idsUsuarios = IntStream
+            .rangeClosed(1, 500)
+            .boxed()
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        when(usuarioRepository.findByIdIn(emptyUsersIdsPart)).thenReturn(List.of());
+
+        var listaDeUsuarios = usuarioService.getUsuariosByIdsTodasSituacoes(idsUsuarios);
+
+        assertThat(listaDeUsuarios).isEmpty();
+
+        verify(usuarioRepository, times(1)).findByIdIn(emptyUsersIdsPart);
+    }
+
+    @Test
     public void getTiposCanalOptions_opcoesDeSelectParaOsTiposCanal_quandoBuscarOpcoesParaOSelect() {
         assertThat(usuarioService.getTiposCanalOptions())
             .extracting("value", "label")
@@ -1543,14 +1957,15 @@ public class UsuarioServiceTest {
                 tuple("PAP", "PAP"),
                 tuple("PAP_PME", "PAP PME"),
                 tuple("PAP_PREMIUM", "PAP PREMIUM"),
-                tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
+                tuple("INSIDE_SALES_PME", "INSIDE SALES PME"),
+                tuple("PAP_CONDOMINIO", "PAP CONDOMINIO")
             );
     }
 
     @Test
     public void getAllForCsv_deveRetornarCsv_quandoEncontrarUsuarios() {
-        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
-        UsuarioPredicate usuarioPredicate = usuarioFiltros.toPredicate();
+        var usuarioFiltros = new UsuarioFiltros();
+        var usuarioPredicate = usuarioFiltros.toPredicate();
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa());
@@ -1582,12 +1997,10 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(usuarioAaCsvCompletado, umUsuarioOperacaoCsv()));
-
     }
 
     @Test
     public void preencheUsuarioCsvsDeOperacao_devePreencherColunasDeCanal_seUsuarioForOperacao() {
-
         when(usuarioRepository.getCanaisByUsuarioIds(Collections.singletonList(1)))
             .thenReturn(List.of(umCanal(), umOutroCanal()));
 
@@ -1602,7 +2015,6 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
-
     }
 
     @Test
@@ -1733,9 +2145,10 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        var usuario = umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+        when(usuarioRepository.findById(any())).thenReturn(Optional.of(usuario));
         when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of(1));
@@ -1744,19 +2157,23 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.save(
-                umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
-            .withMessage("Usuário já está cadastrado em outra equipe");
+        var usuarioCadastro = umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuarioCadastro.setSubCanais(Set.of(new SubCanal(1)));
 
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuarioCadastro))
+            .withMessage("Usuário já está cadastrado em outra equipe");
     }
 
     @Test
     public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
+        var usuarioSalvo = umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+            OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
@@ -1766,17 +2183,23 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+        var usuario = umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+
+        assertThatCode(() -> usuarioService.save(usuario))
             .doesNotThrowAnyException();
     }
 
     @Test
     public void save_retornaValidacaoException_quandoLiderEquipe() {
+        var usuarioSalvo = umUsuarioCompleto(SUPERVISOR_OPERACAO, 10,
+            OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -1786,19 +2209,23 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.save(
-                umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
-            .withMessage("Usuário já está cadastrado em outra equipe");
+        var usuario = umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
 
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário já está cadastrado em outra equipe");
     }
 
     @Test
     public void save_retornaValidacaoException_quandoCoordenadorLiderEquipe() {
+        var usuarioSalvo = umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
+            OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -1808,19 +2235,25 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.save(
-                umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário já está cadastrado em outra equipe");
+
         verify(usuarioRepository, never()).saveAndFlush(any());
     }
 
     @Test
     public void save_naoDeveLancarException_quandoCoordenadorNaoPossuirOutraEquipe() {
+        var usuarioSalvo = umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
+            OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
+
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -1830,27 +2263,35 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+        assertThatCode(() -> usuarioService.save(usuario))
             .doesNotThrowAnyException();
+
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
     public void save_naoDeveLancarException_quandoUsuarioPossuiCargoForaVerificacao() {
+        var usuarioSalvo = umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
+            OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(GERENTE_OPERACAO, 7,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO, 7,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+        assertThatCode(() -> usuarioService.save(usuario))
             .doesNotThrowAnyException();
+
         verify(equipeVendaD2dService, never()).getEquipeVendasBySupervisorId(any());
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
@@ -1858,18 +2299,25 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveLancarException_quandoUsuarioPossuiDepartamentoForaVerificacao() {
+        var usuarioSalvo = umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
+            CodigoDepartamento.AGENTE_AUTORIZADO,
+            ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
-                CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(usuarioSalvo));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
+        var usuario = umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+            CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+
+        assertThatCode(() -> usuarioService.save(usuario))
             .doesNotThrowAnyException();
+
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
@@ -1884,12 +2332,36 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
             .doesNotThrowAnyException();
+
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioComSubCanalPapPremiumNivelOperacao() {
+        var usuarioSalvo = umUsuarioCompleto(VENDEDOR_OPERACAO, 8, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuarioSalvo.setSubCanais(Set.of(new SubCanal(2)));
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        var usuario = umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(3)));
+        assertThatCode(() -> usuarioService.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(subCanalService, times(1)).removerPermissaoIndicacaoPremium(any());
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
+        verify(subCanalService, times(1)).adicionarPermissaoIndicacaoPremium(any());
     }
 
     @Test
@@ -2152,6 +2624,215 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void findByUsuarioId_deveRetornarUsuarioSubCanalNivelResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanal()));
+
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findByUsuarioId(1))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(1, PAP, "PAP")));
+
+        verify(usuarioRepository, times(1)).findById(eq(1));
+    }
+
+    @Test
+    public void findByUsuarioId_deveLancarNotFoundException_seUsuarioNaoExistir() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> usuarioService.findByUsuarioId(1))
+            .withMessage("O usuário 1 não foi encontrado.");
+
+        verify(usuarioRepository, times(1)).findById(eq(1));
+    }
+
+    @Test
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoIdForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(null)
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(null)
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEListaSubCanaisIdVazia() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(VENDEDOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dComListaSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(VENDEDOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of(1))
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoNaoEstiverNaListaDeCargosEquipeD2d() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(DIRETOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(1, 2, 3, 4))
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEClientEquipeVendasRetornarListaVazia() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(3))
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dClientEquipeVendasRetornarListaVazia() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioEstiverEmEquipeVendasComMesmoSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(3))
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(3));
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEComApenasUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(2))
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(3));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.");
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEComMaisDeUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(COORDENADOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of(2, 3, 4))
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(1, 3));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.");
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dEstiverEmUmaEquipeVendasDoCanalD2d() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(1));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) do Canal D2D PRÓPRIO.");
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
     public void getUsuariosOperacaoCanalAa_deveRetornarListaUsuariosCanalOpEnivelAa() {
         var codigoNivel = OPERACAO;
         when(usuarioRepository.getUsuariosOperacaoCanalAa(eq(codigoNivel)))
@@ -2159,6 +2840,95 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.getUsuariosOperacaoCanalAa(codigoNivel))
             .containsExactly(outroUsuarioNivelOpCanalAaResponse());
+    }
+
+    @Test
+    public void findByCpf_deveRetornarUsuarioSubCanalNivelResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanal()));
+
+        when(usuarioRepository.findTop1UsuarioByCpf(any())).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findByCpf("11122233344"))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(1, PAP, "PAP")));
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
+    @Test
+    public void findByCpf_deveRetornarNovoObjeto_seUsuarioNaoExistir() {
+        assertThat(usuarioService.findByCpf("00000000000")).isEqualTo(new UsuarioSubCanalNivelResponse());
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
+    private Usuario outroUsuarioNivelOpCanalAa() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .codigo(CodigoEmpresa.CLARO_TV)
+                .build()))
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .build();
+        return usuario;
+    }
+
+    private UsuarioResponse outroUsuarioNivelOpCanalAaResponse() {
+        var usuarioResponse = UsuarioResponse
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .rg(null)
+            .telefone(null)
+            .telefone02(null)
+            .telefone03(null)
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .dataCadastro(null)
+            .codigoNivel(OPERACAO)
+            .nomeNivel("OPERACAO")
+            .codigoDepartamento(null)
+            .codigoCargo(EXECUTIVO_HUNTER)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .permissoes(null)
+            .nascimento(null)
+            .aaId(null)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .tipoCanal(null)
+            .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
+            .build();
+
+        return usuarioResponse;
     }
 
     @Test
@@ -2251,6 +3021,142 @@ public class UsuarioServiceTest {
             .getUsuariosCompletoSubordinados(eq(1));
         verify(agenteAutorizadoNovoService, times(1))
             .findAgentesAutorizadosByUsuariosIds(eq(List.of(22, 33, 1)), eq(true));
+    }
+
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaRegionalIdInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().regionalId(1027).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaUfIdInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().ufId(1).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaCidadeIdsInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().cidadesIds(List.of(5578)).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_deveGerarHistorico_quandoSenhaIncorreta() {
+        when(usuarioRepository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(any(String.class)))
+            .thenReturn(Optional.of(umUsuarioCompleto()));
+
+        usuarioService.gerarHistoricoTentativasLoginSenhaIncorreta("EMAIL@EMAIL.COM");
+
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+    }
+
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_deveInativarUsuario_quandoSenhaIncorreta() {
+        when(usuarioRepository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(any(String.class)))
+            .thenReturn(Optional.of(umUsuarioCompletoSenhaErrada()));
+
+        when(usuarioRepository.findComplete(any(Integer.class)))
+            .thenReturn(Optional.of(umUsuarioCompletoSenhaErrada()));
+
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacaoSenhaIncorreta());
+
+        usuarioService.gerarHistoricoTentativasLoginSenhaIncorreta("EMAIL@EMAIL.COM");
+
+        verify(usuarioRepository, times(2)).save(any(Usuario.class));
+        verify(autenticacaoService, times(1)).logout(any(Integer.class));
+        verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
+    }
+
+    private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {
+        return MotivoInativacao.builder()
+            .id(1)
+            .descricao("TESTE")
+            .codigo(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private Usuario umUsuarioCompletoSenhaErrada() {
+        var usuario = umUsuarioCompleto();
+        usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
+        usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
+        return usuario;
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(16101)
+                    .build(),
+                Usuario.builder()
+                    .id(105)
+                    .build()
+            );
+        assertThat(permissaoEspecialCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado com permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, List.of(2023)));
+
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100, 2023));
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactlyInAnyOrder(
+                Usuario.builder()
+                    .id(2023)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A,
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 
     @Test
