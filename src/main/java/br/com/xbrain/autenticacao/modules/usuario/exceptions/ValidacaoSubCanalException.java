@@ -7,14 +7,18 @@ import java.util.List;
 
 public class ValidacaoSubCanalException extends RuntimeException {
 
-    private List<UsuarioSubCanalDto> usuarios = new ArrayList<>();
+    private List<UsuarioSubCanalDto> errors = new ArrayList<>();
 
     public ValidacaoSubCanalException(String message) {
         super(message);
     }
 
+    public List<UsuarioSubCanalDto> getErrors() {
+        return errors;
+    }
+
     public void adicionarUsuario(UsuarioSubCanalDto usuarioSubCanalDto) {
-        this.usuarios.add(usuarioSubCanalDto);
+        this.errors.add(usuarioSubCanalDto);
     }
 }
 
