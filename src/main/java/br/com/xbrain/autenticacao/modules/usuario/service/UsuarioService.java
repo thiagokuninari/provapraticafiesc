@@ -148,7 +148,6 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
 
 
-
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -449,7 +448,7 @@ public class UsuarioService {
     public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(boolean incluirInativos) {
         var usuario = UsuarioHierarquiaDto
             .of(repository.findById(autenticacaoService.getUsuarioId())
-            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
 
         var subordinados = UsuarioHierarquiaDto.ofUsuarioSubordinadoDtoList(
             repository.getUsuariosCompletoSubordinados(usuario.getId()));
@@ -538,25 +537,35 @@ public class UsuarioService {
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
-            feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
-            subCanalService.removerPermissaoIndicacaoPremium(usuario);
+            removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
-            subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+            adicionarPermissoes(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
-            if (usuario.isIdNivelMso()) {
-                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
-            }
 
             return UsuarioDto.of(usuario);
+
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
+
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
+    }
+
+    private void removerPermissoes(Usuario usuario) {
+        subCanalService.removerPermissaoIndicacaoPremium(usuario);
+        subCanalService.removerPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
+    }
+
+    private void adicionarPermissoes(Usuario usuario) {
+        subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+        subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {

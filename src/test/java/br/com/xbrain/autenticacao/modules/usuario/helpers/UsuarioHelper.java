@@ -2,32 +2,25 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
-import com.google.common.collect.Sets;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_TECNICO_VENDEDOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 
 public class UsuarioHelper {
 
@@ -106,77 +99,6 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario tresUsuario(Integer id, Cargo cargo, Set<ECanal> canais) {
-        return Usuario
-            .builder()
-            .id(id)
-            .cargo(cargo)
-            .canais(canais)
-            .email("email@email.com")
-            .usuariosHierarquia(new HashSet<>())
-            .situacao(ESituacao.A)
-            .build();
-    }
-
-    public static Usuario outroUsuarioCompleto() {
-        var usuario = Usuario
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(EXECUTIVO_HUNTER)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
-                    .nome("OPERACAO")
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
-    }
-
     public static Cargo umCargo() {
         return Cargo
             .builder()
@@ -198,9 +120,12 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario umUsuarioOperacaoComSubCanal(Set<SubCanal> subCanais) {
+    public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
+                                                       Integer subCanalId,
+                                                       ETipoCanal codigoSubCanal) {
         return Usuario.builder()
-            .id(101112)
+            .id(usuarioId)
+            .email("USUARIO.OPERACAO@CLARO.COM.BR")
             .cargo(Cargo.builder()
                 .codigo(VENDEDOR_OPERACAO)
                 .nivel(Nivel
@@ -210,12 +135,18 @@ public class UsuarioHelper {
                     .nome("OPERACAO")
                     .build())
                 .build())
-            .subCanais(subCanais)
-            .usuarioCadastro(umUsuarioMsoConsultor(Set.of()))
+            .subCanais(Set.of(
+                SubCanal.builder()
+                    .id(subCanalId)
+                    .codigo(codigoSubCanal)
+                    .build()))
+            .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
+            .usuariosHierarquia(new HashSet<>())
+            .situacao(A)
             .build();
     }
 
-    public static Usuario umUsuarioMsoConsultor(Set<SubCanal> subCanais) {
+    public static Usuario umUsuarioMsoConsultor(Integer subCanalId, ETipoCanal codigoSubCanal) {
         return Usuario.builder()
             .id(23)
             .cargo(Cargo.builder()
@@ -227,7 +158,11 @@ public class UsuarioHelper {
                     .nome("MSO")
                     .build())
                 .build())
-            .subCanais(subCanais)
+            .subCanais(Set.of(
+                SubCanal.builder()
+                    .id(subCanalId)
+                    .codigo(codigoSubCanal)
+                    .build()))
             .build();
     }
 

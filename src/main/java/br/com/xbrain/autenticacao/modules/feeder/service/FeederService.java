@@ -102,12 +102,14 @@ public class FeederService {
     }
 
     public void adicionarPermissaoFeederParaUsuarioNovoMso(Usuario usuario) {
-        var permissoesTiposFeeder = usuarioRepository.findById(usuario.getId())
-            .map(usuarioNovo -> usuarioService.getPermissoesEspeciaisDoUsuario(usuario.getId(),
-                usuario.getUsuarioCadastro().getId(), getPermissoesTiposFeederMso(usuario)))
-            .orElse(List.of());
+        if (usuario.isIdNivelMso()) {
+            var permissoesTiposFeeder = usuarioRepository.findById(usuario.getId())
+                .map(usuarioNovo -> usuarioService.getPermissoesEspeciaisDoUsuario(usuario.getId(),
+                    usuario.getUsuarioCadastro().getId(), getPermissoesTiposFeederMso(usuario)))
+                .orElse(List.of());
 
-        usuarioService.salvarPermissoesEspeciais(permissoesTiposFeeder);
+            usuarioService.salvarPermissoesEspeciais(permissoesTiposFeeder);
+        }
     }
 
     private List<Integer> getPermissoesTiposFeederMso(Usuario usuario) {

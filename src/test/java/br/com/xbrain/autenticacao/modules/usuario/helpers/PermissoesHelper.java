@@ -10,25 +10,33 @@ import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 
 public class PermissoesHelper {
 
-    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaAa(Integer idUsuario) {
+    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaAa(Integer usuarioId) {
         return FUNCIONALIDADES_FEEDER_PARA_AA.stream()
-            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(idUsuario).build()).build())
+            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(usuarioId).build()).build())
             .collect(Collectors.toList());
     }
 
-    public static PermissaoEspecial umaPermissaoTratarLead(Integer idUsuario) {
-        return PermissaoEspecial.builder().id(3046).usuario(Usuario.builder().id(idUsuario).build()).build();
+    public static PermissaoEspecial umaPermissaoTratarLead(Integer usuarioId) {
+        return PermissaoEspecial.builder().id(3046).usuario(Usuario.builder().id(usuarioId).build()).build();
     }
 
-    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaMsoResidencial(Integer idUsuario) {
+    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaMsoResidencial(Integer usuarioId) {
         return FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL.stream()
-            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(idUsuario).build()).build())
+            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(usuarioId).build()).build())
             .collect(Collectors.toList());
     }
 
-    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaMsoEmpresarial(Integer idUsuario) {
+    public static List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaMsoEmpresarial(Integer usuarioId) {
         return FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL.stream()
-            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(idUsuario).build()).build())
+            .map(id -> PermissaoEspecial.builder().id(id).usuario(Usuario.builder().id(usuarioId).build()).build())
             .collect(Collectors.toList());
+    }
+
+    public static PermissaoEspecial umaPermissaoIndicacaoPremium() {
+        return PermissaoEspecial.builder().id(3062).build();
+    }
+
+    public static PermissaoEspecial umaPermissaoIndicacaoInsideSalesPme() {
+        return PermissaoEspecial.builder().id(3071).build();
     }
 }

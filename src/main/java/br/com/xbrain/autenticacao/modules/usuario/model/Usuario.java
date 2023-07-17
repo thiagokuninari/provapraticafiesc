@@ -390,6 +390,10 @@ public class Usuario {
         return getSubCanaisId().contains(ETipoCanal.PAP_PREMIUM.getId());
     }
 
+    public boolean hasSubCanalInsideSalesPme() {
+        return getSubCanaisId().contains(ETipoCanal.INSIDE_SALES_PME.getId());
+    }
+
     public Set<UsuarioCidade> getCidades() {
         return Collections.unmodifiableSet(this.cidades);
     }
