@@ -627,14 +627,6 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void getById_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
-        mvc.perform(get(API_URI + "/1")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
-            .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @SneakyThrows
     public void buscarEstadosDisponiveis_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/estados-disponiveis"))
             .andExpect(status().isUnauthorized());

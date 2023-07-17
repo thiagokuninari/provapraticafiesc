@@ -56,6 +56,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.MLG_5018.name())
             .antMatchers("/api/usuarios/situacoes/timer")
             .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .regexMatchers("/api/sites/(\\d+)").authenticated()
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
