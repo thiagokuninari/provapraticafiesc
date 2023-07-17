@@ -7,15 +7,17 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbit.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
@@ -43,20 +46,12 @@ public class  OrganizacaoEmpresaService {
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-    @Autowired
-    private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
-
-    @Autowired
-    private OrganizacaoEmpresaHistoricoService historicoService;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private NivelRepository nivelRepository;
-
-    @Autowired
-    private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
+    private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
+    private final OrganizacaoEmpresaHistoricoService historicoService;
+    private final AutenticacaoService autenticacaoService;
+    private final NivelRepository nivelRepository;
+    private final ModalidadeEmpresaRepository modalidadeEmpresaRepository;
+    private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -109,11 +104,18 @@ public class  OrganizacaoEmpresaService {
             throw CNPJ_OU_RAZAO_SOCIAL_EXISTENTE;
         }
         var organizacaoEmpresaToUpdate = findById(id);
+        var organizacaoNome = organizacaoEmpresaToUpdate.getRazaoSocial();
 
         var nivel = validarNivel(request.getNivelId());
         var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
         organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
+
+        var organizacaoNomeAtualizado = request.getRazaoSocial();
+        var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
+        var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
+
+        organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
@@ -177,5 +179,12 @@ public class  OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacoes;
+    }
+
+    public boolean isOrganizacaoAtiva(String organizacao) {
+        if (organizacao == null) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacaoEmpresaRepository.existsByRazaoSocialAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 }

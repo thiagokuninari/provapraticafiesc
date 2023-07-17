@@ -25,4 +25,5 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     List<OrganizacaoEmpresa> findAllAtivosByNivelIdInAndSituacao(List<Integer> nivelId, ESituacaoOrganizacaoEmpresa situacao);
 
+    boolean existsByRazaoSocialAndSituacao(String nome, ESituacaoOrganizacaoEmpresa situacao);
 }

@@ -139,6 +139,8 @@ app-config:
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
     permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
+    organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
+    organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
 
   oauth-clients:
     autenticacao-api:

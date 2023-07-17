@@ -70,4 +70,9 @@ public class OrganizacaoEmpresaController {
     public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(@RequestParam List<Integer> niveisIds) {
         return service.findAllOrganizacoesAtivasByNiveisIds(niveisIds);
     }
+
+    @GetMapping("{organizacao}/ativa")
+    public boolean verificarOrganizacaoAtiva(@PathVariable String organizacao) {
+        return service.isOrganizacaoAtiva(organizacao);
+    }
 }

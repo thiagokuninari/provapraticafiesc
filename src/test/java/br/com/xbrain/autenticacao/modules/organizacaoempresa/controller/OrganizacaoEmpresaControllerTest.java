@@ -352,4 +352,43 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[1].id", is(2)));
     }
+
+    @Test
+    @SneakyThrows
+    public void verificarOrganizacaoAtiva_deveRetornarSituacaoOrganizacao_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+
+        when(organizacaoEmpresaService.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(API_URI + "/{organizacao}/ativa", "ORGANIZAO")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void isOrganizacaoAtiva_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioMsoConsultorAutenticado());
+
+        mockMvc.perform(get(API_URI + "/{organizacao}/ativa", "ORGANIZACAO")
+                .header("Authorization", getAccessToken(mockMvc, HELP_DESK))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void isOrganizacaoAtiva_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(organizacaoEmpresaService.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(API_URI + "/{organizacao}/ativa", "ORGANIZACAO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
 }

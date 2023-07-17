@@ -7,12 +7,14 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbit.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
@@ -37,6 +39,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -58,6 +62,8 @@ public class OrganizacaoEmpresaServiceTest {
     private NivelRepository nivelRepository;
     @Mock
     private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
+    @Mock
+    private OrganizacaoEmpresaMqSender sender;
 
     @Test
     public void findById_notFoundException_quandoNaoExistirOrganizacaoCadastrada() {
@@ -251,6 +257,9 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+
+        var organizcaoDto = new OrganizacaoEmpresaUpdateDto("Organizacao 4", "Organizacao 1", 1);
+        verify(sender).sendUpdateNomeSucess(eq(organizcaoDto));
     }
 
     @Test
@@ -330,6 +339,35 @@ public class OrganizacaoEmpresaServiceTest {
 
         verify(organizacaoEmpresaRepository, times(1))
             .findAllAtivosByNivelIdInAndSituacao(eq(List.of(1)), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveRetornarTrue_quandoOrganizacaoAtiva() {
+        when(organizacaoEmpresaRepository.existsByRazaoSocialAndSituacao("ORGANIZACAO", ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(true);
+
+        assertTrue(service.isOrganizacaoAtiva("ORGANIZACAO"));
+
+        verify(organizacaoEmpresaRepository)
+            .existsByRazaoSocialAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveRetornarFalse_quandoOrganizacaoInativa() {
+        assertFalse(service.isOrganizacaoAtiva("ORGANIZACAO"));
+
+        verify(organizacaoEmpresaRepository)
+            .existsByRazaoSocialAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveLancarNotFoundException_quandoOrganizacaoForNull() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.isOrganizacaoAtiva(null))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, never())
+            .existsByRazaoSocialAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {

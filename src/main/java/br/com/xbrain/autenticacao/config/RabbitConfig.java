@@ -137,6 +137,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica-failure}")
     private String permissaoAgenteAutorizadoEquipeTecnicaFailureMq;
 
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome}")
+    private String organizacaoEmpresaAtualizacaoNomeMq;
+
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome-failure}")
+    private String organizacaoEmpresaAtualizacaoNomeFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -364,6 +370,16 @@ public class RabbitConfig {
     @Bean
     Queue usuarioInativacaoPorAaMq() {
         return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeMq() {
+        return new Queue(organizacaoEmpresaAtualizacaoNomeMq, false);
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeFailureMq() {
+        return QueueBuilder.durable(organizacaoEmpresaAtualizacaoNomeFailureMq).build();
     }
 
     @Bean
