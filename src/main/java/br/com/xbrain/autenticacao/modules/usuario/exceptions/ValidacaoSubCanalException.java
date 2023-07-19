@@ -20,5 +20,10 @@ public class ValidacaoSubCanalException extends RuntimeException {
     public void adicionarUsuario(UsuarioSubCanalDto usuarioSubCanalDto) {
         this.errors.add(usuarioSubCanalDto);
     }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 }
 
