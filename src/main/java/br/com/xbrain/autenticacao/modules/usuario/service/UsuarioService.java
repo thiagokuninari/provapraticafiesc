@@ -46,6 +46,7 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -57,6 +58,7 @@ import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -147,8 +149,6 @@ public class UsuarioService {
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
 
-
-
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -235,6 +235,8 @@ public class UsuarioService {
     private SubCanalService subCanalService;
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -557,7 +559,6 @@ public class UsuarioService {
             if (usuario.isIdNivelMso()) {
                 feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
             }
-
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
@@ -993,12 +994,22 @@ public class UsuarioService {
 
     private void validarSubCanaisSubordinados(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
-            var subordinadosSubCanalIds = repository.getSubCanalIdsDosSubordinados(usuario.getId());
-
-            if (!subordinadosSubCanalIds.isEmpty() && !usuario.hasAllSubCanaisDosSubordinados(subordinadosSubCanalIds)) {
+            var subordinadosComSubCanalId = repository.getAllSubordinadosComSubCanalId(usuario.getId());
+            if (!subordinadosComSubCanalId.isEmpty() && !usuario.hasAllSubCanaisDosSubordinados(subordinadosComSubCanalId)) {
+                var subordinadosComSubCanaisDiferentes =
+                    getSubordinadosComSubCanaisDiferentes(usuario, subordinadosComSubCanalId);
+                applicationEventPublisher.publishEvent(
+                    new UsuarioSubCanalEvent(this, subordinadosComSubCanaisDiferentes));
                 throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS;
             }
         }
+    }
+
+    private List<UsuarioSubCanalId> getSubordinadosComSubCanaisDiferentes(Usuario usuario,
+                                                                          List<UsuarioSubCanalId> usuariosComSubCanalId) {
+        return usuariosComSubCanalId.stream()
+            .filter(subordinado -> !usuario.getSubCanaisId().contains(subordinado.getSubCanalId()))
+            .collect(Collectors.toList());
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {

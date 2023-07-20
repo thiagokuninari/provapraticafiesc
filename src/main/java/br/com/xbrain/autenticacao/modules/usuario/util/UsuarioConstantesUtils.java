@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.util;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.ValidacaoSubCanalException;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 public class UsuarioConstantesUtils {
 
     public static final int POSICAO_ZERO = 0;
+    public static final int POSICAO_UM = 1;
     public static final int MAX_CARACTERES_SENHA = 6;
     public static final ESituacao ATIVO = ESituacao.A;
     public static final ESituacao INATIVO = ESituacao.I;
@@ -62,7 +64,7 @@ public class UsuarioConstantesUtils {
     public static ValidacaoException MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA = new ValidacaoException(
         "Usuário não possui sub-canal em comum com usuários da hierarquia."
     );
-    public static ValidacaoException MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS = new ValidacaoException(
+    public static ValidacaoSubCanalException MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS = new ValidacaoSubCanalException(
         "Usuário não possui sub-canal em comum com usuários subordinados."
     );
     public static final List<CodigoCargo> cargosOperadoresBackoffice

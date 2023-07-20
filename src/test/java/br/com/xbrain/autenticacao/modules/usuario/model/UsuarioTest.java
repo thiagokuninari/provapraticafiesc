@@ -11,15 +11,10 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.doisSubCanal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -278,7 +273,11 @@ public class UsuarioTest {
         var usuario = Usuario.builder()
             .subCanais(Set.of(umSubCanal(), doisSubCanal()))
             .build();
-        assertTrue(usuario.hasAllSubCanaisDosSubordinados(List.of(1, 2)));
+
+        assertTrue(usuario.hasAllSubCanaisDosSubordinados(List.of(
+            umUsuarioSubCanalId(10, "USUARIO 10", PAP.getId()),
+            umUsuarioSubCanalId(20, "USUARIO 20", PAP_PME.getId())
+        )));
     }
 
     @Test
@@ -286,7 +285,14 @@ public class UsuarioTest {
         var usuario = Usuario.builder()
             .subCanais(Set.of(umSubCanal()))
             .build();
-        assertFalse(usuario.hasAllSubCanaisDosSubordinados(List.of(1, 2, 3, 4)));
+
+        assertFalse(usuario.hasAllSubCanaisDosSubordinados(List.of(
+            umUsuarioSubCanalId(10, "USUARIO 10", PAP.getId()),
+            umUsuarioSubCanalId(20, "USUARIO 20", PAP_PME.getId()),
+            umUsuarioSubCanalId(30, "USUARIO 30", PAP_PREMIUM.getId()),
+            umUsuarioSubCanalId(40, "USUARIO 40", INSIDE_SALES_PME.getId()),
+            umUsuarioSubCanalId(50, "USUARIO 50", PAP_CONDOMINIO.getId())
+        )));
     }
 
     @Test
