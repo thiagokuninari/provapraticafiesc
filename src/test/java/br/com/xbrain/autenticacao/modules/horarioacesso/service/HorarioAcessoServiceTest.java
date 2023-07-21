@@ -222,7 +222,7 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isTrue();
 
-        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));
@@ -244,7 +244,7 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
-        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));
@@ -265,7 +265,7 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
-        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));

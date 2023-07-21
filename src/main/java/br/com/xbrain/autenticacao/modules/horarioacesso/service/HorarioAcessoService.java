@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -141,10 +142,10 @@ public class HorarioAcessoService {
     }
 
     public boolean getStatus(ECanal canal) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         validarCanal(canal);
-        validarCanalUsuario();
-        var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
-
+        validarCanalUsuario(usuarioAutenticado);
+        var usuario = usuarioAutenticado.getUsuario();
         if (usuario.isOperadorTelevendasAtivoLocal()) {
             var site = getSiteByUsuario(usuario);
             var horarioAcesso = repository.findBySiteId(site.getId())
@@ -167,8 +168,9 @@ public class HorarioAcessoService {
     }
 
     public boolean getStatus(ECanal canal, Integer siteId) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         validarCanal(canal);
-        validarCanalUsuario();
+        validarCanalUsuario(usuarioAutenticado);
         var horarioAcesso = repository.findBySiteId(siteId)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
@@ -272,9 +274,8 @@ public class HorarioAcessoService {
         }
     }
 
-    private void validarCanalUsuario() {
-        var canaisUsuario = autenticacaoService.getUsuarioAutenticado().getCanais();
-        if (!canaisUsuario.contains(ATIVO_PROPRIO)) {
+    private void validarCanalUsuario(UsuarioAutenticado usuarioAutenticado) {
+        if (!usuarioAutenticado.isXbrainOuMso() && !usuarioAutenticado.getCanais().contains(ATIVO_PROPRIO)) {
             throw USUARIO_SEM_CANAL_VALIDO;
         }
     }
