@@ -28,12 +28,17 @@ public class ReCaptchaFilter extends GenericFilterBean {
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null && request.getHeader("X-Real-IP") != null) {
+        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null) {
+
+            var remoteIp = request.getHeader("X-Real-IP");
 
             PostMethod method = new PostMethod(RECAPTCHA_URL);
             method.addParameter("secret", RECAPTCHA_SECRET);
             method.addParameter("response", servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM));
-            method.addParameter("remoteip", request.getHeader("X-Real-IP"));
+
+            if (remoteIp != null) {
+                method.addParameter("remoteip", request.getHeader("X-Real-IP"));
+            }
 
             HttpClient client = new HttpClient();
             client.executeMethod(method);
