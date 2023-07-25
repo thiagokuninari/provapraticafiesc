@@ -4,6 +4,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -36,7 +37,7 @@ public class ReCaptchaFilter extends GenericFilterBean {
             method.addParameter("secret", RECAPTCHA_SECRET);
             method.addParameter("response", servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM));
 
-            if (remoteIp != null) {
+            if (!ObjectUtils.isEmpty(remoteIp)) {
                 method.addParameter("remoteip", request.getHeader("X-Real-IP"));
             }
 
