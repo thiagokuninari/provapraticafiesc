@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.service.UfService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,10 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/ufs")
+@RequiredArgsConstructor
 public class UfController {
 
-    @Autowired
-    private UfService ufService;
+    private final UfService ufService;
 
     @GetMapping
     public Iterable<Uf> getAll() {

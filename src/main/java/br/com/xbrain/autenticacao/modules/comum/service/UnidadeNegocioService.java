@@ -5,21 +5,17 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.predicate.UnidadeNegocioPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UnidadeNegocioService {
 
-    @Getter
-    @Autowired
-    private UnidadeNegocioRepository repository;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
+    private final UnidadeNegocioRepository repository;
+    private final AutenticacaoService autenticacaoService;
 
     public List<UnidadeNegocio> getAll() {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();

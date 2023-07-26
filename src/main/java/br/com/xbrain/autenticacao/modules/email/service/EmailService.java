@@ -48,7 +48,6 @@ public class EmailService {
 
     @Autowired
     private RestTemplate restTemplate;
-
     @Autowired
     private SpringTemplateEngine templateEngine;
 
