@@ -1,99 +1,138 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.service.CanalService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHierarquiaAtivoService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(HierarquiaController.class)
+@MockBeans({
+    @MockBean(UsuarioSubCanalObserver.class),
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class)})
+@Import(OAuth2ResourceConfig.class)
 public class HierarquiaControllerTest {
 
-    private static final String URL_API = "/api/usuarios-hierarquia";
+    private static final String BASE_URL = "/api/usuarios-hierarquia";
 
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private AutenticacaoService autenticacaoService;
+    private CanalService canalService;
     @MockBean
     private UsuarioHierarquiaAtivoService usuarioHierarquiaAtivoService;
 
     @Test
     @SneakyThrows
-    public void getVendedoresDaHierarquiaDoSite_deveRetornarVendedores_quandoUsuarioLogadoAdmin() {
-        var filtros = new UsuarioHierarquiaFiltros();
-        filtros.setSiteId(5);
-
-        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
-
-        mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
-                .param("siteId", "5")
-                .header("Authorization", getAccessToken(mockMvc, ADMIN))
-                .header("X-Usuario-Canal", "ATIVO_PROPRIO")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(usuarioHierarquiaAtivoService, times(1)).vendedoresDaHierarquiaPorSite(eq(filtros));
+    @WithAnonymousUser
+    public void getCoordenadoresSubordinados_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(BASE_URL + "/coordenadores-subordinados"))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void getVendedoresDaHierarquiaDoSite_deveRetornarVendedores_quandoUsuarioLogadoAssistenteOperacao() {
-        var filtros = new UsuarioHierarquiaFiltros();
-        filtros.setSiteId(5);
-        filtros.setBuscarInativo(true);
+    @WithMockUser
+    public void getCoordenadoresSubordinados_deveRetornarOk_quandoUsuarioAutenticado() {
+        when(canalService.usuarioHierarquia()).thenReturn(usuarioHierarquiaAtivoService);
 
-        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
-
-        mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
-                .param("siteId", "5")
-                .header("Authorization", getAccessToken(mockMvc, OPERACAO_ASSISTENTE))
-                .header("X-Usuario-Canal", "ATIVO_PROPRIO")
+        mockMvc.perform(get(BASE_URL + "/coordenadores-subordinados")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioHierarquiaAtivoService, times(1)).vendedoresDaHierarquiaPorSite(eq(filtros));
+        verify(usuarioHierarquiaAtivoService).validarCanal(any());
+        verify(usuarioHierarquiaAtivoService).coordenadoresSubordinadosHierarquia(any());
+        verify(canalService, times(2)).usuarioHierarquia();
     }
 
     @Test
     @SneakyThrows
-    public void getVendedoresDaHierarquiaDoSite_naoDeveRetornarVendedores_quandoUsuarioLogadoNaoPossuirPermissao() {
-        var filtros = new UsuarioHierarquiaFiltros();
-        filtros.setSiteId(5);
+    @WithAnonymousUser
+    public void getSupervisoresSubordinados_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(BASE_URL + "/supervisores-subordinados"))
+            .andExpect(status().isUnauthorized());
+    }
 
-        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.AGENTE_AUTORIZADO);
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getSupervisoresSubordinados_deveRetornarOk_quandoUsuarioAutenticado() {
+        when(canalService.usuarioHierarquia()).thenReturn(usuarioHierarquiaAtivoService);
 
-        mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
-                .param("siteId", "5")
-                .header("Authorization", getAccessToken(mockMvc, SOCIO_AA))
-                .header("X-Usuario-Canal", "AGENTE_AUTORIZADO")
+        mockMvc.perform(get(BASE_URL + "/supervisores-subordinados")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isOk());
 
-        verify(usuarioHierarquiaAtivoService, times(0)).vendedoresDaHierarquiaPorSite(eq(filtros));
+        verify(usuarioHierarquiaAtivoService).validarCanal(any());
+        verify(usuarioHierarquiaAtivoService).supervisoresDaHierarquia(any());
+        verify(canalService, times(2)).usuarioHierarquia();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getVendedoresSubordinados_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(BASE_URL + "/vendedores-subordinados"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getVendedoresSubordinados_deveRetornarOk_quandoUsuarioAutenticado() {
+        when(canalService.usuarioHierarquia()).thenReturn(usuarioHierarquiaAtivoService);
+
+        mockMvc.perform(get(BASE_URL + "/vendedores-subordinados")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioHierarquiaAtivoService).validarCanal(any());
+        verify(usuarioHierarquiaAtivoService).vendedoresDaHierarquia(any());
+        verify(canalService, times(2)).usuarioHierarquia();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getVendedoresDaHierarquiaDoSite_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(BASE_URL + "/vendedores-hierarquia-site"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getVendedoresDaHierarquiaDoSite_deveRetornarOk_quandoUsuarioAutenticado() {
+        when(canalService.usuarioHierarquia()).thenReturn(usuarioHierarquiaAtivoService);
+
+        mockMvc.perform(get(BASE_URL + "/vendedores-hierarquia-site")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioHierarquiaAtivoService).validarCanal(any());
+        verify(usuarioHierarquiaAtivoService).vendedoresDaHierarquiaPorSite(any());
+        verify(canalService, times(2)).usuarioHierarquia();
     }
 }

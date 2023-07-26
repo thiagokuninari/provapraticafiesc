@@ -14,6 +14,8 @@ import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 import java.util.Arrays;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.TEST;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
@@ -105,6 +107,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     }
 
     private boolean isActiveProfileTest() {
-        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase("test"));
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase(TEST));
     }
 }

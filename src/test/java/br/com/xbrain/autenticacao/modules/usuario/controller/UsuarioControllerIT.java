@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_hierarquia.sql"})
-public class UsuarioControllerUnitTest {
+public class UsuarioControllerIT {
 
     @Autowired
     private MockMvc mvc;
@@ -54,7 +53,7 @@ public class UsuarioControllerUnitTest {
     @Before
     public void setup() {
         when(usuarioService.getIdDosUsuariosSubordinados(any(), anyBoolean()))
-                .thenReturn(Arrays.asList(1, 2, 3));
+            .thenReturn(Arrays.asList(1, 2, 3));
 
         when(usuarioService.getIdsSubordinadosDaHierarquia(100,
             Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name())))
@@ -62,73 +61,8 @@ public class UsuarioControllerUnitTest {
 
         when(usuarioService.getIdsSubordinadosDaHierarquia(100,
             Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name(),
-                   CodigoCargo.COORDENADOR_OPERACAO.name())))
+                CodigoCargo.COORDENADOR_OPERACAO.name())))
             .thenReturn(Arrays.asList(1, 2, 3, 4));
-    }
-
-    @Test
-    @SneakyThrows
-    public void getIdsDasHierarquias_deveRetornarLista_quandoUnicoCargo() {
-        mvc.perform(get("/api/usuarios/100/subordinados/cargos")
-                .param("codigosCargos","SUPERVISOR_OPERACAO")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
-
-        verify(usuarioService, times(1))
-            .getIdsSubordinadosDaHierarquia(100,
-                Collections.singleton("SUPERVISOR_OPERACAO"));
-    }
-
-    @Test
-    @SneakyThrows
-    public void getIdsDasHierarquias_deveRetornarLista_quandoMultiplosCargos() {
-        mvc.perform(get("/api/usuarios/100/subordinados/cargos")
-                .param("codigosCargos","SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(4)));
-
-        verify(usuarioService, times(1))
-            .getIdsSubordinadosDaHierarquia(100,
-                Set.of("SUPERVISOR_OPERACAO","COORDENADOR_OPERACAO"));
-    }
-
-    @Test
-    public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/101/subordinados?incluirProprio=true")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)));
-    }
-
-    @Test
-    public void deveRetornarUsuariosSubordinadosDoUsuarioSelecionado() throws Exception {
-        mvc.perform(get("/api/usuarios/hierarquia/subordinados/110")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
-
-    @Test
-    public void umaListaUsuarioDistribuicaoResponse_200_quandoBuscarUsuariosDaEquipeParaDistribuirAgendamentos()
-        throws Exception {
-        when(usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(100))
-            .thenReturn(umaListaUsuarioDistribuicaoResponse());
-
-        mvc.perform(get("/api/usuarios/distribuicao/agendamentos/equipe-venda/100")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[0].id").value(1))
-            .andExpect(jsonPath("$[0].nome").value("RENATO"))
-            .andExpect(jsonPath("$[1].id").value(2))
-            .andExpect(jsonPath("$[1].nome").value("JOAO"));
     }
 
     @Test
@@ -149,14 +83,6 @@ public class UsuarioControllerUnitTest {
 
         verify(usuarioService, times(1))
             .getSubordinadosAndAasDoUsuario(eq(false));
-    }
-
-    @Test
-    @SneakyThrows
-    public void getSubordinadosAndAasDoUsuario_deveRetornarUnathorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get("/api/usuarios/hierarquia/subordinados-aas")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
     }
 
     private List<UsuarioDistribuicaoResponse> umaListaUsuarioDistribuicaoResponse() {

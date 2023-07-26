@@ -2339,8 +2339,8 @@ public class UsuarioServiceTest {
             .getUsuarioAutenticado();
 
         assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
+            umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+                CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
             .doesNotThrowAnyException();
 
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
@@ -3189,6 +3189,24 @@ public class UsuarioServiceTest {
         usuarioService.saveFromQueue(usuarioMqRequest);
 
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+    }
+
+    @Test
+    public void getIdDosUsuariosSubordinados_deveRetornarIds_quandoSolicitado() {
+        when(usuarioRepository.getUsuariosSubordinados(1))
+            .thenReturn(List.of(2));
+
+        assertThat(usuarioService.getIdDosUsuariosSubordinados(1, false))
+            .isEqualTo(List.of(2));
+    }
+
+    @Test
+    public void getIdDosUsuariosSubordinados_deveRetornarIdsInclusiveDoUsuario_quandoIncluirProprioForTrue() {
+        when(usuarioRepository.getUsuariosSubordinados(1))
+            .thenReturn(new ArrayList<>(List.of(2)));
+
+        assertThat(usuarioService.getIdDosUsuariosSubordinados(1, true))
+            .isEqualTo(List.of(2, 1));
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {

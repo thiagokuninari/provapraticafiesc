@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -23,12 +24,13 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static java.util.Objects.nonNull;
 
 @Service
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-    
+
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -40,6 +42,20 @@ public class CidadeService {
 
     private Supplier<BooleanBuilder> predicateCidadesPermitidas = () ->
         new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
+
+    public Iterable<Cidade> buscarTodas(Integer idUf, Integer idRegional, Integer idSubCluster) {
+        if (nonNull(idUf)) {
+            if (nonNull(idRegional)) {
+                return getAllCidadeByRegionalAndUf(idRegional, idUf);
+            }
+
+            return getAllCidadeByUf(idUf);
+        } else if (nonNull(idSubCluster)) {
+            return getAllBySubCluster(idSubCluster);
+        }
+
+        return Collections.emptyList();
+    }
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
