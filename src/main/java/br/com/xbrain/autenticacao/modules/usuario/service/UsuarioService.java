@@ -2535,6 +2535,14 @@ public class UsuarioService {
         }
     }
 
+    public List<SelectResponse> getCanaisPermitidosParaOrganizacao() {
+        return ECanal.getCanaisAtivos()
+            .stream()
+            .filter(canal -> canal == ECanal.INTERNET)
+            .map(canal -> SelectResponse.of(canal.name(), canal.getDescricao()))
+            .collect(toList());
+    }
+
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
                                                                 List<Integer> funcionalidades) {
         return funcionalidades.stream()

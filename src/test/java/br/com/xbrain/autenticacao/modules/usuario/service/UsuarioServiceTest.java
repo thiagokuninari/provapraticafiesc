@@ -2289,6 +2289,15 @@ public class UsuarioServiceTest {
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 
+    @Test
+    public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
+        assertThat(usuarioService.getCanaisPermitidosParaOrganizacao())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple("INTERNET", "Internet")
+            );
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
