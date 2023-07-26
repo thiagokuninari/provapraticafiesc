@@ -7,4 +7,5 @@ public class Constantes {
     public static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     public static final String VIRGULA = ",";
     public static final String TEST = "test";
+    public static final int INDICE_ZERO = 0;
 }

@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -22,15 +21,11 @@ public class UsuarioGerenciaController {
 
     @Autowired
     private UsuarioService service;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
-        service.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuario);
-
-        return service.save(UsuarioDto.convertFrom(usuario), foto);
+        return service.save(usuario, foto);
     }
 
     @PostMapping("backoffice")
@@ -44,18 +39,13 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{id}")
-    public UsuarioDto getById(@PathVariable("id") int id) {
-        var usuario = service.findByIdComAa(id);
-
-        return UsuarioDto.of(
-            usuario,
-            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+    public UsuarioDto getById(@PathVariable int id) {
+        return service.getUsuarioById(id);
     }
 
     @GetMapping
     public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        return service.getAll(pageRequest, filtros)
-            .map(UsuarioConsultaDto::convertFrom);
+        return service.getAll(pageRequest, filtros);
     }
 
     @GetMapping("chamados/usuarios-redirecionamento/{idNivel}")
@@ -71,7 +61,7 @@ public class UsuarioGerenciaController {
     @PostMapping(value = "/cargo-superior/{cargoId}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post) {
-        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
+        return service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds());
     }
 
     @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
@@ -144,9 +134,7 @@ public class UsuarioGerenciaController {
 
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
-        service.exportUsuariosToCsv(
-            service.getAllForCsv(filtros),
-            response);
+        service.exportUsuariosToCsv(filtros, response);
     }
 
     @GetMapping("existir/usuario")

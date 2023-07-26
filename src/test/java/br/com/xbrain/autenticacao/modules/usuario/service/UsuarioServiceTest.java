@@ -337,6 +337,13 @@ public class UsuarioServiceTest {
             .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
+    private UsuarioInativacaoDto umUsuarioInativoDto() {
+        return UsuarioInativacaoDto.builder()
+            .idUsuario(1)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO)
+            .build();
+    }
+
     @Test
     public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         var usuario = Usuario.builder()
@@ -1327,6 +1334,19 @@ public class UsuarioServiceTest {
             .id(1)
             .cpf("097.238.645-92")
             .nome("Seiya")
+            .situacao(ESituacao.A)
+            .departamento(Departamento.builder().id(1).nome("teste").build())
+            .unidadesNegocios(List.of(
+                umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
+                umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)))
+            .empresas(List.of(umaEmpresa()))
+            .cargo(Cargo.builder()
+                .id(1)
+                .nivel(Nivel.builder()
+                    .id(1)
+                    .codigo(CodigoNivel.XBRAIN)
+                    .build())
+                .build())
             .build();
     }
 
@@ -1500,6 +1520,7 @@ public class UsuarioServiceTest {
 
     private UnidadeNegocio umaUnidadeNegocio(CodigoUnidadeNegocio codigoUnidadeNegocio) {
         return UnidadeNegocio.builder()
+            .id(1)
             .codigo(codigoUnidadeNegocio)
             .nome(codigoUnidadeNegocio.name())
             .situacao(A)
