@@ -1440,6 +1440,18 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/canais/organizacao")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(ECanal.INTERNET.name())))
+            .andExpect(jsonPath("$[0].label", is(ECanal.INTERNET.getDescricao())));
+
+        verify(usuarioService).getCanaisPermitidosParaOrganizacao();
+    }
+
+    @Test
+    @SneakyThrows
     public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
                 .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")

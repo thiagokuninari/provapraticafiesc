@@ -369,6 +369,11 @@ public class UsuarioController {
             .collect(Collectors.toList());
     }
 
+    @GetMapping("canais/organizacao")
+    public List<SelectResponse> getCanaisPermitidosParaOrganizacao() {
+        return usuarioService.getCanaisPermitidosParaOrganizacao();
+    }
+
     @GetMapping("tipos-canal")
     public List<SelectResponse> getTiposCanal() {
         return usuarioService.getTiposCanalOptions();
