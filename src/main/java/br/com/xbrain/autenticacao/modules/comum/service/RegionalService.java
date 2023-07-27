@@ -35,7 +35,10 @@ public class RegionalService {
     }
 
     public List<RegionalDto> findAllAtivos() {
-        return repository.findAllBySituacao(ESituacao.A).stream().map(RegionalDto::of).collect(Collectors.toList());
+        return repository.findAllBySituacao(ESituacao.A)
+            .stream()
+            .map(RegionalDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SelectResponse> getAllByUsuarioId(Integer usuarioId) {
