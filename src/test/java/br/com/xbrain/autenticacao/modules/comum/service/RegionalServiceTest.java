@@ -15,9 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -64,6 +64,20 @@ public class RegionalServiceTest {
     @Test
     public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
         assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(List.of(1025, 1027));
+    }
+
+    @Test
+    public void findAllAtivos_deveRetornarRegionaisAtivas_quandoSolicitado() {
+        assertThat(regionalService.findAllAtivos())
+            .hasSize(5)
+            .extracting("id", "nome", "situacao")
+            .containsExactly(
+                tuple(1, "LESTE", A),
+                tuple(2, "SÃO PAULO", A),
+                tuple(3, "SUL", A),
+                tuple(1025, "RNE", A),
+                tuple(1027, "RPS", A)
+            );
     }
 
     RegionalDto umRegionalDto() {
