@@ -34,8 +34,8 @@ public class RegionalService {
         return repository.getAll(predicate.build());
     }
 
-    public List<Regional> findAllAtivos() {
-        return repository.findAllBySituacao(ESituacao.A);
+    public List<RegionalDto> findAllAtivos() {
+        return repository.findAllBySituacao(ESituacao.A).stream().map(RegionalDto::of).collect(Collectors.toList());
     }
 
     public List<SelectResponse> getAllByUsuarioId(Integer usuarioId) {

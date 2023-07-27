@@ -22,7 +22,7 @@ public class RegionalController {
     }
 
     @GetMapping("ativas")
-    public List<Regional> findAllAtivos() {
+    public List<RegionalDto> findAllAtivos() {
         return service.findAllAtivos();
     }
 
