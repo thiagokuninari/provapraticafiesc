@@ -15,9 +15,9 @@ public class OrganizacaoEmpresaResponseTest {
     @Test
     public void of_deveRetornarOrganizacaoEmpresaResponse_seSolicitado() {
         assertThat(OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa()))
-            .extracting("id", "nome", "nivel", "situacao", "codigo", "canal")
+            .extracting("id", "nome", "nivel", "situacao", "codigo", "canal", "canalDescricao")
             .containsExactly(1, "Organizacao 1", OrganizacaoEmpresaHelper.umNivelResponse(),
-                ESituacaoOrganizacaoEmpresa.A, "codigo", ECanal.INTERNET);
+                ESituacaoOrganizacaoEmpresa.A, "codigo", ECanal.INTERNET, "Internet");
     }
 
     private static OrganizacaoEmpresa umaOrganizacaoEmpresa() {

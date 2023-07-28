@@ -22,14 +22,15 @@ public class OrganizacaoEmpresaResponse {
     private ESituacaoOrganizacaoEmpresa situacao;
     private String codigo;
     private ECanal canal;
+    private String canalDescricao;
 
     public static OrganizacaoEmpresaResponse of(OrganizacaoEmpresa organizacaoEmpresa) {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();
         if (organizacaoEmpresa != null) {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaResponse);
-            organizacaoEmpresaResponse.setNome(organizacaoEmpresa.getNome());
             organizacaoEmpresaResponse.setNivel(organizacaoEmpresa.getNivelIdNome().orElse(null));
-            organizacaoEmpresaResponse.setCanal(organizacaoEmpresa.getCanal());
+            organizacaoEmpresaResponse.setCanalDescricao(organizacaoEmpresa.getCanal() != null
+                ? organizacaoEmpresa.getCanal().getDescricao() : null);
         }
         return organizacaoEmpresaResponse;
     }
