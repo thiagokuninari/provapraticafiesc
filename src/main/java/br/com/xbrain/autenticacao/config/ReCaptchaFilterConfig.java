@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("producao")
+@Profile({"homologacao", "producao"})
 public class ReCaptchaFilterConfig {
 
     @Bean
