@@ -19,7 +19,7 @@ import java.io.InputStreamReader;
 
 public class ReCaptchaFilter extends GenericFilterBean {
 
-    private static final String RECAPTCHA_SECRET = "6Le_61EUAAAAAIPOqay7hFxkcmQliYJeIz-O4XDF";
+    private static final String RECAPTCHA_SECRET = "6LdBQ18nAAAAAAV1uRk-L5azOztTP7uKFXkIF9IR";
     private static final String RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify";
     private static final String RECAPTCHA_RESPONSE_PARAM = "g-recaptcha-response";
 
