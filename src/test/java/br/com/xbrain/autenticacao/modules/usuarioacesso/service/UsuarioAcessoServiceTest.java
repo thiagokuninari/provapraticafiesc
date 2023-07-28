@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorInativacaoPolRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -90,7 +91,7 @@ public class UsuarioAcessoServiceTest {
 
         verify(usuarioRepository, times(7)).atualizarParaSituacaoInativo(anyInt());
         verify(usuarioHistoricoService, times(7)).gerarHistoricoInativacao(anyInt(), any(String.class));
-        verify(inativarColaboradorMqSender, times(7)).sendSuccess(anyString());
+        verify(inativarColaboradorMqSender, times(7)).sendSuccess(any(ColaboradorInativacaoPolRequest.class));
     }
 
     @Test

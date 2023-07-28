@@ -2181,7 +2181,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository, times(2)).save(any(Usuario.class));
         verify(autenticacaoService, times(1)).logout(any(Integer.class));
-        verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
+        verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(ColaboradorInativacaoPolRequest.class));
     }
 
     private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {

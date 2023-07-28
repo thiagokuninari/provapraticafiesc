@@ -7,7 +7,9 @@ import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorInativacaoPolRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECodigoObservacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -137,7 +139,8 @@ public class UsuarioAcessoService {
 
     private void inativarColaboradorPol(UsuarioDto usuario) {
         if (usuario.getEmail() != null) {
-            inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+            var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFC);
+            inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
         }
@@ -230,7 +233,7 @@ public class UsuarioAcessoService {
 
     private List<Integer> obterUsuariosIds(UsuarioLogadoRequest request) {
         return StreamSupport.stream(
-            usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
+                usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
     }

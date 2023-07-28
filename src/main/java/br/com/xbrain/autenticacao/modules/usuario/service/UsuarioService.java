@@ -2442,12 +2442,13 @@ public class UsuarioService {
                 var usuarioInativacaoDto = UsuarioInativacaoDto.builder()
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
+                    .observacao(ECodigoObservacao.ITL.getObservacao())
                     .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
-                    .observacao("Usuário inativo devido ao erro excessivo de senha")
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
-                this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+                var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.ITL);
+                this.inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
             }
         }
     }
