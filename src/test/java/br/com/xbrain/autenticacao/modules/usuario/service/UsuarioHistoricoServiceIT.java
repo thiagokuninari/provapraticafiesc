@@ -15,7 +15,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
@@ -29,7 +28,6 @@ import static org.junit.Assert.assertEquals;
 @Transactional
 public class UsuarioHistoricoServiceIT {
 
-    private static final LocalDateTime DATA_CADASTRO_DEFAULT = LocalDateTime.of(2019, 4, 1, 9, 30, 0);
     @Autowired
     private UsuarioService usuarioService;
     @Autowired

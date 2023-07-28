@@ -163,7 +163,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
 
-    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId);
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExcetoPorSiteId(Predicate sitePredicate, Integer siteId);
 
     List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> superioresIds,
                                                                                  Set<String> codigoCargo);

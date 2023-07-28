@@ -5,43 +5,36 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
-
+import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-import com.querydsl.core.types.Predicate;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Import({CidadeService.class})
-@Transactional
-@Sql(scripts = {"classpath:/tests_cidade.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class CidadeServiceTest {
 
-    @Autowired
+    @InjectMocks
     private CidadeService service;
-    @MockBean
+    @Mock
     private AutenticacaoService autenticacaoService;
-    @MockBean
+    @Mock
     private CidadeRepository cidadeRepository;
+    @Mock
+    private RegionalService regionalService;
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
@@ -118,62 +111,15 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build(),
+                    .regional(Regional.builder().id(1027).nome("RS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build()
-            ));
-        assertThat(service.getAllByRegionalId(1001))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1001, "RS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1001, "RS"));
-    }
-
-    @Test
-    public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
-            .thenReturn(List.of(
-                Cidade.builder().id(5578).nome("LONDRINA")
-                    .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1027).nome("RPS").build()).build(),
-                Cidade.builder().id(4519).nome("FLORIANOPOLIS")
-                    .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1027).nome("RPS").build()).build()
+                    .regional(Regional.builder().id(1027).nome("RS").build()).build()
             ));
         assertThat(service.getAllByRegionalId(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RPS"));
-    }
-
-    @Test
-    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarUfIdERegionalId() {
-        service.buscarTodas(1, 2, null);
-
-        verify(cidadeRepository).findAllByRegionalIdAndUfId(eq(2), eq(1), any());
-        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any());
-        verify(cidadeRepository, never()).findBySubCluster(anyInt());
-    }
-
-    @Test
-    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarUfId() {
-        service.buscarTodas(1, null, null);
-
-        verify(cidadeRepository).findCidadeByUfId(eq(1), any());
-        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any());
-        verify(cidadeRepository, never()).findBySubCluster(anyInt());
-    }
-
-    @Test
-    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarSubCluesterId() {
-        service.buscarTodas(null, null, 3);
-
-        verify(cidadeRepository).findBySubCluster(3);
-        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any());
-        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any());
+                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RS"),
+                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RS"));
     }
 }

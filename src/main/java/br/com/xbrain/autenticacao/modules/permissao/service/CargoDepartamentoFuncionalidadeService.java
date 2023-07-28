@@ -12,7 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +22,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CargoDepartamentoFuncionalidadeService {
 
-    @Autowired
-    private CargoDepartamentoFuncionalidadeRepository repository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
+    private final CargoDepartamentoFuncionalidadeRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
 
     public Page<CargoDepartamentoFuncionalidade> getAll(PageRequest pageRequest,
                                                         CargoDepartamentoFuncionalidadeFiltros filtros) {
@@ -47,6 +46,7 @@ public class CargoDepartamentoFuncionalidadeService {
         return repository.findAllDepartamentos(filtros.toPredicate());
     }
 
+    @Transactional
     public void save(CargoDepartamentoFuncionalidadeRequest request) {
         Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         List<Integer> funcionalidadesIds = tratarPermissoesExistentes(request);
@@ -86,6 +86,7 @@ public class CargoDepartamentoFuncionalidadeService {
         ).collect(Collectors.toList());
     }
 
+    @Transactional
     public void remover(int id) {
         repository.delete(id);
     }

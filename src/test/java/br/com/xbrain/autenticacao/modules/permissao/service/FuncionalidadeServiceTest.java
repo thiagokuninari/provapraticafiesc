@@ -4,51 +4,53 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
+import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.FuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.*;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
 import static helpers.Usuarios.SOCIO_AA;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class FuncionalidadeServiceTest {
 
-    private static Integer USUARIO_SOCIO_ID = 226;
-    private static Integer CARGO_SOCIO_ID = 41;
-    private static Integer DEPARTAMENTO_SOCIO_ID = 40;
-
-    @Autowired
+    @InjectMocks
     private FuncionalidadeService service;
-    @MockBean
+    @Mock
+    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
+    @Mock
+    private PermissaoEspecialRepository permissaoEspecialRepository;
+    @Mock
     private AutenticacaoService autenticacaoService;
+    @Mock
+    private FuncionalidadeRepository funcionalidadeRepository;
+    @Mock
+    private Environment environment;
 
     private static Aplicacao umaAplicacao() {
         var aplicacao = new Aplicacao();
@@ -60,7 +62,17 @@ public class FuncionalidadeServiceTest {
 
     @Test
     public void getPermissoes_permissosDoUsuario_somentePermitidasAoUsuario() {
-        List<SimpleGrantedAuthority> permissoes = service.getPermissoes(umUsuarioSocio());
+        when(cargoDepartamentoFuncionalidadeRepository.findFuncionalidadesPorCargoEDepartamento(getPredicate(umUsuarioSocio())))
+            .thenReturn(umaListaDeCargoDepartamentoFuncionalidadeDeSocio());
+        when(permissaoEspecialRepository.findPorUsuario(umUsuarioSocio().getId()))
+            .thenReturn(List.of(
+                funcionalidadeCadastrarVendaParaVendedorD2d(),
+                funcionalidadeRelatorioGerenciamentoOperacional(),
+                funcionalidadeRelatorioResumoMailing(),
+                funcionalidadeRelatorioTicketMedioAnalitico()
+            ));
+
+        var permissoes = service.getPermissoes(umUsuarioSocio());
 
         assertThat(permissoes)
             .isNotEmpty()
@@ -70,7 +82,30 @@ public class FuncionalidadeServiceTest {
 
     @Test
     public void getFuncionalidadesPermitidasAoUsuarioComCanal_deveAgruparAsFuncionalidadesDoCargoEspeciaisComDistinct() {
-        List<Funcionalidade> funcionalidades =
+        when(cargoDepartamentoFuncionalidadeRepository.findFuncionalidadesDoCargoDepartamentoComCanal(
+            umUsuarioSocio().getCargoId(),
+            umUsuarioSocio().getDepartamentoId()))
+            .thenReturn(List.of(
+                funcionalidadeGerenciarPausasAgendadas(),
+                funcionalidadeVisualizarTabulacaoManual(),
+                funcionalidadeVisualizarAgendamento(),
+                funcionalidadeRelatorioResumoMailing(),
+                funcionalidadeRelatorioTicketMedioAnalitico(),
+                funcionalidadeRelatorioTicketMedioPorVendedor(),
+                funcionalidadeRelatorioGerenciamentoOperacional(),
+                funcionalidadeVisualizarRelatorioConsultaEndereco(),
+                funcionalidadeVisualizarPreVendaLojaFuturo()
+            ));
+
+        when(cargoDepartamentoFuncionalidadeRepository.findPermissoesEspeciaisDoUsuarioComCanal(umUsuarioSocio().getId()))
+            .thenReturn(List.of(
+                funcionalidadeRelatorioResumoMailing(),
+                funcionalidadeRelatorioTicketMedioAnalitico(),
+                funcionalidadeRelatorioGerenciamentoOperacional(),
+                funcionalidadeCadastrarVendaParaVendedorD2d()
+            ));
+
+        var funcionalidades =
             service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
 
         assertThat(funcionalidades)
@@ -97,8 +132,17 @@ public class FuncionalidadeServiceTest {
             .nome("RENATO")
             .build();
 
+        when(cargoDepartamentoFuncionalidadeRepository.findFuncionalidadesPorCargoEDepartamento(getPredicate(usuario)))
+            .thenReturn(umaListaDeCargoDepartamentoFuncionalidadeDeConsultor());
+
+        when(permissaoEspecialRepository.findPorUsuario(usuario.getId()))
+            .thenReturn(List.of(
+                funcionalidadeGerenciarHorariosDeAcesso(),
+                funcionalidadeGerenciarPermissoesEspeciaisPorUsuario()
+            ));
+
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(51);
+                .hasSize(43);
     }
 
     @Test
@@ -110,13 +154,22 @@ public class FuncionalidadeServiceTest {
             .nome("RENATO")
             .build();
 
+        when(cargoDepartamentoFuncionalidadeRepository.findFuncionalidadesPorCargoEDepartamento(getPredicate(usuario)))
+            .thenReturn(umaListaDeCargoDepartamentoFuncionalidadeDeVendedor());
+
+        when(permissaoEspecialRepository.findPorUsuario(usuario.getId()))
+            .thenReturn(List.of(
+                funcionalidadeGerenciarHorariosDeAcesso(),
+                funcionalidadeGerenciarPermissoesEspeciaisPorUsuario()
+            ));
+
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-            .hasSize(13);
+            .hasSize(12);
     }
 
     @Test
     public void getAll_naoDeveRetornarFuncionalidadeAdmChamados_quandoUsuarioNaoTiverPermissaoAdmChamados() {
-        var eviromentMock = Mockito.mock(Environment.class);
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"producao"});
 
         var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
             .id(14001)
@@ -127,14 +180,14 @@ public class FuncionalidadeServiceTest {
             .build());
         var request = mock(HttpServletRequest.class);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNaoAdmSuporte());
-        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
 
         assertThat(service.getAll(request)).doesNotContain(funcionalidade);
     }
 
     @Test
     public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoUsuarioTiverPermissaoAdmChamados() {
-        var eviromentMock = Mockito.mock(Environment.class);
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"producao"});
+        when(funcionalidadeRepository.findAllByOrderByNome()).thenReturn(List.of(funcionalidadeAdministradorDoSuporte()));
 
         var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
             .id(14001)
@@ -145,13 +198,14 @@ public class FuncionalidadeServiceTest {
 
         var request = mock(HttpServletRequest.class);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmSuporte());
-        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
 
         assertThat(service.getAll(request)).contains(funcionalidade);
     }
 
     @Test
     public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoProfileAtivoNaoForProducao() {
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"test"});
+        when(funcionalidadeRepository.findAllByOrderByNome()).thenReturn(List.of(funcionalidadeAdministradorDoSuporte()));
 
         var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
             .id(14001)
@@ -169,46 +223,17 @@ public class FuncionalidadeServiceTest {
     private Usuario umUsuarioSocio() {
         return Usuario
             .builder()
-            .id(USUARIO_SOCIO_ID)
+            .id(226)
             .email(SOCIO_AA)
-            .cargo(Cargo.builder()
-                .id(CARGO_SOCIO_ID)
-                .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
-                .nivel(Nivel.builder()
-                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
-                    .build())
-                .build())
-            .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
+            .cargo(umCargoAaSocio())
+            .departamento(umDepartamentoAa())
             .build();
     }
 
-    private Cargo umCargoMsoConsultor() {
-        return Cargo.builder()
-            .id(22)
-            .codigo(CodigoCargo.MSO_CONSULTOR)
-            .nivel(umNivelMso())
-            .build();
-    }
-
-    private Nivel umNivelMso() {
-        return Nivel.builder()
-            .id(2)
-            .codigo(CodigoNivel.MSO)
-            .build();
-    }
-
-    private Cargo umCargoVendedorOperacao() {
-        return Cargo.builder()
-            .id(8)
-            .codigo(CodigoCargo.VENDEDOR_OPERACAO)
-            .nivel(umNivelOperacao())
-            .build();
-    }
-
-    private Nivel umNivelOperacao() {
-        return Nivel.builder()
-            .id(1)
-            .codigo(CodigoNivel.OPERACAO)
+    private BooleanBuilder getPredicate(Usuario usuario) {
+        return new FuncionalidadePredicate()
+            .comCargo(usuario.getCargoId())
+            .comDepartamento(usuario.getDepartamentoId())
             .build();
     }
 

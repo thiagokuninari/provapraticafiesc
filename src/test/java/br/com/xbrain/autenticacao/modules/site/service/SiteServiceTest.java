@@ -7,10 +7,8 @@ import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
@@ -48,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
@@ -190,6 +189,26 @@ public class SiteServiceTest {
 
         verify(siteRepository, never()).save(any(Site.class));
         verify(siteRepository, atLeastOnce()).findById(eq(1));
+    }
+
+    @Test
+    public void update_deveLancarException_quandoSupervisorRemovidoEstiverEmEquipeVendas() {
+        when(siteRepository.findAll()).thenReturn(List.of(umSiteManaus(), umSiteInativo()));
+        when(siteRepository.findById(any())).thenReturn(Optional.of(umSiteManaus()));
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(
+            List.of(EquipeVendaDto.builder().descricao("Equipe 1").build()));
+
+        assertThatThrownBy(() -> service.update(requestUpdateSite()))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Para concluir essa operação é necessário inativar a equipe de vendas Equipe 1.");
+    }
+
+    @Test
+    public void update_deveEditarSiteComSucesso_quandoSupervisorRemovidoNaoEstiverVinculadoAEquipe() {
+        when(siteRepository.findById(any())).thenReturn(Optional.of(umSiteManaus()));
+
+        assertThatCode(() -> service.update(requestUpdateSite()))
+            .doesNotThrowAnyException();
     }
 
     @Test

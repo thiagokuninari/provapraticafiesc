@@ -46,9 +46,9 @@ public class UsuarioSiteService {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var sitePredicate = new SitePredicate();
         if (usuarioAutenticado.isXbrainOuMso()) {
-            return repository.findCoordenadoresDisponiveisExetoPorSiteId(sitePredicate.build(), siteId);
+            return repository.findCoordenadoresDisponiveisExcetoPorSiteId(sitePredicate.build(), siteId);
         }
-        var coordenadoresDisponiveis = repository.findCoordenadoresDisponiveisExetoPorSiteId(sitePredicate.build(), siteId);
+        var coordenadoresDisponiveis = repository.findCoordenadoresDisponiveisExcetoPorSiteId(sitePredicate.build(), siteId);
         return filtrarHierarquia(coordenadoresDisponiveis, usuarioAutenticado.getId());
     }
 

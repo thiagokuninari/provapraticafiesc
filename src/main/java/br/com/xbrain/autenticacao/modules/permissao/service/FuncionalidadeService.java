@@ -11,7 +11,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -27,24 +27,16 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static java.util.stream.Collectors.toList;
 
 @Service
+@RequiredArgsConstructor
 public class FuncionalidadeService {
 
     private static final Integer CHAMADO_APPLICATION_ID = 15;
 
-    @Autowired
-    private FuncionalidadeRepository repository;
-
-    @Autowired
-    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private PermissaoEspecialRepository permissaoEspecialRepository;
-
-    @Autowired
-    private Environment environment;
+    private final FuncionalidadeRepository repository;
+    private final CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
+    private final PermissaoEspecialRepository permissaoEspecialRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final Environment environment;
 
     public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuario(Usuario usuario) {
         return Stream.concat(

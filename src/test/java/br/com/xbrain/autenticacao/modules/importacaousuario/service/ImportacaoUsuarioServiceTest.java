@@ -2,45 +2,50 @@ package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoResponse;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilhaTest.umUsuarioImportacao;
 import static br.com.xbrain.autenticacao.modules.importacaousuario.util.FileUtil.getFile;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class ImportacaoUsuarioServiceTest {
 
-    @Autowired
-    ImportacaoUsuarioService importacaoUsuarioService;
+    @InjectMocks
+    private ImportacaoUsuarioService importacaoUsuarioService;
+    @Mock
+    private PlanilhaService planilhaService;
+    @Mock
+    private UsuarioUploadFileService usuarioUploadFileService;
 
     MockMultipartFile mockMultipartFile;
+    Sheet sheet;
 
     @Before
     public void setUp() throws Exception {
         mockMultipartFile = new MockMultipartFile("file", "planilha.xlsx",
                 "application/vnd.ms-excel", getFile("arquivo_usuario/planilha.xlsx"));
+        sheet = new XSSFWorkbook(mockMultipartFile.getInputStream()).getSheetAt(0);
     }
 
     @Test
-    public void deveRetornarOResultadoDaImportacaoQuandoErroOuSucesso() {
+    public void salvarUsuarioFile_deveRetornarOResultadoDaImportacao_quandoErroOuSucesso() {
+        when(planilhaService.getSheet(mockMultipartFile)).thenReturn(sheet);
+        when(usuarioUploadFileService.processarUsuarios(any(), any())).thenReturn(umUsuarioImportacao("11999933312"));
+
         UsuarioImportacaoRequest usuarioImportacaoRequest = new UsuarioImportacaoRequest();
         usuarioImportacaoRequest.setSenhaPadrao(true);
         List<UsuarioImportacaoResponse> usuarioUploadFiles = importacaoUsuarioService
@@ -48,5 +53,4 @@ public class ImportacaoUsuarioServiceTest {
 
         assertEquals(usuarioUploadFiles.size(), 15);
     }
-
 }
