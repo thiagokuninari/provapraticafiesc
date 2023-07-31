@@ -6,16 +6,17 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.client.Colabora
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ColaboradorVendasService {
 
-    @Autowired
-    private ColaboradorVendasClient colaboradorVendasClient;
+    private final ColaboradorVendasClient colaboradorVendasClient;
 
     public void limparCpfColaboradorVendas(String email) {
         try {

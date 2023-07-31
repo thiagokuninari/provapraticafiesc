@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+// TODO: Remover
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.parceiros-online.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)

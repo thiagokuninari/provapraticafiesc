@@ -4,11 +4,11 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAut
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
@@ -248,8 +248,8 @@ public class UsuarioAgendamentoService {
                 .collect(Collectors.toList());
 
         return usuarios.stream()
-                .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendaId()))
-                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                .filter(usuario -> equipesSupervisionadas.contains(usuario.getEquipeVendaId()))
+                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
                 .collect(Collectors.toList());
     }
 

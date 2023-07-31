@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.client;
+package br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
