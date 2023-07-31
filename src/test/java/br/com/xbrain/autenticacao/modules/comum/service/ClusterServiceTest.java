@@ -1,44 +1,52 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import org.junit.Rule;
+import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
+import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.List;
+import java.util.Optional;
+
+import static helpers.ClusterHelper.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_area_atuacao.sql"})
+
+@RunWith(MockitoJUnitRunner.class)
 public class ClusterServiceTest {
 
     private static final int GRUPO_NORTE_PARANA_ID = 20;
     private static final int GRUPO_MARILIA_ID = 15;
     private static final int GRUPO_NORDESTE_ID = 4;
+    private static final int USUARIO_ID = 1;
 
-    @Autowired
+    @InjectMocks
     private ClusterService clusterService;
+    @Mock
+    private ClusterRepository clusterRepository;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    private ClusterPredicate predicate;
+
+    @Before
+    public void setUp() throws Exception {
+        predicate = new ClusterPredicate().filtrarPermitidos(USUARIO_ID);
+    }
 
     @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarCluster_quandoUsuarioPossuirGrupoNorteDoParana() {
-        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORTE_PARANA_ID, 1))
+        when(clusterRepository.findAllByGrupoId(GRUPO_NORTE_PARANA_ID, predicate.build()))
+            .thenReturn(List.of(umClusterNorteDoParana()));
+
+        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORTE_PARANA_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(45, "NORTE DO PARANÁ"));
@@ -46,7 +54,10 @@ public class ClusterServiceTest {
 
     @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarCluster_quandoUsuarioPossuirGrupoMarilia() {
-        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_MARILIA_ID, 1))
+        when(clusterRepository.findAllByGrupoId(GRUPO_MARILIA_ID, predicate.build()))
+            .thenReturn(List.of(umClusterMarilia()));
+
+        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_MARILIA_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(39, "MARÍLIA"));
@@ -54,7 +65,10 @@ public class ClusterServiceTest {
 
     @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarCluster_quandoUsuarioPossuirGrupoNordeste() {
-        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORDESTE_ID, 2))
+        when(clusterRepository.findAllByGrupoId(GRUPO_NORDESTE_ID, predicate.build()))
+            .thenReturn(List.of(umClusterAlagoas()));
+
+        assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORDESTE_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(16, "ALAGOAS"));
@@ -62,40 +76,15 @@ public class ClusterServiceTest {
 
     @Test
     public void findById_deveRetornarUmCluster_seExistir() {
-        assertThat(clusterService.findById(1))
-            .isEqualTo(umClusterDto());
+        when(clusterRepository.findById(1)).thenReturn(Optional.of(umClusterPortoVelho()));
+
+        assertThat(clusterService.findById(1)).isEqualTo(ClusterDto.of(umClusterPortoVelho()));
     }
 
     @Test
     public void findById_deveLancarException_seClusterNaoExistir() {
-        thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Cluster não encontrado.");
-        clusterService.findById(100556);
-    }
-
-    ClusterDto umClusterDto() {
-        ClusterDto clusterDto = new ClusterDto();
-        clusterDto.setId(1);
-        clusterDto.setNome("PORTO VELHO");
-        clusterDto.setGrupo(umGrupoDto());
-        clusterDto.setSituacao(ESituacao.A);
-        return clusterDto;
-    }
-
-    GrupoDto umGrupoDto() {
-        return GrupoDto.builder()
-            .id(1)
-            .nome("CENTRO-OESTE")
-            .regional(umaRegionalDto())
-            .situacao(ESituacao.A)
-            .build();
-    }
-
-    RegionalDto umaRegionalDto() {
-        return RegionalDto.builder()
-            .id(1)
-            .nome("LESTE")
-            .situacao(ESituacao.A)
-            .build();
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> clusterService.findById(100556))
+            .withMessage("Cluster não encontrado.");
     }
 }

@@ -10,4 +10,6 @@ public interface PermissaoEspecialRepository extends JpaRepository<PermissaoEspe
 
     Optional<PermissaoEspecial> findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(Integer usuarioId,
                                                                                         Integer funcionalidadeId);
+
+    boolean existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(Integer usuarioId, Integer funcionalidadeId);
 }

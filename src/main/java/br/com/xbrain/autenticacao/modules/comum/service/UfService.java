@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UfService {
 
-    @Autowired
-    private UfRepository ufRepository;
+    private final UfRepository ufRepository;
 
     public Iterable<Uf> findAll(Sort sort) {
         return ufRepository.findAll(sort);

@@ -1,62 +1,68 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.service.UnidadeNegocioService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.SubCanalCustomExceptionHandler;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(UnidadeNegocioController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+    @MockBean(SubCanalCustomExceptionHandler.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class UnidadeNegocioControllerTest {
 
     private static String URL = "/api/unidades-negocio";
 
     @Autowired
     private MockMvc mvc;
+    @MockBean
+    private UnidadeNegocioService unidadeNegocioService;
 
     @Test
-    public void getAll_isUnauthorized_quandoNaoPassarAToken() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAll_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+
+        Mockito.verify(unidadeNegocioService, never()).getAll();
     }
 
     @Test
-    public void getAll_deveRetornarTodos_quandoForXbrain() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getAll_deveRetornarOk_seUsuarioAutenticado() {
         mvc.perform(get(URL)
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].nome", is("Pessoal")));
-    }
+                .andExpect(status().isOk());
 
-    @Test
-    public void getAll_deveIgnorarXbrain_quandoNaoForXbrain() throws Exception {
-        mvc.perform(get(URL)
-                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+        Mockito.verify(unidadeNegocioService, times(1)).getAll();
     }
 }

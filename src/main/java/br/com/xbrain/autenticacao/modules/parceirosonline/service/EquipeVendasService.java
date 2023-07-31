@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -31,6 +32,18 @@ public class EquipeVendasService {
         } catch (Exception ex) {
             log.warn("Erro ao obter a equipe de venda do usuário", ex);
             return null;
+        }
+    }
+
+    public Map<Integer, Integer> getUsuarioEEquipeByUsuarioIds(List<Integer> usuarioIds) {
+        try {
+            if (!usuarioIds.isEmpty()) {
+                return equipeVendasClient.getUsuarioEEquipeByUsuarioIds(usuarioIds);
+            }
+            return Map.of();
+        } catch (Exception ex) {
+            log.warn("Erro ao obter a equipe de venda dos usuários", ex);
+            return Map.of();
         }
     }
 }

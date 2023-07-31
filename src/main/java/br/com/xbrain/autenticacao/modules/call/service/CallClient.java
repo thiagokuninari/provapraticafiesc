@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration
 import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +26,9 @@ public interface CallClient {
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
     TelefoniaResponse obterNomeTelefoniaPorId(@PathVariable("id") Integer id);
 
-    @GetMapping(URL_RAMAL + "/vinculado/AGENTE_AUTORIZADO/{id}")
-    List<RamalResponse> obterRamaisParaAgenteAutorizado(@PathVariable("id") Integer id);
+    @GetMapping(URL_RAMAL + "/vinculado/{canalTelefonia}/{canalTelefoniaId}")
+    List<RamalResponse> obterRamaisParaCanal(@PathVariable("canalTelefonia") ECanal canalTelefonia,
+                                             @PathVariable("canalTelefoniaId") Integer canalTelefoniaId);
 
     @DeleteMapping(API_CACHE_CLEAN_FERIADOS)
     void cleanCacheFeriadosTelefonia();

@@ -1,126 +1,202 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.service.SubClusterService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import helpers.Usuarios;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.SubCanalCustomExceptionHandler;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import java.util.List;
+
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(SubClusterController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+    @MockBean(SubCanalCustomExceptionHandler.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class SubClusterControllerTest {
 
     private static String API_SUBCLUSTER = "/api/subclusters";
 
     @Autowired
     private MockMvc mvc;
-
     @MockBean
-    private EquipeVendaD2dService equipeVendaD2dService;
-    @MockBean
-    private SiteService siteService;
+    private SubClusterService subClusterService;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/subclusters")
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAtivosPorCluster_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsSubClustersAtivosPorCluster() throws Exception {
-        mvc.perform(get("/api/subclusters?clusterId=16")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorCluster_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "?clusterId=16")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].nome", is("BRI - ARAPIRACA - AL")));
+                .andExpect(status().isOk());
+
+        verify(subClusterService).getAllByClusterId(16);
     }
 
     @Test
-    public void deveRetornarSomenteOsSubClustersAtivosPorClusterGerenteOperacao() throws Exception {
-        mvc.perform(get("/api/subclusters?clusterId=45")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorCluster_deveRetornarOk_seNaoInformarClusterId() {
+        mvc.perform(get(API_SUBCLUSTER)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")));
+                .andExpect(status().isOk());
+
+        verify(subClusterService).getAllAtivos();
     }
 
     @Test
-    public void deveRetornarOsSubClustersAtivos() throws Exception {
-        mvc.perform(get("/api/subclusters")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllByClusterIdAndUsuarioId_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/cluster/{clusterId}/usuario/{usuarioId}", 4, 100)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(245)))
-                .andExpect(jsonPath("$[0].nome", is("ABCDM")));
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getById_deveRetornar_quandoORequestForValido() throws Exception {
-        mvc.perform(get(API_SUBCLUSTER + "/45")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser
+    public void getAllByClusterIdAndUsuarioId_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/cluster/{clusterId}/usuario/{usuarioId}", 4, 100)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(45)));
+            .andExpect(status().isOk());
+
+        verify(subClusterService).getAllByClusterIdAndUsuarioId(4, 100);
     }
 
     @Test
-    public void getById_deveRetornarNotFound_quandoOSubClusterNaoExistir() throws Exception {
-        mvc.perform(get(API_SUBCLUSTER + "/999")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void getById_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getById_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_SUBCLUSTER + "/45"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getById_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/45")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(subClusterService).getById(45);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAtivosPorClusters_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/clusters")
+            .param("clustersId", "10", "20", "30"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorClusters_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/clusters")
+                .param("clustersId", "10", "20", "30"))
+            .andExpect(status().isOk());
+
+        verify(subClusterService).getAllByClustersId(List.of(10, 20, 30));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorClusters_deveRetornarOk_seNaoInformarClustersId() {
+        mvc.perform(get(API_SUBCLUSTER + "/clusters"))
+            .andExpect(status().isOk());
+
+        verify(subClusterService).getAllAtivos();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/comunicados")
+                .param("clusterId", "10"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosParaComunicados_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/comunicados")
+                .param("clusterId", "10"))
+            .andExpect(status().isOk());
+
+        verify(subClusterService).getAtivosParaComunicados(10);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllSubclusters_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/todos"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllSubclusters_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/todos"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioCidadeCadastradas() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarOk_seUsuarioAutenticado() {
         mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_SUPERVISOR))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")))
-                .andExpect(jsonPath("$[1].nome", is("MARINGÁ")));
-    }
+            .andExpect(status().isOk());
 
-    @Test
-    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioPossuiPermissaoVisuazarGeral()
-            throws Exception {
-        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
-                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(245)))
-                .andExpect(jsonPath("$[0].nome", is("ABCDM")));
+        verify(subClusterService).getAllSubclustersByUsuarioAutenticado();
     }
 }

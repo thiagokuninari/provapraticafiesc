@@ -126,7 +126,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void findById_deveRetornarSaoPaulo_quandoBuscarPorId() {
+    public void getById_deveRetornarSaoPaulo_quandoBuscarPorId() {
         mvc.perform(get(API_URI + "/100")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
@@ -142,7 +142,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void findById_notFound_quandoBuscarPorIdENaoExistir() {
+    public void getById_notFound_quandoBuscarPorIdENaoExistir() {
         mvc.perform(get(API_URI + "/999")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isNotFound())
@@ -586,5 +586,117 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/buscar/todos")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void exportarCsv_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/exportar-csv"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void exportarCsv_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(get(API_URI + "/exportar-csv")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllAtivos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/ativos"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllAtivos_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(get(API_URI + "/ativos")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getById_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarEstadosDisponiveis_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/estados-disponiveis"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarEstadosDisponiveis_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(get(API_URI + "/estados-disponiveis")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitesVinculadosAoUsuarioLogado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/usuario-logado"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitesVinculadosAoUsuarioLogado_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(get(API_URI + "/usuario-logado")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarCidadesDisponiveisPorEstadosIds_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(get(API_URI + "/cidades-disponiveis")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void adicionarDiscadora_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/adicionar-discadora"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void adicionarDiscadora_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(put(API_URI + "/adicionar-discadora")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void removerDiscadora_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/remover-discadora"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void removerDiscadora_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(put(API_URI + "/remover-discadora")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
     }
 }

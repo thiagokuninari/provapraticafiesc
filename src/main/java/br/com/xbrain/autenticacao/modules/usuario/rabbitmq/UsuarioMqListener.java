@@ -4,12 +4,14 @@ import br.com.xbrain.autenticacao.config.IgnoreRabbitProfile;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @Conditional(IgnoreRabbitProfile.class)
 public class UsuarioMqListener {
 
@@ -86,6 +88,11 @@ public class UsuarioMqListener {
     @RabbitListener(queues = "${app-config.queue.usuario-inativacao-por-aa}")
     public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
         service.inativarPorAgenteAutorizado(usuario);
+    }
+
+    @RabbitListener(queues = "${app-config.queue.permissao-agente-autorizado-equipe-tecnica}")
+    public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
+        service.atualizarPermissaoEquipeTecnica(dto);
     }
 }
 

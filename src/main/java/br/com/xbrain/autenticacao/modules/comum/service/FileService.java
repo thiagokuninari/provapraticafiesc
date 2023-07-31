@@ -28,7 +28,7 @@ public class FileService {
                 Files.createDirectories(Paths.get(usuarioFotoDir));
             }
 
-            String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_").format(Calendar.getInstance().getTime())
+            var fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_").format(Calendar.getInstance().getTime())
                     .concat(file.getOriginalFilename());
 
             request.setFotoContentType(file.getContentType());

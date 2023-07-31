@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+
     private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
     private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
@@ -132,6 +133,12 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.limpar-cpf-e-alterar-email-feeder-failure}")
     private String usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq;
+
+    @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica}")
+    private String permissaoAgenteAutorizadoEquipeTecnicaMq;
+
+    @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica-failure}")
+    private String permissaoAgenteAutorizadoEquipeTecnicaFailureMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -308,6 +315,15 @@ public class RabbitConfig {
     @Bean
     Queue usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq() {
         return new Queue(usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq, false);
+    }
+
+    @Bean
+    Queue permissaoAgenteAutorizadoEquipeTecnicaMq() {
+        return QueueBuilder
+            .nonDurable(permissaoAgenteAutorizadoEquipeTecnicaMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, permissaoAgenteAutorizadoEquipeTecnicaFailureMq)
+            .build();
     }
 
     @Bean

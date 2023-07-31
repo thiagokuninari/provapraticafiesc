@@ -1,71 +1,141 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
-import helpers.Usuarios;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.service.ClusterService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.SubCanalCustomExceptionHandler;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(ClusterController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+    @MockBean(SubCanalCustomExceptionHandler.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class ClusterControllerTest {
 
     @Autowired
     private MockMvc mvc;
+    @MockBean
+    private ClusterService clusterService;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
+    @SneakyThrows
+    public void getAtivosPorGrupo_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get("/api/clusters")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsClustersAtivosPorGrupo() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorGrupo_deveRetornarOk_seInformarGrupoId() {
         mvc.perform(get("/api/clusters?grupoId=30")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("SANTA CRUZ")));
+                .andExpect(status().isOk());
+
+        verify(clusterService).getAllByGrupoId(30);
     }
 
     @Test
-    public void deveRetornarSomenteOsClustersAtivosPorGrupoGerenteComercial() throws Exception {
-        mvc.perform(get("/api/clusters?grupoId=20")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("NORTE DO PARANÁ")));
-    }
-
-    @Test
-    public void deveRetornarOsClustersAtivos() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosPorGrupo_deveRetornarOK_seNaoInformarGrupoId() {
         mvc.perform(get("/api/clusters")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(61)))
-                .andExpect(jsonPath("$[0].nome", is("ALAGOAS")));
+                .andExpect(status().isOk());
+
+        verify(clusterService).getAllAtivo();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/clusters/comunicados?grupoId=30")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosParaComunicados_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get("/api/clusters/comunicados?grupoId=30")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(clusterService).getAtivosParaComunicados(30);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAtivosParaComunicados_deveRetornarBadRequest_seNaoInformarGrupoId() {
+        mvc.perform(get("/api/clusters/comunicados")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllByGrupoIdAndUsuarioId_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/clusters/grupo/{grupoId}/usuario/{usuarioId}", 30, 100)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllByGrupoIdAndUsuarioId_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get("/api/clusters/grupo/{grupoId}/usuario/{usuarioId}", 30, 100)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(clusterService).getAllByGrupoIdAndUsuarioId(30, 100);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findById_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/clusters/{clusterId}", 10)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findById_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get("/api/clusters/{clusterId}", 10)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(clusterService).findById(10);
     }
 }

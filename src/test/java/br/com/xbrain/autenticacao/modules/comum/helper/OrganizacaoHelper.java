@@ -11,4 +11,24 @@ public class OrganizacaoHelper {
                 .nome(codigo)
                 .build();
     }
+
+    public static Organizacao umaOrganizacaoBcc() {
+        return umaOrganizacao(1, "BCC");
+    }
+
+    public static Organizacao umaOrganizacaoCallink() {
+        return umaOrganizacao(2, "CALLINK");
+    }
+
+    public static Organizacao umaOrganizacaoProprio() {
+        return umaOrganizacao(3, "PROPRIO");
+    }
+
+    public static Organizacao umaOrganizacaoAtento() {
+        return umaOrganizacao(4, "ATENTO");
+    }
+
+    public static Organizacao umaOrganizacaoVgx() {
+        return umaOrganizacao(5, "VGX");
+    }
 }

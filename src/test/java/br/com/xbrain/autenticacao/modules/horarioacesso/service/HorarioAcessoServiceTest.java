@@ -111,7 +111,7 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getHistoricos(pageable, 1))
             .isEqualTo(new PageImpl<>(List.of(umHorarioHistoricoResponse())));
-        
+
         verify(historicoRepository, times(1)).findByHorarioAcessoId(eq(1), eq(pageable));
         verify(atuacaoRepository, times(1)).findByHorarioHistoricoId(eq(1));
     }
@@ -145,7 +145,7 @@ public class HorarioAcessoServiceTest {
         assertThatCode(() -> service.criaHorariosAcesso(
                 umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
             .doesNotThrowAnyException();
-        
+
         var request = umHorarioAcessoRequest();
         request.setId(null);
 
@@ -173,7 +173,7 @@ public class HorarioAcessoServiceTest {
         assertThatCode(() -> service.criaHorariosAcesso(
                 umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
             .doesNotThrowAnyException();
-        
+
         var request = umHorarioAcessoRequest();
 
         assertThat(service.save(request))
@@ -321,7 +321,7 @@ public class HorarioAcessoServiceTest {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
 
         assertThatCode(() -> service.isDentroHorarioPermitido()).doesNotThrowAnyException();
-    
+
         verify(dataHoraAtual, times(1)).getDataHora();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));

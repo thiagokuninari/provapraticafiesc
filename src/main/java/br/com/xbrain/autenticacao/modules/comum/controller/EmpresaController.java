@@ -1,34 +1,21 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.filtros.EmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import br.com.xbrain.autenticacao.modules.comum.service.EmpresaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @RestController
 @RequestMapping(value = "api/empresas")
+@RequiredArgsConstructor
 public class EmpresaController {
 
-    @Autowired
-    private EmpresaRepository repository;
+    private final EmpresaService empresaService;
 
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Empresa> getAll(Integer unidadeNegocioId) {
-        return repository.findAll(
-                new EmpresaPredicate()
-                        .daUnidadeDeNegocio(unidadeNegocioId)
-                        .exibeXbrainSomenteParaXbrain(autenticacaoService.getUsuarioAutenticado().isXbrain())
-                        .build(),
-                new Sort(ASC, "nome"));
+        return empresaService.getAll(unidadeNegocioId);
     }
 }

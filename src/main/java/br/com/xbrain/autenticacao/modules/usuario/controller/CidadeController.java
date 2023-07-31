@@ -7,10 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Objects.nonNull;
 
 @RestController
 @RequestMapping(value = "api/cidades")
@@ -19,18 +16,9 @@ public class CidadeController {
     @Autowired
     private CidadeService service;
 
-    @GetMapping()
-    public Iterable<Cidade> get(Integer idUf, Integer idRegional, Integer idSubCluster) {
-        if (nonNull(idUf)) {
-            if (nonNull(idRegional)) {
-                return service.getAllCidadeByRegionalAndUf(idRegional, idUf);
-            }
-            return service.getAllCidadeByUf(idUf);
-        }
-        if (nonNull(idSubCluster)) {
-            return service.getAllBySubCluster(idSubCluster);
-        }
-        return Collections.emptyList();
+    @GetMapping
+    public Iterable<Cidade> buscarTodas(Integer idUf, Integer idRegional, Integer idSubCluster) {
+        return service.buscarTodas(idUf, idRegional, idSubCluster);
     }
 
     @GetMapping("uf-cidade/{uf}/{cidade}")
@@ -54,7 +42,7 @@ public class CidadeController {
     }
 
     @GetMapping("regional/{regionalId}/uf/{ufId}")
-    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId,
                                                          @PathVariable Integer ufId) {
         return service.getAllByRegionalIdAndUfId(regionalId, ufId);
     }

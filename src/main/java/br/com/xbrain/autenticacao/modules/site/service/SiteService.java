@@ -184,14 +184,15 @@ public class SiteService {
         return siteRepository.save(Site.of(request));
     }
 
-    private void validarAtualizacaoSupervisores(SiteRequest request) {
+    private void validarAtualizacaoSupervisores(SiteRequest request, Site siteParam) {
         if (!request.isNovoSite()) {
-            siteRepository.findById(request.getId()).ifPresent(
-                site -> site.getSupervisores()
-                    .stream()
-                    .filter(ids -> !request.getSupervisoresIds().contains(ids.getId()))
-                    .forEach(this::verificarSupervisoresEmEquipes)
-            );
+            Optional.ofNullable(siteParam)
+                .ifPresent(
+                    site -> site.getSupervisores()
+                        .stream()
+                        .filter(supervisor -> !request.getSupervisoresIds().contains(supervisor.getId()))
+                        .forEach(this::verificarSupervisoresEmEquipes)
+                );
         }
     }
 
@@ -222,7 +223,7 @@ public class SiteService {
     public Site update(SiteRequest request) {
         validarDadosCadastro(request);
         var site = findById(request.getId());
-        validarAtualizacaoSupervisores(request);
+        validarAtualizacaoSupervisores(request, site);
         site.update(request);
         return site;
     }

@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -88,7 +87,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
-    private ETipoCanal tipoCanal;
+    private Set<Integer> subCanaisId;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
@@ -108,11 +107,17 @@ public class UsuarioDto implements Serializable {
     }
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
-        Usuario usuario = new Usuario();
+        var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
+        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
+        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
+        Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
+            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
+            usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
+        });
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
             usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
@@ -123,12 +128,11 @@ public class UsuarioDto implements Serializable {
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         }
-        if (Objects.nonNull(usuarioDto.getNivelId())) {
-            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
-        }
         if (!Objects.equals(ID_NIVEL_MSO, usuarioDto.getNivelId())) {
             usuario.setTiposFeeder(Set.of());
         }
+        usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
+
         return usuario;
     }
 
@@ -153,12 +157,15 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setOrganizacaoEmpresaId(getOrganizacaoEmpresaId(usuario));
+        usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
+
         return usuarioDto;
     }
 
     public static UsuarioDto of(Usuario usuario, boolean permiteEditarCompleto) {
         var usuarioDto = UsuarioDto.of(usuario);
         usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
+
         return usuarioDto;
     }
 
@@ -171,14 +178,26 @@ public class UsuarioDto implements Serializable {
     }
 
     public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuarioMqRequest, usuarioDto);
+
         return usuarioDto;
     }
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
-        return !isEmpty(usuario.getUnidadesNegociosId())
-            ? usuario.getUnidadesNegociosId().get(0) : 0;
+        return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
+    }
+
+    public boolean hasCanalD2dProprio() {
+        return canais.contains(ECanal.D2D_PROPRIO);
+    }
+
+    public boolean hasIdAndCargoCodigo() {
+        return id != null && cargoCodigo != null;
+    }
+
+    public boolean hasSubCanaisId() {
+        return !subCanaisId.isEmpty();
     }
 
     public UsuarioDto(Integer id, String email) {

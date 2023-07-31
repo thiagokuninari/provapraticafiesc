@@ -30,7 +30,7 @@ public class UsuarioImportacaoPlanilhaTest {
             .contains("RENATO ALEXSANDER", "RENATO1@HOTMAIL.COM", TELEFONE_CELULAR_SEM_HIFEN, null, "33344488800");
     }
 
-    private UsuarioImportacaoPlanilha umUsuarioImportacao(String telefone) {
+    public static UsuarioImportacaoPlanilha umUsuarioImportacao(String telefone) {
         return UsuarioImportacaoPlanilha.builder()
             .nome("RENATO ALEXSANDER")
             .email("RENATO1@HOTMAIL.COM")

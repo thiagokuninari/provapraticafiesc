@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.FunilProspeccaoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -30,23 +32,28 @@ public class UsuarioFunilProspeccaoService {
     private CargoRepository cargoRepository;
 
     public FunilProspeccaoUsuarioDto findUsuarioDirecionadoByCidade(String cidadeNome) {
-        var usuario =  getUsuarioRedirecionado(usuarioRepository.findByIdInAndCargoIn(
-            getIdsDosUsuariosDaCidade(cidadeNome), cargoRepository
-                .findByCodigoIn(of(EXECUTIVO_HUNTER, EXECUTIVO, COORDENADOR_OPERACAO, GERENTE_OPERACAO))));
-        if (isEmpty(usuario.getUsuarioId())) {
-            usuario = buscarGerentePelaUf(cidadeNome);
+        var cidades = cidadeRepository.findCidadeByNomeLike(cidadeNome);
+        var usuarios = usuarioRepository.findByIdInAndCargoIn(
+            getIdsDosUsuariosDaCidade(cidades),
+            getCargos());
+        var usuarioRedirecionado =  getUsuarioRedirecionado(usuarios);
+        if (isEmpty(usuarioRedirecionado.getUsuarioId())) {
+            usuarioRedirecionado = buscarGerentePelaUf(cidades);
         }
-        return usuario;
+        return usuarioRedirecionado;
     }
 
-    private List<Integer> getIdsDosUsuariosDaCidade(String cidadeNome) {
+    private List<Integer> getIdsDosUsuariosDaCidade(List<Cidade> cidades) {
         return usuarioCidadeRepository
-            .findUsuarioByCidadeIn(cidadeRepository
-                .findCidadeByNomeLike(cidadeNome))
+            .findUsuarioByCidadeIn(cidades)
             .stream()
             .filter(usuarioCidade -> usuarioCidade.getUsuario().isAtivo())
             .map(usuarioCidade -> usuarioCidade.getUsuario().getId())
             .collect(Collectors.toList());
+    }
+
+    private List<Cargo> getCargos() {
+        return cargoRepository.findByCodigoIn(of(EXECUTIVO_HUNTER, EXECUTIVO, COORDENADOR_OPERACAO, GERENTE_OPERACAO));
     }
 
     private FunilProspeccaoUsuarioDto getUsuarioRedirecionado(List<Usuario> usuarios) {
@@ -74,9 +81,8 @@ public class UsuarioFunilProspeccaoService {
             .collect(Collectors.toList());
     }
 
-    private FunilProspeccaoUsuarioDto buscarGerentePelaUf(String cidade) {
+    private FunilProspeccaoUsuarioDto buscarGerentePelaUf(List<Cidade> cidades) {
         var funilProspeccaoUsuario = new FunilProspeccaoUsuarioDto();
-        var cidades = cidadeRepository.findCidadeByNomeLike(cidade);
         if (!cidades.isEmpty() && !isEmpty(cidades.get(0).getUf().getId())) {
             funilProspeccaoUsuario = usuarioRepository.findUsuarioGerenteByUf(cidades.get(0).getUf().getId());
         }

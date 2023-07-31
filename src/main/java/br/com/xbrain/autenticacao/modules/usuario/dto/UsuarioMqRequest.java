@@ -43,13 +43,19 @@ public class UsuarioMqRequest {
     private String usuarioCadastroNome;
     private String exception;
     private Set<ECanal> canais;
+    private Set<SubCanalDto> subCanais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
+    private boolean equipeTecnica;
     private Integer agenteAutorizadoAntigoId;
 
     public boolean isNovoCadastroSocioPrincipal() {
         return Objects.isNull(id) && isCadastroSocioPrincipal;
+    }
+
+    public boolean isNovoCadastroSocioSecundario() {
+        return this.id == null && this.cargo == CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO;
     }
 }

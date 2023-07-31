@@ -1,0 +1,1 @@
+DELETE FROM CARGO_DEPART_FUNC WHERE fk_cargo = 22 AND fk_departamento = 21 AND fk_funcionalidade = 18003;

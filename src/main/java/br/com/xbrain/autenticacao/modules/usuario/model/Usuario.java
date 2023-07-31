@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -205,6 +206,16 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @NotAudited
+    @JsonIgnore
+    @JoinTable(name = "USUARIO_SUBCANAL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBCANAL", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_SUBCANAL"))})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<SubCanal> subCanais;
+
     @Column(name = "TIPO_CANAL")
     @Enumerated(EnumType.STRING)
     private ETipoCanal tipoCanal;
@@ -327,6 +338,15 @@ public class Usuario {
             : null;
     }
 
+    public Set<ETipoCanal> getSubCanaisCodigo() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getCodigo)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
     public List<Integer> getUnidadesNegociosId() {
         if (!Hibernate.isInitialized(unidadesNegocios)) {
             Hibernate.initialize(unidadesNegocios);
@@ -347,6 +367,28 @@ public class Usuario {
                 .map(UnidadeNegocio::new)
                 .collect(Collectors.toList());
         }
+    }
+
+    public Set<Integer> getSubCanaisId() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
+    public void setSubCanaisId(Set<Integer> ids) {
+        if (ids != null) {
+            subCanais = ids
+                .stream()
+                .map(SubCanal::new)
+                .collect(Collectors.toSet());
+        }
+    }
+
+    public boolean hasSubCanalPapPremium() {
+        return getSubCanaisId().contains(ETipoCanal.PAP_PREMIUM.getId());
     }
 
     public Set<UsuarioCidade> getCidades() {
@@ -475,9 +517,9 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
+        return cargo != null && cargo.getCodigo() != null
             && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
-            OPERACAO_TELEVENDAS)
+                OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -521,8 +563,9 @@ public class Usuario {
     @JsonIgnore
     public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
         if (usuarioAutenticado.isUsuarioEquipeVendas()) {
-            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO) && !usuarioAutenticado.isSupervisorOperacao();
         }
+
         return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
 
@@ -614,6 +657,22 @@ public class Usuario {
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
 
+    public boolean hasHierarquia() {
+        return !ObjectUtils.isEmpty(hierarquiasId);
+    }
+
+    public boolean hasSubCanaisDaHierarquia(Set<Integer> hierarquiaSubCanalIds) {
+        return this.getSubCanaisId()
+            .stream()
+            .allMatch(hierarquiaSubCanalIds::contains);
+    }
+
+    public boolean hasAllSubCanaisDosSubordinados(List<UsuarioSubCanalId> subordinadosComSubCanalIds) {
+        return subordinadosComSubCanalIds
+            .stream()
+            .allMatch(subordinado -> this.getSubCanaisId().contains(subordinado.getSubCanalId()));
+    }
+
     @JsonIgnore
     public boolean isNivelVarejo() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
@@ -629,6 +688,26 @@ public class Usuario {
     public boolean isGeradorLeadsOuClienteLojaFuturo() {
         return getCargoCodigo() == GERADOR_LEADS
             || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public boolean isSupervisorOperacao() {
+        return cargo != null && cargo.getCodigo() == SUPERVISOR_OPERACAO;
+    }
+
+    public boolean isAssistenteOperacao() {
+        return cargo != null && cargo.getCodigo() == ASSISTENTE_OPERACAO;
+    }
+
+    public boolean isCargoAgenteAutorizado() {
+        return cargo != null && cargo.getCodigo() != null && cargo.getCodigo().name().contains("AGENTE_AUTORIZADO");
+    }
+
+    public boolean isCargoLojaFuturo() {
+        return cargo != null && (cargo.getCodigo() == CLIENTE_LOJA_FUTURO || cargo.getCodigo() == ASSISTENTE_RELACIONAMENTO);
+    }
+
+    public boolean isCargoImportadorCargas() {
+        return cargo != null && cargo.getCodigo() == IMPORTADOR_CARGAS;
     }
 
     public Integer numeroTentativasLoginSenhaIncorreta() {

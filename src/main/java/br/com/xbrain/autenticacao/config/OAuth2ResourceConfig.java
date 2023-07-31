@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -11,12 +12,20 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
+import java.util.Arrays;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.TEST;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private CorsConfigFilter corsConfigFilter;
+    @Autowired
+    private Environment environment;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -36,14 +45,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/gerencia/existir/usuario",
             "/api/cep/**",
             "/api/usuarios/usuario-funil-prospeccao",
-            "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
             "/api/sites/permitidos",
             "/api/horarios-acesso/status/**"
         };
 
         http
-            .addFilterBefore(new CorsConfigFilter(), ChannelProcessingFilter.class)
+            .addFilterBefore(corsConfigFilter, ChannelProcessingFilter.class)
             .requestMatchers()
             .antMatchers("/**")
             .and()
@@ -55,7 +63,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.MLG_5018.name())
             .antMatchers("/api/usuarios/situacoes/timer")
             .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .regexMatchers("/api/sites/(\\d+)").authenticated()
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
+            .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
@@ -67,7 +77,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/permissoes-especiais")
             .hasRole(CodigoFuncionalidade.AUT_GER_PERMISSAO_ESPECIAL_USUARIO.name())
             .antMatchers("/api/solicitacao-ramal")
-            .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name())
+            .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name(),
+                CodigoFuncionalidade.CTR_20014.name(), CodigoFuncionalidade.CTR_20015.name())
             .antMatchers("/api/solicitacao-ramal/gerencia/**")
             .hasRole(CodigoFuncionalidade.CTR_2034.name())
             .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
@@ -89,6 +100,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        if (isActiveProfileTest()) {
+            resources.stateless(false);
+        }
         resources.tokenStore(tokenStore);
+    }
+
+    private boolean isActiveProfileTest() {
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase(TEST));
     }
 }

@@ -4,12 +4,14 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,12 +46,20 @@ public class UsuarioResponse {
     private LocalDateTime nascimento;
     private Integer aaId;
     private Set<ECanal> canais;
+    private Set<SubCanalDto> subCanais;
     private ETipoCanal tipoCanal;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
         this.nome = nome;
         this.codigoCargo = codigoCargo;
+    }
+
+    public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo, Set<SubCanal> subCanais) {
+        this.id = id;
+        this.nome = nome;
+        this.codigoCargo = codigoCargo;
+        this.subCanais = subCanais.stream().map(SubCanalDto::of).collect(Collectors.toSet());
     }
 
     public UsuarioResponse(Integer id, String nome, String email, String nomeCargo, CodigoCargo codigoCargo) {
@@ -71,6 +81,11 @@ public class UsuarioResponse {
             usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
             usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
             usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
+            usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
+                ? usuario.getSubCanais().stream()
+                    .map(SubCanalDto::of)
+                    .collect(Collectors.toSet())
+                : null);
         }
         return usuarioResponse;
     }
@@ -85,6 +100,11 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
+        usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
+            ? usuario.getSubCanais().stream()
+                .map(SubCanalDto::of)
+                .collect(Collectors.toSet())
+            : null);
         return usuarioResponse;
     }
 }
