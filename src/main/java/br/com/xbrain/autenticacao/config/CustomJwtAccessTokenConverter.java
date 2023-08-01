@@ -121,7 +121,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
-        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstrutura(usuario.getId()) : null;
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
     private String getTipoCanal(Usuario usuario) {

@@ -106,6 +106,8 @@ public class UsuarioServiceTest {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
+        "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -286,6 +288,26 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
             .withMessage(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
+    }
+
+    @Test
+    public void ativar_deveLancarException_quandoAaDoUsuarioLojaFuturoNaoPossuiEstruturaLojaFuturo() {
+        doReturn(Optional.of(umUsuarioCompleto(ESituacao.I, CLIENTE_LOJA_FUTURO, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(TestBuilders.umUsuarioAutenticado(1, CLIENTE_LOJA_FUTURO, "OPERACAO"))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn("AGENTE_AUTORIZADO")
+            .when(agenteAutorizadoNovoService)
+                .getEstruturaByUsuarioId(anyInt());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
+            .withMessage(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
     }
 
     @Test
