@@ -33,10 +33,6 @@ public class EmailService {
     private String nomeSistema;
     @Value("${app-config.url}")
     private String urlSistema;
-    //@Value("${app-config.url-login-direto}")
-    //private String urlLoginDireto;
-    @Value("${app-config.url-estatico}")
-    private String urlEstatico;
     @Value("${app-config.email.enviar}")
     private boolean enviarEmail;
     @Value("${app-config.email.emails}")
@@ -74,7 +70,6 @@ public class EmailService {
     }
 
     private void obterContexto(String assunto, String template, Context context) {
-        context.setVariable("urlEstatico", urlEstatico);
         context.setVariable("nomeSistema", nomeSistema);
         context.setVariable("urlSistema", urlSistema);
         context.setVariable("assunto", assunto);

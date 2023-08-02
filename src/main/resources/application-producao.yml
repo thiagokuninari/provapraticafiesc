@@ -37,11 +37,17 @@ app-config:
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
+  upload-dir: producao/autenticacao
 
   url: https://autenticacao.conexaoclarobrasil.com.br
-  url-estatico: https://estatico.conexaoclarobrasil.com.br
-  url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
-  upload-dir: ${app-config.estatico-dir}/producao/autenticacao
+
+  minio:
+    url: http://192.168.2.25:9000
+    access:
+      name: xbrain
+      secret: '@xbr41n@@'
+    bucket:
+      name: conexao-claro-brasil
 
   services:
     autenticacao:

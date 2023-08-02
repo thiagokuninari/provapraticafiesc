@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -569,5 +570,10 @@ public class UsuarioController {
     @GetMapping("cpf")
     public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
         return usuarioService.findByCpf(cpf);
+    }
+
+    @GetMapping("avatar")
+    public ResponseEntity<byte[]> getAvatar(@RequestParam String token) {
+        return usuarioService.getAvatar(token);
     }
 }

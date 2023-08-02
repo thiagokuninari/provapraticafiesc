@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
+import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
@@ -55,14 +56,19 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -94,7 +100,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesU
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
+import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.http.MediaType.IMAGE_JPEG;
+import static org.springframework.http.MediaType.IMAGE_PNG;
 
 @Service
 @Slf4j
@@ -239,6 +248,10 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private TokenStore tokenStore;
+    @Autowired
+    private MinioFileService minioFileService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -541,11 +554,11 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
         var request = UsuarioDto.convertFrom(usuario);
-        if (!ObjectUtils.isEmpty(foto)) {
-            fileService.uploadFotoUsuario(request, foto);
+        var response = save(request);
+        if (!foto.isEmpty()) {
+            fileService.salvarArquivo(request, foto);
         }
-
-        return save(request);
+        return response;
     }
 
     @Transactional
@@ -2789,5 +2802,20 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
+    }
+
+    @SneakyThrows
+    public ResponseEntity<byte[]> getAvatar(String token) {
+        var caminhoImg = tokenStore.readAccessToken(token).getAdditionalInformation().get("fotoDiretorio").toString();
+        var minioImg = minioFileService.getArquivo(caminhoImg).readAllBytes();
+        var exetensao = getExtensaoArquivo(caminhoImg);
+        var headers = new HttpHeaders();
+        headers.setContentType(exetensao.equals(".png") ? IMAGE_PNG : IMAGE_JPEG);
+
+        return new ResponseEntity<>(minioImg, headers, HttpStatus.OK);
+    }
+
+    private String getExtensaoArquivo(String nomeArquivo) {
+        return ".".concat(getExtension(nomeArquivo));
     }
 }
