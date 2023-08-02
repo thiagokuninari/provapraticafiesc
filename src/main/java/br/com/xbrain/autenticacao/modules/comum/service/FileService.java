@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import io.minio.MinioClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,12 +15,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
 public class FileService {
 
-    @Autowired
-    private MinioFileService minioFileService;
+    private final MinioFileService minioFileService;
     @Value("${app-config.upload-foto-usuario}")
     private String usuarioFotoDir;
 
