@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -106,7 +107,7 @@ public class FeederService {
             var permissoesTiposFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> usuarioService.getPermissoesEspeciaisDoUsuario(usuario.getId(),
                     usuario.getUsuarioCadastro().getId(), getPermissoesTiposFeederMso(usuario)))
-                .orElse(List.of());
+                .orElse(Collections.emptyList());
 
             usuarioService.salvarPermissoesEspeciais(permissoesTiposFeeder);
         }
@@ -115,7 +116,7 @@ public class FeederService {
     private List<Integer> getPermissoesTiposFeederMso(Usuario usuario) {
         var listaFuncionalidades = new ArrayList<Integer>();
 
-        if (Objects.nonNull(usuario.getTiposFeeder())) {
+        if (!ObjectUtils.isEmpty(usuario.getTiposFeeder())) {
             if (usuario.getTiposFeeder().contains(RESIDENCIAL)) {
                 listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL);
             }
