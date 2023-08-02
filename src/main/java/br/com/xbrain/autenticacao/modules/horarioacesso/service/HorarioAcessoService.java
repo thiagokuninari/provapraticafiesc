@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -19,10 +20,9 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -47,25 +48,20 @@ public class HorarioAcessoService {
         new ValidacaoException("Usuário fora do horário permitido.");
     public static final UnauthorizedUserException USUARIO_FORA_HORARIO_PERMITIDO =
         new UnauthorizedUserException("Usuário fora do horário permitido.");
+    public static final ValidacaoException CANAL_INVALIDO =
+        new ValidacaoException("O canal informado não é válido.");
+    public static final ValidacaoException USUARIO_SEM_CANAL_VALIDO =
+        new ValidacaoException("Usuário não possui o canal válido.");
 
     private final Environment environment;
-
-    @Autowired
-    private HorarioAcessoRepository repository;
-    @Autowired
-    private HorarioAtuacaoRepository atuacaoRepository;
-    @Autowired
-    private HorarioHistoricoRepository historicoRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private SiteService siteService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
-    @Autowired
-    private CallService callService;
-    @Autowired
-    private NotificacaoApiService notificacaoApiService;
+    private final HorarioAcessoRepository repository;
+    private final HorarioAtuacaoRepository atuacaoRepository;
+    private final HorarioHistoricoRepository historicoRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final SiteService siteService;
+    private final DataHoraAtual dataHoraAtual;
+    private final CallService callService;
+    private final NotificacaoApiService notificacaoApiService;
 
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
         var horariosAcesso = repository.findAll(filtros.toPredicate().build(), pageable)
@@ -145,9 +141,11 @@ public class HorarioAcessoService {
         }
     }
 
-    public boolean getStatus() {
-        var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
-
+    public boolean getStatus(ECanal canal) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        validarCanal(canal);
+        validarCanalUsuario(usuarioAutenticado);
+        var usuario = usuarioAutenticado.getUsuario();
         if (usuario.isOperadorTelevendasAtivoLocal()) {
             var site = getSiteByUsuario(usuario);
             var horarioAcesso = repository.findBySiteId(site.getId())
@@ -169,7 +167,10 @@ public class HorarioAcessoService {
         return true;
     }
 
-    public boolean getStatus(Integer siteId) {
+    public boolean getStatus(ECanal canal, Integer siteId) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        validarCanal(canal);
+        validarCanalUsuario(usuarioAutenticado);
         var horarioAcesso = repository.findBySiteId(siteId)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
@@ -265,5 +266,17 @@ public class HorarioAcessoService {
 
     private boolean isTest() {
         return environment.acceptsProfiles("test");
+    }
+
+    private void validarCanal(ECanal canal) {
+        if (canal != ATIVO_PROPRIO) {
+            throw CANAL_INVALIDO;
+        }
+    }
+
+    private void validarCanalUsuario(UsuarioAutenticado usuarioAutenticado) {
+        if (!usuarioAutenticado.isXbrainOuMso() && !usuarioAutenticado.getCanais().contains(ATIVO_PROPRIO)) {
+            throw USUARIO_SEM_CANAL_VALIDO;
+        }
     }
 }
