@@ -151,13 +151,13 @@ public enum EErrors {
         "#050 - Ocorreu um erro ao tentar acessar o MinIO Client."),
     ERRO_SALVAR_ARQUIVO(
         "#051 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#049 - Ocorreu um erro ao tentar salvar o arquivo."),
+        "#051 - Ocorreu um erro ao tentar salvar o arquivo."),
     ERRO_ACESSO_SERVIDOR(
         "#052 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#052 - Ocorreu um erro ao acessar o minio server."),
     ARQUIVO_NAO_ENCONTRADO(
-        "#052 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#052 - Arquivo não encontrado.");
+        "#053 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#053 - Arquivo não encontrado.");
 
 
 
