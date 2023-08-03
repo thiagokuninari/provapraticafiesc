@@ -17,7 +17,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.*;
 public class MinioFileService {
 
     @Value("${app-config.minio.bucket.name}")
-    String defaultBucketName;
+    private String defaultBucketName;
 
     @Autowired
     private MinioClient minioClient;
