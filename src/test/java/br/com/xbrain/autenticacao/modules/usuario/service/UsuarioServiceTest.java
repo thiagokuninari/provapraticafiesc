@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -43,6 +44,7 @@ import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
+import io.minio.MinioClient;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,11 +60,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -71,6 +78,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ARQUIVO_NAO_ENCONTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
@@ -92,7 +100,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
@@ -179,6 +189,12 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private TokenStore tokenStore;
+    @Mock
+    private MinioFileService minioFileService;
+    @Mock
+    private MinioClient minioClient;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -303,7 +319,7 @@ public class UsuarioServiceTest {
 
         doReturn("AGENTE_AUTORIZADO")
             .when(agenteAutorizadoNovoService)
-                .getEstruturaByUsuarioId(anyInt());
+            .getEstruturaByUsuarioId(anyInt());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
@@ -3264,5 +3280,39 @@ public class UsuarioServiceTest {
         static ApplicationEventPublisher publisher() {
             return mock(ApplicationEventPublisher.class);
         }
+    }
+
+    @Test
+    public void getAvatar_deveRetornarImagem() {
+        var token = "tokenTest";
+        var accessToken = mock(OAuth2AccessToken.class);
+        when(accessToken.getAdditionalInformation())
+            .thenReturn(Collections.singletonMap("fotoDiretorio", "foto_usuario/file.jpg"));
+        when(tokenStore.readAccessToken(token)).thenReturn(accessToken);
+        var imageBytes = "file".getBytes();
+        when(minioFileService.getArquivo("foto_usuario/file.jpg"))
+            .thenReturn(new ByteArrayInputStream(imageBytes));
+
+        var response = usuarioService.getAvatar(token);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertArrayEquals(imageBytes, response.getBody());
+        assertEquals(MediaType.IMAGE_JPEG, response.getHeaders().getContentType());
+    }
+
+    @Test
+    public void getAvatar_deveLancarEx_seArquivoNaoEncontrado() {
+        var token = "tokenTest";
+        var accessToken = mock(OAuth2AccessToken.class);
+        when(accessToken.getAdditionalInformation())
+            .thenReturn(Collections.singletonMap("fotoDiretorio", "foto_usuario/teste.jpg"));
+        when(tokenStore.readAccessToken(token)).thenReturn(accessToken);
+        when(minioFileService.getArquivo("foto_usuario/teste.jpg"))
+            .thenThrow(new IntegracaoException(ARQUIVO_NAO_ENCONTRADO.getDescricaoTecnica()));
+
+        assertThatThrownBy(() -> usuarioService.getAvatar(token))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage(ARQUIVO_NAO_ENCONTRADO.getDescricaoTecnica());
     }
 }

@@ -16,7 +16,7 @@ import static com.google.common.io.ByteStreams.toByteArray;
 public class FileHelper {
 
     @SneakyThrows
-    public static MockMultipartFile umDocumento() {
+    public static MockMultipartFile umDocumentoPng() {
         var bytes = toByteArray(getFileInputStream("foto_usuario/file.png"));
         return new MockMultipartFile("foto_usuario",
             "file.png",
@@ -24,7 +24,7 @@ public class FileHelper {
             bytes);
     }
 
-    private static InputStream getFileInputStream(String file) throws Exception {
+    public static InputStream getFileInputStream(String file) throws Exception {
         return new ByteArrayInputStream(
             Files.readAllBytes(Paths.get(
                 Objects.requireNonNull(FileHelper.class.getClassLoader().getResource(file))
