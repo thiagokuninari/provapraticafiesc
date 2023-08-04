@@ -78,7 +78,8 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
-import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.*;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1025,33 +1026,30 @@ public class UsuarioService {
         }
     }
 
-    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        var permissoesEspeciais = getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(usuarioDto);
+    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioMqRequest request, UsuarioDto usuario) {
+        var permissoesEspeciais = getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(usuario);
 
         if (!permissoesEspeciais.isEmpty()) {
-            permissoesEspeciais.forEach(permissao -> criarESalvarPermissaoEspecial(usuarioDto, usuarioMqRequest, permissao));
+            permissoesEspeciais.forEach(permissao -> criarESalvarPermissaoEspecial(usuario, request, permissao));
         }
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(
-        UsuarioDto usuarioDto) {
-        return usuarioDto.getAntigoSocioPrincipalId() != null
+    private List<PermissaoEspecial> getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(UsuarioDto usuario) {
+        return usuario.getAntigoSocioPrincipalId() != null
             ? permissaoEspecialRepository
             .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(
                 FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR,
-                usuarioDto.getAntigoSocioPrincipalId())
-            : List.of();
+                usuario.getAntigoSocioPrincipalId())
+            : emptyList();
     }
 
-    private void criarESalvarPermissaoEspecial(UsuarioDto usuarioDto,
-                                               UsuarioMqRequest usuarioMqRequest,
-                                               PermissaoEspecial permissaoEspecial) {
-        Optional.ofNullable(permissaoEspecial.getFuncionalidade())
+    private void criarESalvarPermissaoEspecial(UsuarioDto usuario, UsuarioMqRequest request, PermissaoEspecial permissao) {
+        Optional.ofNullable(permissao.getFuncionalidade())
             .ifPresent(funcionalidade -> {
                 var novaPermissaoEspecial = criarPermissaoEspecial(
-                    usuarioDto.getId(),
+                    usuario.getId(),
                     funcionalidade.getId(),
-                    usuarioMqRequest.getUsuarioCadastroId());
+                    request.getUsuarioCadastroId());
 
                 permissaoEspecialRepository.save(novaPermissaoEspecial);
             });
