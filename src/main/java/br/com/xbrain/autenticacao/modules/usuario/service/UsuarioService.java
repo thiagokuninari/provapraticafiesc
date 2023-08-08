@@ -73,7 +73,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,6 +103,7 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.http.MediaType.IMAGE_JPEG;
 import static org.springframework.http.MediaType.IMAGE_PNG;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 @Slf4j
@@ -375,7 +375,7 @@ public class UsuarioService {
         validarCargoUsuarioAutenticado(predicate);
 
         var pages = repository.findAll(predicate.build(), pageRequest);
-        if (!ObjectUtils.isEmpty(pages.getContent())) {
+        if (!isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
 
@@ -555,7 +555,7 @@ public class UsuarioService {
     public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
         var request = UsuarioDto.convertFrom(usuario);
         var response = save(request);
-        if (!foto.isEmpty()) {
+        if (!isEmpty(foto)) {
             fileService.salvarArquivo(request, foto);
         }
         return response;
@@ -735,7 +735,7 @@ public class UsuarioService {
                 || usuarioAutenticado.isAssistenteOperacao();
             var isUsuarioAssistenteOuSupervisor = usuario.isSupervisorOperacao() || usuario.isAssistenteOperacao();
 
-            if (ObjectUtils.isEmpty(usuario.getHierarquiasId())
+            if (isEmpty(usuario.getHierarquiasId())
                 && isSupervisorOuAssistente
                 && !isUsuarioAssistenteOuSupervisor) {
                 usuario.setHierarquiasId(List.of(usuarioAutenticado.getId()));
@@ -822,7 +822,7 @@ public class UsuarioService {
     }
 
     private void salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
-        if (ObjectUtils.isEmpty(usuario.getUsuarioCadastro())) {
+        if (isEmpty(usuario.getUsuarioCadastro())) {
             usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
             repository.save(usuario);
         }
@@ -876,10 +876,10 @@ public class UsuarioService {
                 var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                     superiorRequest.getSuperiorAntigo());
 
-                if (!ObjectUtils.isEmpty(usuarioHierarquia) && !ObjectUtils.isEmpty(usuarioAutenticado)) {
+                if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.delete(usuarioHierarquia);
                 }
-                if (!ObjectUtils.isEmpty(usuarioAutenticado)) {
+                if (!isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.save(
                         criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
                 }
@@ -942,7 +942,7 @@ public class UsuarioService {
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
-                if (ObjectUtils.isEmpty(usuarioId)
+                if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -952,7 +952,7 @@ public class UsuarioService {
     private void validarEmailCadastrado(String email, Integer usuarioId) {
         repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
             .ifPresent(usuario -> {
-                if (ObjectUtils.isEmpty(usuarioId)
+                if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw EMAIL_CADASTRADO_EXCEPTION;
                 }
@@ -1069,7 +1069,7 @@ public class UsuarioService {
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
-        if (!ObjectUtils.isEmpty(usuario)
+        if (!isEmpty(usuario)
             && !CollectionUtils.isEmpty(usuario.getUsuariosHierarquia())) {
 
             usuario.getUsuariosHierarquia()
@@ -1110,10 +1110,10 @@ public class UsuarioService {
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
-        return !ObjectUtils.isEmpty(usuarioParaAchar)
+        return !isEmpty(usuarioParaAchar)
             && !CollectionUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-            && !ObjectUtils.isEmpty(usuario)
-            && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
+            && !isEmpty(usuario)
+            && !isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -1125,7 +1125,7 @@ public class UsuarioService {
         return usuario.getUsuariosHierarquia()
             .stream()
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
-            .filter(item -> !ObjectUtils.isEmpty(item))
+            .filter(item -> !isEmpty(item))
             .collect(Collectors.toList());
     }
 
@@ -1320,7 +1320,7 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
 
-        return !ObjectUtils.isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
+        return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
     public void saveUsuarioAlteracaoCpf(Usuario usuario) {
@@ -1479,7 +1479,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
             .ifPresent(u -> {
-                if (ObjectUtils.isEmpty(usuario.getId())
+                if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -1490,7 +1490,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
             .ifPresent(u -> {
-                if (ObjectUtils.isEmpty(usuario.getId())
+                if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw EMAIL_CADASTRADO_EXCEPTION;
                 }
@@ -1532,7 +1532,7 @@ public class UsuarioService {
         var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
         var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
 
-        if (ObjectUtils.isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
+        if (isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         } else if (isClienteLojaFuturo && !isAaEstruturaLojaFuturo) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
@@ -1853,12 +1853,12 @@ public class UsuarioService {
     @Transactional
     public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario;
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+        if (isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
             usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+        if (isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
             || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
@@ -2608,7 +2608,7 @@ public class UsuarioService {
     }
 
     public void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
-        if (!ObjectUtils.isEmpty(permissoesEspeciais)) {
+        if (!isEmpty(permissoesEspeciais)) {
             permissaoEspecialRepository.save(permissoesEspeciais);
         }
     }
