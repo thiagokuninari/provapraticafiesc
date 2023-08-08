@@ -5,6 +5,8 @@ server:
     mime-types: text/html,text/css,application/javascript,application/json
 
 spring:
+  application:
+      name: autenticacao-api
   redis:
 #    host: 127.0.0.1
     host: 192.168.50.1
@@ -348,6 +350,18 @@ feign:
       agenteAutorizadoNovoClient:
         connectTimeout: 360000
         readTimeout: 360000
+
+management:
+  metrics:
+    export:
+      simple:
+        enabled: false
+
+xbrain:
+  logging:
+    level: INFO
+    appender: CONSOLE
+    appName: ${spring.application.name}
 
 keys:
   public: |
