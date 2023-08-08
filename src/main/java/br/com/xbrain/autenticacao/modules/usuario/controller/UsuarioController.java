@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.UsuarioExcessoUsoResponse;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -46,6 +48,8 @@ public class UsuarioController {
     private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
     @Autowired
     private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -575,5 +579,11 @@ public class UsuarioController {
     @GetMapping("avatar")
     public ResponseEntity<byte[]> getAvatar(@RequestParam String token) {
         return usuarioService.getAvatar(token);
+    }
+
+    @PutMapping("mover-avatar-minio")
+    public void moverAvatarMinio() throws IOException {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
+        usuarioService.moverAvatarMinio();
     }
 }

@@ -9,9 +9,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +39,18 @@ public class FileService {
             minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat("/").concat(fileName));
         } catch (IOException ex) {
             throw new IntegracaoException(ex, MinioClient.class.getName(), EErrors.ERRO_SALVAR_ARQUIVO);
+        }
+    }
+
+    public Optional<List<File>> buscaArquivosEstatico(String caminho) throws IOException {
+        var path = Paths.get(caminho);
+        try (var stream = Files.walk(path, Integer.MAX_VALUE)) {
+            return Optional.of(stream
+                .map(String::valueOf)
+                .map(File::new)
+                .filter(File::isFile)
+                .sorted()
+                .collect(Collectors.toList()));
         }
     }
 }

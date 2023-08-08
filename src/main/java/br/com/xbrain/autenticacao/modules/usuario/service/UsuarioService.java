@@ -60,12 +60,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -80,6 +82,12 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -100,6 +108,7 @@ import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.http.MediaType.IMAGE_JPEG;
 import static org.springframework.http.MediaType.IMAGE_PNG;
@@ -252,6 +261,8 @@ public class UsuarioService {
     private TokenStore tokenStore;
     @Autowired
     private MinioFileService minioFileService;
+    @Value("${app-config.upload-foto-usuario}")
+    private String urlDir;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2817,5 +2828,45 @@ public class UsuarioService {
 
     private String getExtensaoArquivo(String nomeArquivo) {
         return ".".concat(getExtension(nomeArquivo));
+    }
+
+
+    public void moverAvatarMinio() throws IOException {
+        log.info("Inicia migração das fotos para o doretório MinIO.");
+        var files = new ArrayList<File>();
+        fileService.buscaArquivosEstatico(urlDir).ifPresent(files::addAll);
+        moverArquivos(files);
+        var usuariosEstatico = repository.findByFotoDiretorioIsNotNull();
+        alteraColunaFotoDiretorio(usuariosEstatico);
+        log.info("Finaliza migração das fotos para o diretório MinIO");
+    }
+
+    private void moverArquivos(List<File> files) {
+        files.forEach(file -> {
+            try (var fileInput = new FileInputStream(file)) {
+                minioFileService.salvarArquivo(fileInput, gerarNovoCaminho(file.getPath()));
+                log.info("Movendo arquivo: {}", file.getName());
+            } catch (IOException ex) {
+                log.error("Error ao enviar arquivo ao MinIO", ex);
+            }
+        });
+    }
+
+    private String gerarNovoCaminho(String path) {
+        if (isNotBlank(path) && path.length() > 1) {
+            var split = path.split("\\/(\\d{4})")[0];
+            return path.replace(split, urlDir);
+        }
+        return path;
+    }
+
+    private void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
+        log.info("Inicia update coluna FotoDiretório");
+        usuariosEstatico.forEach(user -> {
+            var fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_")
+                .format(Calendar.getInstance().getTime()).concat(user.getFotoNomeOriginal());
+            repository.updateFotoDiretorio(fileName, user.getId());
+            log.info("Update usuaiorId: {}", user.getId());
+        });
     }
 }
