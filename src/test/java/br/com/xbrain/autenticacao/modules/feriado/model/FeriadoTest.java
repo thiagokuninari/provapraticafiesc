@@ -95,7 +95,7 @@ public class FeriadoTest {
 
     @Test
     public void ofAutomacao_deveRetornarFeriadoCorreto_quandoSolicitado() {
-        assertThat(Feriado.ofAutomacao(umFeriadoAutomacao(), 1, umFeriadoEstadualRequest(1), umImportacaoFeriado()))
+        assertThat(Feriado.ofAutomacao(umFeriadoAutomacao(), umImportacaoFeriado()))
             .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
                 "feriadoPai.id", "feriadoNacional")
             .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),

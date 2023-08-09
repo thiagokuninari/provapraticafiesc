@@ -130,7 +130,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).processarFeriadosNacionais(any(), any());
+        verify(service).processarFeriadosNacionais(any(), any(), any());
     }
 
     @Test

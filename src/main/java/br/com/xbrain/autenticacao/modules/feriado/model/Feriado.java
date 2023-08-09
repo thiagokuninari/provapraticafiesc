@@ -112,19 +112,18 @@ public class Feriado {
         return feriado;
     }
 
-    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request,
-                                      ImportacaoFeriado importacaoFeriado) {
+    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, ImportacaoFeriado importacaoFeriado) {
         var feriado = new Feriado();
         BeanUtils.copyProperties(feriadoAutomacao, feriado);
         feriado.setDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()));
         feriado.setFeriadoNacional(
             feriadoAutomacao.getTipoFeriado()
                 .equals(ETipoFeriado.NACIONAL) ? Eboolean.V : Eboolean.F);
-        if (nonNull(request.getEstadoId())) {
-            feriado.setUf(new Uf(request.getEstadoId()));
+        if (nonNull(feriadoAutomacao.getUfId())) {
+            feriado.setUf(new Uf(feriadoAutomacao.getUfId()));
         }
-        if (nonNull(request.getCidadeId())) {
-            feriado.setCidade(new Cidade(request.getCidadeId()));
+        if (nonNull(feriadoAutomacao.getCidadeId())) {
+            feriado.setCidade(new Cidade(feriadoAutomacao.getCidadeId()));
         }
         feriado.setDataCadastro(LocalDateTime.now());
         feriado.setSituacao(ESituacaoFeriado.ATIVO);

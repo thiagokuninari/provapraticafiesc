@@ -16,4 +16,9 @@ public class FeriadoAutomacao {
     private String diaSemana;
     private String nome;
     private ETipoFeriado tipoFeriado;
+    private Integer cidadeId;
+    private String cidadeNome;
+    private Integer ufId;
+    private String uf;
+    private Integer ano;
 }

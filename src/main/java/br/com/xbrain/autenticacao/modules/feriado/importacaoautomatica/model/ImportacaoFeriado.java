@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
-import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

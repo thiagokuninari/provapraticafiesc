@@ -301,12 +301,12 @@ public class FeriadoService {
         }
     }
 
-    public boolean validarSeFeriadoNaoCadastrado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
+    public boolean validarSeFeriadoNaoCadastrado(FeriadoAutomacao feriadoAutomacao) {
         var predicate = new FeriadoPredicate()
             .comNome(feriadoAutomacao.getNome())
             .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
-            .comEstado(request.getEstadoId())
-            .comCidade(request.getCidadeId())
+            .comEstado(feriadoAutomacao.getUfId())
+            .comCidade(feriadoAutomacao.getCidadeId())
             .comDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()))
             .excetoExcluidos()
             .excetoFeriadosFilhos()
