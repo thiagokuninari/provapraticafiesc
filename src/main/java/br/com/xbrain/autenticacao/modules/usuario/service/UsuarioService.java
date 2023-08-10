@@ -67,7 +67,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -85,8 +84,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -2830,9 +2827,9 @@ public class UsuarioService {
         return ".".concat(getExtension(nomeArquivo));
     }
 
-
+    @Transactional
     public void moverAvatarMinio() throws IOException {
-        log.info("Inicia migração das fotos para o doretório MinIO.");
+        log.info("Inicia migração das fotos para o diretório MinIO.");
         var files = new ArrayList<File>();
         fileService.buscaArquivosEstatico(urlDir).ifPresent(files::addAll);
         moverArquivos(files);
@@ -2844,15 +2841,14 @@ public class UsuarioService {
     private void moverArquivos(List<File> files) {
         files.forEach(file -> {
             try (var fileInput = new FileInputStream(file)) {
-                minioFileService.salvarArquivo(fileInput, gerarNovoCaminho(file.getPath()));
+                minioFileService.salvarArquivo(fileInput, gerarNovoCaminhoMinio(file.getPath()));
                 log.info("Movendo arquivo: {}", file.getName());
             } catch (IOException ex) {
                 log.error("Error ao enviar arquivo ao MinIO", ex);
             }
         });
     }
-
-    private String gerarNovoCaminho(String path) {
+    private String gerarNovoCaminhoMinio(String path) {
         if (isNotBlank(path) && path.length() > 1) {
             var split = path.split("\\/(\\d{4})")[0];
             return path.replace(split, urlDir);
@@ -2860,13 +2856,22 @@ public class UsuarioService {
         return path;
     }
 
-    private void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
-        log.info("Inicia update coluna FotoDiretório");
-        usuariosEstatico.forEach(user -> {
-            var fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_")
-                .format(Calendar.getInstance().getTime()).concat(user.getFotoNomeOriginal());
-            repository.updateFotoDiretorio(fileName, user.getId());
-            log.info("Update usuaiorId: {}", user.getId());
-        });
+    private String gerarNovoCaminhoBanco(String path) {
+        if (isNotBlank(path) && path.length() > 1) {
+            var split = path.split(".*\\\\/([^\\\\/]+)$")[0];
+            return path.replace(split, urlDir);
+        }
+        return path;
+    }
+
+    public void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
+        if(!isEmpty(usuariosEstatico)) {
+            log.info("Inicia update coluna FotoDiretório");
+            usuariosEstatico.forEach(user -> {
+                var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
+                log.info("Update usuaiorId: {}", user.getId());
+                repository.updateFotoDiretorio(fileName, user.getId());
+            });
+        }
     }
 }
