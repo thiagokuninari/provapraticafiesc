@@ -67,14 +67,11 @@ public class RegionalServiceTest {
     }
 
     @Test
-    public void findAllAtivos_deveRetornarRegionaisAtivas_quandoSolicitado() {
+    public void findAllAtivos_deveRetornarRegionaisAtivasENovaRegionalTrue_quandoSolicitado() {
         assertThat(regionalService.findAllAtivos())
-            .hasSize(5)
+            .hasSize(2)
             .extracting("id", "nome")
             .containsExactly(
-                tuple(1, "LESTE"),
-                tuple(2, "SÃO PAULO"),
-                tuple(3, "SUL"),
                 tuple(1025, "RNE"),
                 tuple(1027, "RPS")
             );

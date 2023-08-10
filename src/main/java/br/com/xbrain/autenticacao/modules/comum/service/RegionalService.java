@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.predicate.RegionalPredicate;
@@ -35,7 +36,7 @@ public class RegionalService {
     }
 
     public List<RegionalDto> findAllAtivos() {
-        return repository.findAllBySituacao(ESituacao.A)
+        return repository.findAllBySituacaoAndNovaRegional(ESituacao.A, Eboolean.V)
             .stream()
             .map(RegionalDto::of)
             .collect(Collectors.toList());

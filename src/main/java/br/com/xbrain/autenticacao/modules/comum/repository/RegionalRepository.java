@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -15,5 +16,5 @@ public interface RegionalRepository extends PagingAndSortingRepository<Regional,
 
     Optional<Regional> findById(Integer id);
 
-    List<Regional> findAllBySituacao(ESituacao situacao);
+    List<Regional> findAllBySituacaoAndNovaRegional(ESituacao situacao, Eboolean novaRegional);
 }
