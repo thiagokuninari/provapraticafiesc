@@ -68,8 +68,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
@@ -1300,6 +1299,25 @@ public class UsuarioServiceTest {
         when(usuarioRepository.obterIdsPorUsuarioCadastroId(eq(3000))).thenReturn(List.of());
         when(usuarioRepository.getUsuariosSubordinados(eq(3000))).thenReturn(idsUsuariosSubordinados);
         when(usuarioRepository.findAll(eq(predicate.build()), eq(new PageRequest())))
+            .thenReturn(umaPageUsuario(new PageRequest(), List.of(umUsuario())));
+
+        assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
+            .isNotEmpty();
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoColaboradorCanalInternet() {
+        var idsUsuariosSubordinados = IntStream.rangeClosed(0, 2000).boxed().collect(Collectors.toList());
+        var idsUsuariosSubordinadosComIdDoUsuario = Stream.of(idsUsuariosSubordinados, List.of(3000))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+        var predicate = new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).comIds(idsUsuariosSubordinadosComIdDoUsuario);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_GERENTE, AUT_20050));
+        when(usuarioRepository.obterIdsPorUsuarioCadastroId(3000)).thenReturn(List.of());
+        when(usuarioRepository.getUsuariosSubordinados(3000)).thenReturn(idsUsuariosSubordinados);
+        when(usuarioRepository.findAll(predicate.build(), new PageRequest()))
             .thenReturn(umaPageUsuario(new PageRequest(), List.of(umUsuario())));
 
         assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))

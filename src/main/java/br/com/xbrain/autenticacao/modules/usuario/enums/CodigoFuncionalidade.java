@@ -40,7 +40,8 @@ public enum CodigoFuncionalidade {
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
     AUT_20010("Adicionar novo usuário"),
-    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
+    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações"),
+    AUT_20050("Visualizar Carteira/Hierarquia Canal Internet");
 
     @Getter
     private String descricao;
