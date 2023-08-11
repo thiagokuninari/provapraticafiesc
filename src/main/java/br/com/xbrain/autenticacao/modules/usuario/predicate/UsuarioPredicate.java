@@ -453,7 +453,8 @@ public class UsuarioPredicate {
                     .collect(Collectors.toList())
             );
 
-        } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+        } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)
+            || usuario.hasPermissao(AUT_20050)) {
             comIds(Stream.of(
                     usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
