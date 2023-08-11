@@ -40,6 +40,7 @@ public class PermissaoTecnicoIndicadorService {
     private final UsuarioRepository usuarioRepository;
     private final CargoRepository cargoRepository;
 
+    @Transactional
     public void atualizarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
         if (dto.getIsAdicionarPermissao().equals(Eboolean.V)) {
             adicionarPermissaoTecnicoIndicador(dto);
