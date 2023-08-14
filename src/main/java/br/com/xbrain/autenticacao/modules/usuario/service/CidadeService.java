@@ -160,8 +160,8 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
         return Stream.concat(
-            agenteAutorizadoService.getCidades(subclusterId).stream(),
-            getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
+                agenteAutorizadoService.getCidades(subclusterId).stream(),
+                getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
             .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());
     }
@@ -173,7 +173,9 @@ public class CidadeService {
     }
 
     public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
-        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::of).orElse(null);
+        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge)
+            .map(CidadeResponse::of)
+            .orElse(null);
     }
 
     public List<CidadeResponse> findCidadesByCodigosIbge(List<String> codigosIbge) {
@@ -196,6 +198,17 @@ public class CidadeService {
             .stream()
             .map(CidadeResponse::of)
             .collect(Collectors.toList());
+    }
+
+    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidadeNomeAndUf(CidadesUfsRequest cidadesUfs) {
+        if (!cidadesUfs.getCidades().isEmpty() && !cidadesUfs.getUfs().isEmpty()) {
+            var predicate = new CidadePredicate()
+                .comCidadesUfs(cidadesUfs)
+                .build();
+
+            return cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate);
+        }
+        return new ArrayList<>();
     }
 
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
