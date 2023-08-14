@@ -12,7 +12,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -20,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,8 +64,6 @@ public class SolicitacaoRamalControllerTest {
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
-    @MockBean
-    private SolicitacaoRamalFiltros solicitacaoRamalFiltros;
     @Autowired
     private MockMvc mvc;
     @MockBean
@@ -185,10 +183,11 @@ public class SolicitacaoRamalControllerTest {
     @Test
     public void getAll_deveRetornarOk_quandoTiverPermissao() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON)
+                .param("equipeId", "1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(3)));
+            .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
@@ -294,14 +293,16 @@ public class SolicitacaoRamalControllerTest {
                 "O campo telefoneTi é obrigatório.",
                 "O campo emailTi é obrigatório.",
                 "O campo tipoImplantacao é obrigatório.",
-                "O campo usuariosSolicitadosIds é obrigatório.")));
+                "O campo usuariosSolicitadosIds é obrigatório.",
+                "O campo equipeId é obrigatório.")));
     }
 
     @Test
     public void getAll_isBadRequest_quandoNaoEnviarAaIdEUsuarioNaoPossuirRoleGerenciarRamais() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                .param("equipeId", "1"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Campo agente autorizado é obrigatório")));
@@ -311,7 +312,8 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_isForbidden_quandoUsuarioForSocioMasNaoTemPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=50")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                .param("equipeId", "1"))
             .andExpect(status().isForbidden());
     }
 
@@ -319,8 +321,20 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_isOk_quandoUsuarioPossuirPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                .param("equipeId", "1"))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAll_deveRetornarBadRequest_quandoNaoPassarEquipeId() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo equipeId é obrigatório.")));
     }
 
     @Test
@@ -389,6 +403,7 @@ public class SolicitacaoRamalControllerTest {
             .emailTi("reanto@ti.com.br")
             .telefoneTi("(18) 3322-2388")
             .usuariosSolicitadosIds(Arrays.asList(100, 101))
+            .equipeId(1)
             .build();
     }
 

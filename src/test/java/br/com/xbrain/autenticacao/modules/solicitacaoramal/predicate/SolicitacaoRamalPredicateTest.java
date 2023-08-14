@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,14 +61,14 @@ public class SolicitacaoRamalPredicateTest {
     }
 
     @Test
-    public void comUsuariosIds_deveMontarPredicate_seHouverIdsNaLista() {
-        assertThat(new SolicitacaoRamalPredicate().comUsuariosIds(List.of(1, 2, 3)).build())
-            .isEqualTo(new BooleanBuilder(solicitacaoRamal.usuario.id.in(List.of(1, 2, 3))));
+    public void comEquipeId_deveMontarPredicate_seHouverEquipeId() {
+        assertThat(new SolicitacaoRamalPredicate().comEquipeId(123).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.equipeId.in(123)));
     }
 
     @Test
-    public void comUsuariosIds_naoDeveMontarPredicate_seUsuariosIdsVazio() {
-        assertThat(new SolicitacaoRamalPredicate().comUsuariosIds(List.of()).build())
+    public void comEquipeId_naoDeveMontarPredicate_seEquipeIdNulo() {
+        assertThat(new SolicitacaoRamalPredicate().comEquipeId(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 }

@@ -12,8 +12,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 @ActiveProfiles("test")
@@ -28,18 +26,16 @@ public class SolicitacaoRamalRepositoryTest {
 
     @Test
     public void findAll_deveRetornarApenasSolicitacoesDaEquipe_quandoHouverSolicitacao() {
-        var usuariosIdsEquipe = List.of(230);
         var predicate = new SolicitacaoRamalFiltros().toPredicate()
-            .comUsuariosIds(usuariosIdsEquipe).build();
-        assertEquals(1, repository.findAll(new PageRequest(),predicate).getTotalElements());
+            .comEquipeId(1).build();
+        assertEquals(1, repository.findAll(new PageRequest(), predicate).getTotalElements());
     }
 
     @Test
     public void findAll_deveRetornarListaVazia_quandoNaoHouverSolicitacaoDaEquipe() {
-        var usuariosIdsEquipe = List.of(1234);
         var predicate = new SolicitacaoRamalFiltros().toPredicate()
-            .comUsuariosIds(usuariosIdsEquipe).build();
-        assertEquals(0, repository.findAll(new PageRequest(),predicate).getTotalElements());
+            .comEquipeId(2).build();
+        assertEquals(0, repository.findAll(new PageRequest(), predicate).getTotalElements());
     }
 
     @Test
@@ -49,7 +45,7 @@ public class SolicitacaoRamalRepositoryTest {
 
     @Test
     public void findAllByAaId_deveRetornarlistaComDoisRegistros_quandoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
-        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(1).size());
+        assertEquals(3, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(1).size());
     }
 
     @Test

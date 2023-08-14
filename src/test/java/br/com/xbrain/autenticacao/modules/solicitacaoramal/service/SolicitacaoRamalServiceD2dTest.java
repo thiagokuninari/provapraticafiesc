@@ -100,6 +100,20 @@ public class SolicitacaoRamalServiceD2dTest {
     }
 
     @Test
+    public void save_deveLancarException_seJaHouverSolicitacaoPorEquipeId() {
+        var solicitacaoRamal = criaSolicitacaoRamal(1);
+        solicitacaoRamal.setEquipeId(1);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoOperacao());
+        when(repository.findAllByPredicate(any())).thenReturn(List.of(umaSolicitacaoRamalCanalD2d(1)));
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+            .withMessage("Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+
+        verify(repository, never()).save(any(SolicitacaoRamal.class));
+    }
+
+    @Test
     public void save_deveLancarException_seUsuarioAutenticadoNaoTiverPermissaoCTR_20015() {
         var solicitacaoRamal = criaSolicitacaoRamal(null);
         solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);

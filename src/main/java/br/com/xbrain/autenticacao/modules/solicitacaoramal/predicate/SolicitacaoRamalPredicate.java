@@ -4,12 +4,10 @@ import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 
@@ -62,9 +60,9 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
         return this;
     }
 
-    public SolicitacaoRamalPredicate comUsuariosIds(List<Integer> usuariosIds) {
-        if (!CollectionUtils.isEmpty(usuariosIds)) {
-            builder.and(solicitacaoRamal.usuario.id.in(usuariosIds));
+    public SolicitacaoRamalPredicate comEquipeId(Integer equipeId) {
+        if (equipeId != null) {
+            builder.and(solicitacaoRamal.equipeId.eq(equipeId));
         }
 
         return this;

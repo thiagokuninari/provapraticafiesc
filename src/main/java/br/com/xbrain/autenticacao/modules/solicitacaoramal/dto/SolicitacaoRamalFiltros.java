@@ -5,6 +5,8 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate.Solicitacao
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 public class SolicitacaoRamalFiltros {
 
@@ -14,13 +16,16 @@ public class SolicitacaoRamalFiltros {
     private Integer agenteAutorizadoId;
     private ECanal canal;
     private Integer subCanalId;
+    @NotNull
+    private Integer equipeId;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()
-                .comDataCadastro(this.dataInicialSolicitacao, this.dataFinalSolicitacao)
-                .comSituacaoSolicitacao(this.situacao)
-                .comAgenteAutorizadoId(this.agenteAutorizadoId)
-                .comCanal(this.canal)
-                .comSubCanalId(this.subCanalId);
+            .comDataCadastro(this.dataInicialSolicitacao, this.dataFinalSolicitacao)
+            .comSituacaoSolicitacao(this.situacao)
+            .comAgenteAutorizadoId(this.agenteAutorizadoId)
+            .comCanal(this.canal)
+            .comSubCanalId(this.subCanalId)
+            .comEquipeId(equipeId);
     }
 }

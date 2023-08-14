@@ -21,7 +21,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +61,6 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     private SolicitacaoRamalHistoricoService historicoService;
     @Autowired
     private DataHoraAtual dataHoraAtual;
-    @Autowired
-    private UsuarioService usuarioService;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
@@ -85,10 +82,10 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        var usuarioId = autenticacaoService.getUsuarioId();
-        validarParametroD2d(usuarioId, request);
+        validarParametroD2d(request);
         validarAutorizacao();
 
+        var usuarioId = autenticacaoService.getUsuarioId();
         var solicitacaoRamal = SolicitacaoRamal.convertFrom(request, usuarioId, dataHoraAtual.getDataHora());
         solicitacaoRamal.retirarMascara();
 
@@ -99,14 +96,14 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void validaSalvarD2d(Integer usuarioId, Integer subCanalId) {
-        if (hasSolicitacaoPendenteOuEmAndamentoByHierarquiaDoUsuario(usuarioId, subCanalId)) {
+    private void validaSalvarD2d(SolicitacaoRamalRequest request) {
+        if (hasSolicitacaoPendenteOuEmAndamentoByEquipeDoUsuario(request)) {
             throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
         }
     }
 
-    private void validarParametroD2d(Integer usuarioId, SolicitacaoRamalRequest request) {
-        validaSalvarD2d(usuarioId, request.getSubCanalId());
+    private void validarParametroD2d(SolicitacaoRamalRequest request) {
+        validaSalvarD2d(request);
         if (request.getCanal() == ECanal.D2D_PROPRIO
             && request.getSubCanalId() == null) {
             throw ERRO_SEM_TIPO_CANAL_D2D;
@@ -120,11 +117,10 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         }
     }
 
-    private boolean hasSolicitacaoPendenteOuEmAndamentoByHierarquiaDoUsuario(Integer usuarioId, Integer subCanalId) {
-        var usuariosIdsEquipe = usuarioService.getUsuariosHierarquiaByUsuarioId(usuarioId);
+    private boolean hasSolicitacaoPendenteOuEmAndamentoByEquipeDoUsuario(SolicitacaoRamalRequest request) {
         var predicate = new SolicitacaoRamalPredicate()
-            .comUsuariosIds(usuariosIdsEquipe)
-            .comSubCanalId(subCanalId).build()
+            .comSubCanalId(request.getSubCanalId())
+            .comEquipeId(request.getEquipeId()).build()
             .and(solicitacaoRamal.situacao.eq(PENDENTE)
                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO)));
 

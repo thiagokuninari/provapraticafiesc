@@ -16,7 +16,6 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamal
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
@@ -74,8 +73,6 @@ public class SolicitacaoRamalService {
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private UsuarioService usuarioService;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
@@ -93,20 +90,17 @@ public class SolicitacaoRamalService {
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroObrigatorios(filtros);
-        var usuariosIdsEquipe = getUsuariosIdsEquipe(autenticacaoService.getUsuarioId());
-        var predicate = filtros.toPredicate().comUsuariosIds(usuariosIdsEquipe).build();
-        var solicitacoes = solicitacaoRamalRepository.findAll(pageable, predicate);
+        var solicitacoes = solicitacaoRamalRepository.findAll(pageable, filtros.toPredicate().build());
 
+        if (solicitacoes.getContent().isEmpty()) {
+            throw new NotFoundException("Nenhuma solicitação de ramal foi encontrada para a equipe selecionada.");
+        }
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
             .map(SolicitacaoRamalResponse::convertFrom)
             .collect(Collectors.toList()),
             pageable,
             solicitacoes.getTotalElements());
-    }
-
-    private List<Integer> getUsuariosIdsEquipe(Integer usuarioId) {
-        return usuarioService.getUsuariosHierarquiaByUsuarioId(usuarioId);
     }
 
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {

@@ -32,8 +32,6 @@ public interface UsuarioRepositoryCustom {
 
     Optional<List<Cidade>> findComCidade(Integer id);
 
-    List<Integer> getUsuariosHierarquiaByUsuarioId(Integer usuarioId);
-
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);

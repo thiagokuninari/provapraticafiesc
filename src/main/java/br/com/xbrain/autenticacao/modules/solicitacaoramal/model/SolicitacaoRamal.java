@@ -69,6 +69,9 @@ public class SolicitacaoRamal {
     @Column(name = "SITUACAO")
     private ESituacaoSolicitacao situacao;
 
+    @Column(name = "EQUIPE_ID")
+    private Integer equipeId;
+
     @Column(name = "AGENTE_AUTORIZADO_ID")
     private Integer agenteAutorizadoId;
 

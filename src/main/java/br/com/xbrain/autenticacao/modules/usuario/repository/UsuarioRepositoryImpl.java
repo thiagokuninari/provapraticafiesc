@@ -140,17 +140,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> getUsuariosHierarquiaByUsuarioId(Integer usuarioId) {
-        return new JPAQueryFactory(entityManager)
-            .select(usuario.id)
-            .from(usuarioHierarquia)
-            .where(usuarioHierarquia.usuarioSuperior.id.eq(usuarioId)
-                .or(usuario.id.eq(usuarioId)))
-            .orderBy(usuario.nome.asc())
-            .fetch();
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
         try {

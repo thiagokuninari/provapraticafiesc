@@ -156,6 +156,16 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
+    public void getAll_deveLancarException_seNaoExistirSolicitacaoDeRamalDaEquipe() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn(new PageImpl<>(List.of()));
+
+        assertThatExceptionOfType(NotFoundException.class).isThrownBy(() ->
+                service.getAll(new PageRequest(), umaSolicitacaoFiltros()))
+            .withMessage("Nenhuma solicitação de ramal foi encontrada para a equipe selecionada.");
+    }
+
+    @Test
     public void save_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
         var request = criaSolicitacaoRamal(1, null);
         request.setCanal(ECanal.AGENTE_AUTORIZADO);
@@ -360,6 +370,7 @@ public class SolicitacaoRamalServiceTest {
 
     private SolicitacaoRamalFiltros umaSolicitacaoFiltros() {
         var filtros = new SolicitacaoRamalFiltros();
+        filtros.setAgenteAutorizadoId(1);
         return filtros;
     }
 
