@@ -45,5 +45,5 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> findCidadesByCodigosIbge(Predicate predicate);
 
-    List<Cidade> findCidadesByUfId(Integer ufId);
+    List<Cidade> findAllCidades();
 }

@@ -12,7 +12,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -46,19 +45,13 @@ public class CidadeRepositoryTest {
     }
 
     @Test
-    public void findCidadesByUfId_deveRetornarListaDeCidades_seUfExistir() {
-        assertThat(cidadeRepository.findCidadesByUfId(9))
+    public void findAllCidades_deveRetornarListaDeTodasAsCidadesDoPais_seSolicitado() {
+        assertThat(cidadeRepository.findAllCidades())
             .extracting("id", "nome", "uf.id")
-            .containsExactlyInAnyOrder(
-                tuple(723, "MARANGUAPE", 9),
-                tuple(736, "MORAUJO", 9));
-
-        verify(cidadeRepository).findCidadesByUfId(9);
-    }
-
-    @Test
-    public void findCidadesByUfId_deveRetornarListaVazia_seUfNaoExistir() {
-        assertThat(cidadeRepository.findCidadesByUfId(50))
-            .isEmpty();
+            .contains(
+                tuple(3237, "ARAPONGAS", 1),
+                tuple(1443, "BELO VALE", 8),
+                tuple(2466, "BELTERRA", 4),
+                tuple(3022, "BENEDITINOS", 12));
     }
 }

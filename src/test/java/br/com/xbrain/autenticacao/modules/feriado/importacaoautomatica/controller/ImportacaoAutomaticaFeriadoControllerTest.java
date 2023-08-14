@@ -60,18 +60,18 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
     public void importarFeriadosAutomacaoMunicipais_deveImportarFeriadosMunicipais_seSolicitado() {
-        mvc.perform(post(URL_BASE + "/municipais")
+        mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).importarFeriadosAutomacaoMunicipais(any(), any());
+        verify(service).importarTodosOsFeriadoAnuais();
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
     public void importarFeriadosAutomacaoMunicipais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
-        mvc.perform(post(URL_BASE + "/municipais")
+        mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
@@ -82,73 +82,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @SneakyThrows
     @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
     public void importarFeriadosAutomacaoMunicipais_deveLancarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(post(URL_BASE + "/municipais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden());
-
-        verifyNoMoreInteractions(service);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
-    public void importarFeriadosAutomacaoEstaduais_deveImportarFeriadosMunicipais_seSolicitado() {
-        mvc.perform(post(URL_BASE + "/estaduais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(service).importarFeriadosAutomacaoEstaduais(any(), any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void importarFeriadosAutomacaoEstaduais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
-        mvc.perform(post(URL_BASE + "/estaduais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-
-        verifyNoMoreInteractions(service);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
-    public void importarFeriadosAutomacaoEstaduais_deveLancarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(post(URL_BASE + "/estaduais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden());
-
-        verifyNoMoreInteractions(service);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
-    public void importarFeriadosAutomacaoNacionais_deveImportarFeriadosMunicipais_seSolicitado() {
-        mvc.perform(post(URL_BASE + "/nacionais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(service).processarFeriadosNacionais(any(), any(), any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void importarFeriadosAutomacaoNacionais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
-        mvc.perform(post(URL_BASE + "/nacionais")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-
-        verifyNoMoreInteractions(service);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
-    public void importarFeriadosAutomacaoNacionais_deveLancarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(post(URL_BASE + "/nacionais")
+        mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 

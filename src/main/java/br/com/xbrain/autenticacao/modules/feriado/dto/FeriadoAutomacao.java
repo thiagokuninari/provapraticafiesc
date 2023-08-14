@@ -21,4 +21,10 @@ public class FeriadoAutomacao {
     private Integer ufId;
     private String uf;
     private Integer ano;
+
+    public void mapToFeriadoNacional() {
+        this.tipoFeriado = ETipoFeriado.NACIONAL;
+        this.cidadeId = null;
+        this.ufId = null;
+    }
 }
