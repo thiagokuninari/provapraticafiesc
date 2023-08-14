@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,8 @@ public class HorarioAcessoControllerTest {
     private MockMvc mvc;
     @MockBean
     private HorarioAcessoService service;
+    @MockBean
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     @Test
     @SneakyThrows

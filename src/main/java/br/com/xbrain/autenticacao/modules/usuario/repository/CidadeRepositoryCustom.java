@@ -39,6 +39,8 @@ public interface CidadeRepositoryCustom {
 
     Optional<Cidade> findFirstByPredicate(Predicate predicate);
 
+    List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeNomeAndUf(Predicate predicate);
+
     List<Cidade> findAllByRegionalIdAndUfId(Integer regionalId, Integer ufId, Predicate predicate);
 
     List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(Predicate predicate);

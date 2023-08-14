@@ -138,6 +138,12 @@ public class CidadeController {
         return CidadeResponse.of(service.findFirstByUfNomeAndCidadeNome(uf, cidade));
     }
 
+    @PostMapping("por-nome-e-ufs")
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeNomeAndUf(
+        @RequestBody CidadesUfsRequest cidadesUfs) {
+        return service.getCodigoIbgeRegionalByCidadeNomeAndUf(cidadesUfs);
+    }
+
     @GetMapping("codigo-ibge/regional")
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(@RequestParam(name = "cidadesId")
                                                                                List<Integer> cidadesId) {
