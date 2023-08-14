@@ -59,7 +59,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
-    public void importarFeriadosAutomacaoMunicipais_deveImportarFeriadosMunicipais_seSolicitado() {
+    public void importarTodosOsFeriadosAnuais_deveImportarTodosOsFeriadosAnuais_seSolicitado() {
         mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -70,7 +70,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void importarFeriadosAutomacaoMunicipais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
+    public void importarTodosOsFeriadosAnuais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
         mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
@@ -81,7 +81,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
-    public void importarFeriadosAutomacaoMunicipais_deveLancarForbidden_seUsuarioSemPermissao() {
+    public void importarTodosOsFeriadosAnuais_deveLancarForbidden_seUsuarioSemPermissao() {
         mvc.perform(post(URL_BASE + "/importar-todos")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
