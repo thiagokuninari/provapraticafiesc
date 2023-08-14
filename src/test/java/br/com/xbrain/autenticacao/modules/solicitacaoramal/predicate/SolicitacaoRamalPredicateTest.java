@@ -63,7 +63,7 @@ public class SolicitacaoRamalPredicateTest {
     @Test
     public void comEquipeId_deveMontarPredicate_seHouverEquipeId() {
         assertThat(new SolicitacaoRamalPredicate().comEquipeId(123).build())
-            .isEqualTo(new BooleanBuilder(solicitacaoRamal.equipeId.in(123)));
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.equipeId.eq(123)));
     }
 
     @Test

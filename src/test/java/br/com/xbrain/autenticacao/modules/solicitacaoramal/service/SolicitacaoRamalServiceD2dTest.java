@@ -102,13 +102,25 @@ public class SolicitacaoRamalServiceD2dTest {
     @Test
     public void save_deveLancarException_seJaHouverSolicitacaoPorEquipeId() {
         var solicitacaoRamal = criaSolicitacaoRamal(1);
-        solicitacaoRamal.setEquipeId(1);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoOperacao());
         when(repository.findAllByPredicate(any())).thenReturn(List.of(umaSolicitacaoRamalCanalD2d(1)));
 
         assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
             .withMessage("Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+
+        verify(repository, never()).save(any(SolicitacaoRamal.class));
+    }
+
+    @Test
+    public void save_deveLancarException_quandoNaoHouverEquipeIdNaRequest() {
+        var solicitacaoRamal = criaSolicitacaoRamal(1);
+        solicitacaoRamal.setEquipeId(null);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoOperacao());
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+            .withMessage("equipeId obrigatória para o canal D2D");
 
         verify(repository, never()).save(any(SolicitacaoRamal.class));
     }
@@ -226,6 +238,7 @@ public class SolicitacaoRamalServiceD2dTest {
             .emailTi("reanto@ti.com.br")
             .telefoneTi("(18) 3322-2388")
             .usuariosSolicitadosIds(Arrays.asList(100, 101))
+            .equipeId(1)
             .build();
     }
 

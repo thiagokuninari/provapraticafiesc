@@ -96,18 +96,21 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void validaSalvarD2d(SolicitacaoRamalRequest request) {
+    private void validarSolicitacaoAberta(SolicitacaoRamalRequest request) {
         if (hasSolicitacaoPendenteOuEmAndamentoByEquipeDoUsuario(request)) {
             throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
         }
     }
 
     private void validarParametroD2d(SolicitacaoRamalRequest request) {
-        validaSalvarD2d(request);
-        if (request.getCanal() == ECanal.D2D_PROPRIO
-            && request.getSubCanalId() == null) {
-            throw ERRO_SEM_TIPO_CANAL_D2D;
+        if (request.getCanal() == ECanal.D2D_PROPRIO) {
+            if (request.getSubCanalId() == null) {
+                throw ERRO_SEM_TIPO_CANAL_D2D;
+            } else if (request.getEquipeId() == null) {
+                throw ERRO_SEM_EQUIPE_D2D;
+            }
         }
+        validarSolicitacaoAberta(request);
     }
 
     private void validarAutorizacao() {

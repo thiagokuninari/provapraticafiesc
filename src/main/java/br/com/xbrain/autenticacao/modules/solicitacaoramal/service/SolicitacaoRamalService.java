@@ -46,6 +46,8 @@ public class SolicitacaoRamalService {
 
     public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D =
         new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
+    public static final ValidacaoException ERRO_SEM_EQUIPE_D2D =
+        new ValidacaoException("equipeId obrigatória para o canal D2D");
     public static final ValidacaoException ERRO_SEM_AGENTE_AUTORIZADO =
         new ValidacaoException("agenteAutorizadoId obrigatório para o cargo agente autorizado");
     public static final ValidacaoException SOLICITACAO_PENDENTE_OU_ANDAMENTO = new ValidacaoException(
@@ -56,8 +58,10 @@ public class SolicitacaoRamalService {
     public static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     public static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
-    private static final String MSG_DEFAULT_PARAM_OBRIGATORIO =
+    private static final String MSG_DEFAULT_PARAM_OBRIGATORIO_AA =
         "Campo agente autorizado é obrigatório";
+    private static final String MSG_DEFAULT_PARAM_OBRIGATORIO_D2D =
+        "Campo equipe é obrigatório";
 
     @Autowired
     private SolicitacaoRamalServiceAa serviceAa;
@@ -92,9 +96,6 @@ public class SolicitacaoRamalService {
         validarFiltroObrigatorios(filtros);
         var solicitacoes = solicitacaoRamalRepository.findAll(pageable, filtros.toPredicate().build());
 
-        if (solicitacoes.getContent().isEmpty()) {
-            throw new NotFoundException("Nenhuma solicitação de ramal foi encontrada para a equipe selecionada.");
-        }
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
             .map(SolicitacaoRamalResponse::convertFrom)
@@ -104,13 +105,15 @@ public class SolicitacaoRamalService {
     }
 
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
-        var cargo = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
-        if (cargo == CodigoCargo.AGENTE_AUTORIZADO_SOCIO) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        if (usuario.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_SOCIO) {
             if (filtros.getAgenteAutorizadoId() != null) {
                 serviceAa.verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-            } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
-                throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
+            } else if (!usuario.hasPermissao(CTR_2034)) {
+                throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO_AA);
             }
+        } else if (filtros.getEquipeId() == null) {
+            throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO_D2D);
         }
     }
 

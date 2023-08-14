@@ -46,7 +46,7 @@ public class SolicitacaoRamalController {
     }
 
     @GetMapping
-    public Page<SolicitacaoRamalResponse> getAll(PageRequest pageable, @Valid SolicitacaoRamalFiltros filtros) {
+    public Page<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return solicitacaoRamalService.getAll(pageable, filtros);
     }
 

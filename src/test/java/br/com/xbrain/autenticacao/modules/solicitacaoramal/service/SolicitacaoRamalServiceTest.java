@@ -156,13 +156,23 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
-    public void getAll_deveLancarException_seNaoExistirSolicitacaoDeRamalDaEquipe() {
+    public void getAll_deveLancarException_seParametroEquipeIdNaoInformado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioGerenteOperacao());
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
+                service.getAll(new PageRequest(), new SolicitacaoRamalFiltros()))
+            .withMessage("Campo equipe é obrigatório");
+
+        verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_seNaoExistirSolicitacaoDeRamalDaEquipe() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn(new PageImpl<>(List.of()));
 
-        assertThatExceptionOfType(NotFoundException.class).isThrownBy(() ->
-                service.getAll(new PageRequest(), umaSolicitacaoFiltros()))
-            .withMessage("Nenhuma solicitação de ramal foi encontrada para a equipe selecionada.");
+        assertThat(service.getAll(new PageRequest(), umaSolicitacaoFiltros())).isEmpty();
     }
 
     @Test
@@ -273,6 +283,14 @@ public class SolicitacaoRamalServiceTest {
             .id(1)
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioGerenteOperacao() {
+        return UsuarioAutenticado.builder()
+            .id(1)
+            .usuario(Usuario.builder().id(1).build())
+            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
             .build();
     }
 
