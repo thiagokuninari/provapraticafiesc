@@ -2,10 +2,13 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
@@ -88,6 +91,32 @@ public class FeriadoTest {
     @Test
     public void isFeriadoEstadual_deveRetornarFalse_quandoFeriadoNaoEstadual() {
         assertThat(umFeriadoNacional().isFeriadoEstadual()).isFalse();
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoCorreto_quandoSolicitado() {
+        assertThat(Feriado.ofAutomacao(umFeriadoAutomacao(), umImportacaoFeriado()))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
+    }
+
+    private FeriadoAutomacao umFeriadoAutomacao() {
+        return FeriadoAutomacao.builder()
+            .dataFeriado(ETipoFeriado.ESTADUAL.getDescricao())
+            .nome("FERIADO ESTADUAL")
+            .tipoFeriado(ETipoFeriado.ESTADUAL)
+            .dataFeriado("20/09/2023")
+            .build();
+    }
+
+    private ImportacaoFeriado umImportacaoFeriado() {
+        return ImportacaoFeriado.builder()
+            .id(1)
+            .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO)
+            .usuarioCadastroId(1)
+            .build();
     }
 
     private FeriadoRequest umFeriadoEstadualRequest(Integer id) {

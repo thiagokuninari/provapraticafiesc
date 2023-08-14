@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.predicate;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.QFeriado;
 import com.querydsl.core.BooleanBuilder;
@@ -9,6 +10,7 @@ import com.querydsl.core.BooleanBuilder;
 import java.time.LocalDate;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.QImportacaoFeriado.importacaoFeriado;
 
 public class FeriadoPredicate {
 
@@ -60,6 +62,14 @@ public class FeriadoPredicate {
         return this;
     }
 
+    public FeriadoPredicate comCidade(Integer cidadeId) {
+        if (!isEmpty(cidadeId)) {
+            builder.and(feriado.cidade.id.eq(cidadeId)
+                .or(feriado.feriadoNacional.eq(Eboolean.V)));
+        }
+        return this;
+    }
+
     public FeriadoPredicate comEstado(Integer estadoId) {
         if (!isEmpty(estadoId)) {
             builder.and(feriado.uf.id.eq(estadoId)
@@ -89,6 +99,13 @@ public class FeriadoPredicate {
 
     public FeriadoPredicate excetoExcluidos() {
         builder.and(feriado.situacao.ne(ESituacaoFeriado.EXCLUIDO));
+        return this;
+    }
+
+    public FeriadoPredicate comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao situacaoFeriadoAutomacao) {
+        if (situacaoFeriadoAutomacao != null) {
+            builder.and(importacaoFeriado.situacaoFeriadoAutomacao.eq(situacaoFeriadoAutomacao));
+        }
         return this;
     }
 }

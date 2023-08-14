@@ -74,7 +74,7 @@ public class CidadePredicate {
         return this;
     }
 
-    public CidadePredicate comCidadeId(List<Integer> cidadesId) {
+    public CidadePredicate comCidadesId(List<Integer> cidadesId) {
         if (!isEmpty(cidadesId)) {
             builder.and(
                 ExpressionUtils.anyOf(

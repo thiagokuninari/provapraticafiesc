@@ -35,6 +35,8 @@ app-config:
       url: http://172.10.10.45:8086
     mailing-importacao:
       url: http://172.10.10.32:8087
+    feriado-automacao:
+      url: http://192.168.50.4:8078
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

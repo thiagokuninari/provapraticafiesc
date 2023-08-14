@@ -145,8 +145,10 @@ public enum EErrors {
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
      ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
         "#049 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-            "#049 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo.");
-
+        "#049 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
+    ERRO_BUSCAR_FERIADOS(
+        "#050 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#050 - Ocorreu um erro ao buscar feriados.");
 
     @Getter
     @Setter

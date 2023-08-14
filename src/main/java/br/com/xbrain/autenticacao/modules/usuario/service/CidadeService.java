@@ -201,7 +201,7 @@ public class CidadeService {
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
         if (!cidadesId.isEmpty()) {
             var predicate = new CidadePredicate()
-                .comCidadeId(cidadesId)
+                .comCidadesId(cidadesId)
                 .build();
             return cidadeRepository.findCodigoIbgeRegionalByCidade(predicate);
         }

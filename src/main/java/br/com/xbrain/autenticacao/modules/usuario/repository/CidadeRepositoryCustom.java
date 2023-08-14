@@ -44,4 +44,6 @@ public interface CidadeRepositoryCustom {
     List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(Predicate predicate);
 
     List<Cidade> findCidadesByCodigosIbge(Predicate predicate);
+
+    List<Cidade> findAllCidades();
 }

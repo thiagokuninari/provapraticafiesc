@@ -47,6 +47,9 @@ public class FeriadoRequest {
     private ETipoFeriado tipoFeriado;
     private Integer estadoId;
     private Integer cidadeId;
+    private String cidadeNome;
+    private String uf;
+    private Integer ano;
 
     public static Feriado convertFrom(FeriadoRequest request) {
         Feriado feriado = new Feriado();

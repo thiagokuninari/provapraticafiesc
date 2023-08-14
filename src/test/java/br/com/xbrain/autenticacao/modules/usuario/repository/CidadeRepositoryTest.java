@@ -24,7 +24,7 @@ public class CidadeRepositoryTest {
     @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarVazio_quandoInformarListaComCidadeIdNaoExistente() {
         var predicate = new CidadePredicate()
-            .comCidadeId(List.of(123123, 213213))
+            .comCidadesId(List.of(123123, 213213))
             .build();
 
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
@@ -34,7 +34,7 @@ public class CidadeRepositoryTest {
     @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadeId() {
         var predicate = new CidadePredicate()
-            .comCidadeId(List.of(3426, 5578))
+            .comCidadesId(List.of(3426, 5578))
             .build();
 
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
@@ -42,5 +42,16 @@ public class CidadeRepositoryTest {
             .containsExactlyInAnyOrder(
                 tuple(3426, "MARINGA", "4115200", 1027, "RPS"),
                 tuple(5578, "LONDRINA", "4113700", 1027, "RPS"));
+    }
+
+    @Test
+    public void findAllCidades_deveRetornarListaDeTodasAsCidadesDoPais_seSolicitado() {
+        assertThat(cidadeRepository.findAllCidades())
+            .extracting("id", "nome", "uf.id")
+            .contains(
+                tuple(3237, "ARAPONGAS", 1),
+                tuple(1443, "BELO VALE", 8),
+                tuple(2466, "BELTERRA", 4),
+                tuple(3022, "BENEDITINOS", 12));
     }
 }
