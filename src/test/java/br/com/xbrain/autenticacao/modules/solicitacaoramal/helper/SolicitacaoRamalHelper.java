@@ -1,10 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.helper;
 
-import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
-import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
@@ -15,8 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
-
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.REJEITADO;
 
 public class SolicitacaoRamalHelper {
 
