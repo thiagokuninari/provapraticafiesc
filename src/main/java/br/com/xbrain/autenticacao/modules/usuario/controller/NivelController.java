@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.NivelService;
@@ -22,6 +23,11 @@ public class NivelController {
     @GetMapping
     public Iterable<Nivel> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("codigo/{codigoNivel}")
+    public NivelResponse getByCodigo(@PathVariable CodigoNivel codigoNivel) {
+        return service.getByCodigo(codigoNivel);
     }
 
     @GetMapping(value = "/permitidos/{tipoVisualizacao}")

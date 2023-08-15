@@ -29,7 +29,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -97,5 +97,25 @@ public class NivelControllerTest {
             .andExpect(jsonPath("$[1].id", is(8)))
             .andExpect(jsonPath("$[1].nome", is("RECEPTIVO")))
             .andExpect(jsonPath("$[1].codigo", is("RECEPTIVO")));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getByCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() throws Exception {
+        mvc.perform(get("/api/niveis/codigo/BACKOFFICE_CENTRALIZADO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(nivelService, never()).getByCodigo(any(CodigoNivel.class));
+    }
+
+    @Test
+    @WithMockUser
+    public void getByCodigo_deveRetornarOk_quandoUsuarioAutenticado() throws Exception {
+        mvc.perform(get("/api/niveis/codigo/BACKOFFICE_CENTRALIZADO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(nivelService).getByCodigo(CodigoNivel.BACKOFFICE_CENTRALIZADO);
     }
 }
