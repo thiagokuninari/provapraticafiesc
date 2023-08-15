@@ -2549,6 +2549,21 @@ public class UsuarioService {
             .orElse(new UsuarioSubCanalNivelResponse());
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioSubCanalResponse findUsuarioInsideSalesByCpf(String cpf) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCpf(cpf);
+        return findUsuarioByPredicate(predicate);
+    }
+
+    private UsuarioSubCanalResponse findUsuarioByPredicate(UsuarioPredicate predicate) {
+        return repository.findByPredicate(predicate.build())
+            .stream()
+            .map(UsuarioSubCanalResponse::of)
+            .findFirst()
+            .orElse(null);
+    }
+
     public List<PermissaoEspecial> getPermissoesEspeciaisDoUsuario(Integer usuarioId, Integer usuarioCadastroId,
                                                                    List<Integer> funcionalidadesIds) {
         return funcionalidadesIds.stream()

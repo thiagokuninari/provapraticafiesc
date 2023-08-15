@@ -75,8 +75,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
@@ -2896,6 +2895,30 @@ public class UsuarioServiceTest {
         assertThat(usuarioService.findByCpf("00000000000")).isEqualTo(new UsuarioSubCanalNivelResponse());
 
         verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
+    @Test
+    public void findUsuarioInsideSalesByCpf_deveRetornarUsuarioSubCanalResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanalInsideSales()));
+
+        var cpf = "11122233344";
+        var predicate = new UsuarioPredicate();
+        predicate.comCpf(cpf);
+
+        when(usuarioRepository.findByPredicate(predicate.build())).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findUsuarioInsideSalesByCpf(cpf))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(4, INSIDE_SALES_PME, "Inside Sales PME")));
+    }
+
+    @Test
+    public void findUsuarioInsideSalesByCpf_deveRetornarNovoObjeto_seUsuarioNaoExistir() {
+        assertThat(usuarioService.findUsuarioInsideSalesByCpf("00000000000")).isEqualTo(null);
+
+        verify(usuarioRepository, times(1)).findByPredicate(any());
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

@@ -1617,4 +1617,26 @@ public class UsuarioControllerTest {
 
         verify(usuarioService, times(1)).findByCpf(eq("00000000000"));
     }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioInsideSalesByCpf_deveRetornarOk_quandoUsuarioExistir() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/inside-sales")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "38957979875"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findUsuarioInsideSalesByCpf(eq("38957979875"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioInsideSalesByCpf_naoDeveRetornarNotFound_quandoUsuarioNaoExistir() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/inside-sales")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "00000000000"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findUsuarioInsideSalesByCpf(eq("00000000000"));
+    }
 }

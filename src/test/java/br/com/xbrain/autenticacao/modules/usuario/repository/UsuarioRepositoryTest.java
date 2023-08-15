@@ -322,6 +322,24 @@ public class UsuarioRepositoryTest {
         assertThat(repository.getSubCanaisByUsuarioIds(List.of(100, 121, 123))).isEmpty();
     }
 
+    @Test
+    @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
+    public void findByPredicate_deveRetornarUsuario_seSolicitado() {
+        var predicate = new UsuarioPredicate().comCpf("51466849606");
+
+        assertThat(repository.findByPredicate(predicate.build()))
+            .get()
+            .extracting("id", "nome", "cpf")
+            .containsExactlyInAnyOrder(132, "SUPERVISOR OPERACAO PAP PREMIUM", "51466849606");
+    }
+
+    @Test
+    public void findByPredicate_deveRetornarEmpty_seUsuarioNaoExistir() {
+        var predicate = new UsuarioPredicate().comCpf("51466849606");
+
+        assertThat(repository.findByPredicate(predicate.build())).isEmpty();
+    }
+
     private UsuarioPredicate getUsuarioPredicate() {
         return new UsuarioPredicate()
             .comDepartamento(List.of(3))

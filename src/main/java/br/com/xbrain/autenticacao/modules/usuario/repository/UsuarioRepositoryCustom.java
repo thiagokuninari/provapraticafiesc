@@ -6,12 +6,11 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
@@ -199,4 +198,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findByCpfs(Predicate predicate);
 
     Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
+
+    Optional<Usuario> findByPredicate(Predicate predicate);
 }

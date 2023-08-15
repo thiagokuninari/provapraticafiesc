@@ -570,4 +570,9 @@ public class UsuarioController {
     public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
         return usuarioService.findByCpf(cpf);
     }
+
+    @GetMapping("inside-sales")
+    public UsuarioSubCanalResponse findUsuarioInsideSalesByCpf(@RequestParam String cpf) {
+        return usuarioService.findUsuarioInsideSalesByCpf(cpf);
+    }
 }
