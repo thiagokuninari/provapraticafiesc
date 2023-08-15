@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -36,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -171,7 +173,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void inativar_deveInativarESalvarHistorico_quandoOrganizacaoEmpresaAtiva() {
-        var organizacaoEmpresa = umaOrganizacaoAtiva(1, ESituacaoOrganizacaoEmpresa.A);
+        var organizacaoEmpresa = umaOrganizacaoAtiva(1, A);
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
 
@@ -191,7 +193,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void ativar_validacaoException_quandoOrganizacaoEmpresaAtiva() {
-        var organizacaoEmpresa = umaOrganizacaoAtiva(1, ESituacaoOrganizacaoEmpresa.A);
+        var organizacaoEmpresa = umaOrganizacaoAtiva(1, A);
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -207,13 +209,13 @@ public class OrganizacaoEmpresaServiceTest {
         service.ativar(1);
         Assertions.assertThat(service.findById(1))
             .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(1, A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.ATIVACAO), any());
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(1, A);
         verify(sender, times(1)).sendAtivarSituacaoSuccess(any());
 
     }
@@ -240,13 +242,13 @@ public class OrganizacaoEmpresaServiceTest {
         service.update(2, umaOrganizacaoEmpresaBackofficeRequest());
         Assertions.assertThat(service.findById(2))
             .extracting("id", "nome", "nivel.id", "situacao")
-            .containsExactlyInAnyOrder(2, "Organizacao 2", 2, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(2, "Organizacao 2", 2, A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(2, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(2, A);
         verify(sender, times(1)).sendUpdateSuccess(any());
 
     }
@@ -261,13 +263,13 @@ public class OrganizacaoEmpresaServiceTest {
         service.update(3, umaOrganizacaoEmpresaReceptivoRequest());
         Assertions.assertThat(service.findById(3))
             .extracting("id", "nome", "nivel.id", "situacao")
-            .containsExactlyInAnyOrder(3, "Organizacao 3", 3, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(3, "Organizacao 3", 3, A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(3, ESituacaoOrganizacaoEmpresa.A);
+            .containsExactlyInAnyOrder(3, A);
         verify(sender, times(1)).sendUpdateSuccess(any());
 
     }
@@ -313,9 +315,12 @@ public class OrganizacaoEmpresaServiceTest {
     public void findAllAtivos_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
         var filtros = OrganizacaoEmpresaFiltros.builder().nivelId(1).build();
 
+        doReturn(umUsuarioGerenteInternet())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
         doReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()))
             .when(organizacaoEmpresaRepository)
-                .findAll(filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build());
+                .findAll(filtros.toPredicate().comSituacao(A).build());
 
         Assertions.assertThat(service.findAllAtivos(filtros))
             .extracting("id", "nome", "nivel")
@@ -330,9 +335,12 @@ public class OrganizacaoEmpresaServiceTest {
     public void findAllAtivos_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
         var filtros = OrganizacaoEmpresaFiltros.builder().nivelId(1).build();
 
+        doReturn(umUsuarioGerenteInternet())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
         doReturn(List.of())
             .when(organizacaoEmpresaRepository)
-                .findAll(filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build());
+                .findAll(filtros.toPredicate().comSituacao(A).build());
 
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.findAllAtivos(filtros))
@@ -352,6 +360,26 @@ public class OrganizacaoEmpresaServiceTest {
 
         verify(organizacaoEmpresaRepository, never())
             .findAll(any(Predicate.class));
+    }
+
+    @Test
+    public void findAllAtivos_deveFiltrarPorOrganizacaoId_quandoUsuarioDiferenteDeGerenteInternet() {
+        var predicate = OrganizacaoEmpresaFiltros.builder().nivelId(1).organizacaoId(1).situacao(A)
+            .build().toPredicate().build();
+
+        doReturn(umUsuarioCoordenadorInternet())
+            .when(autenticacaoService)
+                .getUsuarioAutenticado();
+        doReturn(List.of(OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa()))
+            .when(organizacaoEmpresaRepository)
+            .findAll(predicate);
+
+        Assertions.assertThat(service.findAllAtivos(OrganizacaoEmpresaFiltros.builder().nivelId(1).build()))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "Teste AA"));
+
+        verify(organizacaoEmpresaRepository).findAll(predicate);
     }
 
     @Test
@@ -419,7 +447,7 @@ public class OrganizacaoEmpresaServiceTest {
     private OrganizacaoEmpresa umaOrganizacaoAtiva(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
         return OrganizacaoEmpresa.builder()
             .id(1)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -427,7 +455,7 @@ public class OrganizacaoEmpresaServiceTest {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 1")
             .nivelId(1)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -435,7 +463,7 @@ public class OrganizacaoEmpresaServiceTest {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 2")
             .nivelId(2)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -443,7 +471,7 @@ public class OrganizacaoEmpresaServiceTest {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 3")
             .nivelId(3)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -486,7 +514,7 @@ public class OrganizacaoEmpresaServiceTest {
                 .situacao(ESituacao.A)
                 .exibirCadastroUsuario(Eboolean.V)
                 .build())
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(umUsuario())
             .codigo(codigo)
@@ -504,10 +532,37 @@ public class OrganizacaoEmpresaServiceTest {
                 .situacao(ESituacao.A)
                 .exibirCadastroUsuario(Eboolean.V)
                 .build())
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(umUsuario())
             .codigo(codigo)
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioCoordenadorInternet() {
+        return UsuarioAutenticado.builder()
+            .nome("COORDENADOR")
+            .cargoId(502)
+            .departamentoId(3)
+            .organizacaoId(1)
+            .nivelCodigo("OPERACAO")
+            .cpf("097.238.222-11")
+            .email("COORDENADOR@INTERNET.COM")
+            .organizacaoCodigo("INTERNET")
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioGerenteInternet() {
+        return UsuarioAutenticado.builder()
+            .nome("GERENTE")
+            .cargoId(500)
+            .departamentoId(3)
+            .organizacaoId(1)
+            .nivelCodigo("OPERACAO")
+            .cpf("097.234.222-11")
+            .email("GERENTE@INTERNET.COM")
+            .organizacaoCodigo("INTERNET")
+            .cargoCodigo(CodigoCargo.INTERNET_GERENTE)
             .build();
     }
 }

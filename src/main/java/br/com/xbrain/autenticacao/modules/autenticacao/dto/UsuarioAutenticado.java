@@ -196,6 +196,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
     }
 
+    public boolean isGerenteInternetOperacao() {
+        return isOperacao() && CodigoCargo.INTERNET_GERENTE.equals(cargoCodigo);
+    }
+
     public boolean haveCanalAgenteAutorizado() {
         return haveCanal(AGENTE_AUTORIZADO);
     }
