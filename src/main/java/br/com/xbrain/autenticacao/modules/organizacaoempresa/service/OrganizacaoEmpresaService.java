@@ -183,8 +183,12 @@ public class  OrganizacaoEmpresaService {
     }
 
     private void validarFiltrosConsultaAtivos(OrganizacaoEmpresaFiltros filtros) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+
         if (filtros.getNivelId() == null) {
             throw new ValidacaoException("O campo nível Id é obrigatório!");
+        } else if (!usuario.isGerenteInternetOperacao()) {
+            filtros.setOrganizacaoId(usuario.getOrganizacaoId());
         }
     }
 }
