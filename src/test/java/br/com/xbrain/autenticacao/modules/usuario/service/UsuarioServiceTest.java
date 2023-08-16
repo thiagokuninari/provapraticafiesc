@@ -1048,6 +1048,16 @@ public class UsuarioServiceTest {
             .build();
     }
 
+    private Usuario umUsuarioVendedorInternet() {
+        return Usuario.builder()
+            .id(5436278)
+            .nome("VENDEDOR")
+            .loginNetSales("VENDEDOR_LOGIN")
+            .email("VENDEDOR@TESTE.COM")
+            .situacao(ESituacao.A)
+            .build();
+    }
+
     private Usuario umUsuario() {
         return Usuario.builder()
             .id(1)
@@ -2130,6 +2140,65 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUsuario_quandoUsuarioVendedorInternet() {
+        var usuario = umUsuarioAutenticado(1, "OPERACAO",
+            INTERNET_VENDEDOR);
+
+        var predicate = new UsuarioPredicate()
+            .comCanal(ECanal.INTERNET)
+            .comCodigosCargos(List.of(INTERNET_VENDEDOR))
+            .ignorarAa(true).ignorarXbrain(true)
+            .comIds(List.of(1))
+            .build();
+
+        var sort = new Sort(ASC, "situacao", "nome");
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+                .getUsuarioAutenticado();
+        doReturn(List.of(umUsuarioVendedorInternet()))
+            .when(usuarioRepository)
+                .findAll(predicate, sort);
+
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
+            .extracting("label", "value")
+            .containsExactly(tuple("VENDEDOR", 5436278));
+
+        verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
+    }
+
+    @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUsuario_quandoUsuarioBackofficeInternet() {
+        var usuario = umUsuarioAutenticado(1, "OPERACAO",
+            INTERNET_BACKOFFICE);
+        usuario.setOrganizacaoId(1);
+
+        var predicate = new UsuarioPredicate()
+            .comCanal(ECanal.INTERNET)
+            .comCodigosCargos(List.of(INTERNET_VENDEDOR))
+            .ignorarAa(true).ignorarXbrain(true)
+            .comOrganizacaoEmpresaId(1)
+            .build();
+
+        var sort = new Sort(ASC, "situacao", "nome");
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(umUsuarioVendedorInternet()))
+            .when(usuarioRepository)
+            .findAll(predicate, sort);
+
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
+            .extracting("label", "value")
+            .containsExactly(tuple("VENDEDOR", 5436278));
+
+        verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
+    }
+
+    @Test
     public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarUsuarios_seEncontrado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
@@ -2790,6 +2859,13 @@ public class UsuarioServiceTest {
         return UsuarioFiltros.builder()
             .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
             .canal(ECanal.D2D_PROPRIO)
+            .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltroInternet() {
+        return UsuarioFiltros.builder()
+            .codigosCargos(List.of(INTERNET_VENDEDOR))
+            .canal(ECanal.INTERNET)
             .build();
     }
 

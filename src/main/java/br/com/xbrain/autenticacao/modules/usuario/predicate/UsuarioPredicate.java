@@ -463,6 +463,10 @@ public class UsuarioPredicate {
 
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);
+        } else if (usuario.isBackofficeInternetOperacao()) {
+            comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
+        } else if (usuario.isVendedorInternetOperacao()) {
+            comIds(List.of(usuario.getId()));
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
