@@ -73,8 +73,8 @@ app-config:
   nome: Colaboradores
   url: http://localhost:3100
   url-origin-cors: http://localhost
-  upload-dir: desenvolvimento/autenticacao
-  upload-foto-usuario: ${app-config.upload-dir}/usuario/foto
+  dir-upload: desenvolvimento/autenticacao
+  upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
 
   minio:
     url: http://192.168.50.6:9000

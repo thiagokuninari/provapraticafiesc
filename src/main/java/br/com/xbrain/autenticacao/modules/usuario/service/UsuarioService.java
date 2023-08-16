@@ -84,10 +84,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -299,7 +299,7 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(int id) {
         var usuario = findByIdComAa(id);
-        return  UsuarioDto.of(
+        return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
@@ -562,11 +562,10 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
         var request = UsuarioDto.convertFrom(usuario);
-        var response = save(request);
         if (!isEmpty(foto)) {
             fileService.salvarArquivo(request, foto);
         }
-        return response;
+        return save(request);
     }
 
     @Transactional
@@ -1662,7 +1661,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
-        var usuarios =  repository.getUsuariosFilter(
+        var usuarios = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
@@ -2832,13 +2831,15 @@ public class UsuarioService {
         log.info("Inicia migração das fotos para o diretório MinIO.");
         var files = new ArrayList<File>();
         fileService.buscaArquivosEstatico(urlDir).ifPresent(files::addAll);
-        moverArquivos(files);
-        var usuariosEstatico = repository.findByFotoDiretorioIsNotNull();
-        alteraColunaFotoDiretorio(usuariosEstatico);
-        log.info("Finaliza migração das fotos para o diretório MinIO");
+        if (!files.isEmpty()) {
+            CompletableFuture.runAsync(() -> moverArquivos(files));
+            var usuariosEstatico = repository.findByFotoDiretorioIsNotNull();
+            alteraColunaFotoDiretorio(usuariosEstatico);
+            log.info("Finaliza migração das fotos para o diretório MinIO");
+        }
     }
 
-    private void moverArquivos(List<File> files) {
+    public void moverArquivos(List<File> files) {
         files.forEach(file -> {
             try (var fileInput = new FileInputStream(file)) {
                 minioFileService.salvarArquivo(fileInput, gerarNovoCaminhoMinio(file.getPath()));
@@ -2848,6 +2849,7 @@ public class UsuarioService {
             }
         });
     }
+
     private String gerarNovoCaminhoMinio(String path) {
         if (isNotBlank(path) && path.length() > 1) {
             var split = path.split("\\/(\\d{4})")[0];
@@ -2858,14 +2860,17 @@ public class UsuarioService {
 
     private String gerarNovoCaminhoBanco(String path) {
         if (isNotBlank(path) && path.length() > 1) {
-            var split = path.split(".*\\\\/([^\\\\/]+)$")[0];
-            return path.replace(split, urlDir);
+            var pattern = Pattern.compile(".*/([^/]+)$");
+            var matcher = pattern.matcher(path);
+            if (matcher.find()) {
+                return path.replace(path, urlDir.concat(matcher.group(1)));
+            }
         }
         return path;
     }
 
     public void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
-        if(!isEmpty(usuariosEstatico)) {
+        if (!isEmpty(usuariosEstatico)) {
             log.info("Inicia update coluna FotoDiretório");
             usuariosEstatico.forEach(user -> {
                 var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());

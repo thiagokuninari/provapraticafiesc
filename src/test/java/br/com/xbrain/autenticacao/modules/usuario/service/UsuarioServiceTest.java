@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -45,6 +46,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
+import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +55,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -69,11 +72,12 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.io.ByteArrayInputStream;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -81,6 +85,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ARQUIVO_NAO_ENCONTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umaListaUsuario;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -195,6 +200,8 @@ public class UsuarioServiceTest {
     private MinioFileService minioFileService;
     @Mock
     private MinioClient minioClient;
+    @Mock
+    private FileService fileService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -3314,5 +3321,86 @@ public class UsuarioServiceTest {
         assertThatThrownBy(() -> usuarioService.getAvatar(token))
             .isInstanceOf(IntegracaoException.class)
             .hasMessage(ARQUIVO_NAO_ENCONTRADO.getDescricaoTecnica());
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverAvatarMinio_deveEnviarArquivos_seArquivosExistirem() {
+        ReflectionTestUtils.setField(usuarioService, "urlDir", "foto_usuario/");
+        when(fileService.buscaArquivosEstatico(anyString())).thenReturn(Optional.of(umaListFotos()));
+        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaListaUsuario());
+        var async = CompletableFuture.runAsync(() -> {
+        });
+        doNothing().when(minioFileService).salvarArquivo(any(InputStream.class), anyString());
+        doAnswer(invocation -> {
+            verify(minioFileService, times(umaListFotos().size())).salvarArquivo(any(InputStream.class), anyString());
+            return null;
+        }).when(minioFileService).salvarArquivo(any(InputStream.class), anyString());
+        async.get();
+
+        usuarioService.moverAvatarMinio();
+
+        verify(fileService).buscaArquivosEstatico("foto_usuario/");
+        verify(usuarioRepository).findByFotoDiretorioIsNotNull();
+        verify(usuarioRepository, times(umaListaUsuario().size())).updateFotoDiretorio(anyString(), anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverAvatarMinio_deveEnviarArquivos_seArquivosNaoExistirem() {
+        when(fileService.buscaArquivosEstatico("foto_usuario/")).thenReturn(Optional.empty());
+
+        usuarioService.moverAvatarMinio();
+
+        verify(usuarioRepository, never()).findByFotoDiretorioIsNotNull();
+        verify(minioFileService, never()).salvarArquivo(any(FileInputStream.class), anyString());
+        verify(usuarioRepository, never()).updateFotoDiretorio(anyString(), anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverArquivos_deveSalvar_seSolicitado() {
+        doAnswer((Answer<Void>) invocation -> {
+            verify(minioFileService, times(umaListFotos().size()))
+                .salvarArquivo(any(InputStream.class), anyString());
+
+            return null;
+        }).when(minioFileService).salvarArquivo(any(InputStream.class), anyString());
+
+        usuarioService.moverArquivos(umaListFotos());
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverArquivos_deveLancarEx_seOcorrerErroNaImportacao() {
+
+        doAnswer((Answer<Void>) invocation -> {
+            doThrow(new IOException("Error ao enviar arquivo ao MinIO")).when(minioFileService)
+                .salvarArquivo(any(InputStream.class), anyString());
+            verify(minioFileService, times(umaListFotos().size()))
+                .salvarArquivo(any(InputStream.class), anyString());
+
+            return null;
+        }).when(minioFileService).salvarArquivo(any(InputStream.class), anyString());
+
+        usuarioService.moverArquivos(umaListFotos());
+    }
+
+    @Test
+    public void alteraColunaFotoDiretorio_deveSalvar_seHouverUsuarios() {
+        ReflectionTestUtils.setField(usuarioService, "urlDir", "foto_usuario/");
+        doNothing().when(usuarioRepository).updateFotoDiretorio(anyString(), anyInt());
+
+        usuarioService.alteraColunaFotoDiretorio(umaListaUsuario());
+
+        verify(usuarioRepository, times(umaListaUsuario().size()))
+            .updateFotoDiretorio(anyString(), anyInt());
+    }
+
+    @Test
+    public void alteraColunaFotoDiretorio_naoDeveFazerNada_semUsuarios() {
+        usuarioService.alteraColunaFotoDiretorio(List.of());
+
+        verify(usuarioRepository, never()).updateFotoDiretorio(anyString(), anyInt());
     }
 }

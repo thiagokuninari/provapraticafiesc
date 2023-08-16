@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 
 import static com.google.common.io.ByteStreams.toByteArray;
@@ -38,5 +39,21 @@ public class FileHelper {
             .fotoDiretorio("foto_usuario/")
             .fotoContentType(MediaType.JPEG.toString())
             .build();
+    }
+
+    public static List<Usuario> umaListaUsuario() {
+        return List.of(
+            Usuario.builder()
+                .id(1)
+                .fotoNomeOriginal("file.png")
+                .fotoDiretorio("foto_usuario/teste.jpeg")
+                .fotoContentType(MediaType.JPEG.toString())
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .fotoNomeOriginal("file.png")
+                .fotoDiretorio("foto_usuario/teste2.jpeg")
+                .fotoContentType(MediaType.JPEG.toString())
+                .build());
     }
 }

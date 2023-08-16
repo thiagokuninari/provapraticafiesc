@@ -30,7 +30,8 @@ app-config:
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
 
   url: https://autenticacao-crt.conexaoclarobrasil.com.br
-  upload-dir: certificacao/autenticacao
+  dir-upload: certificacao/autenticacao
+  upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
 
   services:
     autenticacao:

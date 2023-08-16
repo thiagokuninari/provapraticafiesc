@@ -2051,4 +2051,25 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getAvatar(anyString());
     }
+
+    @Test
+    @SneakyThrows
+    public void moverAvatarMinio_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(put(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).getAvatar(anyString());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void moverAvatarMinio_deveRetornarOk_quandoAutenticado() {
+        mvc.perform(put(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getAvatar(anyString());
+    }
 }

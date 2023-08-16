@@ -23,8 +23,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.awt.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -917,6 +920,13 @@ public class UsuarioServiceHelper {
         return List.of(
             umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
             umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
+        );
+    }
+
+    public static List<File> umaListFotos() {
+        return List.of(
+            new File("file.png"),
+            new File("download.jpeg")
         );
     }
 }

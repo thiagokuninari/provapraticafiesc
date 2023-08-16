@@ -33,7 +33,7 @@ public class FileService {
 
         request.setFotoContentType(file.getContentType());
         request.setFotoNomeOriginal(file.getOriginalFilename());
-        request.setFotoDiretorio(usuarioFotoDir.concat("/").concat(fileName));
+        request.setFotoDiretorio(usuarioFotoDir.concat(fileName));
 
         try {
             minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat("/").concat(fileName));
