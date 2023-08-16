@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
@@ -75,6 +76,8 @@ public class UsuarioControllerTest {
     private FeederService feederService;
     @MockBean
     private SubCanalService subCanalService;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     @SneakyThrows
@@ -2059,7 +2062,7 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService, never()).getAvatar(anyString());
+        verify(usuarioService, never()).moverAvatarMinio();
     }
 
     @Test
@@ -2070,6 +2073,6 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getAvatar(anyString());
+        verify(usuarioService).moverAvatarMinio();
     }
 }

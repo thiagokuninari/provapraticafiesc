@@ -87,7 +87,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -2828,18 +2827,19 @@ public class UsuarioService {
 
     @Transactional
     public void moverAvatarMinio() throws IOException {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         log.info("Inicia migração das fotos para o diretório MinIO.");
         var files = new ArrayList<File>();
         fileService.buscaArquivosEstatico(urlDir).ifPresent(files::addAll);
         if (!files.isEmpty()) {
-            CompletableFuture.runAsync(() -> moverArquivos(files));
+            moverArquivos(files);
             var usuariosEstatico = repository.findByFotoDiretorioIsNotNull();
             alteraColunaFotoDiretorio(usuariosEstatico);
             log.info("Finaliza migração das fotos para o diretório MinIO");
         }
     }
 
-    public void moverArquivos(List<File> files) {
+    private void moverArquivos(List<File> files) {
         files.forEach(file -> {
             try (var fileInput = new FileInputStream(file)) {
                 minioFileService.salvarArquivo(fileInput, gerarNovoCaminhoMinio(file.getPath()));
@@ -2869,12 +2869,12 @@ public class UsuarioService {
         return path;
     }
 
-    public void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
+    private void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
         if (!isEmpty(usuariosEstatico)) {
             log.info("Inicia update coluna FotoDiretório");
             usuariosEstatico.forEach(user -> {
                 var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
-                log.info("Update usuaiorId: {}", user.getId());
+                log.info("Update usuario Id: {}", user.getId());
                 repository.updateFotoDiretorio(fileName, user.getId());
             });
         }

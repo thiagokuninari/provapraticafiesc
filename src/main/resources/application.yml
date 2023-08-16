@@ -73,6 +73,7 @@ app-config:
   nome: Colaboradores
   url: http://localhost:3100
   url-origin-cors: http://localhost
+  url-estatico: /opt/servidor_estatico/conexao_claro_brasil/
   dir-upload: desenvolvimento/autenticacao
   upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
 

@@ -23,17 +23,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.awt.*;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 
 public class UsuarioServiceHelper {
 
@@ -925,8 +922,8 @@ public class UsuarioServiceHelper {
 
     public static List<File> umaListFotos() {
         return List.of(
-            new File("file.png"),
-            new File("download.jpeg")
+            new File("src/test/resources/foto_usuario/file.png"),
+            new File("src/test/resources/foto_usuario/download.jpeg")
         );
     }
 }

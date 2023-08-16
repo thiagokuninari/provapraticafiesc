@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.UsuarioExcessoUsoResponse;
@@ -48,8 +47,6 @@ public class UsuarioController {
     private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
     @Autowired
     private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -583,7 +580,6 @@ public class UsuarioController {
 
     @PutMapping("mover-avatar-minio")
     public void moverAvatarMinio() throws IOException {
-        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         usuarioService.moverAvatarMinio();
     }
 }

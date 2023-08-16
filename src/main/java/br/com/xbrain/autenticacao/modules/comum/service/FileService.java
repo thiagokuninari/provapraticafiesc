@@ -26,6 +26,8 @@ public class FileService {
     private final MinioFileService minioFileService;
     @Value("${app-config.upload-foto-usuario}")
     private String usuarioFotoDir;
+    @Value("${app-config.url-estatico}")
+    private String urlEstatico;
 
     public void salvarArquivo(Usuario request, MultipartFile file) {
         var fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_")
@@ -43,7 +45,7 @@ public class FileService {
     }
 
     public Optional<List<File>> buscaArquivosEstatico(String caminho) throws IOException {
-        var path = Paths.get("/opt/servidor_estatico/conexao_claro_brasil/".concat(caminho));
+        var path = Paths.get(urlEstatico.concat(caminho));
         try (var stream = Files.walk(path, Integer.MAX_VALUE)) {
             return Optional.of(stream
                 .map(String::valueOf)
