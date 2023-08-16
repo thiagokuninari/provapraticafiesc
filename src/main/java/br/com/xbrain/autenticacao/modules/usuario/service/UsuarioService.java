@@ -2385,7 +2385,22 @@ public class UsuarioService {
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
                                                                               boolean buscarInativos) {
-        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
+        return findUsuariosByOrganizacaoAndCargos(organizacaoId, CARGOS_OPERADORES_BACKOFFICE, buscarInativos);
+    }
+
+    public List<SelectResponse> findOperadoresBkoCentralizadoByFornecedor(Integer fornecedorId,
+                                                                          boolean buscarInativos) {
+        var cargosOperadoresBkoCentralizado = List.of(
+            BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+            BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS);
+
+        return findUsuariosByOrganizacaoAndCargos(fornecedorId, cargosOperadoresBkoCentralizado, buscarInativos);
+    }
+
+    private List<SelectResponse> findUsuariosByOrganizacaoAndCargos(Integer organizacaoId,
+                                                                    List<CodigoCargo> cargos,
+                                                                    boolean buscarInativos) {
+        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargos)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))

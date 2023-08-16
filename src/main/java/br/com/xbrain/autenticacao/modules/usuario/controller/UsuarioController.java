@@ -499,6 +499,13 @@ public class UsuarioController {
         return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId, buscarInativos);
     }
 
+    @GetMapping("bko-centralizado/{fornecedorId}")
+    public List<SelectResponse> findOperadoresBkoCentralizadoByFornecedor(
+        @PathVariable Integer fornecedorId,
+        @RequestParam(required = false, defaultValue = "false") boolean buscarInativos) {
+        return usuarioService.findOperadoresBkoCentralizadoByFornecedor(fornecedorId, buscarInativos);
+    }
+
     @GetMapping("permitidos")
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();

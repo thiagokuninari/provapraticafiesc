@@ -2029,4 +2029,35 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getSubordinadosAndAasDoUsuario(false);
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8")))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8")))
+            .andExpect(status().isForbidden());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"BKO_PRIORIZAR_INDICACOES"})
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
+    }
 }
