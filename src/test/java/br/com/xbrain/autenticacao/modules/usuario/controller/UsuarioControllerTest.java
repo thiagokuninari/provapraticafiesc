@@ -2053,6 +2053,17 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {"BKO_PRIORIZAR_INDICACOES"})
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarBadRequest_quandoNaoPassarParametro() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"BKO_PRIORIZAR_INDICACOES"})
     public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/bko-centralizado/8"))
                 .accept(MediaType.APPLICATION_JSON))
