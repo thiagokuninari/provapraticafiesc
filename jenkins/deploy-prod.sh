@@ -37,13 +37,13 @@ ${REMOTE_CMD} rm -rf $VARPATHDESTINY/$NAME_APP*.jar
 
 
 # verifica se é preciso apagar a imagem ou o container
-if [ ! -z $APAGAR_IMAGEM ] || [ ! -z $APAGAR_CONTAINER ]; then
+if [ "$APAGAR_IMAGEM" = true ] || [ "$APAGAR_CONTAINER" = true ]; then
 	echo "Apagando container"
     ${REMOTE_CMD} docker stop "$CONTAINER"
     ${REMOTE_CMD} docker rm "$CONTAINER"
 
     # verifica se é pra apagar a imagem
-    if [ ! -z $APAGAR_IMAGEM ]; then
+    if [ "$APAGAR_IMAGEM" = true ]; then
 		echo "Apagando imagem"
     	${REMOTE_CMD} docker rmi "$IMAGE_NAME"
     fi
