@@ -2156,9 +2156,6 @@ public class UsuarioServiceTest {
         doReturn(usuario)
             .when(autenticacaoService)
                 .getUsuarioAutenticado();
-        doReturn(1)
-            .when(autenticacaoService)
-                .getUsuarioId();
         doReturn(List.of(umUsuarioVendedorInternet()))
             .when(usuarioRepository)
                 .findAll(predicate, sort);
@@ -2168,6 +2165,7 @@ public class UsuarioServiceTest {
             .containsExactly(tuple("VENDEDOR", 5436278));
 
         verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
     }
 
     @Test
@@ -2188,9 +2186,6 @@ public class UsuarioServiceTest {
         doReturn(usuario)
             .when(autenticacaoService)
             .getUsuarioAutenticado();
-        doReturn(1)
-            .when(autenticacaoService)
-            .getUsuarioId();
         doReturn(List.of(umUsuarioVendedorInternet()))
             .when(usuarioRepository)
             .findAll(predicate, sort);
@@ -2200,6 +2195,7 @@ public class UsuarioServiceTest {
             .containsExactly(tuple("VENDEDOR", 5436278));
 
         verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
     }
 
     @Test
