@@ -500,7 +500,7 @@ public class UsuarioController {
     }
 
     @GetMapping("bko-centralizado/{fornecedorId}")
-    public List<SelectResponse> findOperadoresBkoCentralizadoByFornecedor(
+    public List<UsuarioResponse> findOperadoresBkoCentralizadoByFornecedor(
         @PathVariable Integer fornecedorId,
         @RequestParam(required = false, defaultValue = "false") boolean buscarInativos) {
         return usuarioService.findOperadoresBkoCentralizadoByFornecedor(fornecedorId, buscarInativos);

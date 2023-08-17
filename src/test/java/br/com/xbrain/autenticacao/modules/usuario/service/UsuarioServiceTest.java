@@ -1857,11 +1857,11 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
         assertThat(usuarioService.findOperadoresBkoCentralizadoByFornecedor(5, true))
-            .extracting("value", "label")
+            .extracting("id", "nome", "email")
             .containsExactly(
-                tuple(10, "Usuario Ativo"),
-                tuple(11, "Usuario Inativo"),
-                tuple(1, "NOME UM"));
+                tuple(10, "Usuario Ativo", "usuarioativo@email.com"),
+                tuple(11, "Usuario Inativo", "usuarioinativo@email.com"),
+                tuple(1, "NOME UM", "email@email.com"));
     }
 
     @Test

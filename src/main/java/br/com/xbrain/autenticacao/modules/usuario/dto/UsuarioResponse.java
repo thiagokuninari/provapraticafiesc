@@ -70,6 +70,12 @@ public class UsuarioResponse {
         this.codigoCargo = codigoCargo;
     }
 
+    public UsuarioResponse(Integer id, String nome, String email) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+    }
+
     public static UsuarioResponse of(Usuario usuario) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         if (usuario != null) {
