@@ -38,7 +38,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public Boolean hasFeriadoMunicipal(LocalDate data, String cidade, String uf) {
+    public boolean hasFeriadoMunicipal(LocalDate data, String cidade, String uf) {
         return new JPAQueryFactory(entityManager)
             .select(feriado.id.countDistinct())
             .from(feriado)
@@ -57,7 +57,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public Boolean hasFeriadoEstadual(LocalDate data, String cidade, String uf) {
+    public boolean hasFeriadoEstadual(LocalDate data, String cidade, String uf) {
         return new JPAQueryFactory(entityManager)
             .select(feriado.id.countDistinct())
             .from(feriado)
@@ -75,7 +75,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public Boolean hasFeriadoNacional(LocalDate data) {
+    public boolean hasFeriadoNacional(LocalDate data) {
         return new JPAQueryFactory(entityManager)
             .select(feriado.id.countDistinct())
             .from(feriado)

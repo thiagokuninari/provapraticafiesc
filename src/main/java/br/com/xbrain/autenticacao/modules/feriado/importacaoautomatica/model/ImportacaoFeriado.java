@@ -34,7 +34,7 @@ public class ImportacaoFeriado {
     private ESituacaoFeriadoAutomacao situacaoFeriadoAutomacao;
 
     @NotNull
-    @Column(name = "USUARIO_CADASTRO_ID", nullable = false)
+    @Column(name = "USUARIO_CADASTRO_ID")
     private Integer usuarioCadastroId;
 
     @Column(name = "USUARIO_CADASTRO_NOME")

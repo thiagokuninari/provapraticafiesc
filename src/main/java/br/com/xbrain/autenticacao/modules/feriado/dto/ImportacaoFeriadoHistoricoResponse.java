@@ -25,7 +25,7 @@ public class ImportacaoFeriadoHistoricoResponse {
     private String usuarioCadastroNome;
     private String descricao;
 
-    public static ImportacaoFeriadoHistoricoResponse convertFrom(ImportacaoFeriado importacaoFeriado) {
+    public static ImportacaoFeriadoHistoricoResponse of(ImportacaoFeriado importacaoFeriado) {
         var importacaoHistorico = new ImportacaoFeriadoHistoricoResponse();
         BeanUtils.copyProperties(importacaoFeriado, importacaoHistorico);
         return importacaoHistorico;

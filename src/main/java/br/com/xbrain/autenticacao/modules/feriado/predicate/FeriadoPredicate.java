@@ -26,21 +26,21 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comNome(String nome) {
-        if (!isEmpty(nome)) {
+        if (nome != null) {
             builder.and(feriado.nome.containsIgnoreCase(nome));
         }
         return this;
     }
 
     public FeriadoPredicate comTipoFeriado(ETipoFeriado tipoFeriado) {
-        if (!isEmpty(tipoFeriado)) {
+        if (tipoFeriado != null) {
             builder.and(feriado.tipoFeriado.eq(tipoFeriado));
         }
         return this;
     }
 
     public FeriadoPredicate comPeriodoDeDataFeriado(LocalDate dataInicio, LocalDate dataFim) {
-        if (!isEmpty(dataInicio) && !isEmpty(dataFim)) {
+        if (dataInicio != null && dataFim != null) {
             builder.and(feriado.dataFeriado.between(dataInicio, dataFim));
         }
         return this;
@@ -53,7 +53,7 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comCidade(Integer cidadeId, Integer estadoId) {
-        if (!isEmpty(cidadeId) && !isEmpty(estadoId)) {
+        if (cidadeId != null && estadoId != null) {
             builder.and(feriado.cidade.id.eq(cidadeId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V))
                 .or(feriado.uf.id.eq(estadoId)
@@ -63,7 +63,7 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comCidade(Integer cidadeId) {
-        if (!isEmpty(cidadeId)) {
+        if (cidadeId != null) {
             builder.and(feriado.cidade.id.eq(cidadeId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V)));
         }
@@ -71,7 +71,7 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comEstado(Integer estadoId) {
-        if (!isEmpty(estadoId)) {
+        if (estadoId != null) {
             builder.and(feriado.uf.id.eq(estadoId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V)));
         }
@@ -79,7 +79,7 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comDataFeriado(LocalDate dataFeriado) {
-        if (!isEmpty(dataFeriado)) {
+        if (dataFeriado != null) {
             builder.and(feriado.dataFeriado.eq(dataFeriado));
         }
         return this;
@@ -91,7 +91,7 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comFeriadoPaiId(Integer feriadoPaiId) {
-        if (!isEmpty(feriadoPaiId)) {
+        if (feriadoPaiId != null) {
             builder.and(feriado.feriadoPai.id.eq(feriadoPaiId));
         }
         return this;

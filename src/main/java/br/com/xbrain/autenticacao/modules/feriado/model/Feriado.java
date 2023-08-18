@@ -19,6 +19,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
@@ -119,16 +121,23 @@ public class Feriado {
         feriado.setFeriadoNacional(
             feriadoAutomacao.getTipoFeriado()
                 .equals(ETipoFeriado.NACIONAL) ? Eboolean.V : Eboolean.F);
-        if (nonNull(feriadoAutomacao.getUfId())) {
+        if (feriadoAutomacao.getUfId() != null) {
             feriado.setUf(new Uf(feriadoAutomacao.getUfId()));
         }
-        if (nonNull(feriadoAutomacao.getCidadeId())) {
+        if (feriadoAutomacao.getCidadeId() != null) {
             feriado.setCidade(new Cidade(feriadoAutomacao.getCidadeId()));
         }
         feriado.setDataCadastro(LocalDateTime.now());
         feriado.setSituacao(ESituacaoFeriado.ATIVO);
         feriado.setImportacaoFeriado(importacaoFeriado);
         return feriado;
+    }
+
+    public static List<Feriado> ofAutomacao(List<FeriadoAutomacao> feriadosAutomacao, ImportacaoFeriado importacaoFeriado) {
+        return feriadosAutomacao
+            .stream()
+            .map(feriadoAutomacao -> ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .collect(Collectors.toList());
     }
 
     public static Feriado criarFeriadoFilho(Cidade cidade, Feriado feriadoPai) {

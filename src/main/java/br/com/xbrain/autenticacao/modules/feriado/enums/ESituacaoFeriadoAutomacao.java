@@ -9,7 +9,7 @@ public enum ESituacaoFeriadoAutomacao {
 
     EM_IMPORTACAO("EM IMPORTAÇÃO"),
     IMPORTADO("IMPORTADO"),
-    ERRO_IMPORTACAO("ERRO DE IMPORTACAO");
+    ERRO_IMPORTACAO("ERRO DE IMPORTAÇÃO");
 
     private String descricao;
 }

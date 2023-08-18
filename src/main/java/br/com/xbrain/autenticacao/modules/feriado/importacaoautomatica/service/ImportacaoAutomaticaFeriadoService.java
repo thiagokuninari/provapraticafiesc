@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -54,7 +55,7 @@ public class ImportacaoAutomaticaFeriadoService {
             return feriadoAutomacaoClient.buscarFeriadosNacionais(ano);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex,
-                FeriadoAutomacao.class.getName(),
+                ImportacaoAutomaticaFeriadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_FERIADOS);
         }
     }
@@ -64,7 +65,7 @@ public class ImportacaoAutomaticaFeriadoService {
             return feriadoAutomacaoClient.buscarFeriadosEstaduais(ano, uf);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex,
-                FeriadoAutomacao.class.getName(),
+                ImportacaoAutomaticaFeriadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_FERIADOS);
         }
     }
@@ -74,7 +75,7 @@ public class ImportacaoAutomaticaFeriadoService {
             return feriadoAutomacaoClient.buscarFeriadosMunicipais(ano, uf, cidade);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex,
-                FeriadoAutomacao.class.getName(),
+                ImportacaoAutomaticaFeriadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_FERIADOS);
         }
     }
@@ -82,7 +83,7 @@ public class ImportacaoAutomaticaFeriadoService {
     public Page<ImportacaoFeriadoHistoricoResponse> getAllImportacaoHistorico(PageRequest pageRequest, FeriadoFiltros filtros) {
         var predicate = new FeriadoPredicate().comSituacaoFeriadoAutomacao(filtros.getSituacaoFeriadoAutomacao());
         return importacaoAutomaticaRepository.findAll(predicate.build(), pageRequest)
-            .map(ImportacaoFeriadoHistoricoResponse::convertFrom);
+            .map(ImportacaoFeriadoHistoricoResponse::of);
     }
 
     public void importarTodosOsFeriadoAnuais() {
@@ -177,9 +178,8 @@ public class ImportacaoAutomaticaFeriadoService {
     }
 
     private void cadastrarFeriados(List<FeriadoAutomacao> feriadosAutomacao, ImportacaoFeriado importacaoFeriado) {
-        if (!feriadosAutomacao.isEmpty()) {
-            feriadosAutomacao.forEach(feriado ->
-                feriadoRepository.save(Feriado.ofAutomacao(feriado, importacaoFeriado)));
+        if (!ObjectUtils.isEmpty(feriadosAutomacao)) {
+            feriadoRepository.save(Feriado.ofAutomacao(feriadosAutomacao, importacaoFeriado));
         }
     }
 
