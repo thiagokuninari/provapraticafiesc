@@ -240,6 +240,9 @@ public class Usuario {
     private Integer agenteAutorizadoId;
 
     @Transient
+    private boolean isAtualizarSocioPrincipal;
+
+    @Transient
     private List<Integer> agentesAutorizadosIds;
 
     @Transient

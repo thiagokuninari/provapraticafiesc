@@ -1554,8 +1554,8 @@ public class UsuarioServiceIT {
             .save(permissaoCaptor.capture());
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
-            .containsExactlyInAnyOrder(List.of(50, 55), 32);
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
+            .containsExactlyInAnyOrder(List.of(50, 55), 32, true);
 
         assertThat(permissaoCaptor.getAllValues())
             .extracting("funcionalidade.id")
@@ -1581,8 +1581,8 @@ public class UsuarioServiceIT {
             .save(any(PermissaoEspecial.class));
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
-            .containsExactlyInAnyOrder(List.of(50, 55), 32);
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
+            .containsExactlyInAnyOrder(List.of(50, 55), 32, true);
     }
 
     @Test
@@ -1603,8 +1603,8 @@ public class UsuarioServiceIT {
             .save(any(PermissaoEspecial.class));
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId")
-            .containsExactlyInAnyOrder(List.of(50, 55), null);
+            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
+            .containsExactlyInAnyOrder(List.of(50, 55), null, true);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {

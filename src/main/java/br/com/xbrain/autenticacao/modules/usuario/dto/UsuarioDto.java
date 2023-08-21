@@ -99,6 +99,7 @@ public class UsuarioDto implements Serializable {
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private boolean isAtualizarSocioPrincipal;
     private List<Integer> agentesAutorizadosIds;
     private Integer antigoSocioPrincipalId;
     private String urlLojaBase;
