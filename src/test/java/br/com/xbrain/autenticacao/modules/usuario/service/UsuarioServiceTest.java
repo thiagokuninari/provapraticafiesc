@@ -3340,8 +3340,15 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void moverAvatarMinio_deveLancarEx_seNaoForAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelAa());
+
+        assertThatThrownBy(() -> usuarioService.moverAvatarMinio()).hasMessage("Usuário não autorizado!");
+    }
+
+    @Test
     @SneakyThrows
-    public void moverAvatarMinio_deveEnviarArquivos_seArquivosNaoExistirem() {
+    public void moverAvatarMinio_deveNaoEnviarArquivos_seArquivosNaoExistirem() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioHelper.umUsuarioAutenticadoAdmin());
 
         usuarioService.moverAvatarMinio();
