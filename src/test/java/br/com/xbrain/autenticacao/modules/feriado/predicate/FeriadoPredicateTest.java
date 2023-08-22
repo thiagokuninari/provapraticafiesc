@@ -26,13 +26,13 @@ public class FeriadoPredicateTest {
 
     @Test
     public void comCidade_deveMontarPredicate_deCidadeIdNaoNulo() {
-        assertThat(new FeriadoPredicate().comCidade(1).build())
+        assertThat(new FeriadoPredicate().comCidadeId(1).build())
             .isEqualTo(new BooleanBuilder(feriado.cidade.id.eq(1).or(feriado.feriadoNacional.eq(Eboolean.V))));
     }
 
     @Test
     public void comCidade_deveMontarPredicate_deCidadeIdNulo() {
-        assertThat(new FeriadoPredicate().comCidade(null).build())
+        assertThat(new FeriadoPredicate().comCidadeId(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 

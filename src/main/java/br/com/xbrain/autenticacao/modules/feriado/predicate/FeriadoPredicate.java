@@ -9,7 +9,6 @@ import com.querydsl.core.BooleanBuilder;
 
 import java.time.LocalDate;
 
-import static org.springframework.util.ObjectUtils.isEmpty;
 import static br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.QImportacaoFeriado.importacaoFeriado;
 
 public class FeriadoPredicate {
@@ -47,12 +46,12 @@ public class FeriadoPredicate {
     }
 
     public FeriadoPredicate comCidadeOuEstado(Integer cidadeId, Integer estadoId) {
-        return isEmpty(cidadeId)
+        return cidadeId == null
             ? comEstado(estadoId)
-            : comCidade(cidadeId, estadoId);
+            : comCidadeId(cidadeId, estadoId);
     }
 
-    public FeriadoPredicate comCidade(Integer cidadeId, Integer estadoId) {
+    public FeriadoPredicate comCidadeId(Integer cidadeId, Integer estadoId) {
         if (cidadeId != null && estadoId != null) {
             builder.and(feriado.cidade.id.eq(cidadeId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V))
@@ -62,7 +61,7 @@ public class FeriadoPredicate {
         return this;
     }
 
-    public FeriadoPredicate comCidade(Integer cidadeId) {
+    public FeriadoPredicate comCidadeId(Integer cidadeId) {
         if (cidadeId != null) {
             builder.and(feriado.cidade.id.eq(cidadeId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V)));

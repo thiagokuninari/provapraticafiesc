@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Builder
@@ -24,16 +23,13 @@ public class ImportacaoFeriado {
     @GeneratedValue(generator = "SEQ_IMPORTACAO_FERIADO", strategy = GenerationType.AUTO)
     private Integer id;
 
-    @NotNull
     @Column(name = "DATA_CADASTRO", nullable = false)
     private LocalDateTime dataCadastro;
 
-    @NotNull
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacaoFeriadoAutomacao situacaoFeriadoAutomacao;
 
-    @NotNull
     @Column(name = "USUARIO_CADASTRO_ID")
     private Integer usuarioCadastroId;
 

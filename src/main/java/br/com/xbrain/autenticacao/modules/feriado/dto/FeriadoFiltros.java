@@ -34,7 +34,7 @@ public class FeriadoFiltros {
             .comNome(nome)
             .comTipoFeriado(tipoFeriado)
             .comPeriodoDeDataFeriado(dataInicio, dataFim)
-            .comCidade(cidadeId, estadoId)
+            .comCidadeId(cidadeId, estadoId)
             .comEstado(estadoId)
             .excetoFeriadosFilhos()
             .excetoExcluidos();
