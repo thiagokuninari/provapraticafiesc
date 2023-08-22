@@ -233,7 +233,7 @@ public class FeriadoImportacaoService {
         var predicate = new FeriadoPredicate()
             .comNome(feriado.getNome())
             .comTipoFeriado(feriado.getTipoFeriado())
-            .comEstado(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
+            .comEstadoId(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
             .comCidadeId(!isEmpty(feriado.getCidade()) ? feriado.getCidade().getId() : null,
                 !isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
             .comDataFeriado(feriado.getDataFeriado())

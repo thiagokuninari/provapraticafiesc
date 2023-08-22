@@ -47,7 +47,7 @@ public class FeriadoPredicate {
 
     public FeriadoPredicate comCidadeOuEstado(Integer cidadeId, Integer estadoId) {
         return cidadeId == null
-            ? comEstado(estadoId)
+            ? comEstadoId(estadoId)
             : comCidadeId(cidadeId, estadoId);
     }
 
@@ -69,7 +69,7 @@ public class FeriadoPredicate {
         return this;
     }
 
-    public FeriadoPredicate comEstado(Integer estadoId) {
+    public FeriadoPredicate comEstadoId(Integer estadoId) {
         if (estadoId != null) {
             builder.and(feriado.uf.id.eq(estadoId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V)));
