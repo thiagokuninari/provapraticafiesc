@@ -38,7 +38,7 @@ public class FileService {
         request.setFotoDiretorio(usuarioFotoDir.concat(fileName));
 
         try {
-            minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat("/").concat(fileName));
+            minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat(fileName));
         } catch (IOException ex) {
             throw new IntegracaoException(ex, MinioClient.class.getName(), EErrors.ERRO_SALVAR_ARQUIVO);
         }
