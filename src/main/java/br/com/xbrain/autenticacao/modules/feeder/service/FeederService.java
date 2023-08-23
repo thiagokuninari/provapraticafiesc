@@ -218,7 +218,7 @@ public class FeederService {
     private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
                                                                                       Integer usuarioCadastroId,
                                                                                       CodigoCargo cargoCodigo) {
-        if (isBackOffice(cargoCodigo)) {
+        if (isBackOfficeAndSocioSecundario(cargoCodigo)) {
             return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
                 FUNCIONALIDADES_FEEDER_PARA_AA);
         }
@@ -232,8 +232,8 @@ public class FeederService {
             FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
-    private boolean isBackOffice(CodigoCargo codigoCargo) {
-        return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
+    private boolean isBackOfficeAndSocioSecundario(CodigoCargo codigoCargo) {
+        return codigoCargo != null && CARGOS_BACKOFFICE_E_SOCIO_SECUNDARIO.contains(codigoCargo);
     }
 
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {

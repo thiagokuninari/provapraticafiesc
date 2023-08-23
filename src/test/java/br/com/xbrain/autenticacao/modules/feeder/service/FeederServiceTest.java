@@ -286,6 +286,24 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoesSocioSecundario_quandoUsuarioForSocioSecundario() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, ESituacao.A, 1111));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioService)
+            .getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA);
+        verify(usuarioService)
+            .salvarPermissoesEspeciais(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+    }
+
+    @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesEmpresarial_quandoUsuarioMsoComTiposFeederEmpresarial() {
         when(usuarioRepository.findById(eq(150016)))
