@@ -75,7 +75,7 @@ public class UsuarioGerenciaController {
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
                                                                     @PathVariable Set<ECanal> canal) {
-        return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
+        return service.getUsuariosCargoSuperiorByCanal(cargoId, post, canal);
     }
 
     @GetMapping(params = "email")

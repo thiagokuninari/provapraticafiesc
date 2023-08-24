@@ -1551,14 +1551,16 @@ public class UsuarioService {
                 .build());
     }
 
-    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId,
+                                                                           UsuarioCargoSuperiorPost post,
                                                                            Set<ECanal> canais) {
         var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
-                .comCidade(cidadesId)
+                .comCidade(post.getCidadeIds())
                 .comCanais(canais)
+                .comOrganizacaoEmpresaId(post.getOrganizacaoId())
                 .build());
         return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }
