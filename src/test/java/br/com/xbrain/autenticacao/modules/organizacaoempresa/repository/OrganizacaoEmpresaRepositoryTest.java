@@ -24,13 +24,14 @@ public class OrganizacaoEmpresaRepositoryTest {
     @Test
     public void findAll_todasOrganizacoes_quandoPesquisar() {
         assertThat(organizacaoEmpresaRepository.findAll())
-            .hasSize(5)
+            .hasSize(6)
             .extracting("codigo", "nome")
             .contains(tuple("BCC", "Brasil Center"),
                 tuple("CALLINK", "Callink"),
                 tuple("PROPRIO", "Próprio"),
                 tuple("ATENTO", "Atento"),
-                tuple("VGX", "VGX"));
+                tuple("VGX", "VGX"),
+                tuple("INTERNET", "INTERNET"));
     }
 
     @Test

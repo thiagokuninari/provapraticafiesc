@@ -264,6 +264,37 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    @SneakyThrows
+    public void getUsuariosCargoSuperiorByCanal_deveRetornarTodos_porCargoSuperiorEFiltroOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(43)
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$.[0].nome", is("INTERNET GERENTE")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosCargoSuperiorByCanal_naoDeveRetornar_quandoNaoLocalizarAtravesDeOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(12399)
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
     public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrar() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();

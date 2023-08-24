@@ -161,6 +161,8 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private CargoService cargoService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -2295,6 +2297,35 @@ public class UsuarioServiceTest {
             .extracting("value", "label")
             .containsExactly(
                 tuple("INTERNET", "Internet")
+            );
+    }
+
+    @Test
+    public void getUsuariosCargoSuperiorByCanal_deveRetornarUsuarioSuperior_quandoSolicitadoComOrganizacaoId() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        var usuarioSuperior = umUsuarioCompleto(ESituacao.A, INTERNET_GERENTE, 500,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.INTERNET);
+        usuarioSuperior.getCargo().setNome("INTERNET_GERENTE");
+
+        doReturn(List.of(usuarioSuperior))
+            .when(usuarioRepository)
+            .getUsuariosFilter(any(Predicate.class));
+
+        var cargo = umCargo(98436, INTERNET_SUPERVISOR);
+        cargo.setSuperiores(Set.of(umCargo(98436, INTERNET_GERENTE)));
+
+        doReturn(cargo)
+            .when(cargoService)
+            .findById(501);
+
+        assertThat(usuarioService.getUsuariosCargoSuperiorByCanal(501,
+            UsuarioCargoSuperiorPost.builder().organizacaoId(1).build(), Set.of(ECanal.INTERNET)))
+            .extracting("nome", "cargoNome")
+            .containsExactly(
+                tuple("NOME UM", "INTERNET_GERENTE")
             );
     }
 
