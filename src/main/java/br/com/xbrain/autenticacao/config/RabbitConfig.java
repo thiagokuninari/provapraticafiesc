@@ -89,8 +89,8 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-usuario-equipe-venda}")
     private String inativarUsuarioEquipeVendaMq;
 
-//    @Value("${app-config.queue.inativar-colaborador-pol}")
-//    private String inativarColaboradorPolMq;
+    @Value("${app-config.queue.inativar-colaborador-pol}")
+    private String inativarColaboradorPolMq;
 
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
@@ -212,10 +212,10 @@ public class RabbitConfig {
         return new Queue(inativarUsuarioEquipeVendaMq, false);
     }
 
-//    @Bean
-//    Queue inativarColaboradorPolMq() {
-//        return new Queue(inativarColaboradorPolMq, false);
-//    }
+    @Bean
+    Queue inativarColaboradorPolMq() {
+        return new Queue(inativarColaboradorPolMq, false);
+    }
 
     @Bean
     Queue usuarioCadastroSuccessMq() {
@@ -546,10 +546,10 @@ public class RabbitConfig {
         return BindingBuilder.bind(inativaUsuarioEquipeVendaMq()).to(exchange).with(usuarioAlterarSituacaoMq);
     }
 
-//    @Bean
-//    public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
-//        return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
-//    }
+    @Bean
+    public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
+    }
 
     @Bean
     public Binding usuarioUltimoAcessoPolBinding(TopicExchange exchange) {
