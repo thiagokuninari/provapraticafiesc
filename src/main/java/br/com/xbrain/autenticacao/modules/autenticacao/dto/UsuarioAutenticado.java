@@ -196,6 +196,18 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
     }
 
+    public boolean isGerenteInternetOperacao() {
+        return isOperacao() && INTERNET_GERENTE.equals(cargoCodigo);
+    }
+
+    public boolean isSupervisorInternetOperacao() {
+        return isOperacao() && INTERNET_SUPERVISOR.equals(cargoCodigo);
+    }
+
+    public boolean isCoordenadorInternetOperacao() {
+        return isOperacao() && INTERNET_COORDENADOR.equals(cargoCodigo);
+    }
+
     public boolean isVendedorInternetOperacao() {
         return isOperacao() && INTERNET_VENDEDOR.equals(cargoCodigo);
     }
