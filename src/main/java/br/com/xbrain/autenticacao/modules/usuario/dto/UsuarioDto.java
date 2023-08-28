@@ -60,6 +60,12 @@ public class UsuarioDto implements Serializable {
     @Size(max = 120)
     @NotBlank
     private String loginNetSales;
+    @Size(max = 120)
+    @NotBlank
+    private String nomeEquipeVendaNetSales;
+    @Size(max = 120)
+    @NotBlank
+    private String codigoEquipeVendaNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();

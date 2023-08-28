@@ -100,7 +100,7 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(new UsuarioDto()))
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(jsonPath("$", hasSize(9)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo nome é obrigatório.",
                 "O campo email é obrigatório.",
@@ -108,7 +108,9 @@ public class UsuarioGerenciaControllerTest {
                 "O campo empresasId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty")));
+                "O campo loginNetSales may not be empty",
+                "O campo codigoEquipeVendaNetSales may not be empty",
+                "O campo nomeEquipeVendaNetSales may not be empty")));
     }
 
     @Test
@@ -600,12 +602,14 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(put(API_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
-            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(9)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo email é obrigatório.",
                 "O campo nome é obrigatório.",
                 "O campo departamentoId é obrigatório.",
                 "O campo loginNetSales may not be empty",
+                "O campo codigoEquipeVendaNetSales may not be empty",
+                "O campo nomeEquipeVendaNetSales may not be empty",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo empresasId é obrigatório.")));
@@ -872,18 +876,15 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveConfiguracao_deveRetornarBadRequest_quandoDadosObrigatoriosNaoPreenchidos() {
-        mvc.perform(MockMvcRequestBuilders
-                .fileUpload(API_URI)
-                .file(umUsuario(umUsuarioParaEditar()))
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(5)))
+        var dto = new UsuarioConfiguracaoSaveDto();
+
+        mvc.perform(post(API_URI + "/configuracao")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo email é obrigatório.",
-                "O campo departamentoId é obrigatório.",
-                "O campo unidadesNegociosId é obrigatório.",
-                "O campo cargoId é obrigatório.",
-                "O campo empresasId é obrigatório.")));
+                "O campo usuarioId é obrigatório.",
+                "O campo ramal é obrigatório.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -1403,6 +1404,8 @@ public class UsuarioGerenciaControllerTest {
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
         usuario.setSubCanaisId(Sets.newHashSet(1));
+        usuario.setNomeEquipeVendaNetSales("EQUIPE NET");
+        usuario.setCodigoEquipeVendaNetSales("654321");
         return usuario;
     }
 
@@ -1439,6 +1442,8 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
         usuario.setSituacao(ESituacao.A);
         usuario.setSubCanaisId(Sets.newHashSet(1));
+        usuario.setNomeEquipeVendaNetSales("EQUIPE NET");
+        usuario.setCodigoEquipeVendaNetSales("654321");
         return usuario;
     }
 

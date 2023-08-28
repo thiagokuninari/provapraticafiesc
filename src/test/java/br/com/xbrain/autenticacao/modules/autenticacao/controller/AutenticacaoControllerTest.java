@@ -101,7 +101,9 @@ public class AutenticacaoControllerTest {
             .andExpect(jsonPath("$.cpf", is("38957979875")))
             .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
             .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())))
-            .andExpect(jsonPath("$.loginNetSales", is("123456")));
+            .andExpect(jsonPath("$.loginNetSales", is("123456")))
+            .andExpect(jsonPath("$.nomeEquipeVendaNetSales", is("VENDAS NET")))
+            .andExpect(jsonPath("$.codigoEquipeVendaNetSales", is("654321")));
     }
 
     @Test

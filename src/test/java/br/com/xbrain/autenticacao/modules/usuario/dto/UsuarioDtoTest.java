@@ -207,6 +207,8 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(ESituacao.I)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -409,6 +411,8 @@ public class UsuarioDtoTest {
             .cidades(Set.of())
             .usuariosHierarquia(Set.of())
             .tiposFeeder(Set.of())
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -427,6 +431,8 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(ESituacao.I)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -480,6 +486,8 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(situacao)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargo(Cargo
                 .builder()
                 .id(idCargo)
@@ -606,6 +614,8 @@ public class UsuarioDtoTest {
             .departamentoId(1)
             .cidadesId(null)
             .hierarquiasId(null)
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .build();
     }
 
