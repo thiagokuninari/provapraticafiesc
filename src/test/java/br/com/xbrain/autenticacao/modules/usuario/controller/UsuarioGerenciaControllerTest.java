@@ -266,6 +266,44 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarBadRequest_seCampoNomeEquipeVendaNetSalesEstiverComSizeMaiorQue120() {
+        var usuario = umUsuario("teste");
+        usuario.setNomeEquipeVendaNetSales("Exemplo de um nome grande demais".repeat(10));
+
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nomeEquipeVendaNetSales precisa ter entre 0 e 120 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarBadRequest_seCampoCodigoEquipeVendaNetSalesEstiverComSizeMaiorQue120() {
+        var usuario = umUsuario("teste");
+        usuario.setCodigoEquipeVendaNetSales("Exemplo de um codigo grande demais".repeat(10));
+
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo codigoEquipeVendaNetSales precisa ter entre 0 e 120 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void save_deveDarUnauthorized_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(post(API_URI)
