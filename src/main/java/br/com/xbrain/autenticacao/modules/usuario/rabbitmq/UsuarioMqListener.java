@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
 import br.com.xbrain.autenticacao.config.IgnoreRabbitProfile;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.extern.slf4j.Slf4j;
@@ -93,6 +94,11 @@ public class UsuarioMqListener {
     @RabbitListener(queues = "${app-config.queue.permissao-agente-autorizado-equipe-tecnica}")
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
         service.atualizarPermissaoEquipeTecnica(dto);
+    }
+
+    @RabbitListener(queues = "${app-config.queue.atualizar-permissao-especial-aa-residencial}")
+    public void atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto usuarioAaTipoFeederDto) {
+        service.atualizarPermissaoEspecialAaResidencial(usuarioAaTipoFeederDto);
     }
 }
 

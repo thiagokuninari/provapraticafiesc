@@ -19,6 +19,7 @@ public class FeederUtil {
     public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL = List.of(15000, 15007, 15012);
     public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL = List.of(15000, 15001, 15002, 15003,
         15006, 15007, 15008, 15009, 15010, 15011, 15012, 15013, 15014, 20007);
+    public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL = List.of(20018);
 
     public static final List<Integer> FUNCIONALIDADES_FEEDER = List.of(15000, 15005, 15012);
     public static List<CodigoCargo> CARGOS_BACKOFFICE = List.of(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,

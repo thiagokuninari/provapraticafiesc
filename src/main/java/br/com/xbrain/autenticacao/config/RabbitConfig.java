@@ -137,6 +137,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica-failure}")
     private String permissaoAgenteAutorizadoEquipeTecnicaFailureMq;
 
+    @Value("${app-config.queue.atualizar-permissao-especial-aa-residencial}")
+    private String atualizarPermissaoEspecialAaResidencial;
+
+    @Value("${app-config.queue.atualizar-permissao-especial-aa-residencial-failure}")
+    private String atualizarPermissaoEspecialAaResidencialFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -366,6 +372,21 @@ public class RabbitConfig {
         return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
     }
 
+
+    @Bean
+    Queue atualizarPermissaoEspecialAaResidencialMq() {
+        return QueueBuilder
+            .durable(atualizarPermissaoEspecialAaResidencial)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoEspecialAaResidencialFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoEspecialAaResidencialFaulireMq() {
+        return QueueBuilder.durable(atualizarPermissaoEspecialAaResidencialFailureMq).build();
+    }
+
     @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
@@ -414,6 +435,7 @@ public class RabbitConfig {
     public Binding usuarioCadastroSuccessFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroFailureMq()).to(exchange).with(usuarioCadastroFailureMq);
     }
+
 
     @Bean
     public Binding usuarioAtualizcaoBinding(TopicExchange exchange) {
@@ -559,5 +581,12 @@ public class RabbitConfig {
         return BindingBuilder.bind(usuarioInativacaoPorAaMq())
             .to(exchange)
             .with(usuarioInativacaoPorAaMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoEspecialAaResidencialMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoEspecialAaResidencialMq())
+            .to(exchange)
+            .with(atualizarPermissaoEspecialAaResidencial);
     }
 }

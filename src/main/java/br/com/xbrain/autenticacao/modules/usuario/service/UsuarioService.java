@@ -25,6 +25,8 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
+import br.com.xbrain.autenticacao.modules.feeder.enums.ECargosComPermissaoAaFeeder;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
@@ -86,6 +88,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -2755,6 +2758,53 @@ public class UsuarioService {
                 this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
             }
         }
+    }
+
+    @Transactional
+    public void atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto usuarioAaTipoFeederDto) {
+        if (usuarioAaTipoFeederDto.getTipoFeeder() == ETipoFeeder.RESIDENCIAL) {
+            var usuarios = repository.findByIdIn(usuarioAaTipoFeederDto.getUsuariosIds());
+            var usuarioAdicionarPermissao = new ArrayList<Integer>();
+            var usuarioRemoverPermissao = new ArrayList<Integer>();
+
+            usuarios.forEach(usuario -> {
+                if (verificaCargoUsuario(usuario.getCargoId())) {
+                    usuarioAdicionarPermissao.add(usuario.getId());
+                } else {
+                    usuarioRemoverPermissao.add(usuario.getId());
+                }
+            });
+
+            adicionarPermissaoEspecial(usuarioAdicionarPermissao,
+                usuarioAaTipoFeederDto.getUsuarioCadastroId(), FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
+            removerPermissoesEspeciaisTest(usuarioRemoverPermissao, FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
+        } else {
+            removerPermissoesEspeciaisTest(usuarioAaTipoFeederDto.getUsuariosIds(),
+                FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
+        }
+    }
+
+    public void removerPermissoesEspeciaisTest(List<Integer> usuarios, List<Integer> funcionalidades) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
+    }
+
+   private void adicionarPermissaoEspecial(List<Integer> usuariosId, Integer usuarioCadastroId,
+                                           List<Integer> funcionalidadesIds) {
+        permissaoEspecialService.save(criarPermissaoEspecia(usuariosId,
+            usuarioCadastroId,funcionalidadesIds));
+    }
+
+    private List<PermissaoEspecial> criarPermissaoEspecia(List<Integer> usuariosIds,
+                                                          Integer usuarioCadastroId,
+                                                          List<Integer> funcionalidades) {
+        return usuariosIds.stream()
+            .flatMap(usuarioId -> criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, funcionalidades).stream())
+            .collect(Collectors.toList());
+    }
+
+    private boolean verificaCargoUsuario(Integer usuarioCargoId) {
+        return Arrays.stream(ECargosComPermissaoAaFeeder.values())
+            .anyMatch(c -> c.getValor().equals(usuarioCargoId));
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,

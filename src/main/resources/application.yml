@@ -142,6 +142,8 @@ app-config:
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
     permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
+    atualizar-permissao-especial-aa-residencial: atualizar-permissao-especial-aa-residencial.queue
+    atualizar-permissao-especial-aa-residencial-failure: atualizar-permissao-especial-aa-residencial-failure.queue
 
   oauth-clients:
     autenticacao-api:
