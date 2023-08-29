@@ -99,7 +99,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
         Assertions.assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(request))
-            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#037 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
         Assertions.assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(request))
-            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#037 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test
@@ -273,7 +273,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
         Assertions.assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
-            .withMessage("#040 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#041 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
     }
@@ -285,7 +285,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
         Assertions.assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
-            .withMessage("#040 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#041 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
     }

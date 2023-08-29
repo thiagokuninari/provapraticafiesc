@@ -362,6 +362,7 @@ public class UsuarioService {
         validarCargoUsuarioAutenticado(predicate);
 
         var pages = repository.findAll(predicate.build(), pageRequest);
+
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
@@ -371,6 +372,7 @@ public class UsuarioService {
 
     private void validarCargoUsuarioAutenticado(UsuarioPredicate predicate) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
+
         if (usuario.isAssistenteOperacao()) {
             predicate.semCargoCodigo(COORDENADOR_OPERACAO);
         }
@@ -558,24 +560,35 @@ public class UsuarioService {
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
-            feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
-            subCanalService.removerPermissaoIndicacaoPremium(usuario);
+            removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
-            subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+            adicionarPermissoes(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
-            if (usuario.isIdNivelMso()) {
-                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
-            }
+
             return UsuarioDto.of(usuario);
+
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
+
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
+    }
+
+    private void removerPermissoes(Usuario usuario) {
+        subCanalService.removerPermissaoIndicacaoPremium(usuario);
+        subCanalService.removerPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
+    }
+
+    private void adicionarPermissoes(Usuario usuario) {
+        subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+        subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {

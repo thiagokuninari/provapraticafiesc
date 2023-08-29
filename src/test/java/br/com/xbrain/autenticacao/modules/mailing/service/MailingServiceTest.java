@@ -34,7 +34,7 @@ public class MailingServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.countQuantidadeAgendamentosProprietariosDoUsuario(1, ECanal.ATIVO_PROPRIO))
-            .withMessage("#037 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#038 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test

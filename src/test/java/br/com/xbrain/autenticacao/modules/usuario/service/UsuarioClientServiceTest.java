@@ -32,7 +32,7 @@ public class UsuarioClientServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.alterarSituacao(1))
-            .withMessage("#038 - Desculpe, ocorreu um erro ao alterar a situação do usuário.");
+            .withMessage("#039 - Desculpe, ocorreu um erro ao alterar a situação do usuário.");
     }
 
     @Test

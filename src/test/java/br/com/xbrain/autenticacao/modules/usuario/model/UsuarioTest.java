@@ -15,6 +15,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.doisSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -218,20 +221,22 @@ public class UsuarioTest {
 
     @Test
     public void hasSubCanalPapPremium_deveRetornarTrue_seUsuarioPossuirSubCanalPapPremium() {
-        assertThat(umUsuarioOperacaoComSubCanal(Set.of(
-            SubCanal.builder()
-                .id(3)
-                .codigo(PAP_PREMIUM)
-                .build()))
-            .hasSubCanalPapPremium())
-            .isTrue();
+        assertTrue(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM).hasSubCanalPapPremium());
     }
 
     @Test
     public void hasSubCanalPapPremium_deveRetornarFalse_seUsuarioNaoPossuirSubCanalPapPremium() {
-        assertThat(umUsuarioOperacaoComSubCanal(Set.of())
-            .hasSubCanalPapPremium())
-            .isFalse();
+        assertFalse(umUsuarioOperacaoComSubCanal(101112, 1, PAP).hasSubCanalPapPremium());
+    }
+
+    @Test
+    public void hasSubCanalInsideSalesPme_deveRetornarTrue_seUsuarioPossuirSubCanalInsideSalesPme() {
+        assertTrue(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME).hasSubCanalInsideSalesPme());
+    }
+
+    @Test
+    public void hasSubCanalInsideSalesPme_deveRetornarFalse_seUsuarioNaoPossuirSubCanalInsideSalesPme() {
+        assertFalse(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM).hasSubCanalInsideSalesPme());
     }
 
     @Test

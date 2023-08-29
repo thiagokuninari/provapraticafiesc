@@ -40,7 +40,7 @@ public class AgenteAutorizadoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos()))
-            .withMessage("#049 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .withMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
     }
 
     private List<CodigoCargo> umaListaCargos() {

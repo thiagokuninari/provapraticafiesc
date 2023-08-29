@@ -2,105 +2,83 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissoesHelper.umaPermissaoIndicacaoInsideSalesPme;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissoesHelper.umaPermissaoIndicacaoPremium;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMsoConsultor;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService.FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME;
+import static br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService.FUNC_CONSULTAR_INDICACAO_PREMIUM;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@RunWith(MockitoJUnitRunner.class)
 public class SubCanalServiceTest {
 
-    @Autowired
-    private SubCanalService service;
-    @MockBean
-    private SubCanalRepository repository;
-    @MockBean
+    @InjectMocks
+    private SubCanalService subCanalService;
+    @Mock
+    private SubCanalRepository subCanalRepository;
+    @Mock
     private UsuarioService usuarioService;
 
     @Test
     public void getAll_deveRetornarTodosSubCanais_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(List.of(umSubCanal()));
+        when(subCanalRepository.findAll()).thenReturn(List.of(umSubCanal()));
 
-        assertThat(service.getAll())
+        assertThat(subCanalService.getAll())
             .hasSize(1)
             .containsExactly(new SubCanalDto(1, PAP, "PAP", ESituacao.A));
     }
 
     @Test
     public void getSubCanalById_deveRetornarSubCanalResponse_quandoHouverSubCanal() {
-        when(repository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
+        when(subCanalRepository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
 
-        assertThat(service.getSubCanalById(1))
+        assertThat(subCanalService.getSubCanalById(1))
             .isEqualTo(new SubCanalDto(1, PAP, "PAP", ESituacao.A));
     }
 
     @Test
     public void getSubCanalById_deveLancarException_quandoNaoHouverSubCanal() {
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.getSubCanalById(100))
+            .isThrownBy(() -> subCanalService.getSubCanalById(100))
             .withMessage("Erro, subcanal não encontrado.");
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoIndicacaoPremium_deveAdicionarPermissaoIndicacaoPremium_quandoUsuarioNivelOperacaoComSubCanalPapPremium() {
-        var permissaoPapPremium = PermissaoEspecial.builder()
-            .id(3062)
-            .build();
+        doReturn(List.of(umaPermissaoIndicacaoPremium()))
+            .when(usuarioService)
+            .getPermissoesEspeciaisDoUsuario(101112, 23, FUNC_CONSULTAR_INDICACAO_PREMIUM);
 
-        var usuario = umUsuarioOperacaoComSubCanal(Set.of(
-            SubCanal.builder()
-                .id(3)
-                .codigo(PAP_PREMIUM)
-                .build()));
-
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(101112), eq(23), eq(List.of(3062))))
-            .thenReturn(List.of(permissaoPapPremium));
-
-        assertThatCode(() -> service.adicionarPermissaoIndicacaoPremium(usuario))
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoPremium(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
             .doesNotThrowAnyException();
 
-        verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(101112), eq(23), eq(List.of(3062)));
-        verify(usuarioService, times(1))
-            .salvarPermissoesEspeciais(eq(List.of(permissaoPapPremium)));
+        verify(usuarioService).getPermissoesEspeciaisDoUsuario(101112, 23, FUNC_CONSULTAR_INDICACAO_PREMIUM);
+        verify(usuarioService).salvarPermissoesEspeciais(List.of(umaPermissaoIndicacaoPremium()));
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoIndicacaoPremium_naoDeveAdicionarPermissaoIndicacaoPremium_quandoUsuarioNivelOperacaoSemSubCanalPapPremium() {
-        var usuario = umUsuarioOperacaoComSubCanal(Set.of(
-            SubCanal.builder()
-                .id(2)
-                .codigo(PAP)
-                .build()));
-
-        assertThatCode(() -> service.adicionarPermissaoIndicacaoPremium(usuario))
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoPremium(umUsuarioOperacaoComSubCanal(101112, 2, PAP_PME)))
             .doesNotThrowAnyException();
 
         verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
@@ -109,13 +87,8 @@ public class SubCanalServiceTest {
 
     @Test
     public void adicionarPermissaoIndicacaoPremium_naoDeveAdicionarPermissaoIndicacaoPremium_quandoUsuarioNaoForNivelOperacao() {
-        var usuario = umUsuarioMsoConsultor(Set.of(
-            SubCanal.builder()
-                .id(3)
-                .codigo(PAP_PREMIUM)
-                .build()));
-
-        assertThatCode(() -> service.adicionarPermissaoIndicacaoPremium(usuario))
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoPremium(umUsuarioMsoConsultor(3, PAP_PREMIUM)))
             .doesNotThrowAnyException();
 
         verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
@@ -124,28 +97,18 @@ public class SubCanalServiceTest {
 
     @Test
     public void removerPermissaoIndicacaoPremium_deveRemoverPermissaoIndicacaoPremium_quandoUsuarioJaCadastradoENivelOperacao() {
-        var usuario = umUsuarioOperacaoComSubCanal(Set.of(
-            SubCanal.builder()
-                .id(2)
-                .codigo(PAP)
-                .build()));
-
-        assertThatCode(() -> service.removerPermissaoIndicacaoPremium(usuario))
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoPremium(umUsuarioOperacaoComSubCanal(101112, 2, PAP_PME)))
             .doesNotThrowAnyException();
 
-        verify(usuarioService, times(1)).removerPermissoesEspeciais(List.of(3062), List.of(usuario.getId()));
+        verify(usuarioService).removerPermissoesEspeciais(FUNC_CONSULTAR_INDICACAO_PREMIUM, List.of(101112));
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void removerPermissaoIndicacaoPremium_naoDeveRemoverPermissaoIndicacaoPremium_quandoUsuarioJaCadastradoENaoNivelOperacao() {
-        var usuario = umUsuarioMsoConsultor(Set.of(
-            SubCanal.builder()
-                .id(3)
-                .codigo(PAP_PREMIUM)
-                .build()));
-
-        assertThatCode(() -> service.removerPermissaoIndicacaoPremium(usuario))
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoPremium(umUsuarioMsoConsultor(3, PAP_PREMIUM)))
             .doesNotThrowAnyException();
 
         verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());
@@ -153,15 +116,75 @@ public class SubCanalServiceTest {
 
     @Test
     public void removerPermissaoIndicacaoPremium_naoDeveRemoverPermissaoIndicacaoPremium_quandoUsuarioNovoCadastro() {
-        var usuario = umUsuarioMsoConsultor(Set.of(
-            SubCanal.builder()
-                .id(3)
-                .codigo(PAP_PREMIUM)
-                .build()));
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoPremium(umUsuarioOperacaoComSubCanal(null, 2, PAP_PME)))
+            .doesNotThrowAnyException();
 
-        usuario.setId(null);
+        verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());
+    }
 
-        assertThatCode(() -> service.removerPermissaoIndicacaoPremium(usuario))
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoIndicacaoInsideSalesPme_deveAdicionarPermissaoIndicacaoInsideSalesPme_quandoUsuarioNivelOperacaoComSubCanalInsideSalesPme() {
+        doReturn(List.of(umaPermissaoIndicacaoInsideSalesPme()))
+            .when(usuarioService)
+            .getPermissoesEspeciaisDoUsuario(101112, 23, FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME);
+
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoInsideSalesPme(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
+            .doesNotThrowAnyException();
+
+        verify(usuarioService).getPermissoesEspeciaisDoUsuario(101112, 23, FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME);
+        verify(usuarioService).salvarPermissoesEspeciais(List.of(umaPermissaoIndicacaoInsideSalesPme()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoIndicacaoInsideSalesPme_naoDeveAdicionarPermissaoIndicacaoInsideSalesPme_quandoUsuarioNivelOperacaoSemSubCanalInsideSalesPme() {
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoInsideSalesPme(umUsuarioOperacaoComSubCanal(101112, 2, PAP_PME)))
+            .doesNotThrowAnyException();
+
+        verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
+        verify(usuarioService, never()).salvarPermissoesEspeciais(anyList());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoIndicacaoInsideSalesPme_naoDeveAdicionarPermissaoIndicacaoInsideSalesPme_quandoUsuarioNaoForNivelOperacao() {
+        assertThatCode(() -> subCanalService
+            .adicionarPermissaoIndicacaoInsideSalesPme(umUsuarioMsoConsultor(4, INSIDE_SALES_PME)))
+            .doesNotThrowAnyException();
+
+        verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
+        verify(usuarioService, never()).salvarPermissoesEspeciais(anyList());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void removerPermissaoIndicacaoInsideSalesPme_deveRemoverPermissaoIndicacaoInsideSalesPme_quandoUsuarioJaCadastradoENivelOperacao() {
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoInsideSalesPme(umUsuarioOperacaoComSubCanal(101112, 2, PAP_PME)))
+            .doesNotThrowAnyException();
+
+        verify(usuarioService).removerPermissoesEspeciais(FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME, List.of(101112));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void removerPermissaoIndicacaoInsideSalesPme_naoDeveRemoverPermissaoIndicacaoInsideSalesPme_quandoUsuarioJaCadastradoENaoNivelOperacao() {
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoInsideSalesPme(umUsuarioMsoConsultor(4, INSIDE_SALES_PME)))
+            .doesNotThrowAnyException();
+
+        verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void removerPermissaoIndicacaoInsideSalesPme_naoDeveRemoverPermissaoIndicacaoInsideSalesPme_quandoUsuarioNovoCadastro() {
+        assertThatCode(() -> subCanalService
+            .removerPermissaoIndicacaoInsideSalesPme(umUsuarioOperacaoComSubCanal(null, 2, PAP_PME)))
             .doesNotThrowAnyException();
 
         verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());

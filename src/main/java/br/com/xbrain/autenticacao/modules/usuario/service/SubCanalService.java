@@ -17,7 +17,8 @@ public class SubCanalService {
     private static final ValidacaoException SUBCANAL_NAO_ENCONTRADO =
         new ValidacaoException("Erro, subcanal não encontrado.");
 
-    private static final List<Integer> FUNCIONALIDADE_INDICACAO_PREMIUM_PARA_PAP_PREMIUM = List.of(3062);
+    public static final List<Integer> FUNC_CONSULTAR_INDICACAO_PREMIUM = List.of(3062);
+    public static final List<Integer> FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME = List.of(3071);
 
     @Autowired
     private SubCanalRepository repository;
@@ -49,7 +50,7 @@ public class SubCanalService {
             var permissaoPapPremium = usuarioService.getPermissoesEspeciaisDoUsuario(
                 usuario.getId(),
                 usuario.getUsuarioCadastro().getId(),
-                FUNCIONALIDADE_INDICACAO_PREMIUM_PARA_PAP_PREMIUM);
+                FUNC_CONSULTAR_INDICACAO_PREMIUM);
 
             usuarioService.salvarPermissoesEspeciais(permissaoPapPremium);
         }
@@ -57,8 +58,24 @@ public class SubCanalService {
 
     public void removerPermissaoIndicacaoPremium(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
-            usuarioService.removerPermissoesEspeciais(FUNCIONALIDADE_INDICACAO_PREMIUM_PARA_PAP_PREMIUM,
-                List.of(usuario.getId()));
+            usuarioService.removerPermissoesEspeciais(FUNC_CONSULTAR_INDICACAO_PREMIUM, List.of(usuario.getId()));
+        }
+    }
+
+    public void adicionarPermissaoIndicacaoInsideSalesPme(Usuario usuario) {
+        if (usuario.isNivelOperacao() && usuario.hasSubCanalInsideSalesPme()) {
+            var permissaoInsideSalesPme = usuarioService.getPermissoesEspeciaisDoUsuario(
+                usuario.getId(),
+                usuario.getUsuarioCadastro().getId(),
+                FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME);
+
+            usuarioService.salvarPermissoesEspeciais(permissaoInsideSalesPme);
+        }
+    }
+
+    public void removerPermissaoIndicacaoInsideSalesPme(Usuario usuario) {
+        if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
+            usuarioService.removerPermissoesEspeciais(FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME, List.of(usuario.getId()));
         }
     }
 }

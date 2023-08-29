@@ -10,12 +10,8 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
-import com.google.common.collect.Sets;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -30,7 +26,9 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESI
 import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacaoCallink;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
@@ -112,78 +110,12 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario outroUsuarioCompleto() {
-        var usuario = Usuario
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(EXECUTIVO_HUNTER)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
-                    .nome("OPERACAO")
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
-    }
-
-    public static Nivel umNivelXbrain() {
-        return Nivel
-            .builder()
-            .id(4)
-            .codigo(XBRAIN)
-            .nome("X-BRAIN")
-            .situacao(A)
-            .build();
-    }
-
-    public static Usuario umUsuarioOperacaoComSubCanal(Set<SubCanal> subCanais) {
+    public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
+                                                       Integer subCanalId,
+                                                       ETipoCanal codigoSubCanal) {
         return Usuario.builder()
-            .id(101112)
+            .id(usuarioId)
+            .email("USUARIO.OPERACAO@CLARO.COM.BR")
             .cargo(Cargo.builder()
                 .codigo(VENDEDOR_OPERACAO)
                 .nivel(Nivel
@@ -193,12 +125,18 @@ public class UsuarioHelper {
                     .nome("OPERACAO")
                     .build())
                 .build())
-            .subCanais(subCanais)
-            .usuarioCadastro(umUsuarioMsoConsultor(Set.of()))
+            .subCanais(Set.of(
+                SubCanal.builder()
+                    .id(subCanalId)
+                    .codigo(codigoSubCanal)
+                    .build()))
+            .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
+            .usuariosHierarquia(new HashSet<>())
+            .situacao(A)
             .build();
     }
 
-    public static Usuario umUsuarioMsoConsultor(Set<SubCanal> subCanais) {
+    public static Usuario umUsuarioMsoConsultor(Integer subCanalId, ETipoCanal codigoSubCanal) {
         return Usuario.builder()
             .id(23)
             .cargo(Cargo.builder()
@@ -210,7 +148,11 @@ public class UsuarioHelper {
                     .nome("MSO")
                     .build())
                 .build())
-            .subCanais(subCanais)
+            .subCanais(Set.of(
+                SubCanal.builder()
+                    .id(subCanalId)
+                    .codigo(codigoSubCanal)
+                    .build()))
             .build();
     }
 
@@ -482,7 +424,7 @@ public class UsuarioHelper {
                     UsuarioHierarquia.criar(new Usuario(101), 104, 100),
                     UsuarioHierarquia.criar(new Usuario(101), 369, 100),
                     UsuarioHierarquia.criar(new Usuario(101), 370, 100)
-                    ))
+                ))
             .departamento(new Departamento(51))
             .organizacao(umaOrganizacaoCallink())
             .dataCadastro(LocalDateTime.now())
