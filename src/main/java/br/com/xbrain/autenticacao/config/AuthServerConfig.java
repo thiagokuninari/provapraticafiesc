@@ -17,30 +17,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.util.Collections;
 
-import static br.com.xbrain.autenticacao.config.EScopes.APP;
-import static br.com.xbrain.autenticacao.config.EScopes.AUTENTICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.PARCEIROS_ONLINE;
-import static br.com.xbrain.autenticacao.config.EScopes.VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_BRSCAN;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_IMPORTACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.EQUIPE_VENDA;
-import static br.com.xbrain.autenticacao.config.EScopes.CALL;
-import static br.com.xbrain.autenticacao.config.EScopes.DASHBOARD;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA_ECCP;
-import static br.com.xbrain.autenticacao.config.EScopes.CONTATO_CRN;
-import static br.com.xbrain.autenticacao.config.EScopes.CHAMADO;
-import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
-import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
-import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
-import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
-import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
-import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
+import static br.com.xbrain.autenticacao.config.EScopes.*;
 
 
 @Configuration
@@ -166,6 +143,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String claroIndicoApiClient;
     @Value("${app-config.oauth-clients.claro-indico-api.secret}")
     private String claroIndicoApiSecret;
+    @Value("${app-config.oauth-clients.quality-call-api.client}")
+    private String qualityCallApiClient;
+    @Value("${app-config.oauth-clients.quality-call-api.secret}")
+    private String qualityCallApiSecret;
+
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -346,6 +328,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(claroIndicoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CLARO_INDICO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(qualityCallApiClient)
+            .secret(qualityCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(QUALITY_CALL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
