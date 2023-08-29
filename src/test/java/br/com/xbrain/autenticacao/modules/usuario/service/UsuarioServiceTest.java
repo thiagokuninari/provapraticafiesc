@@ -1319,21 +1319,21 @@ public class UsuarioServiceTest {
 
     @Test
     public void getAll_deveRetornarUsuarioPage_quandoColaboradorCanalInternet() {
-        var idsUsuariosSubordinados = IntStream.rangeClosed(0, 2000).boxed().collect(Collectors.toList());
-        var idsUsuariosSubordinadosComIdDoUsuario = Stream.of(idsUsuariosSubordinados, List.of(3000))
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
-        var predicate = new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).comIds(idsUsuariosSubordinadosComIdDoUsuario);
+        var predicate = new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).comCanal(ECanal.INTERNET);
+
+        var usuarioAutenticado = umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_GERENTE);
+        usuarioAutenticado.setCanais(Set.of(ECanal.INTERNET));
 
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_GERENTE, AUT_20050));
-        when(usuarioRepository.obterIdsPorUsuarioCadastroId(3000)).thenReturn(List.of());
-        when(usuarioRepository.getUsuariosSubordinados(3000)).thenReturn(idsUsuariosSubordinados);
+            .thenReturn(usuarioAutenticado);
         when(usuarioRepository.findAll(predicate.build(), new PageRequest()))
             .thenReturn(umaPageUsuario(new PageRequest(), List.of(umUsuario())));
 
         assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
             .isNotEmpty();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository).findAll(predicate.build(), new PageRequest());
     }
 
     @Test
@@ -2145,6 +2145,7 @@ public class UsuarioServiceTest {
     public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUsuario_quandoUsuarioVendedorInternet() {
         var usuario = umUsuarioAutenticado(1, "OPERACAO",
             INTERNET_VENDEDOR);
+        usuario.setCanais(Set.of(ECanal.INTERNET));
 
         var predicate = new UsuarioPredicate()
             .comCanal(ECanal.INTERNET)
@@ -2175,6 +2176,7 @@ public class UsuarioServiceTest {
         var usuario = umUsuarioAutenticado(1, "OPERACAO",
             INTERNET_BACKOFFICE);
         usuario.setOrganizacaoId(1);
+        usuario.setCanais(Set.of(ECanal.INTERNET));
 
         var predicate = new UsuarioPredicate()
             .comCanal(ECanal.INTERNET)
