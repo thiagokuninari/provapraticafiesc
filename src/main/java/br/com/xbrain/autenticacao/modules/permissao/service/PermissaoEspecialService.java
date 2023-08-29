@@ -71,6 +71,19 @@ public class PermissaoEspecialService {
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
     }
 
+    //TODO criar testes unitarios
+    public void reprocessarPermissoesEspeciaisSociosSecundarios(List<Integer> aaIds) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        usuarioAutenticado.validarAdministrador();
+        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+                CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))
+            .stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        feederService.salvarPermissoesEspeciaisSociosSecundarios(usuariosIds, usuarioAutenticado.getId());
+    }
+
     public boolean hasPermissaoEspecialAtiva(Integer usuarioId, Integer funcionalidadeId) {
         return repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId);
     }

@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESI
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 
 @Service
+@Slf4j
 public class FeederService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Usuario não encontrado.");
@@ -254,6 +256,31 @@ public class FeederService {
                             .build())
                         .collect(Collectors.toList()));
             }
+            }
+        );
+    }
+
+    //TODO criar testes unitarios
+    public void salvarPermissoesEspeciaisSociosSecundarios(List<Integer> usuariosIds, int usuarioAutenticadoId) {
+        usuariosIds.forEach(usuarioId -> {
+                if (usuarioRepository.exists(usuarioId)) {
+                    var permissoes = permissaoEspecialRepository.findByUsuario(usuarioId);
+                    log.info("Atualizando Usuario: {}", usuarioId);
+                    log.info("Permissoes do usuario: {}", permissoes);
+                    permissaoEspecialRepository.save(
+                        FUNCIONALIDADES_FEEDER_PARA_AA
+                            .stream()
+                            .filter(funcionalidade -> !permissoes.contains(funcionalidade))
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .usuario(new Usuario(usuarioId))
+                                .dataCadastro(dataHoraAtual.getDataHora())
+                                .usuarioCadastro(Usuario.builder().id(usuarioAutenticadoId).build())
+                                .build())
+                            .collect(Collectors.toList()));
+                    log.info("Permissões do usuario {} atualizadas", usuarioId);
+                }
             }
         );
     }
