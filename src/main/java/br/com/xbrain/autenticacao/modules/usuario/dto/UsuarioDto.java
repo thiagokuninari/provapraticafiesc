@@ -61,10 +61,8 @@ public class UsuarioDto implements Serializable {
     @NotBlank
     private String loginNetSales;
     @Size(max = 120)
-    @NotBlank
     private String nomeEquipeVendaNetSales;
     @Size(max = 120)
-    @NotBlank
     private String codigoEquipeVendaNetSales;
     private LocalDateTime nascimento;
     @NotEmpty

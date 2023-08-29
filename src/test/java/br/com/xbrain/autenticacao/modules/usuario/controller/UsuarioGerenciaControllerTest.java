@@ -100,7 +100,7 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(new UsuarioDto()))
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(9)))
+            .andExpect(jsonPath("$", hasSize(7)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo nome é obrigatório.",
                 "O campo email é obrigatório.",
@@ -108,9 +108,7 @@ public class UsuarioGerenciaControllerTest {
                 "O campo empresasId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty",
-                "O campo codigoEquipeVendaNetSales may not be empty",
-                "O campo nomeEquipeVendaNetSales may not be empty")));
+                "O campo loginNetSales may not be empty")));
     }
 
     @Test
@@ -640,14 +638,12 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(put(API_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
-            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(9)))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(7)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo email é obrigatório.",
                 "O campo nome é obrigatório.",
                 "O campo departamentoId é obrigatório.",
                 "O campo loginNetSales may not be empty",
-                "O campo codigoEquipeVendaNetSales may not be empty",
-                "O campo nomeEquipeVendaNetSales may not be empty",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo empresasId é obrigatório.")));
