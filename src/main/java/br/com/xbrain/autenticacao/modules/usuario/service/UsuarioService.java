@@ -1214,6 +1214,7 @@ public class UsuarioService {
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
+                atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto.of(usuarioMqRequest));
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
             }
@@ -1280,6 +1281,8 @@ public class UsuarioService {
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        atualizarPermissaoEspecialAaResidencial(
+            UsuarioAaTipoFeederDto.of(usuarioNovo,usuarioMqRequest.getAgenteAutorizadoFeeder()));
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -2777,14 +2780,14 @@ public class UsuarioService {
 
             adicionarPermissaoEspecial(usuarioAdicionarPermissao,
                 usuarioAaTipoFeederDto.getUsuarioCadastroId(), FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
-            removerPermissoesEspeciaisTest(usuarioRemoverPermissao, FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
+            removerPermissaoEspecial(usuarioRemoverPermissao, FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
         } else {
-            removerPermissoesEspeciaisTest(usuarioAaTipoFeederDto.getUsuariosIds(),
+            removerPermissaoEspecial(usuarioAaTipoFeederDto.getUsuariosIds(),
                 FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
         }
     }
 
-    public void removerPermissoesEspeciaisTest(List<Integer> usuarios, List<Integer> funcionalidades) {
+    public void removerPermissaoEspecial(List<Integer> usuarios, List<Integer> funcionalidades) {
         permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
     }
 
