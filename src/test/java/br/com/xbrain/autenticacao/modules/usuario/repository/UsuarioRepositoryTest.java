@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
@@ -207,8 +209,8 @@ public class UsuarioRepositoryTest {
     @Test
     public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
         assertThat(repository.obterIdsPorUsuarioCadastroId(100))
-            .hasSize(3)
-            .containsExactly(200, 300, 400);
+            .hasSize(6)
+            .containsExactly(200, 300, 400, 500, 600, 700);
     }
 
     @Test
@@ -327,5 +329,26 @@ public class UsuarioRepositoryTest {
             .comDepartamento(List.of(3))
             .comNivel(List.of(1))
             .comCargo(List.of(2, 5));
+    }
+    
+    @Test
+    public void findByIdInAndCargoIn_deveRetornarUsuarios_quandoInformarIdsDosUsuariosAndCargos() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoIn(List.of(500, 600, 700), List.of(cargo)))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(600, "USUARIO 600", "USUARIO_600@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
+    }
+
+    @Test
+    public void findByIdInAndCargoInAndSituacaoNot_deveRetornarUsuariosNaoRealocados_quandoInformarIdsAndCargosAndSituacao() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), ESituacao.R))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
     }
 }

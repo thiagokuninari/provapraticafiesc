@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -239,6 +240,8 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -583,6 +586,8 @@ public class UsuarioService {
         subCanalService.removerPermissaoIndicacaoPremium(usuario);
         subCanalService.removerPermissaoIndicacaoInsideSalesPme(usuario);
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
+        permissaoTecnicoIndicadorService
+            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
     }
 
     private void adicionarPermissoes(Usuario usuario) {
@@ -1205,6 +1210,8 @@ public class UsuarioService {
             }
 
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            permissaoTecnicoIndicadorService
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -1223,6 +1230,8 @@ public class UsuarioService {
                 configurarDataReativacao(usuarioMqRequest);
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                permissaoTecnicoIndicadorService
+                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1285,11 +1294,15 @@ public class UsuarioService {
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
         usuario.removerCaracteresDoCpf();
         salvarUsuarioRemanejado(usuario);
+        permissaoTecnicoIndicadorService
+            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {

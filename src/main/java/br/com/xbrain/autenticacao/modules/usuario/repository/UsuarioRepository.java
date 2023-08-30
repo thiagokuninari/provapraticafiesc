@@ -61,6 +61,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findByIdInAndCargoIn(List<Integer> usuarios, List<Cargo> cargos);
 
+    List<Usuario> findByIdInAndCargoInAndSituacaoNot(List<Integer> usuarios, List<Cargo> cargos, ESituacao situacao);
+
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
         + "recuperarSenhaTentativa = 0 where u.id = ?3")
