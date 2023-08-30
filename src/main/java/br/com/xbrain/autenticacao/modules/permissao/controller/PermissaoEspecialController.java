@@ -32,7 +32,6 @@ public class PermissaoEspecialController {
         service.processarPermissoesEspeciaisGerentesCoordenadores(aaIds);
     }
 
-    //TODO criar testes unitarios
     @PostMapping("reprocessar-permissoes-socios-secundarios")
     public void reprocessarPermissoesEspeciaisSociosSecundarios(@RequestParam(required = false) List<Integer> aaIds) {
         service.reprocessarPermissoesEspeciaisSociosSecundarios(aaIds);

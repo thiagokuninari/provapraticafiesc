@@ -23,7 +23,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.List;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -103,6 +106,52 @@ public class PermissaoEspecialControllerTest {
                 .param("aaIds", "")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveRetornarUnauthorized_quandoTokenInvalido() {
+        mvc.perform(post(URL + "/reprocessar-permissoes-socios-secundarios")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(permissaoEspecialService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveRetornarOk_quandoListaVazia() {
+        mvc.perform(post(URL + "/reprocessar-permissoes-socios-secundarios")
+                .param("aaIds", "")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(permissaoEspecialService).reprocessarPermissoesEspeciaisSociosSecundarios(List.of());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveRetornarOk_quandoListaPreenchida() {
+        mvc.perform(post(URL + "/reprocessar-permissoes-socios-secundarios")
+                .param("aaIds", "123")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(permissaoEspecialService).reprocessarPermissoesEspeciaisSociosSecundarios(List.of(123));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveRetornarOk_quandoListaNull() {
+        mvc.perform(post(URL + "/reprocessar-permissoes-socios-secundarios")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(permissaoEspecialService).reprocessarPermissoesEspeciaisSociosSecundarios(null);
     }
 
     private PermissaoEspecialRequest novasPermissoes() {

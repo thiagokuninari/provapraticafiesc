@@ -71,7 +71,6 @@ public class PermissaoEspecialService {
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
     }
 
-    //TODO criar testes unitarios
     public void reprocessarPermissoesEspeciaisSociosSecundarios(List<Integer> aaIds) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         usuarioAutenticado.validarAdministrador();

@@ -260,7 +260,6 @@ public class FeederService {
         );
     }
 
-    //TODO criar testes unitarios
     public void salvarPermissoesEspeciaisSociosSecundarios(List<Integer> usuariosIds, int usuarioAutenticadoId) {
         usuariosIds.forEach(usuarioId -> {
                 if (usuarioRepository.exists(usuarioId)) {
