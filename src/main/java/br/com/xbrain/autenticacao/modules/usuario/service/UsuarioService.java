@@ -26,7 +26,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.enums.ECargosComPermissaoAaFeeder;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
@@ -281,7 +280,7 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(int id) {
         var usuario = findByIdComAa(id);
-        return  UsuarioDto.of(
+        return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
@@ -1282,7 +1281,7 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
         atualizarPermissaoEspecialAaResidencial(
-            UsuarioAaTipoFeederDto.of(usuarioNovo,usuarioMqRequest.getAgenteAutorizadoFeeder()));
+            UsuarioAaTipoFeederDto.of(usuarioNovo, usuarioMqRequest.getAgenteAutorizadoFeeder()));
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -1653,7 +1652,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
-        var usuarios =  repository.getUsuariosFilter(
+        var usuarios = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
@@ -2787,14 +2786,14 @@ public class UsuarioService {
         }
     }
 
-    public void removerPermissaoEspecial(List<Integer> usuarios, List<Integer> funcionalidades) {
-        permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
+    private void removerPermissaoEspecial(List<Integer> usuarios, List<Integer> funcionalidades) {
+        permissaoEspecialService.deletarPermissaoEspecial(funcionalidades, usuarios);
     }
 
-   private void adicionarPermissaoEspecial(List<Integer> usuariosId, Integer usuarioCadastroId,
-                                           List<Integer> funcionalidadesIds) {
+    private void adicionarPermissaoEspecial(List<Integer> usuariosId, Integer usuarioCadastroId,
+                                            List<Integer> funcionalidadesIds) {
         permissaoEspecialService.save(criarPermissaoEspecia(usuariosId,
-            usuarioCadastroId,funcionalidadesIds));
+            usuarioCadastroId, funcionalidadesIds));
     }
 
     private List<PermissaoEspecial> criarPermissaoEspecia(List<Integer> usuariosIds,
@@ -2806,8 +2805,7 @@ public class UsuarioService {
     }
 
     private boolean verificaCargoUsuario(Integer usuarioCargoId) {
-        return Arrays.stream(ECargosComPermissaoAaFeeder.values())
-            .anyMatch(c -> c.getValor().equals(usuarioCargoId));
+        return ECargosComPermissaoAaFeeder.listaDeCargos().stream().anyMatch(c -> c.equals(usuarioCargoId));
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,

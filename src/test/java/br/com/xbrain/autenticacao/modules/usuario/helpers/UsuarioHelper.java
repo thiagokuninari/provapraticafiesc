@@ -3,11 +3,15 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -15,7 +19,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
-import com.google.common.collect.Sets;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -103,6 +106,15 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static UsuarioAaTipoFeederDto umUsuarioAaTipoFeederDto() {
+        return UsuarioAaTipoFeederDto
+            .builder()
+            .usuariosIds(List.of(umUsuario().getId()))
+            .usuarioCadastroId(umUsuarioCadastro().getId())
+            .tipoFeeder(ETipoFeeder.RESIDENCIAL)
+            .build();
+    }
+
     public static Usuario doisUsuario(Integer id, String nome, ESituacao situacao) {
         return Usuario
             .builder()
@@ -110,65 +122,6 @@ public class UsuarioHelper {
             .nome(nome)
             .situacao(situacao)
             .build();
-    }
-
-    public static Usuario outroUsuarioCompleto() {
-        var usuario = Usuario
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(EXECUTIVO_HUNTER)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
-                    .nome("OPERACAO")
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
     }
 
     public static Nivel umNivelXbrain() {
@@ -289,6 +242,14 @@ public class UsuarioHelper {
     public static UsuarioMqRequest umUsuarioMqRequestSocioSecundario() {
         return UsuarioMqRequest.builder()
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO)
+            .build();
+    }
+
+    public static UsuarioMqRequest umUsuarioMqRequest() {
+        return UsuarioMqRequest.builder()
+            .id(1)
+            .usuarioCadastroId(5)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .build();
     }
 
@@ -582,6 +543,70 @@ public class UsuarioHelper {
             umUsuarioAdminSimples(102, "USUARIO ADMIN 2", "ADMIN2@XBRAIN.COM.BR"),
             umUsuarioAdminSimples(103, "USUARIO ADMIN 3", "ADMIN3@XBRAIN.COM.BR"),
             umUsuarioAdminSimples(104, "USUARIO ADMIN 4", "ADMIN4@XBRAIN.COM.BR")
+        );
+    }
+
+    public static List<Usuario> umUsuariosListComCargoSemPermissao() {
+        return List.of(
+            Usuario.builder()
+                .id(1)
+                .nome("Caio")
+                .loginNetSales("H")
+                .email("caio@teste.com")
+                .situacao(A)
+                .cargo(umCargoAnalistaOperacao())
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .nome("Mario")
+                .loginNetSales("QQ")
+                .email("mario@teste.com")
+                .situacao(ESituacao.I)
+                .cargo(umCargoAnalistaOperacao())
+                .build(),
+            Usuario.builder()
+                .id(3)
+                .nome("Maria")
+                .loginNetSales("LOG")
+                .email("maria@teste.com")
+                .situacao(ESituacao.R)
+                .cargo(umCargoAnalistaOperacao())
+                .build()
+        );
+    }
+
+    public static List<Usuario> umUsuariosListComCargoComPermissao() {
+        return List.of(
+            Usuario.builder()
+                .id(88)
+                .nome("Caio")
+                .loginNetSales("H")
+                .email("caio@teste.com")
+                .situacao(A)
+                .cargo(umCargoAaSocio())
+                .usuarioCadastro(umUsuarioCadastro())
+                .build()
+        );
+    }
+
+    public static List<PermissaoEspecial> umaListaDePermissaoEspecial() {
+        return List.of(
+            PermissaoEspecial.builder()
+                .id(1)
+                .usuario(Usuario.builder()
+                    .id(88)
+                    .nome("Caio")
+                    .loginNetSales("H")
+                    .email("caio@teste.com")
+                    .situacao(A)
+                    .cargo(umCargoAaSocio())
+                    .build())
+                .funcionalidade(Funcionalidade.builder()
+                    .id(20018)
+                    .build())
+                .usuarioCadastro(umUsuarioCadastro())
+                .dataCadastro(LocalDateTime.now())
+                .build()
         );
     }
 }

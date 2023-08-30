@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
 import br.com.xbrain.autenticacao.config.IgnoreRabbitProfile;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.extern.slf4j.Slf4j;
