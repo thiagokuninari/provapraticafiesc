@@ -1260,9 +1260,8 @@ public class UsuarioService {
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            duplicarUsuarioERemanejarAntigo(usuario, usuarioMqRequest);
+            duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
         } catch (Exception ex) {
             enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
             log.error("Erro ao processar usuário da fila: ", ex);
