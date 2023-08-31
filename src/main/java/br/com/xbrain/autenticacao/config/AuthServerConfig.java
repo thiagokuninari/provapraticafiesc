@@ -41,7 +41,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
-
+import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 
 @Configuration
 @EnableAuthorizationServer
@@ -166,6 +166,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String claroIndicoApiClient;
     @Value("${app-config.oauth-clients.claro-indico-api.secret}")
     private String claroIndicoApiSecret;
+    @Value("${app-config.oauth-clients.quality-call-api.client}")
+    private String qualityCallApiClient;
+    @Value("${app-config.oauth-clients.quality-call-api.secret}")
+    private String qualityCallApiSecret;
+
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -346,6 +351,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(claroIndicoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CLARO_INDICO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(qualityCallApiClient)
+            .secret(qualityCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(QUALITY_CALL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
