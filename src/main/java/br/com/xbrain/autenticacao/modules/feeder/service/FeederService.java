@@ -220,7 +220,7 @@ public class FeederService {
     private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
                                                                                       Integer usuarioCadastroId,
                                                                                       CodigoCargo cargoCodigo) {
-        if (isBackOfficeAndSocioSecundario(cargoCodigo)) {
+        if (isBackOfficeOrSocioSecundario(cargoCodigo)) {
             return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
                 FUNCIONALIDADES_FEEDER_PARA_AA);
         }
@@ -234,8 +234,9 @@ public class FeederService {
             FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
-    private boolean isBackOfficeAndSocioSecundario(CodigoCargo codigoCargo) {
-        return codigoCargo != null && CARGOS_BACKOFFICE_E_SOCIO_SECUNDARIO.contains(codigoCargo);
+    private boolean isBackOfficeOrSocioSecundario(CodigoCargo codigoCargo) {
+        return codigoCargo != null
+            && (CARGOS_BACKOFFICE.contains(codigoCargo) || CARGOS_SOCIO_SECUNDARIO.contains(codigoCargo));
     }
 
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
@@ -272,10 +273,10 @@ public class FeederService {
                             .filter(funcionalidade -> !permissoes.contains(funcionalidade))
                             .map(id -> PermissaoEspecial
                                 .builder()
-                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .funcionalidade(new Funcionalidade(id))
                                 .usuario(new Usuario(usuarioId))
                                 .dataCadastro(dataHoraAtual.getDataHora())
-                                .usuarioCadastro(Usuario.builder().id(usuarioAutenticadoId).build())
+                                .usuarioCadastro(new Usuario(usuarioAutenticadoId))
                                 .build())
                             .collect(Collectors.toList()));
                     log.info("Permissões do usuario {} atualizadas", usuarioId);
