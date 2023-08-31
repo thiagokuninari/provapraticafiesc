@@ -36,27 +36,27 @@ import static com.google.common.collect.Lists.partition;
 @RequiredArgsConstructor
 public class UsuarioAgendamentoService {
     private static final List<CodigoCargo> CARGOS_HIBRIDOS_PERMITIDOS = List.of(
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_TEMP,
-            CodigoCargo.AGENTE_AUTORIZADO_SOCIO,
-            CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO,
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP,
-            CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR,
-            CodigoCargo.AGENTE_AUTORIZADO_ACEITE
+        CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
+        CodigoCargo.AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
+        CodigoCargo.AGENTE_AUTORIZADO_GERENTE_TEMP,
+        CodigoCargo.AGENTE_AUTORIZADO_SOCIO,
+        CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP,
+        CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR,
+        CodigoCargo.AGENTE_AUTORIZADO_ACEITE
     );
     private static final List<String> PERMISSOES_DE_VENDA = List.of(
-            "VDS_TABULACAO_MANUAL",
-            "VDS_TABULACAO_DISCADORA",
-            "VDS_TABULACAO_CLICKTOCALL",
-            "VDS_TABULACAO_PERSONALIZADA"
+        "VDS_TABULACAO_MANUAL",
+        "VDS_TABULACAO_DISCADORA",
+        "VDS_TABULACAO_CLICKTOCALL",
+        "VDS_TABULACAO_PERSONALIZADA"
     );
     private static final List<CodigoCargo> CARGOS_SUPERVISOR = List.of(
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
-            CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
 
     private final AutenticacaoService autenticacaoService;
@@ -80,70 +80,70 @@ public class UsuarioAgendamentoService {
         if (isUsuarioAutenticadoSupervisor()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
             var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(
-                    Collections.singletonList(usuarioAutenticado));
+                Collections.singletonList(usuarioAutenticado));
             var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuariosDoAa)
-                    .stream()
-                    .map(UsuarioAgendamentoResponse::getId)
+                .stream()
+                .map(UsuarioAgendamentoResponse::getId)
 
-                    .collect(Collectors.toList());
+                .collect(Collectors.toList());
             return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresDoMesmoCanal.stream())
-                    .filter(u -> !u.isUsuarioSolicitante(usuarioId)
-                            && (usuariosSupervisionados.contains(u.getId())
-                                || Objects.equals(u.getId(), usuarioAutenticado.getId())))
-                    .distinct()
-                    .collect(Collectors.toList());
+                .filter(u -> !u.isUsuarioSolicitante(usuarioId)
+                    && (usuariosSupervisionados.contains(u.getId())
+                    || Objects.equals(u.getId(), usuarioAutenticado.getId())))
+                .distinct()
+                .collect(Collectors.toList());
         }
 
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
 
         return Stream.concat(usuariosHibridosValidos.stream(), vendedoresDoMesmoCanal.stream())
-                .filter(u -> !u.isUsuarioSolicitante(usuarioId))
-                .distinct()
-                .collect(Collectors.toList());
+            .filter(u -> !u.isUsuarioSolicitante(usuarioId))
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> getVendedoresDoMesmoCanal(Integer usuarioId,
                                                                                        Integer agenteAutorizadoId,
                                                                                        List<Usuario> usuariosHibridos) {
         return Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
-                .filter(this::isVendedor)
-                .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
-                .orElseGet(List::of);
+            .filter(this::isVendedor)
+            .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
+            .orElseGet(List::of);
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> obterVendedoresDoMesmoCanalSemSupervisores(
-            Integer agenteAutorizadoId,
-            Integer usuarioId,
-            List<Usuario> usuariosHibridos) {
+        Integer agenteAutorizadoId,
+        Integer usuarioId,
+        List<Usuario> usuariosHibridos) {
 
         var usuariosIds = usuariosHibridos.stream()
-                .map(Usuario::getId)
-                .collect(Collectors.toList());
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
 
         return agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(agenteAutorizadoId, usuarioId)
-                .stream()
-                .filter(u -> !usuariosIds.contains(u.getId()))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(u -> !usuariosIds.contains(u.getId()))
+            .collect(Collectors.toList());
     }
 
     private List<Usuario> obterUsuariosHibridosDoAa(List<Integer> usuariosDoAa) {
         Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
-                .filter(u -> this.isSupervisor(u.getCargoCodigo()))
-                .ifPresent(u -> usuariosDoAa.add(u.getId()));
+            .filter(u -> this.isSupervisor(u.getCargoCodigo()))
+            .ifPresent(u -> usuariosDoAa.add(u.getId()));
 
         return usuarioRepository.getUsuariosFilter(new UsuarioPredicate()
                 .comIds(usuariosDoAa)
                 .build())
-                .stream()
-                .filter(u -> isCargoHibrido(u.getCargoCodigo()))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(u -> isCargoHibrido(u.getCargoCodigo()))
+            .collect(Collectors.toList());
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> filtrarSupervisoresSemPermissaoDeVenda(List<Usuario> usuarios) {
         return usuarios.stream()
-                .filter(this::isSupervisorComPermissaoDeVenda)
-                .map(UsuarioAgenteAutorizadoAgendamentoResponse::of)
-                .collect(Collectors.toList());
+            .filter(this::isSupervisorComPermissaoDeVenda)
+            .map(UsuarioAgenteAutorizadoAgendamentoResponse::of)
+            .collect(Collectors.toList());
     }
 
     private boolean isSupervisorComPermissaoDeVenda(Usuario usuario) {
@@ -153,12 +153,12 @@ public class UsuarioAgendamentoService {
     private boolean hasPermissaoVenda(UsuarioPermissaoResponse usuarioPermissaoResponse) {
         return Stream.concat(
                 usuarioPermissaoResponse.getPermissoesCargoDepartamento()
-                        .stream()
-                        .map(CargoDepartamentoFuncionalidadeResponse::getFuncionalidadeRole),
+                    .stream()
+                    .map(CargoDepartamentoFuncionalidadeResponse::getFuncionalidadeRole),
                 usuarioPermissaoResponse.getPermissoesEspeciais()
-                        .stream()
-                        .map(FuncionalidadeResponse::getRole))
-                .anyMatch(this::isPermissaoVenda);
+                    .stream()
+                    .map(FuncionalidadeResponse::getRole))
+            .anyMatch(this::isPermissaoVenda);
     }
 
     private boolean isPermissaoVenda(String role) {
@@ -171,8 +171,8 @@ public class UsuarioAgendamentoService {
 
     private boolean isVendedor(Cargo cargoDoUsuario) {
         return Objects.nonNull(cargoDoUsuario)
-                && Objects.equals(cargoDoUsuario.getNivel().getCodigo(), CodigoNivel.AGENTE_AUTORIZADO)
-                && !isCargoHibrido(cargoDoUsuario.getCodigo());
+            && Objects.equals(cargoDoUsuario.getNivel().getCodigo(), CodigoNivel.AGENTE_AUTORIZADO)
+            && !isCargoHibrido(cargoDoUsuario.getCodigo());
     }
 
     private boolean isCargoHibrido(CodigoCargo codigoCargo) {
@@ -201,9 +201,7 @@ public class UsuarioAgendamentoService {
     private void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
         var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
 
-        usuarios.forEach(usuario -> {
-            usuario.setEquipeVendaId(usuarioEquipes.getOrDefault(usuario.getId(), null));
-        });
+        usuarios.forEach(usuario -> usuario.setEquipeVendaId(usuarioEquipes.getOrDefault(usuario.getId(), null)));
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
@@ -214,19 +212,19 @@ public class UsuarioAgendamentoService {
         if (isUsuarioAutenticadoSupervisor()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
             var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(List.of(usuarioAutenticado))
-                    .stream()
-                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
-                    .collect(Collectors.toList());
+                .stream()
+                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+                .collect(Collectors.toList());
             var vendedoresSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
 
             return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresSupervisionados.stream())
-                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
-                    .collect(Collectors.toList());
+                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+                .collect(Collectors.toList());
         }
 
         return usuarios.stream()
-                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
-                .collect(Collectors.toList());
+            .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioDistribuicaoResponse> getUsuariosParaDistribuicaoByEquipeVendaId(Integer equipeVendaId) {
@@ -243,20 +241,20 @@ public class UsuarioAgendamentoService {
     private List<UsuarioAgendamentoResponse> getVendedoresSupervisionados(int supervisorId,
                                                                           List<UsuarioAgenteAutorizadoResponse> usuarios) {
         var equipesSupervisionadas = equipeVendasService.getEquipesPorSupervisor(supervisorId)
-                .stream()
-                .map(EquipeVendasSupervisionadasResponse::getId)
-                .collect(Collectors.toList());
+            .stream()
+            .map(EquipeVendasSupervisionadasResponse::getId)
+            .collect(Collectors.toList());
 
         return usuarios.stream()
-                .filter(usuario -> equipesSupervisionadas.contains(usuario.getEquipeVendaId()))
-                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
-                .collect(Collectors.toList());
+            .filter(usuario -> equipesSupervisionadas.contains(usuario.getEquipeVendaId()))
+            .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
     }
 
     private boolean isUsuarioAutenticadoSupervisor() {
         return Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
-                .map(UsuarioAutenticado::getCargoCodigo)
-                .map(this::isSupervisor)
-                .orElse(false);
+            .map(UsuarioAutenticado::getCargoCodigo)
+            .map(this::isSupervisor)
+            .orElse(false);
     }
 }
