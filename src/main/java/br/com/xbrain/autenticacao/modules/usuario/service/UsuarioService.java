@@ -87,7 +87,6 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1213,7 +1212,6 @@ public class UsuarioService {
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
-                atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto.of(usuarioMqRequest));
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
             }
@@ -1281,8 +1279,6 @@ public class UsuarioService {
         usuarioNovo = repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
-        atualizarPermissaoEspecialAaResidencial(
-            UsuarioAaTipoFeederDto.of(usuarioNovo, usuarioMqRequest.getAgenteAutorizadoFeeder()));
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -2761,52 +2757,6 @@ public class UsuarioService {
                 this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
             }
         }
-    }
-
-    @Transactional
-    public void atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto usuarioAaTipoFeederDto) {
-        if (usuarioAaTipoFeederDto.getTipoFeeder() == ETipoFeeder.RESIDENCIAL) {
-            var usuarios = repository.findByIdIn(usuarioAaTipoFeederDto.getUsuariosIds());
-            var usuarioAdicionarPermissao = new ArrayList<Integer>();
-            var usuarioRemoverPermissao = new ArrayList<Integer>();
-
-            usuarios.forEach(usuario -> {
-                if (verificaCargoUsuario(usuario.getCargoId())) {
-                    usuarioAdicionarPermissao.add(usuario.getId());
-                } else {
-                    usuarioRemoverPermissao.add(usuario.getId());
-                }
-            });
-
-            adicionarPermissaoEspecial(usuarioAdicionarPermissao,
-                usuarioAaTipoFeederDto.getUsuarioCadastroId(), FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
-            removerPermissaoEspecial(usuarioRemoverPermissao, FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
-        } else {
-            removerPermissaoEspecial(usuarioAaTipoFeederDto.getUsuariosIds(),
-                FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL);
-        }
-    }
-
-    private void removerPermissaoEspecial(List<Integer> usuarios, List<Integer> funcionalidades) {
-        permissaoEspecialService.deletarPermissaoEspecial(funcionalidades, usuarios);
-    }
-
-    private void adicionarPermissaoEspecial(List<Integer> usuariosId, Integer usuarioCadastroId,
-                                            List<Integer> funcionalidadesIds) {
-        permissaoEspecialService.save(criarPermissaoEspecia(usuariosId,
-            usuarioCadastroId, funcionalidadesIds));
-    }
-
-    private List<PermissaoEspecial> criarPermissaoEspecia(List<Integer> usuariosIds,
-                                                          Integer usuarioCadastroId,
-                                                          List<Integer> funcionalidades) {
-        return usuariosIds.stream()
-            .flatMap(usuarioId -> criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, funcionalidades).stream())
-            .collect(Collectors.toList());
-    }
-
-    private boolean verificaCargoUsuario(Integer usuarioCargoId) {
-        return ECargosComPermissaoAaFeeder.listaDeCargos().stream().anyMatch(c -> c.equals(usuarioCargoId));
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,

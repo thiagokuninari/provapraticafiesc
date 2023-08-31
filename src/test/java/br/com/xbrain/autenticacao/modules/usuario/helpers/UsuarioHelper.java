@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAaTipoFeederDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -99,15 +98,6 @@ public class UsuarioHelper {
             .nome("NED STARK")
             .cargo(umCargoAdministrador())
             .subCanais(Set.of(umSubCanal()))
-            .build();
-    }
-
-    public static UsuarioAaTipoFeederDto umUsuarioAaTipoFeederDto() {
-        return UsuarioAaTipoFeederDto
-            .builder()
-            .usuariosIds(List.of(umUsuario().getId()))
-            .usuarioCadastroId(umUsuarioCadastro().getId())
-            .tipoFeeder(ETipoFeeder.RESIDENCIAL)
             .build();
     }
 
@@ -236,14 +226,6 @@ public class UsuarioHelper {
     public static UsuarioMqRequest umUsuarioMqRequestSocioSecundario() {
         return UsuarioMqRequest.builder()
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO)
-            .build();
-    }
-
-    public static UsuarioMqRequest umUsuarioMqRequest() {
-        return UsuarioMqRequest.builder()
-            .id(1)
-            .usuarioCadastroId(5)
-            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .build();
     }
 

@@ -25,4 +25,8 @@ public class AgenteAutorizadoPermissaoFeederDto {
     public boolean hasPermissaoFeeder() {
         return !Objects.equals(feeder, ETipoFeeder.NAO_FEEDER);
     }
+
+    public boolean hasPermissaoFeederResidencial() {
+        return !Objects.equals(feeder, ETipoFeeder.RESIDENCIAL);
+    }
 }

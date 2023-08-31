@@ -94,10 +94,5 @@ public class UsuarioMqListener {
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
         service.atualizarPermissaoEquipeTecnica(dto);
     }
-
-    @RabbitListener(queues = "${app-config.queue.atualizar-permissao-especial-aa-residencial}")
-    public void atualizarPermissaoEspecialAaResidencial(UsuarioAaTipoFeederDto usuarioAaTipoFeederDto) {
-        service.atualizarPermissaoEspecialAaResidencial(usuarioAaTipoFeederDto);
-    }
 }
 
