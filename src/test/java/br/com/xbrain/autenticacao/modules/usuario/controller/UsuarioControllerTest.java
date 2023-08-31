@@ -130,6 +130,7 @@ public class UsuarioControllerTest {
     public void buscarUsuariosAtivosNivelOperacaoCanalAa_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/ativos/nivel/operacao/canal-aa")))
             .andExpect(status().isOk());
+
         verify(usuarioService).buscarUsuariosAtivosNivelOperacaoCanalAa();
     }
 
@@ -148,6 +149,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/ativar-socio"))
                 .param("email", "user@email.com"))
             .andExpect(status().isOk());
+
         verify(usuarioService).ativarSocioPrincipal("user@email.com");
     }
 
@@ -165,6 +167,7 @@ public class UsuarioControllerTest {
     public void ativar_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(put(BASE_URL.concat("/ativar/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).ativar(1);
     }
 
@@ -183,6 +186,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/inativar-socio"))
                 .param("email", "email@test.com"))
             .andExpect(status().isOk());
+
         verify(usuarioService).inativarSocioPrincipal("email@test.com");
     }
 
@@ -200,6 +204,7 @@ public class UsuarioControllerTest {
     public void getAllUsuariosIdsSuperiores_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/ids/superiores/usuario-logado")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getAllUsuariosIdsSuperiores();
     }
 
@@ -217,6 +222,7 @@ public class UsuarioControllerTest {
     public void inativar_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(put(BASE_URL.concat("/inativar/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).inativar(1);
     }
 
@@ -236,6 +242,7 @@ public class UsuarioControllerTest {
 
         mvc.perform(get(BASE_URL.concat("/autenticado/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).findCompleteById(1);
     }
 
@@ -256,6 +263,7 @@ public class UsuarioControllerTest {
 
         mvc.perform(get(BASE_URL.concat("/autenticado-com-login-netsales/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).findCompleteByIdComLoginNetSales(1);
     }
 
@@ -274,6 +282,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/vendedores"))
                 .param("ids", "1"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getVendedoresByIds(List.of(1));
     }
 
@@ -294,6 +303,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(List.of(1))))
             .andExpect(status().isOk());
+
         verify(usuarioService).getVendedoresByIds(List.of(1));
     }
 
@@ -330,6 +340,7 @@ public class UsuarioControllerTest {
 
         mvc.perform(get(BASE_URL.concat("/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).findByIdComAa(1);
         verify(usuarioService).getFuncionalidadeByUsuario(1);
     }
@@ -350,6 +361,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL)
                 .param("nivel", "AGENTE_AUTORIZADO"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuarioByNivel(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
@@ -368,6 +380,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/ids"))
                 .param("nivel", "AGENTE_AUTORIZADO"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuariosIdsByNivel(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
@@ -385,6 +398,7 @@ public class UsuarioControllerTest {
     public void getCidadesByUsuario_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1/cidades")))
             .andExpect(status().isOk());
+
         verify(usuarioService).findCidadesByUsuario(1);
     }
 
@@ -403,6 +417,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/nivel/canal"))
                 .param("codigoNivel", "AGENTE_AUTORIZADO"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuariosOperacaoCanalAa(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
@@ -420,6 +435,7 @@ public class UsuarioControllerTest {
     public void getSubclustersUsuario_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1/subclusters")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getSubclusterUsuario(1);
     }
 
@@ -437,6 +453,7 @@ public class UsuarioControllerTest {
     public void getUfsUsuario_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1/ufs")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUfUsuario(1);
     }
 
@@ -455,6 +472,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/1/subordinados"))
                 .param("incluirProprio", "true"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getIdDosUsuariosSubordinados(1, true);
     }
 
@@ -464,6 +482,7 @@ public class UsuarioControllerTest {
     public void getSubordinados_deveEnviarDefault_quandoNaoPassarParametro() {
         mvc.perform(get(BASE_URL.concat("/1/subordinados")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getIdDosUsuariosSubordinados(1, false);
     }
 
@@ -481,6 +500,7 @@ public class UsuarioControllerTest {
     public void getSubordinadosVendas_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1/subordinados/vendas")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getIdDosUsuariosSubordinados(1, true);
     }
 
@@ -498,6 +518,7 @@ public class UsuarioControllerTest {
     public void getSuperioresByUsuario_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/hierarquia/superiores/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getSuperioresDoUsuario(1);
     }
 
@@ -515,6 +536,7 @@ public class UsuarioControllerTest {
     public void getSuperioresByUsuarioPorCargo_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/hierarquia/superiores/1/AGENTE_AUTORIZADO_SOCIO")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getSuperioresDoUsuarioPorCargo(1, AGENTE_AUTORIZADO_SOCIO);
     }
 
@@ -532,6 +554,7 @@ public class UsuarioControllerTest {
     public void getSubordinadosByUsuario_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/hierarquia/subordinados/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getSubordinadosDoUsuario(1);
     }
 
@@ -549,6 +572,7 @@ public class UsuarioControllerTest {
     public void getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/hierarquia/subordinados/gerente/1")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(1);
     }
 
@@ -567,6 +591,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/executivos-comerciais"))
                 .param("cargo", "VENDEDOR_OPERACAO"))
             .andExpect(status().isOk());
+
         verify(usuarioService).findAllExecutivosOperacaoDepartamentoComercial(CodigoCargo.VENDEDOR_OPERACAO);
     }
 
@@ -585,6 +610,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/responsaveis-ddd"))
                 .param("cargo", "AGENTE_AUTORIZADO_GERENTE"))
             .andExpect(status().isOk());
+
         verify(usuarioService).findAllResponsaveisDdd(CodigoCargo.AGENTE_AUTORIZADO_GERENTE);
     }
 
@@ -604,6 +630,7 @@ public class UsuarioControllerTest {
                 .param("idsUsuarios", "1")
                 .param("idUsuarioSuperior", "2"))
             .andExpect(status().isOk());
+
         verify(usuarioService).vincularUsuario(List.of(1), 2);
     }
 
@@ -624,6 +651,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(new AlteraSuperiorRequest())))
             .andExpect(status().isOk());
+
         verify(usuarioService).vincularUsuarioParaNovaHierarquia(any());
     }
 
@@ -641,6 +669,7 @@ public class UsuarioControllerTest {
     public void getUsuariosFilter_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/filter")))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuariosFiltros(any());
     }
 
@@ -660,6 +689,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL)
                 .param("ids", "1"))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuariosByIds(List.of(1));
     }
 
@@ -680,6 +710,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(List.of(1))))
             .andExpect(status().isOk());
+
         verify(usuarioService).getUsuariosAtivosByIds(List.of(1));
     }
 
@@ -749,6 +780,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL)
                 .param("email", "email@test.com"))
             .andExpect(status().isOk());
+
         verify(usuarioService).findByEmailAa("email@test.com", null);
     }
 
@@ -783,6 +815,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(List.of("email@test.com"))))
             .andExpect(status().isOk());
+
         verify(usuarioService).findByEmails(List.of("email@test.com"), null);
     }
 
@@ -813,6 +846,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL)
                 .param("cpf", "123"))
             .andExpect(status().isOk());
+
         verify(usuarioService).findByCpfAa("123", null);
     }
 
@@ -847,6 +881,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(List.of("123"))))
             .andExpect(status().isOk());
+
         verify(usuarioService).findByCpfs(List.of("123"), null);
     }
 
@@ -1690,6 +1725,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL)
                 .param("organizacaoId", "1"))
             .andExpect(status().isOk());
+
         verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, true);
     }
 

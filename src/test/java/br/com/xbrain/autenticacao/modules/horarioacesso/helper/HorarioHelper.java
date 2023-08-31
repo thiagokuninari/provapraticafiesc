@@ -155,6 +155,7 @@ public class HorarioHelper {
                     .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
                     .build())
                 .build())
+            .nivelCodigo("OPERACAO")
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
             .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
             .build();

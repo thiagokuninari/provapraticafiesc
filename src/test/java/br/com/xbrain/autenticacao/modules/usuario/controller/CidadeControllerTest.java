@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -18,18 +19,23 @@ import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 
 import java.util.List;
 
-import static helpers.TestsHelper.convertObjectToJsonBytes;
+import static helpers.TestsHelper.*;
+import static helpers.Usuarios.ADMIN;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
@@ -77,7 +83,7 @@ public class CidadeControllerTest {
     @SneakyThrows
     @WithMockUser
     public void getByUfAndNome_deveRetornarOk_quandoUsuarioAutenticado() {
-        when(cidadeService.findByUfNomeAndCidadeNome("PR","LONDRINA"))
+        when(cidadeService.findByUfNomeAndCidadeNome("PR", "LONDRINA"))
             .thenReturn(umaCidade());
 
         mvc.perform(get(BASE_URL + "/uf-cidade/PR/LONDRINA")
@@ -240,6 +246,14 @@ public class CidadeControllerTest {
             .andExpect(status().isOk());
 
         verify(cidadeService).getAtivosParaComunicados(1);
+    }
+
+    public void deveRetornarTodosPorUf() throws Exception {
+        mvc.perform(get("/api/cidades?idUf=1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(8)));
     }
 
     @Test
@@ -496,6 +510,67 @@ public class CidadeControllerTest {
         verify(cidadeService).getCodigoIbgeRegionalByCidade(List.of(1));
     }
 
+    @Test
+    @SneakyThrows
+    public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarUnauthorized_quandoInformarTokenComSenhaInvalida() {
+        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+                .header("Authorization", getAccessTokenComSenhaInvalida(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("invalid_token")));
+
+        verify(cidadeService, never()).getCodigoIbgeRegionalByCidadeNomeAndUf(any(CidadesUfsRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarBadRequest_quandoNaoInformarListasDeCidadesEUfs() {
+        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(cidadeService, never()).getCodigoIbgeRegionalByCidadeNomeAndUf(any(CidadesUfsRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarZero_quandoInformarListasVaziasDeCidadesEUfs() {
+        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(listasCidadesUfsVazia())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isEmpty());
+
+        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidadeNomeAndUf(eq(listasCidadesUfsVazia()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarZero_quandoInformarListaComValoresInexistentes() {
+        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(listasCidadesUfsInvalida()))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isEmpty());
+
+        verify(cidadeService, times(1))
+            .getCodigoIbgeRegionalByCidadeNomeAndUf(eq(listasCidadesUfsInvalida()));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarListaCodigoIbgeRegionalResponse_quandoListasForemValidas() {
+        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(listasCidadesUfsValida())))
+            .andExpect(status().isOk());
+
+        verify(cidadeService, times(1))
+            .getCodigoIbgeRegionalByCidadeNomeAndUf(any(CidadesUfsRequest.class));
+    }
+
     private Cidade umaCidade() {
         return Cidade.builder()
             .id(5578)
@@ -503,6 +578,27 @@ public class CidadeControllerTest {
             .subCluster(SubCluster.builder().id(189).build())
             .uf(Uf.builder().id(1).nome("PARANA").build())
             .regional(new Regional(1))
+            .build();
+    }
+
+    private CidadesUfsRequest listasCidadesUfsVazia() {
+        return CidadesUfsRequest.builder()
+            .cidades(List.of())
+            .ufs(List.of())
+            .build();
+    }
+
+    private CidadesUfsRequest listasCidadesUfsValida() {
+        return CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("PR", "PB", "RN"))
+            .build();
+    }
+
+    private CidadesUfsRequest listasCidadesUfsInvalida() {
+        return CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("SP", "MG"))
             .build();
     }
 }

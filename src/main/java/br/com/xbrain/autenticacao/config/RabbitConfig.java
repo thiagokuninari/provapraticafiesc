@@ -140,6 +140,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica-failure}")
     private String permissaoAgenteAutorizadoEquipeTecnicaFailureMq;
 
+    @Value("${app-config.queue.atualizar-permissao-tecnico-indicador}")
+    private String atualizarPermissaoTecnicoIndicadorMq;
+
+    @Value("${app-config.queue.atualizar-permissao-tecnico-indicador-failure}")
+    private String atualizarPermissaoTecnicoIndicadorFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -374,6 +380,20 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue atualizarPermissaoTecnicoIndicadorMq() {
+        return QueueBuilder
+            .durable(atualizarPermissaoTecnicoIndicadorMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoTecnicoIndicadorFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoTecnicoIndicadorFailureMq() {
+        return QueueBuilder.durable(atualizarPermissaoTecnicoIndicadorFailureMq).build();
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -566,5 +586,19 @@ public class RabbitConfig {
         return BindingBuilder.bind(usuarioInativacaoPorAaMq())
             .to(exchange)
             .with(usuarioInativacaoPorAaMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoTecnicoIndicadorMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorMq())
+            .to(exchange)
+            .with(atualizarPermissaoTecnicoIndicadorMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoTecnicoIndicadorFailureMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorFailureMq())
+            .to(exchange)
+            .with(atualizarPermissaoTecnicoIndicadorFailureMq);
     }
 }

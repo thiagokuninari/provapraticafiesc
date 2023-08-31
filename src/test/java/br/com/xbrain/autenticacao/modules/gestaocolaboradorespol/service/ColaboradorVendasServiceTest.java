@@ -40,7 +40,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.limparCpfColaboradorVendas("usuarioteste@gmail.com"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).limparCpfColaboradorVendas("usuarioteste@gmail.com");
     }
@@ -53,7 +53,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.limparCpfColaboradorVendas("usuarioteste@gmail.com"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).limparCpfColaboradorVendas("usuarioteste@gmail.com");
     }
@@ -79,7 +79,7 @@ public class ColaboradorVendasServiceTest {
         assertThatThrownBy(() -> service.getUsuariosAaFeederPorCargo(List.of(1, 2, 3),
             List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO)))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#049 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).getUsuariosAaFeederPorCargo(List.of(1, 2, 3), List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO));
     }
@@ -93,7 +93,7 @@ public class ColaboradorVendasServiceTest {
         assertThatThrownBy(() -> service.getUsuariosAaFeederPorCargo(List.of(1, 2, 3),
             List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO)))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#049 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).getUsuariosAaFeederPorCargo(List.of(1, 2, 3), List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO));
     }

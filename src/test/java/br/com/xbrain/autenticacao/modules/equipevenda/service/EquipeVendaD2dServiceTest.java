@@ -54,7 +54,7 @@ public class EquipeVendaD2dServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt()))
-            .withMessage("#031 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#029 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(equipeVendaD2dClient, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
     }
@@ -66,7 +66,7 @@ public class EquipeVendaD2dServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt()))
-            .withMessage("#031 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#029 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(equipeVendaD2dClient, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
     }

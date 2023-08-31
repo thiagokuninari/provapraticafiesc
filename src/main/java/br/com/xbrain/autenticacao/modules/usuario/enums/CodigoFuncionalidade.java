@@ -42,7 +42,8 @@ public enum CodigoFuncionalidade {
     AUT_20010("Adicionar novo usuário"),
     VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo"),
     CTR_20014("Solicitar Ramal AA"),
-    CTR_20015("Solicitar Ramal D2D");
+    CTR_20015("Solicitar Ramal D2D"),
+    AUT_20024("Visualizar status do Horário de Acesso");
 
     @Getter
     private String descricao;

@@ -123,9 +123,18 @@ public class AgenteAutorizadoNovoService {
         }
     }
 
-    public String getEstrutura(Integer usuarioId) {
+    public String getEstruturaByUsuarioIdAndAtivo(Integer usuarioId) {
         try {
-            return client.getEstrutura(usuarioId);
+            return client.getEstruturaByUsuarioIdAndAtivo(usuarioId);
+        } catch (Exception ex) {
+            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            return null;
+        }
+    }
+
+    public String getEstruturaByUsuarioId(Integer usuarioId) {
+        try {
+            return client.getEstruturaByUsuarioId(usuarioId);
         } catch (Exception ex) {
             logger.warn("Erro ao consultar a estrutura do AA", ex);
             return null;

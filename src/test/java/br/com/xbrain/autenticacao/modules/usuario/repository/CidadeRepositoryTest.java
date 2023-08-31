@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,5 +43,39 @@ public class CidadeRepositoryTest {
             .containsExactlyInAnyOrder(
                 tuple(3426, "MARINGA", "4115200", 1027, "RPS"),
                 tuple(5578, "LONDRINA", "4113700", 1027, "RPS"));
+    }
+
+    public void findCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarVazio_quandoInformarListaComValoresInexistentes() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("SP", "MG"))
+            .build();
+
+        var predicate = new CidadePredicate()
+            .comCidadesUfs(listaCidadesUfs)
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate)).isEmpty();
+    }
+
+    @Test
+    public void findCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrar() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("PR", "PB", "RN"))
+            .build();
+
+        var predicate = new CidadePredicate()
+            .comCidadesUfs(listaCidadesUfs)
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate))
+            .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId",
+                "regionalNome", "ufId", "estadoNome", "uf")
+            .hasSize(3)
+            .containsExactly(
+                tuple(2641, "CARAUBAS", "2504074", 1, "LESTE", 24, "PARAIBA", "PB"),
+                tuple(5578, "LONDRINA", "4113700", 3, "SUL", 1, "PARANA", "PR"),
+                tuple(5604, "CARAUBAS", "2402303", 1, "LESTE", 26, "RIO GRANDE DO NORTE", "RN"));
     }
 }

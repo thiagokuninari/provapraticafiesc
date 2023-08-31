@@ -1,45 +1,37 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
-import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
-import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
-import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
-import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
-import static helpers.TestsHelper.*;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,240 +39,199 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = "classpath:/tests_database.sql")
+@WebMvcTest(HorarioAcessoController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class)
+})
+@Import(OAuth2ResourceConfig.class)
 public class HorarioAcessoControllerTest {
 
     private static final String URL = "/api/horarios-acesso";
+    private static final String GERENCIAR_HORARIO_ACESSO = "AUT_20009";
+    private static final String VISUALIZAR_STATUS_HORARIO_ACESSO = "AUT_20024";
+    public static final ValidacaoException CANAL_INVALIDO =
+        new ValidacaoException("O canal informado não é válido.");
 
     @Autowired
     private MockMvc mvc;
     @MockBean
     private HorarioAcessoService service;
     @MockBean
-    private HorarioAcessoRepository repository;
-    @MockBean
-    private HorarioAtuacaoRepository atuacaoRepository;
-    @MockBean
-    private AutenticacaoService autenticacaoService;
-    @MockBean
-    private SiteService siteService;
-    @MockBean
-    private DataHoraAtual dataHoraAtual;
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     @Test
-    public void getHorariosAcesso_unauthorized_quandoNaoPassarToken() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getHorariosAcesso_deveRetornarUnauthorized_quandoNaoHouverUsuarioAutenticado() {
         mvc.perform(get(URL)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getHorariosAcesso_forbidden_quandoNaoTiverPermissao() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getHorariosAcesso_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao() {
         mvc.perform(get(URL)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
     }
 
     @Test
-    public void getHorariosAcesso_ok_quandoTiverPermissao() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umAdmin());
-        mvc.perform(get(URL)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser(roles = { GERENCIAR_HORARIO_ACESSO })
+    public void getHorarioAcesso_deveRetornarOk_quandoUsuarioPossuirPermissao() {
+        when(service.getHorarioAcesso(anyInt())).thenReturn(umHorarioAcessoResponse());
+
+        mvc.perform(get(URL + "/1")
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
 
     @Test
-    public void getHorarioAcesso_deveRetornarHorarioAcessoResponse_quandoTiverPermissao() throws Exception {
-        when(service.getHorarioAcesso(anyInt())).thenReturn(umHorarioAcessoResponse());
-
-        mvc.perform(get(URL + "/1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umHorarioAcessoResponse())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.horarioAcessoId", is(1)))
-            .andExpect(jsonPath("$.siteId", is(100)))
-            .andExpect(jsonPath("$.siteNome", is("SITE TESTE")));
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getHorarios_deveRetornarUnauthorized_quandoNaoHouverUsuarioAutenticado() {
+        mvc.perform(get(URL)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getHorarios_deveRetornarListaHorarioAcessoResponse_quandoTiverPermissao() throws Exception {
+    @SneakyThrows
+    @WithMockUser
+    public void getHorarios_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao() {
+        mvc.perform(get(URL)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { GERENCIAR_HORARIO_ACESSO })
+    public void getHorarios_deveRetornarOk_quandoUsuarioPossuirPermissao() {
         when(service.getHorariosAcesso(any(PageRequest.class), any(HorarioAcessoFiltros.class)))
             .thenReturn(umaListaHorarioAcessoResponse());
 
         mvc.perform(get(URL)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaListaHorarioAcessoResponse())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].horarioAcessoId", is(1)))
-            .andExpect(jsonPath("$.content[0].siteId", is(100)))
-            .andExpect(jsonPath("$.content[0].siteNome", is("SITE TESTE")))
-            .andExpect(jsonPath("$.content[0].dataAlteracao", is("22/11/2021 13:53:10")))
-            .andExpect(jsonPath("$.content[0].usuarioAlteracaoNome", is("USUARIO TESTE")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].id", is(1)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].diaSemana", is("Segunda-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].horarioFim", is("15:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].id", is(2)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].diaSemana", is("Quarta-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].horarioFim", is("15:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].id", is(3)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].diaSemana", is("Sexta-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].horarioFim", is("15:00")));
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
     @Test
-    public void getHistoricos_deveRetornarListaHorarioAcessoResponse_quandoTiverPermissao() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getHistoricos_deveRetornarUnauthorized_quandoNaoHouverUsuarioAutenticado() {
+        mvc.perform(get(URL + "/1/historico")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getHistoricos_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao() {
+        mvc.perform(get(URL + "/1/historico")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { GERENCIAR_HORARIO_ACESSO })
+    public void getHistoricos_deveRetornarOk_quandoUsuarioPossuirPermissao() {
         when(service.getHistoricos(any(PageRequest.class), anyInt())).thenReturn(umaListaHorarioHistoricoResponse());
 
         mvc.perform(get(URL + "/1/historico")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaListaHorarioHistoricoResponse())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].horarioAcessoId", is(1)))
-            .andExpect(jsonPath("$.content[0].horarioHistoricoId", is(1)))
-            .andExpect(jsonPath("$.content[0].siteId", is(100)))
-            .andExpect(jsonPath("$.content[0].siteNome", is("SITE TESTE")))
-            .andExpect(jsonPath("$.content[0].dataAlteracao", is("22/11/2021 13:53:10")))
-            .andExpect(jsonPath("$.content[0].usuarioAlteracaoNome", is("USUARIO TESTE")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].id", is(1)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].diaSemana", is("Segunda-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[0].horarioFim", is("15:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].id", is(2)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].diaSemana", is("Quarta-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[1].horarioFim", is("15:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].id", is(3)))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].diaSemana", is("Sexta-Feira")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].horarioInicio", is("09:00")))
-            .andExpect(jsonPath("$.content[0].horariosAtuacao[2].horarioFim", is("15:00")));
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
     @Test
-    public void getStatus_deveRetornarTrue_seHorarioAtualEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
-        when(siteService.getSitesPorPermissao(any(Usuario.class)))
-            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(umSite());
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.SEGUNDA)
-            .horarioInicio(LocalTime.of(9,0))
-            .horarioFim(LocalTime.of(18,0))
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus()).thenReturn(true);
-
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getStatus_deveRetornarUnauthorized_quandoNaoHouverUsuarioAutenticado() {
         mvc.perform(get(URL + "/status")
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(true)));
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getStatus_deveRetornarFalse_seHorarioAtualNaoEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
-        when(siteService.getSitesPorPermissao(any(Usuario.class)))
-            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(umSite());
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.SEGUNDA)
-            .horarioInicio(LocalTime.of(9,0))
-            .horarioFim(LocalTime.of(9,1))
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus()).thenReturn(false);
-
+    @SneakyThrows
+    @WithMockUser
+    public void getStatus_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao() {
         mvc.perform(get(URL + "/status")
             .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatus_deveRetornarOk_quandoUsuarioPossuirPermissao() {
+        when(service.getStatus(any())).thenReturn(false);
+
+        mvc.perform(get(URL + "/status")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(false)));
     }
 
     @Test
-    public void getStatus_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
-        when(siteService.getSitesPorPermissao(any(Usuario.class)))
-            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(umSite());
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.DOMINGO)
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus()).thenReturn(false);
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatus_deveRetornarBadRequest_quandoCanalInformadoNaoForAtivoProprio() {
+        when(service.getStatus(any())).thenThrow(CANAL_INVALIDO);
 
         mvc.perform(get(URL + "/status")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(false)));
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "D2D_PROPRIO"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message", is("O canal informado não é válido.")));
     }
 
     @Test
-    public void getStatusComParametroSiteId_deveRetornarTrue_seHorarioAtualEstiverDentroDoPermitido() throws Exception {
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.SEGUNDA)
-            .horarioInicio(LocalTime.of(9,0))
-            .horarioFim(LocalTime.of(18,0))
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus(anyInt())).thenReturn(true);
-
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getStatusComParametroSiteId_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL + "/status/100")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(true)));
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoEstiverDentroDoPermitido() throws Exception {
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.SEGUNDA)
-            .horarioInicio(LocalTime.of(9,0))
-            .horarioFim(LocalTime.of(9,1))
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus(anyInt())).thenReturn(false);
-
+    @SneakyThrows
+    @WithMockUser
+    public void getStatusComParametroSiteId_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao() {
         mvc.perform(get(URL + "/status/100")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(false)));
+            .andExpect(status().isForbidden());
     }
 
     @Test
-    public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() throws Exception {
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
-        var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.DOMINGO)
-            .build();
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
-        when(service.getStatus(anyInt())).thenReturn(false);
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatusComParametroSiteId_deveRetornarBadRequest_quandoCanalInformadoNaoForAtivoProprio() {
+        when(service.getStatus(any(), anyInt())).thenThrow(CANAL_INVALIDO);
 
         mvc.perform(get(URL + "/status/100")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message", is("O canal informado não é válido.")));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = { VISUALIZAR_STATUS_HORARIO_ACESSO })
+    public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() {
+        when(service.getStatus(any(), anyInt())).thenReturn(false);
+
+        mvc.perform(get(URL + "/status/100")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("X-Usuario-Canal", "ATIVO_PROPRIO"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(false)));
     }

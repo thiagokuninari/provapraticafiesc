@@ -89,3 +89,8 @@ logging:
   level:
     org.springframework: 'ERROR'
     org.hibernate: 'ERROR'
+
+xbrain:
+  logging:
+    level: INFO
+    appender: JSON

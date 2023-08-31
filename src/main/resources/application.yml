@@ -5,6 +5,8 @@ server:
     mime-types: text/html,text/css,application/javascript,application/json
 
 spring:
+  application:
+      name: autenticacao-api
   redis:
     #host: 127.0.0.1
     host: 192.168.50.1
@@ -141,6 +143,8 @@ app-config:
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
     permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
+    atualizar-permissao-tecnico-indicador: atualizar-permissao-tecnico-indicador.queue
+    atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -364,6 +368,18 @@ feign:
       agenteAutorizadoNovoClient:
         connectTimeout: 360000
         readTimeout: 360000
+
+management:
+  metrics:
+    export:
+      simple:
+        enabled: false
+
+xbrain:
+  logging:
+    level: INFO
+    appender: CONSOLE
+    appName: ${spring.application.name}
 
 keys:
   public: |

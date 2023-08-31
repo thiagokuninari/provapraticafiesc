@@ -121,7 +121,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
-        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstrutura(usuario.getId()) : null;
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
     private String getTipoCanal(Usuario usuario) {
@@ -163,6 +163,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("fotoDiretorio", usuario.getFotoDiretorio());
         token.getAdditionalInformation().put("fotoNomeOriginal", usuario.getFotoNomeOriginal());
         token.getAdditionalInformation().put("fotoContentType", usuario.getFotoContentType());
+        token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()

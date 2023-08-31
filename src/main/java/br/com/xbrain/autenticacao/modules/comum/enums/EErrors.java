@@ -57,96 +57,91 @@ public enum EErrors {
         "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_CIDADE_DO_POL(
-        "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#017 - Erro ao tentar recuperar cidades do pol."),
-    ERRO_OBTER_AA(
         "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#018 - Erro ao tentar recuperar o AA."),
+        "#018 - Erro ao tentar recuperar cidades do pol."),
+    ERRO_OBTER_AA(
+        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#019 - Erro ao tentar recuperar o AA."),
     ERRO_DESVINCULAR_RAMAIS(
-        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#019 - Erro ao desvincular ramais."),
+        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#020 - Erro ao desvincular ramais."),
     ERRO_LIMPAR_CACHE_ATIVO(
-        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#020 - Erro ao limpar cache ativo"),
-    ERRO_OBTER_ESTRUTURA_AA(
-        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#019 - Erro ao tentar recuperar a Estrutura do AA."
-    ),
-    ERRO_OBTER_CEP(
-        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#020 - Erro ao tentar buscar o cep"
-    ),
-    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE(
         "#021 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#021 - Erro ao tentar recuperar o relatório de logins e logouts de hoje."
-    ),
-    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV(
+        "#021 - Erro ao limpar cache ativo"),
+    ERRO_OBTER_ESTRUTURA_AA(
         "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#022 - Erro ao tentar recuperar o relatório de logins e logouts CSV."
-    ),
-    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS(
+        "#022 - Erro ao tentar recuperar a Estrutura do AA."),
+    ERRO_OBTER_CEP(
         "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#023 - Erro ao tentar recuperar os ids dos usuários dos acessos."
-    ),
-    ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
+        "#023 - Erro ao tentar buscar o cep"),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE(
         "#024 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#024 - Erro ao tentar recuperar os ids dos usuários subordinados."
-    ),
+        "#024 - Erro ao tentar recuperar o relatório de logins e logouts de hoje."),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV(
+        "#025 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#025 - Erro ao tentar recuperar o relatório de logins e logouts CSV."),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS(
+        "#026 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#026 - Erro ao tentar recuperar os ids dos usuários dos acessos."),
+    ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
+        "#027 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#027 - Erro ao tentar recuperar os ids dos usuários subordinados."),
     ERRO_BUSCAR_USUARIOS_DO_AA(
-        "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#030 - Ocorreu um erro ao buscar usuários do agente autorizado"
-    ),
+        "#028 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#028 - Ocorreu um erro ao buscar usuários do agente autorizado"),
     ERRO_OBTER_SUBCANAIS_USUARIO_DO_EQUIPE_VENDAS(
-        "#031 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#031 - Ocorreu um erro ao buscar subcanais pelo usuário no serviço de equipe vendas"),
+        "#029 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#029 - Ocorreu um erro ao buscar subcanais pelo usuário no serviço de equipe vendas"),
     ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
-        "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#032 - Erro ao tentar recuperar o número de usuários logados por hora."),
+        "#030 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#030 - Erro ao tentar recuperar o número de usuários logados por hora."),
     ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS(
-        "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
+        "#031 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#031 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
     ERRO_LIMPAR_CACHE_CALL(
-        "#034 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#034 - Erro ao limpar cache dos feriados na telefonia."),
+        "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#032 - Erro ao limpar cache dos feriados na telefonia."),
     ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID(
-        "#035 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#035 - Ocorreu um Erro ao buscar agente autorizado usurario dto."),
+        "#033 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#033 - Ocorreu um Erro ao buscar agente autorizado usurario dto."),
     ERRO_CONSULTAR_STATUS_RAMAL_USUARIO(
-        "#21 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."),
+        "#034 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#034 - Erro ao tentar consultar status do ramal pelo usuário autenticado."),
     ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO(
-        "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#022 - Erro ao tentar consultar status da tabulação do usuário."),
+        "#035 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#035 - Erro ao tentar consultar status da tabulação do usuário."),
     ERRO_LIBERAR_RAMAL_USUARIO(
-        "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#023 - Erro ao tentar liberar ramal do usuário autenticado."),
-    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_ENTRE_DATAS(
         "#036 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#036 - Erro ao tentar recuperar o relatório de logins e logouts entre datas."),
-    ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO(
+        "#036 - Erro ao tentar liberar ramal do usuário autenticado."),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_ENTRE_DATAS(
         "#037 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário."),
-    ERRO_ALTERAR_SITUACAO_USUARIO("#038 - Desculpe, ocorreu um erro ao alterar a situação do usuário.",
-        "#038 - Erro ao alterar a situação do usuário."),
+        "#037 - Erro ao tentar recuperar o relatório de logins e logouts entre datas."),
+    ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO(
+        "#038 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#038 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário."),
+    ERRO_ALTERAR_SITUACAO_USUARIO(
+        "#039 - Desculpe, ocorreu um erro ao alterar a situação do usuário.",
+        "#039 - Erro ao alterar a situação do usuário."),
     ERRO_ALTERAR_SITUACAO_COLABORADOR_VENDAS(
-        "#039 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.",
-        "#039 - Erro ao alterar a situação do colaborador de vendas."),
+        "#040 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.",
+        "#040 - Erro ao alterar a situação do colaborador de vendas."),
     ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS(
-        "#040 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#040 - Erro ao tentar recuperar os ids dos usuarios logados."),
-    ERRO_LIMPAR_CACHE_FERIADOS_MAILING(
         "#041 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#041 - Erro ao tentar limpar o cache de feriados no mailing-api."),
-    ERRO_OBTER_EQUIPE_USUARIO_SERVICE(
+        "#041 - Erro ao tentar recuperar os ids dos usuarios logados."),
+    ERRO_LIMPAR_CACHE_FERIADOS_MAILING(
         "#042 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#042 - Erro ao buscar usuários cadastrados em equipes."),
+        "#042 - Erro ao tentar limpar o cache de feriados no mailing-api."),
+    ERRO_OBTER_EQUIPE_USUARIO_SERVICE(
+        "#043 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#043 - Erro ao buscar usuários cadastrados em equipes."),
     ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
         "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
-    ERRO_BUSCAR_AAS_FEEDER_POR_CARGO("#049 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#049 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
-    ERRO_AO_LIMPAR_CPF_COLABORADOR("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#050 - Ocorreu um erro ao tentar limpar o CPF do colaborador.");
+    ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
+        "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
+    ERRO_AO_LIMPAR_CPF_COLABORADOR("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#046 - Ocorreu um erro ao tentar limpar o CPF do colaborador.");
 
 
     @Getter

@@ -267,4 +267,25 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             )
             .fetch();
     }
+
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeNomeAndUf(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(CodigoIbgeRegionalResponse.class,
+                cidade.id,
+                cidade.nome,
+                cidade.codigoIbge,
+                regional.id,
+                regional.nome,
+                cidade.uf.id,
+                cidade.uf.nome,
+                cidade.uf.uf
+            ))
+            .from(cidade)
+            .where(predicate)
+            .innerJoin(cidade.subCluster, subCluster)
+            .innerJoin(subCluster.cluster, cluster)
+            .innerJoin(cluster.grupo, grupo)
+            .innerJoin(grupo.regional, regional)
+            .fetch();
+    }
 }

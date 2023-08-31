@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -149,6 +150,8 @@ public class UsuarioService {
     private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
+        "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -240,6 +243,8 @@ public class UsuarioService {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private ColaboradorVendasService colaboradorVendasService;
+    @Autowired
+    private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -363,6 +368,7 @@ public class UsuarioService {
         validarCargoUsuarioAutenticado(predicate);
 
         var pages = repository.findAll(predicate.build(), pageRequest);
+
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
@@ -372,6 +378,7 @@ public class UsuarioService {
 
     private void validarCargoUsuarioAutenticado(UsuarioPredicate predicate) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
+
         if (usuario.isAssistenteOperacao()) {
             predicate.semCargoCodigo(COORDENADOR_OPERACAO);
         }
@@ -559,18 +566,15 @@ public class UsuarioService {
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
-            feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
-            subCanalService.removerPermissaoIndicacaoPremium(usuario);
+            removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
-            subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+            adicionarPermissoes(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
-            if (usuario.isIdNivelMso()) {
-                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
-            }
 
             return UsuarioDto.of(usuario);
+
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
@@ -578,6 +582,20 @@ public class UsuarioService {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
+    }
+
+    private void removerPermissoes(Usuario usuario) {
+        subCanalService.removerPermissaoIndicacaoPremium(usuario);
+        subCanalService.removerPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
+        permissaoTecnicoIndicadorService
+            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+    }
+
+    private void adicionarPermissoes(Usuario usuario) {
+        subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
+        subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
+        feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {
@@ -595,6 +613,10 @@ public class UsuarioService {
                     validarVinculoComAa(usuarioOriginal, usuario);
                 });
         }
+    }
+
+    private Usuario getUsuario(Integer id) {
+        return repository.findById(id).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
     }
 
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
@@ -751,6 +773,8 @@ public class UsuarioService {
         } else {
             atualizarUsuariosParceiros(usuario);
             usuario.setAlterarSenha(Eboolean.F);
+            usuario.setDataUltimoAcesso(getUsuario(usuario.getId()).getDataUltimoAcesso());
+            usuario.setDataReativacao(getUsuario(usuario.getId()).getDataReativacao());
         }
     }
 
@@ -1188,6 +1212,8 @@ public class UsuarioService {
             }
 
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            permissaoTecnicoIndicadorService
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -1206,6 +1232,8 @@ public class UsuarioService {
                 configurarDataReativacao(usuarioMqRequest);
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                permissaoTecnicoIndicadorService
+                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1269,11 +1297,15 @@ public class UsuarioService {
         usuario.removerCaracteresDoCpf();
         var usuarioAntigoId = usuario.getId();
         salvarUsuarioRemanejado(usuario);
+        permissaoTecnicoIndicadorService
+            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -1519,9 +1551,13 @@ public class UsuarioService {
             .findMotivoInativacaoByUsuarioId(usuario.getId())
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
+        var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
+        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
 
-        if (ObjectUtils.isEmpty(usuario.getCpf())) {
+        if (ObjectUtils.isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
+        } else if (isClienteLojaFuturo && !isAaEstruturaLojaFuturo) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
         } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO
                 + " Ou email do sócio está divergente do que está inserido no agente autorizado.");

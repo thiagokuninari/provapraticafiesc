@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -8,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -79,14 +81,12 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -106,6 +106,8 @@ public class UsuarioServiceTest {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
+        "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -177,6 +179,8 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -286,6 +290,26 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
             .withMessage(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
+    }
+
+    @Test
+    public void ativar_deveLancarException_quandoAaDoUsuarioLojaFuturoNaoPossuiEstruturaLojaFuturo() {
+        doReturn(Optional.of(umUsuarioCompleto(ESituacao.I, CLIENTE_LOJA_FUTURO, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(TestBuilders.umUsuarioAutenticado(1, CLIENTE_LOJA_FUTURO, "OPERACAO"))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn("AGENTE_AUTORIZADO")
+            .when(agenteAutorizadoNovoService)
+            .getEstruturaByUsuarioId(anyInt());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
+            .withMessage(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
     }
 
     @Test
@@ -737,6 +761,42 @@ public class UsuarioServiceTest {
                 assertThatThrownBy(() -> usuarioService.save(usuario)).hasMessage("Email inválido.");
             }
         );
+    }
+
+    @Test
+    public void save_deveRemoverPermissaoInsideSalesPme_quandoUsuarioJaCadastradoENivelOperacao() {
+        doReturn(umUsuarioAutenticadoNivelMso())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
+            .when(usuarioRepository)
+            .findById(101112);
+
+        assertThatCode(() -> usuarioService.save(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, times(5)).findById(101112);
+        verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
+    }
+
+    @Test
+    public void save_deveAdicionarPermissaoInsideSalesPme_quandoUsuarioNivelOperacaoComSubCanalInsideSalesPme() {
+        doReturn(umUsuarioAutenticadoNivelMso())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
+            .when(usuarioRepository)
+            .findById(101112);
+
+        assertThatCode(() -> usuarioService.save(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, times(5)).findById(101112);
+        verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
     }
 
     @Test
@@ -2603,7 +2663,7 @@ public class UsuarioServiceTest {
     @Test
     public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarUsuarios_seEncontrado() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+            .thenReturn(umUsuarioAutenticadoNivelMso());
         when(usuarioRepository.findAll(eq(
             new UsuarioPredicate().filtraPermitidos(
                     autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
@@ -2617,7 +2677,7 @@ public class UsuarioServiceTest {
     @Test
     public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_naoDeveRetornarUsuarios_seNaoEncontrado() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+            .thenReturn(umUsuarioAutenticadoNivelMso());
         when(usuarioRepository.findAll(eq(
             new UsuarioPredicate().filtraPermitidos(
                     autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
@@ -3204,11 +3264,56 @@ public class UsuarioServiceTest {
             .email("EMAIL@TEST.COM")
             .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
             .situacao(ESituacao.A)
+            .tecnicoIndicador(true)
             .build();
         var expectedDto = umUsuarioDtoSender();
 
         usuarioService.saveFromQueue(usuarioMqRequest);
 
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(permissaoTecnicoIndicadorService, times(1))
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+    }
+
+    @Test
+    public void updateFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
+        var umCargo = Cargo.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .build();
+
+        when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
+            .thenReturn(umCargo);
+        when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
+        when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        var expectedDto = umUsuarioDtoSender();
+        expectedDto.setUnidadeNegocioId(null);
+        expectedDto.setAlterarSenha(null);
+        expectedDto.setHierarquiasId(null);
+        expectedDto.setTiposFeeder(null);
+        expectedDto.setSubCanaisId(null);
+        var usuarioMqRequest = UsuarioMqRequest.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .situacao(ESituacao.A)
+            .tecnicoIndicador(true)
+            .build();
+
+        usuarioService.updateFromQueue(usuarioMqRequest);
+
+        verify(feederService, times(1)).removerPermissoesEspeciais(eq(List.of(1)));
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(permissaoTecnicoIndicadorService, times(1))
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 
