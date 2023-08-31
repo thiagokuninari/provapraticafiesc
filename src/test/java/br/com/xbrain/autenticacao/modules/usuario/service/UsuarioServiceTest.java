@@ -37,6 +37,7 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelp
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
@@ -84,6 +85,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoGerente;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa;
@@ -95,6 +99,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponse
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
@@ -183,6 +188,8 @@ public class UsuarioServiceTest {
     private PermissaoEspecialService permissaoEspecialService;
     @Mock
     private PermissaoEspecialRepository permissaoEspecialRepository;
+    @Mock
+    private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -307,7 +314,7 @@ public class UsuarioServiceTest {
 
         doReturn("AGENTE_AUTORIZADO")
             .when(agenteAutorizadoNovoService)
-                .getEstruturaByUsuarioId(anyInt());
+            .getEstruturaByUsuarioId(anyInt());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
@@ -3266,7 +3273,7 @@ public class UsuarioServiceTest {
         verify(permissaoEspecialService)
             .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, usuario.getUsuariosIds());
 
-        verify(permissaoEspecialService,never()).save(anyList());
+        verify(permissaoEspecialService, never()).save(anyList());
     }
 
     @Test
@@ -3279,7 +3286,7 @@ public class UsuarioServiceTest {
         service.atualizarPermissaoEspecialAaResidencial(usuario);
 
         verify(permissaoEspecialService)
-            .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, List.of(1,2,3));
+            .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, List.of(1, 2, 3));
 
         verify(permissaoEspecialService).save(List.of());
     }
@@ -3297,6 +3304,91 @@ public class UsuarioServiceTest {
             .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, List.of());
 
         verify(permissaoEspecialService).save(anyList());
+    }
+
+    @Test
+    public void updateFromQueue_deveFazerUpdate_quandoTodosDadosValidos() {
+        var usuarioMqRequest = umUsuarioMqRequestCompleto();
+        var usuarioDto = umUsuarioDtoParse();
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
+        when(cargoRepository.findByCodigo(usuarioMqRequest.getCargo())).thenReturn(umCargoGerente());
+        when(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento())).thenReturn(umDepartamentoAa());
+        when(nivelRepository.findByCodigo(usuarioMqRequest.getNivel())).thenReturn(umNivelAa());
+        when(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()))
+            .thenReturn(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)));
+        when(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa())).thenReturn(List.of(umaEmpresa()));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAa());
+        when(repository.findByIdIn(umUsuarioAaTipoFeederDto().getUsuariosIds()))
+            .thenReturn(umUsuariosListComCargoComPermissao());
+
+        service.updateFromQueue(usuarioMqRequest);
+
+        verify(repository, times(6)).findById(usuarioDto.getId());
+        verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
+        verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
+        verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
+        verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
+        verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(permissaoEspecialService).save(anyList());
+    }
+
+    @Test
+    public void updateFromQueue_deveSalvarUsuarioAlteracaoCpf_quandoCpfDiferenteDoCadastrado() {
+        var usuarioDto = umUsuarioDtoParse();
+        var usuario = umUsuarioConvertFrom();
+        usuario.setCpf("963852741");
+        var usuarioMqRequest = umUsuarioMqRequestCompleto();
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(usuarioDto.getId())).thenReturn(Optional.of(usuario));
+
+        service.updateFromQueue(usuarioMqRequest);
+
+        verify(repository).findById(usuarioDto.getId());
+        verify(repository).findComplete(usuarioDto.getId());
+    }
+
+    @Test
+    public void updateFromQueue_deveLancarException_quandoOcorrerErro() {
+        var usuarioDto = umUsuarioDtoParse();
+        var usuario = umUsuarioConvertFrom();
+        usuario.setCpf("963852741");
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(usuarioDto.getId())).thenReturn(Optional.of(usuario));
+
+        service.updateFromQueue(umUsuarioMqRequestCompleto());
+
+        verify(repository).findById(usuarioDto.getId());
+        verify(repository).findComplete(usuarioDto.getId());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioMqRequestCompleto();
+        var usuarioDto = umUsuarioDtoParse();
+        var usuarioAntigo = umUsuarioConvertFrom();
+        usuarioAntigo.setId(null);
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
+        when(cargoRepository.findByCodigo(usuarioMqRequest.getCargo())).thenReturn(umCargoGerente());
+        when(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento())).thenReturn(umDepartamentoAa());
+        when(nivelRepository.findByCodigo(usuarioMqRequest.getNivel())).thenReturn(umNivelAa());
+        when(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()))
+            .thenReturn(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)));
+        when(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa())).thenReturn(List.of(umaEmpresa()));
+        when(repository.save(usuarioAntigo)).thenReturn(umUsuarioConvertFrom());
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        verify(repository).findById(usuarioDto.getId());
+        verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
+        verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
+        verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
+        verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
+        verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {

@@ -1263,8 +1263,9 @@ public class UsuarioService {
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+            duplicarUsuarioERemanejarAntigo(usuario, usuarioMqRequest);
         } catch (Exception ex) {
             enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
             log.error("Erro ao processar usuário da fila: ", ex);
@@ -1277,7 +1278,7 @@ public class UsuarioService {
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
-        repository.save(usuarioNovo);
+        usuarioNovo = repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
         atualizarPermissaoEspecialAaResidencial(
