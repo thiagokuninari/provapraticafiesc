@@ -54,6 +54,7 @@ import java.util.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -140,7 +141,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(usuario);
         verify(feederService, never())
-            .removerPermissoesEspeciais(List.of(371));
+            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -151,7 +152,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
-            .removerPermissoesEspeciais(List.of(371));
+            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test

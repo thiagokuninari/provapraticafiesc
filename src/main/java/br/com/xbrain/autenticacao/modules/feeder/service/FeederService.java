@@ -57,6 +57,13 @@ public class FeederService {
             var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoPermissaoFeederDto);
             usuarioService.salvarPermissoesEspeciais(permissoes);
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
+        } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
+            var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
+                .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+                .collect(Collectors.toList());
+
+            removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            gerarUsuarioHistorico(usuariosIds, true);
         } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
             var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
                 .filter(usuarioId -> usuarioRepository.exists(usuarioId))
@@ -65,7 +72,7 @@ public class FeederService {
                 usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
             }
 
-            removerPermissoesEspeciais(usuariosIds);
+            removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_AA);
             gerarUsuarioHistorico(usuariosIds, false);
         }
     }
@@ -189,8 +196,8 @@ public class FeederService {
             .collect(Collectors.toList());
     }
 
-    public void removerPermissoesEspeciais(List<Integer> usuarios) {
-        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_AA, usuarios);
+    public void removerPermissoesEspeciais(List<Integer> usuarios, List<Integer> funcionalidades) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoPermissaoFeederDto aaPermissaoFeederDto) {

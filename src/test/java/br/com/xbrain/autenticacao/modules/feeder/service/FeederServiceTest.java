@@ -69,7 +69,7 @@ public class FeederServiceTest {
 
     @Test
     public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
-        service.removerPermissoesEspeciais(List.of(1));
+        service.removerPermissoesEspeciais(List.of(1), FUNCIONALIDADES_FEEDER_PARA_AA);
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(eq(List.of(15000, 15005, 15012, 3046)), eq(List.of(1)));
     }
