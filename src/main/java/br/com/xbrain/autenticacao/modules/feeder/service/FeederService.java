@@ -237,7 +237,7 @@ public class FeederService {
                                                                        ETipoFeeder tipoFeeder) {
         var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
 
-        if(ETipoFeeder.RESIDENCIAL == tipoFeeder){
+        if (ETipoFeeder.RESIDENCIAL == tipoFeeder) {
             funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         }
 

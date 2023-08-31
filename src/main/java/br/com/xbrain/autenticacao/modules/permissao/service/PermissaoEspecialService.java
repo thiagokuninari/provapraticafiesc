@@ -49,10 +49,6 @@ public class PermissaoEspecialService {
         repository.save(permissoes);
     }
 
-    public void deletarPermissaoEspecial(List<Integer> usuarios, List<Integer> funcionalidades) {
-        repository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
-    }
-
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
         return repository
             .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)

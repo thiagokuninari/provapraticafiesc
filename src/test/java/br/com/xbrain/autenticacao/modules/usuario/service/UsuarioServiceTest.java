@@ -77,7 +77,6 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
@@ -3261,49 +3260,6 @@ public class UsuarioServiceTest {
 
         assertThat(service.getIdDosUsuariosSubordinados(1, true))
             .isEqualTo(List.of(2, 1));
-    }
-
-    @Test
-    public void atualizarPermissaoEspecialAaResidencial_deveremoverPermissao_quandoAaNaoResidencial() {
-        var usuario = umUsuarioAaTipoFeederDto();
-        usuario.setTipoFeeder(ETipoFeeder.EMPRESARIAL);
-
-        service.atualizarPermissaoEspecialAaResidencial(usuario);
-
-        verify(permissaoEspecialService)
-            .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, usuario.getUsuariosIds());
-
-        verify(permissaoEspecialService, never()).save(anyList());
-    }
-
-    @Test
-    public void atualizarPermissaoEspecialAaResidencial_deveremoverPermissao_quandoApenasCargoNaoPermitido() {
-        var usuario = umUsuarioAaTipoFeederDto();
-
-        when(repository.findByIdIn(usuario.getUsuariosIds()))
-            .thenReturn(umUsuariosListComCargoSemPermissao());
-
-        service.atualizarPermissaoEspecialAaResidencial(usuario);
-
-        verify(permissaoEspecialService)
-            .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, List.of(1, 2, 3));
-
-        verify(permissaoEspecialService).save(List.of());
-    }
-
-    @Test
-    public void atualizarPermissaoEspecialAaResidencial_deveremoverPermissao_quandoApenasCargoPermitido() {
-        var usuario = umUsuarioAaTipoFeederDto();
-
-        when(repository.findByIdIn(usuario.getUsuariosIds()))
-            .thenReturn(umUsuariosListComCargoComPermissao());
-
-        service.atualizarPermissaoEspecialAaResidencial(usuario);
-
-        verify(permissaoEspecialService)
-            .deletarPermissaoEspecial(FUNCIONALIDADES_FEEDER_PARA_CARGOS_AA_RESIDENCIAL, List.of());
-
-        verify(permissaoEspecialService).save(anyList());
     }
 
     @Test
