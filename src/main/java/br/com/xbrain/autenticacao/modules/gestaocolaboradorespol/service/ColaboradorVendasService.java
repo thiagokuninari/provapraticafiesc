@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

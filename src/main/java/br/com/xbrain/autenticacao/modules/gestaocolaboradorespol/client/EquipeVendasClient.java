@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "EquipeVendasClient",
+@FeignClient(
+    name = "EquipeVendasClient",
     configuration = FeignSkipBadRequestsConfiguration.class,
     url = "${app-config.services.gestao-colaborador-pol.url}"
 )

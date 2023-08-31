@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@FeignClient(name = "colaboradorVendasClient",
+@FeignClient(
+    name = "colaboradorVendasClient",
     configuration = FeignSkipBadRequestsConfiguration.class,
     url = "${app-config.services.gestao-colaborador-pol.url}"
 )

@@ -9,8 +9,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-//import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
-//import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;

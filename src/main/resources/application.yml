@@ -97,14 +97,14 @@ app-config:
     feeder: feeder.topic
 
   queue:
-    usuario-cadastro: usuario-cadastro-tonhatti.queue
+    usuario-cadastro: usuario-cadastro.queue
     usuario-cidade: usuario-cidade.queue
-    usuario-cadastro-success: usuario-cadastro-success-tonhatti.queue
+    usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
-    usuario-atualizacao: usuario-atualizacao-tonhatti.queue
+    usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-lojafuturo: usuario-atualizacao-lojafuturo.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
     usuario-aa-atualizacao: usuario-aa-atualizacao.queue
@@ -121,13 +121,13 @@ app-config:
     usuario-logout-failure: usuario-logout-failure.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
-    inativar-colaborador-pol: inativar-colaborador-pol-tonhatti.queue
-    inativar-colaborador-pol-failure: inativar-colaborador-pol-failure-tonhatti.queue
+    inativar-colaborador-pol: inativar-colaborador-pol.queue
+    inativar-colaborador-pol-failure: inativar-colaborador-pol-failure.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
     atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
-    usuario-remanejar-pol: usuario-remanejar-pol-tonhatti.queue
+    usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
@@ -285,8 +285,8 @@ app-config:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
     gestao-colaborador-pol:
-      url: http://localhost:8310
-#      url: http://192.168.50.1:8310
+      #url: http://localhost:8310
+      url: http://192.168.50.1:8310
 
 flyway:
   enabled: true
