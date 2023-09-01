@@ -98,8 +98,8 @@ public class FeederServiceTest {
             .flatMap(List::stream)
             .collect(Collectors.toList());
 
-        verify(permissaoEspecialRepository, times(1))
-            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL,List.of());
+        verify(permissaoEspecialRepository, times(0))
+            .deletarPermissaoEspecialBy(anyList(),anyList());
         verify(usuarioHistoricoService, times(1))
             .save(anyList());
         verify(usuarioService, times(1))
@@ -120,8 +120,7 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(permissaoEspecialRepository, times(1)).deletarPermissaoEspecialBy(
-            FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL, List.of());
+        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(),anyList());
         verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
     }
