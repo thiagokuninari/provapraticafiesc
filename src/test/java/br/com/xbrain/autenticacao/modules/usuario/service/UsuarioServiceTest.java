@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -3275,8 +3274,6 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)));
         when(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa())).thenReturn(List.of(umaEmpresa()));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAa());
-        when(repository.findByIdIn(umUsuarioAaTipoFeederDto().getUsuariosIds()))
-            .thenReturn(umUsuariosListComCargoComPermissao());
 
         service.updateFromQueue(usuarioMqRequest);
 
@@ -3287,7 +3284,6 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(permissaoEspecialService).save(anyList());
     }
 
     @Test

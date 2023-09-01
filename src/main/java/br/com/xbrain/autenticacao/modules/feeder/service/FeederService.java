@@ -257,8 +257,8 @@ public class FeederService {
     }
 
     private boolean isColaboradoresAaFeederResidencial(CodigoCargo usuarioCargoCodigo, ETipoFeeder tipoFeeder) {
-        return tipoFeeder == ETipoFeeder.RESIDENCIAL && Objects.nonNull(usuarioCargoCodigo) &&
-            CODIGOS_CARGOS_COLABORADORES_FEEDER_RESIDENCIAL.contains(usuarioCargoCodigo);
+        return tipoFeeder == ETipoFeeder.RESIDENCIAL && Objects.nonNull(usuarioCargoCodigo)
+            && CODIGOS_CARGOS_COLABORADORES_FEEDER_RESIDENCIAL.contains(usuarioCargoCodigo);
     }
 
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
