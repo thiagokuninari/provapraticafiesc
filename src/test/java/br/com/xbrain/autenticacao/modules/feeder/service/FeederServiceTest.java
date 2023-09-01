@@ -89,7 +89,7 @@ public class FeederServiceTest {
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
             .thenReturn(List.of(umaPermissaoTratarLead(100)));
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
@@ -179,7 +179,7 @@ public class FeederServiceTest {
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018)));
     }
 
     @Test
