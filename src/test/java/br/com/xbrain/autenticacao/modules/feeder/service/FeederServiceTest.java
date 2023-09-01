@@ -174,7 +174,7 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(1000)).thenReturn(
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
