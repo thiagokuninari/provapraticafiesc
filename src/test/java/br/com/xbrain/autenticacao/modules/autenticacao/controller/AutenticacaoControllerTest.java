@@ -276,7 +276,7 @@ public class AutenticacaoControllerTest {
         when(equipeVendaD2dService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
         when(req.getRequestURI()).thenReturn("/oauth/token");
         when(req.getContentType()).thenReturn("multipart/form-data");
-        when(req.getParameter(gieq("username"))).thenReturn(null);
+        when(req.getParameter(eq("username"))).thenReturn(null);
 
         customTokenEndpointAuthenticationFilter.doFilter(req, res, chain);
 
