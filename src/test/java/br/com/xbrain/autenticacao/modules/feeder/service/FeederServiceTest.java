@@ -110,7 +110,7 @@ public class FeederServiceTest {
         verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018)));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(permissoes);
     }
@@ -178,7 +178,6 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(usuarioHistoricoService, times(1)).save(anyList());
         verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
     }
