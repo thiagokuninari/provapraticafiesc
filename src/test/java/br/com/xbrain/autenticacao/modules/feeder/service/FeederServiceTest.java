@@ -31,10 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,8 +98,8 @@ public class FeederServiceTest {
             .flatMap(List::stream)
             .collect(Collectors.toList());
 
-        verify(permissaoEspecialRepository, times(0))
-            .deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL,List.of());
         verify(usuarioHistoricoService, times(1))
             .save(anyList());
         verify(usuarioService, times(1))
@@ -123,7 +120,8 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(permissaoEspecialRepository, times(1)).deletarPermissaoEspecialBy(
+            FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL, List.of());
         verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
     }
@@ -136,10 +134,12 @@ public class FeederServiceTest {
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102, 10));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -155,9 +155,11 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
 
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));

@@ -57,13 +57,15 @@ public class FeederService {
             var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoPermissaoFeederDto);
             usuarioService.salvarPermissoesEspeciais(permissoes);
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
-        } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
-            var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
-                .filter(usuarioId -> usuarioRepository.exists(usuarioId))
-                .collect(Collectors.toList());
 
-            removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
-            gerarUsuarioHistorico(usuariosIds, true);
+            if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
+                var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
+                    .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+                    .collect(Collectors.toList());
+
+                removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+                gerarUsuarioHistorico(usuariosIds, true);
+            }
         } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
             var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
                 .filter(usuarioId -> usuarioRepository.exists(usuarioId))
@@ -72,7 +74,10 @@ public class FeederService {
                 usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
             }
 
-            removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_AA);
+            var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+
+            removerPermissoesEspeciais(usuariosIds, funcionalidades);
             gerarUsuarioHistorico(usuariosIds, false);
         }
     }
