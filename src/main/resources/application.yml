@@ -230,6 +230,9 @@ app-config:
     claro-indico-api:
       client: claro-indico-api
       secret: cl4r0_1nd1c0_4p1
+    bloqueio-ligacao-api:
+      client: bloqueio-ligacao-api
+      secret: bl0qu310l1g4c404p1
 
   services:
     autenticacao:
