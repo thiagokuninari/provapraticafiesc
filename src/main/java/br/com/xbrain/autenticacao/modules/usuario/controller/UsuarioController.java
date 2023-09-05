@@ -268,6 +268,11 @@ public class UsuarioController {
         return cpfAaOpt.orElse(null);
     }
 
+    @GetMapping("obter-usuario-por-cpf/{cpf}")
+    public UsuarioResponse findUsuarioByCpfComSituacaoAtivoOuInativo(@PathVariable String cpf) {
+        return usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
+    }
+
     @PostMapping("cpfs")
     public List<UsuarioResponse> getUsuariosByCpfs(@RequestBody List<String> cpfs,
                                                    @RequestParam(required = false) Boolean buscarAtivo) {

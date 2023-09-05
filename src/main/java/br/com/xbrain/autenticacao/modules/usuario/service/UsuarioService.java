@@ -284,7 +284,7 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(int id) {
         var usuario = findByIdComAa(id);
-        return  UsuarioDto.of(
+        return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
@@ -334,6 +334,12 @@ public class UsuarioService {
 
         return repository.findTop1UsuarioByCpf(getOnlyNumbers(cpf))
             .map(UsuarioResponse::of);
+    }
+
+    public UsuarioResponse findUsuarioByCpfComSituacaoAtivoOuInativo(String cpf) {
+        return repository.findTop1UsuarioByCpfAndSituacaoIn(getOnlyNumbers(cpf), List.of(ESituacao.A, ESituacao.I))
+            .map(UsuarioResponse::of)
+            .orElse(null);
     }
 
     public UsuarioResponse buscarAtualByCpf(String cpf) {
@@ -1676,7 +1682,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
-        var usuarios =  repository.getUsuariosFilter(
+        var usuarios = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())

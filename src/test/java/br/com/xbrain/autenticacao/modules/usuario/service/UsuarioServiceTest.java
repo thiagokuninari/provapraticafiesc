@@ -3335,6 +3335,50 @@ public class UsuarioServiceTest {
             .isEqualTo(List.of(2, 1));
     }
 
+    @Test
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarUsuarioAtivo_quandoBuscarPorCpf() {
+        doReturn(Optional.of(umUsuarioAtivo()))
+            .when(usuarioRepository)
+            .findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+
+        assertThat(usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo("31114231827"))
+            .isNotNull()
+            .extracting(UsuarioResponse::getId, UsuarioResponse::getCpf, UsuarioResponse::getNome,
+                UsuarioResponse::getSituacao, UsuarioResponse::getEmail)
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
+
+        verify(usuarioRepository).findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+    }
+
+    @Test
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarUsuarioInativo_quandoBuscarPorCpf() {
+        doReturn(Optional.of(umUsuarioInativo()))
+            .when(usuarioRepository)
+            .findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+
+        assertThat(usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo("31114231827"))
+            .isNotNull()
+            .extracting(UsuarioResponse::getId, UsuarioResponse::getCpf, UsuarioResponse::getNome,
+                UsuarioResponse::getSituacao, UsuarioResponse::getEmail)
+            .containsExactly(11, "31114231827", "Usuario Inativo", ESituacao.I, "usuarioinativo@email.com");
+
+        verify(usuarioRepository).findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+    }
+
+    @Test
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarVazio_quandoNaoEncontrarUsuarioCorrespondente() {
+        assertThat(usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo("12345678901")).isNull();
+
+        verify(usuarioRepository).findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+    }
+
+    @Test
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarVazio_quandoBuscarPorCpEUsuarioEstiverRealocado() {
+        assertThat(usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo("31114231827")).isNull();
+
+        verify(usuarioRepository).findTop1UsuarioByCpfAndSituacaoIn(anyString(), anyList());
+    }
+
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         ReflectionTestUtils.setField(usuarioService, "applicationEventPublisher", applicationEventPublisher);
     }

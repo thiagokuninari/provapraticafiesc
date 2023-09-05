@@ -2065,4 +2065,24 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getSubordinadosAndAasDoUsuario(false);
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/obter-usuario-por-cpf/31114231827"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findUsuarioByCpfComSituacaoAtivoOuInativo("31114231827");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/obter-usuario-por-cpf/31114231827"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
 }
