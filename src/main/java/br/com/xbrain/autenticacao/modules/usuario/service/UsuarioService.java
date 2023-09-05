@@ -86,6 +86,8 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -278,7 +280,7 @@ public class UsuarioService {
 
     public UsuarioDto getUsuarioById(int id) {
         var usuario = findByIdComAa(id);
-        return  UsuarioDto.of(
+        return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
@@ -1235,7 +1237,12 @@ public class UsuarioService {
     private void removerPermissoesFeeder(UsuarioMqRequest usuarioMqRequest) {
         if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
-            feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()));
+
+            var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+            if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
+                funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            }
+            feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()), funcionalidades);
         }
     }
 
@@ -1274,7 +1281,7 @@ public class UsuarioService {
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
-        repository.save(usuarioNovo);
+        usuarioNovo = repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
@@ -1647,7 +1654,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
-        var usuarios =  repository.getUsuariosFilter(
+        var usuarios = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())

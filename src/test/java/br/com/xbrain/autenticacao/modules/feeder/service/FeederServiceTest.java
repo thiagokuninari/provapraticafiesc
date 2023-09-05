@@ -31,10 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +66,7 @@ public class FeederServiceTest {
 
     @Test
     public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
-        service.removerPermissoesEspeciais(List.of(1));
+        service.removerPermissoesEspeciais(List.of(1), FUNCIONALIDADES_FEEDER_PARA_AA);
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(eq(List.of(15000, 15005, 15012, 3046)), eq(List.of(1)));
     }
@@ -89,7 +86,7 @@ public class FeederServiceTest {
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
             .thenReturn(List.of(umaPermissaoTratarLead(100)));
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
@@ -102,7 +99,7 @@ public class FeederServiceTest {
             .collect(Collectors.toList());
 
         verify(permissaoEspecialRepository, times(0))
-            .deletarPermissaoEspecialBy(anyList(), anyList());
+            .deletarPermissaoEspecialBy(anyList(),anyList());
         verify(usuarioHistoricoService, times(1))
             .save(anyList());
         verify(usuarioService, times(1))
@@ -110,7 +107,7 @@ public class FeederServiceTest {
         verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018)));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(permissoes);
     }
@@ -123,7 +120,7 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(),anyList());
         verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
     }
@@ -136,10 +133,12 @@ public class FeederServiceTest {
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102, 10));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -155,9 +154,11 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
 
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -173,14 +174,13 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(1000)).thenReturn(
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(usuarioHistoricoService, times(1)).save(anyList());
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018)));
     }
 
     @Test

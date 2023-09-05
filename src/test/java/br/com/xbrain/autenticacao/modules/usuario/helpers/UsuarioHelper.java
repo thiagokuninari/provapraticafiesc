@@ -1,9 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -15,7 +13,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
-import com.google.common.collect.Sets;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -34,6 +31,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 
 public class UsuarioHelper {
 
@@ -112,75 +110,6 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario outroUsuarioCompleto() {
-        var usuario = Usuario
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(EXECUTIVO_HUNTER)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
-                    .nome("OPERACAO")
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
-    }
-
-    public static Nivel umNivelXbrain() {
-        return Nivel
-            .builder()
-            .id(4)
-            .codigo(XBRAIN)
-            .nome("X-BRAIN")
-            .situacao(A)
-            .build();
-    }
-
     public static Usuario umUsuarioOperacaoComSubCanal(Set<SubCanal> subCanais) {
         return Usuario.builder()
             .id(101112)
@@ -227,6 +156,14 @@ public class UsuarioHelper {
         return UsuarioDto.builder()
             .id(usuarioId)
             .email(usuarioEmail)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioDto() {
+        return UsuarioDto.builder()
+            .id(1)
+            .email("teste@gmail.com")
+            .cpf("123456")
             .build();
     }
 
@@ -583,5 +520,118 @@ public class UsuarioHelper {
             umUsuarioAdminSimples(103, "USUARIO ADMIN 3", "ADMIN3@XBRAIN.COM.BR"),
             umUsuarioAdminSimples(104, "USUARIO ADMIN 4", "ADMIN4@XBRAIN.COM.BR")
         );
+    }
+
+    public static List<Usuario> umUsuariosListComCargoSemPermissao() {
+        return List.of(
+            Usuario.builder()
+                .id(1)
+                .nome("Caio")
+                .loginNetSales("H")
+                .email("caio@teste.com")
+                .situacao(A)
+                .cargo(umCargoAnalistaOperacao())
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .nome("Mario")
+                .loginNetSales("QQ")
+                .email("mario@teste.com")
+                .situacao(ESituacao.I)
+                .cargo(umCargoAnalistaOperacao())
+                .build(),
+            Usuario.builder()
+                .id(3)
+                .nome("Maria")
+                .loginNetSales("LOG")
+                .email("maria@teste.com")
+                .situacao(ESituacao.R)
+                .cargo(umCargoAnalistaOperacao())
+                .build()
+        );
+    }
+
+    public static List<Usuario> umUsuariosListComCargoComPermissao() {
+        return List.of(
+            Usuario.builder()
+                .id(88)
+                .nome("Caio")
+                .loginNetSales("H")
+                .email("caio@teste.com")
+                .situacao(A)
+                .cargo(umCargoAaSocio())
+                .usuarioCadastro(umUsuarioCadastro())
+                .build()
+        );
+    }
+
+    public static UsuarioMqRequest umUsuarioMqRequestCompleto() {
+        return UsuarioMqRequest.builder()
+            .id(123)
+            .cpf("123456789")
+            .nome("Fulano")
+            .email("fulano@tgmail.com.br")
+            .telefone("43988887777")
+            .rg("123456")
+            .loginNetSales("741")
+            .orgaoExpedidor("963")
+            .situacao(A)
+            .nascimento(LocalDateTime.of(1990,10,19,14,52))
+            .nivel(AGENTE_AUTORIZADO)
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .cargo(GERENTE_OPERACAO)
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
+            .usuarioCadastroId(69)
+            .usuarioCadastroNome("Alguem")
+            .colaboradorVendasId(89)
+            .agenteAutorizadoId(77)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .isCadastroSocioPrincipal(true)
+            .equipeTecnica(true)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioDtoParse() {
+        return UsuarioDto.builder()
+            .id(123)
+            .cpf("123456789")
+            .nome("Fulano")
+            .email("fulano@tgmail.com.br")
+            .telefone("43988887777")
+            .rg("123456")
+            .loginNetSales("741")
+            .orgaoExpedidor("963")
+            .situacao(A)
+            .nascimento(LocalDateTime.of(1990,10,19,14,52))
+            .nivelCodigo(AGENTE_AUTORIZADO)
+            .departamentoId(40)
+            .cargoCodigo(GERENTE_OPERACAO)
+            .cargoId(47)
+            .usuarioCadastroId(69)
+            .usuarioCadastroNome("Alguem")
+            .agenteAutorizadoId(77)
+            .build();
+    }
+
+    public static Usuario umUsuarioConvertFrom() {
+        return Usuario.builder()
+            .id(123)
+            .cpf("123456789")
+            .nome("Fulano")
+            .email("fulano@tgmail.com.br")
+            .telefone("43988887777")
+            .rg("123456")
+            .loginNetSales("741")
+            .orgaoExpedidor("963")
+            .situacao(A)
+            .nascimento(LocalDateTime.of(1990,10,19,14,52))
+            .agenteAutorizadoId(77)
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoAa() {
+        return umUsuarioAutenticadoAtivoProprioComCargo(1, GERENTE_OPERACAO,
+            CodigoDepartamento.AGENTE_AUTORIZADO);
     }
 }

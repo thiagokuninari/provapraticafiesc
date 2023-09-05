@@ -57,6 +57,15 @@ public class FeederService {
             var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoPermissaoFeederDto);
             usuarioService.salvarPermissoesEspeciais(permissoes);
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
+
+            if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
+                var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
+                    .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+                    .collect(Collectors.toList());
+
+                removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+                gerarUsuarioHistorico(usuariosIds, true);
+            }
         } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
             var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
                 .filter(usuarioId -> usuarioRepository.exists(usuarioId))
@@ -65,7 +74,10 @@ public class FeederService {
                 usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
             }
 
-            removerPermissoesEspeciais(usuariosIds);
+            var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+
+            removerPermissoesEspeciais(usuariosIds, funcionalidades);
             gerarUsuarioHistorico(usuariosIds, false);
         }
     }
@@ -95,7 +107,8 @@ public class FeederService {
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
-                    usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
+                    usuarioMqRequest.getAgenteAutorizadoFeeder(), usuarioMqRequest.getUsuarioCadastroId(),
+                    usuarioMqRequest.getCargo()))
                 .orElse(List.of());
             usuarioService.salvarPermissoesEspeciais(permissoesFeeder);
         }
@@ -188,72 +201,89 @@ public class FeederService {
             .collect(Collectors.toList());
     }
 
-    public void removerPermissoesEspeciais(List<Integer> usuarios) {
-        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_AA, usuarios);
+    public void removerPermissoesEspeciais(List<Integer> usuarios, List<Integer> funcionalidades) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoPermissaoFeederDto aaPermissaoFeederDto) {
         var permissoesEspeciais = getPermissoesEspeciaisDosColaboradores(aaPermissaoFeederDto.getColaboradoresVendasIds(),
-            aaPermissaoFeederDto.getUsuarioCadastroId());
+            aaPermissaoFeederDto.getUsuarioCadastroId(), aaPermissaoFeederDto.getFeeder());
 
         permissoesEspeciais.addAll(getPermissaoEspecialSocioPrincipal(
             aaPermissaoFeederDto.getUsuarioProprietarioId(),
-            aaPermissaoFeederDto.getUsuarioCadastroId()));
+            aaPermissaoFeederDto.getUsuarioCadastroId(), aaPermissaoFeederDto.getFeeder()));
 
         return permissoesEspeciais;
     }
 
     private List<PermissaoEspecial> getPermissoesEspeciaisDosColaboradores(List<Integer> vendedoresIds,
-                                                                           Integer usuarioCadastroId) {
+                                                                           Integer usuarioCadastroId, ETipoFeeder tipoFeeder) {
         return vendedoresIds.stream()
             .map(colaboradorId -> usuarioRepository.findComplete(colaboradorId).orElse(null))
             .filter(Objects::nonNull)
             .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
             .filter(usuario -> CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuario.getCargoCodigo())
-            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador,
+            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador, tipoFeeder,
                 usuarioCadastroId, colaborador.getCargoCodigo()).stream())
             .collect(Collectors.toList());
     }
 
     private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
+                                                                                      ETipoFeeder tipoFeeder,
                                                                                       Integer usuarioCadastroId,
                                                                                       CodigoCargo cargoCodigo) {
         if (isBackOffice(cargoCodigo)) {
             return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
                 FUNCIONALIDADES_FEEDER_PARA_AA);
         }
+        if (isColaboradoresAaFeederResidencial(cargoCodigo, tipoFeeder)) {
+            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
+                FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        }
         return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
             List.of(FUNCIONALIDADE_TRATAR_LEAD_ID));
     }
 
     private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId,
-                                                                       Integer usuarioCadastroId) {
+                                                                       Integer usuarioCadastroId,
+                                                                       ETipoFeeder tipoFeeder) {
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+
+        if (ETipoFeeder.RESIDENCIAL == tipoFeeder) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        }
+
         return usuarioService.getPermissoesEspeciaisDoUsuario(socioPrincipalId, usuarioCadastroId,
-            FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades);
     }
 
     private boolean isBackOffice(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
     }
 
+    private boolean isColaboradoresAaFeederResidencial(CodigoCargo usuarioCargoCodigo, ETipoFeeder tipoFeeder) {
+        return tipoFeeder == ETipoFeeder.RESIDENCIAL && Objects.nonNull(usuarioCargoCodigo)
+            && CODIGOS_CARGOS_COLABORADORES_FEEDER_RESIDENCIAL.contains(usuarioCargoCodigo);
+    }
+
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
         var localDateTime = dataHoraAtual.getDataHora();
         usuariosIds.forEach(usuarioId -> {
-            var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
-            if (usuarioRepository.exists(usuarioId)) {
-                permissaoEspecialRepository.save(
-                    FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
-                        .stream()
-                        .filter(func -> !listaFunc.contains(func))
-                        .map(id -> PermissaoEspecial
-                            .builder()
-                            .funcionalidade(Funcionalidade.builder().id(id).build())
-                            .usuario(new Usuario(usuarioId))
-                            .dataCadastro(localDateTime)
-                            .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
-                            .build())
-                        .collect(Collectors.toList()));
-            }
+                var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
+                if (usuarioRepository.exists(usuarioId)) {
+                    permissaoEspecialRepository.save(
+                        FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
+                            .stream()
+                            .filter(func -> !listaFunc.contains(func))
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .usuario(new Usuario(usuarioId))
+                                .dataCadastro(localDateTime)
+                                .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
+                                .build())
+                            .collect(Collectors.toList()));
+                }
             }
         );
     }
