@@ -23,7 +23,7 @@ public class UsuarioComLoginNetSalesResponseTest {
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoNome)
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
                 "685.313.412-56", "Organizacao teste");
     }
