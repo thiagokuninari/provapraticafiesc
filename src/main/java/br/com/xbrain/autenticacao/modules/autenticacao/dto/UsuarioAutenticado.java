@@ -216,10 +216,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         return isOperacao() && INTERNET_BACKOFFICE.equals(cargoCodigo);
     }
 
-    public boolean isGerenteInternetOperacao() {
-        return isOperacao() && CodigoCargo.INTERNET_GERENTE.equals(cargoCodigo);
-    }
-
     public boolean haveCanalAgenteAutorizado() {
         return haveCanal(AGENTE_AUTORIZADO);
     }
