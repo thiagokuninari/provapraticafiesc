@@ -36,6 +36,8 @@ app-config:
       url: http://172.10.10.32:8087
     extrato-comissao:
       url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.109:8304
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

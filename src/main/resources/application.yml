@@ -279,6 +279,9 @@ app-config:
     extrato-comissao:
       #url: http://localhost:8309
       url: http://192.168.50.1:8309
+    funil-prospeccao:
+      #url: http://localhost:8100
+      url: http://192.168.50.1:6605
 
 flyway:
   enabled: true
@@ -333,6 +336,9 @@ zuul:
     extrato-comissao:
       sensitive-headers: Cookie,Set-Cookie
       url: ${app-config.services.extrato-comissao.url}
+    funil-prospeccao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.funil-prospeccao.url}
 
   host:
     connect-timeout-millis: 1800000
