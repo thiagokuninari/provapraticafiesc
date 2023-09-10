@@ -100,7 +100,6 @@ public class SiteHelper {
         ));
     }
 
-
     public static Site umSiteCompleto() {
         return Site
             .builder()
