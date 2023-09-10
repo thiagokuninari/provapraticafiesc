@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +16,11 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "api/organizacao-empresa")
 public class OrganizacaoEmpresaController {
 
-    @Autowired
-    private OrganizacaoEmpresaService service;
+    private final OrganizacaoEmpresaService service;
 
     @GetMapping
     public Page<OrganizacaoEmpresaResponse> getOrganizacaoEmpresa(OrganizacaoEmpresaFiltros filtros,

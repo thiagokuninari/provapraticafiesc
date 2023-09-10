@@ -31,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
+import helpers.TestBuilders;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -155,7 +156,7 @@ public class SiteServiceTest {
         when(siteRepository.findAll()).thenReturn(umaListaSites());
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.save(umSiteRequest()))
+            .isThrownBy(() -> service.save(TestBuilders.umSiteRequest()))
             .withMessage("Site já cadastrado anteriormente com esse nome.");
 
         verify(siteRepository, atLeastOnce()).findAll();
@@ -167,7 +168,7 @@ public class SiteServiceTest {
         when(siteRepository.findAll(umSitePredicate())).thenReturn(List.of(umSite(1, "Brandin", BRT)));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.save(umSiteRequest()))
+            .isThrownBy(() -> service.save(TestBuilders.umSiteRequest()))
             .withMessage("Existem cidades vinculadas à outro site.");
 
         verify(siteRepository, atLeastOnce()).findAll(umSitePredicate());
@@ -179,7 +180,7 @@ public class SiteServiceTest {
         when(siteRepository.findById(anyInt()))
             .thenReturn(Optional.of(umSiteComSupervisores()));
 
-        var request = umSiteRequest();
+        var request = TestBuilders.umSiteRequest();
         request.setId(1);
         request.setSupervisoresIds(List.of(100, 110, 112));
 

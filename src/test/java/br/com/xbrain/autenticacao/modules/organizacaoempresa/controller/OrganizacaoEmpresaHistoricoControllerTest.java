@@ -1,99 +1,85 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaHistoricoResponse;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioAdminAutenticado;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioMsoConsultorAutenticado;
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.HELP_DESK;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WithMockUser
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@Import(OAuth2ResourceConfig.class)
+@WebMvcTest(controllers = OrganizacaoEmpresaHistoricoController.class)
 public class OrganizacaoEmpresaHistoricoControllerTest {
 
     private static final String API_URI = "/api/organizacao-empresa-historico";
+    private static final String GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO = "VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO";
 
     @Autowired
     private MockMvc mvc;
-
+    @MockBean
+    private TokenStore tokenStore;
     @MockBean
     private OrganizacaoEmpresaHistoricoService service;
-
     @MockBean
-    private AutenticacaoService autenticacaoService;
+    private EquipeVendaD2dService equipeVendaD2dService;
+    @MockBean
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     @Test
     @SneakyThrows
-    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+    @WithAnonymousUser
+    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/{id}", 1)
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).obterHistoricoDaOrganizacaoEmpresa(any());
     }
 
     @Test
     @SneakyThrows
-    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarForbidden_seUsuarioNaoTiverPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
-
+    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(get(API_URI + "/{id}", 1)
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.error", is("access_denied")));
+
+        verify(service, never()).obterHistoricoDaOrganizacaoEmpresa(any());
     }
 
     @Test
     @SneakyThrows
-    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarHistoricoOrganizacao_seUsuarioAutenticado() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAdminAutenticado());
-
-        when(service.obterHistoricoDaOrganizacaoEmpresa(any())).thenReturn(
-            List.of(OrganizacaoEmpresaHistoricoResponse.builder()
-                .usuarioNome("Thiago")
-                .dataAlteracao(LocalDateTime.of(2022, 5, 15, 12, 0, 0))
-                .observacao(EHistoricoAcao.EDICAO)
-                .build())
-        );
-
+    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
+    public void getHistoricoDaOrganizacaoEmpresa_deveRetornarOk_quandoDadosValidos() {
         mvc.perform(get(API_URI + "/{id}", 1)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[0].usuarioNome", is("Thiago")))
-            .andExpect(jsonPath("$[0].observacao", is("EDICAO")))
-            .andExpect(jsonPath("$[0].dataAlteracao", is("2022-05-15T12:00:00")));
+            .andExpect(status().isOk());
+
+        verify(service).obterHistoricoDaOrganizacaoEmpresa(eq(1));
     }
 }
