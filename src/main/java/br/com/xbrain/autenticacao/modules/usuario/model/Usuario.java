@@ -97,6 +97,14 @@ public class Usuario {
     @Column(name = "LOGIN_NET_SALES", length = 120)
     private String loginNetSales;
 
+    @Size(max = 120)
+    @Column(name = "NOME_EQUIPE_VENDA_NET_SALES", length = 120)
+    private String nomeEquipeVendaNetSales;
+
+    @Size(max = 120)
+    @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
+    private String codigoEquipeVendaNetSales;
+
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
 
