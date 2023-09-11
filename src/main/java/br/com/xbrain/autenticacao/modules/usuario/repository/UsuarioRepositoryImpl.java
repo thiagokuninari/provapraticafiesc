@@ -54,6 +54,8 @@ import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
@@ -338,7 +340,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER, ASSISTENTE_OPERACAO)
                 .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(OPERACAO)))
-                .and(usuario.situacao.eq(A))
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO))
                 .and(predicate))
             .orderBy(usuario.nome.asc())
             .fetch();
@@ -1047,7 +1049,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario, usuario)
-            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+            .where(usuario.canais.any().eq(ATIVO_PROPRIO)
                 .and(select(site).from(site)
                     .leftJoin(site.coordenadores, usuarioCoordenadores)
                     .where(
@@ -1099,7 +1101,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(departamento.codigo.eq(COMERCIAL))
                 .and(nivel.codigo.eq(OPERACAO))
                 .and(cargo.id.eq(cargoId))
-                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
             .orderBy(usuario.id.asc())
             .fetch();
     }
@@ -1112,7 +1114,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(cargo.nivel, nivel)
             .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
-                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
             .fetch();
     }
 
@@ -1159,7 +1161,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario, usuario)
             .leftJoin(usuario.cargo, cargo)
             .where(cargo.codigo.eq(SUPERVISOR_OPERACAO)
-                .and(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO))
+                .and(usuario.canais.any().eq(ATIVO_PROPRIO))
                 .and(sitePredicate))
             .fetch();
     }
@@ -1177,7 +1179,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource()
                 .addValue("usuarioId", usuarioId)
-                .addValue("canal", ECanal.ATIVO_PROPRIO.name())
+                .addValue("canal", ATIVO_PROPRIO.name())
                 .addValue("cargo", cargo.name()),
             new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
     }
@@ -1219,7 +1221,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario, usuario)
-            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+            .where(usuario.canais.any().eq(ATIVO_PROPRIO)
                 .and(select(site).from(site)
                     .leftJoin(site.coordenadores, usuarioCoordenadores)
                     .where(site.situacao.eq(A)
@@ -1351,7 +1353,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.departamento, departamento).fetchJoin()
             .leftJoin(usuario.configuracao, configuracao).fetchJoin()
             .leftJoin(usuario.unidadesNegocios, unidadeNegocio).fetchJoin()
-            .where(cargo.nivel.codigo.eq(codigoNivel).and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+            .where(cargo.nivel.codigo.eq(codigoNivel).and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
             .orderBy(usuario.nome.asc())
             .fetch();
     }
