@@ -32,8 +32,10 @@ public class FileServiceTest {
 
     @Before
     public void setup() {
-        ReflectionTestUtils.setField(service, "usuarioFotoDir", "desenvolvimento/autenticacao");
+        ReflectionTestUtils.setField(service, "usuarioFotoDir", "desenvolvimento/autenticacao/usuario/foto");
         ReflectionTestUtils.setField(service, "urlEstatico", "src/test/resources/");
+        ReflectionTestUtils.setField(service, "defaultBucketName", "conexao-claro-brasil");
+        ReflectionTestUtils.setField(service, "minioUrl", "https://minio-dev.xbrain.com.br");
     }
 
     @Test

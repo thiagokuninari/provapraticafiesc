@@ -56,7 +56,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,12 +63,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -103,11 +98,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesU
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
-import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.http.MediaType.IMAGE_JPEG;
-import static org.springframework.http.MediaType.IMAGE_PNG;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -254,11 +246,13 @@ public class UsuarioService {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
-    private TokenStore tokenStore;
-    @Autowired
     private MinioFileService minioFileService;
     @Value("${app-config.upload-foto-usuario}")
     private String urlDir;
+    @Value("${app-config.minio.url}")
+    private String minioUrl;
+    @Value("${app-config.minio.bucket.name}")
+    private String defaultBucketName;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2810,21 +2804,6 @@ public class UsuarioService {
         }
     }
 
-    @SneakyThrows
-    public ResponseEntity<byte[]> getAvatar(String token) {
-        var caminhoImg = tokenStore.readAccessToken(token).getAdditionalInformation().get("fotoDiretorio").toString();
-        var minioImg = minioFileService.getArquivo(caminhoImg).readAllBytes();
-        var exetensao = getExtensaoArquivo(caminhoImg);
-        var headers = new HttpHeaders();
-        headers.setContentType(exetensao.equals(".png") ? IMAGE_PNG : IMAGE_JPEG);
-
-        return new ResponseEntity<>(minioImg, headers, HttpStatus.OK);
-    }
-
-    private String getExtensaoArquivo(String nomeArquivo) {
-        return ".".concat(getExtension(nomeArquivo));
-    }
-
     @Transactional
     public void moverAvatarMinio() throws IOException {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
@@ -2875,7 +2854,9 @@ public class UsuarioService {
             usuariosEstatico.forEach(user -> {
                 var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
                 log.info("Update usuario Id: {}", user.getId());
-                repository.updateFotoDiretorio(fileName, user.getId());
+                repository.updateFotoDiretorio(
+                    minioUrl.concat("/").concat(defaultBucketName).concat("/").concat(fileName), user.getId()
+                );
             });
         }
     }

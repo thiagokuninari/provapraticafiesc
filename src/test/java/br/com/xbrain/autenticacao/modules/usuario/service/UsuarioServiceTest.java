@@ -62,16 +62,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -82,7 +78,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ARQUIVO_NAO_ENCONTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umaListaUsuario;
@@ -105,9 +100,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
@@ -3290,44 +3283,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getAvatar_deveRetornarImagem() {
-        var token = "tokenTest";
-        var accessToken = mock(OAuth2AccessToken.class);
-        when(accessToken.getAdditionalInformation())
-            .thenReturn(Collections.singletonMap("fotoDiretorio", "foto_usuario/file.jpg"));
-        when(tokenStore.readAccessToken(token)).thenReturn(accessToken);
-        var imageBytes = "file".getBytes();
-        when(minioFileService.getArquivo("foto_usuario/file.jpg"))
-            .thenReturn(new ByteArrayInputStream(imageBytes));
-
-        var response = usuarioService.getAvatar(token);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertArrayEquals(imageBytes, response.getBody());
-        assertEquals(MediaType.IMAGE_JPEG, response.getHeaders().getContentType());
-    }
-
-    @Test
-    public void getAvatar_deveLancarEx_seArquivoNaoEncontrado() {
-        var token = "tokenTest";
-        var accessToken = mock(OAuth2AccessToken.class);
-        when(accessToken.getAdditionalInformation())
-            .thenReturn(Collections.singletonMap("fotoDiretorio", "foto_usuario/teste.jpg"));
-        when(tokenStore.readAccessToken(token)).thenReturn(accessToken);
-        when(minioFileService.getArquivo("foto_usuario/teste.jpg"))
-            .thenThrow(new IntegracaoException(ARQUIVO_NAO_ENCONTRADO.getDescricaoTecnica()));
-
-        assertThatThrownBy(() -> usuarioService.getAvatar(token))
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage(ARQUIVO_NAO_ENCONTRADO.getDescricaoTecnica());
-    }
-
-    @Test
     @SneakyThrows
     public void moverAvatarMinio_deveEnviarArquivos_seArquivosExistirem() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioHelper.umUsuarioAutenticadoAdmin());
         ReflectionTestUtils.setField(usuarioService, "urlDir", "desenvolvimento/autenticacao/usuario/foto/");
+        ReflectionTestUtils.setField(usuarioService, "defaultBucketName", "conexao-claro-brasil");
+        ReflectionTestUtils.setField(usuarioService, "minioUrl", "https://minio-dev.xbrain.com.br");
         when(fileService.buscaArquivosEstatico(anyString())).thenReturn(Optional.of(umaListFotos()));
         when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaListaUsuario());
 

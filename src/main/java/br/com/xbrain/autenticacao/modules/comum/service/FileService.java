@@ -24,6 +24,10 @@ import java.util.stream.Collectors;
 public class FileService {
 
     private final MinioFileService minioFileService;
+    @Value("${app-config.minio.bucket.name}")
+    private String defaultBucketName;
+    @Value("${app-config.minio.url}")
+    private String minioUrl;
     @Value("${app-config.upload-foto-usuario}")
     private String usuarioFotoDir;
     @Value("${app-config.url-estatico}")
@@ -35,7 +39,8 @@ public class FileService {
 
         request.setFotoContentType(file.getContentType());
         request.setFotoNomeOriginal(file.getOriginalFilename());
-        request.setFotoDiretorio(usuarioFotoDir.concat(fileName));
+        request.setFotoDiretorio(
+            minioUrl.concat("/").concat(defaultBucketName).concat("/").concat(usuarioFotoDir).concat(fileName));
 
         try {
             minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat(fileName));

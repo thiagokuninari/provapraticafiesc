@@ -78,7 +78,7 @@ app-config:
   upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
 
   minio:
-    url: http://192.168.50.6:9000
+    url: https://minio-dev.xbrain.com.br
     access:
       name: xbrain
       secret: L1b3rd4d3@
