@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.AGENTE_AUTORIZADO;
 
 @Service
 public class FeederService {
@@ -63,7 +64,11 @@ public class FeederService {
                     .filter(usuarioId -> usuarioRepository.exists(usuarioId))
                     .collect(Collectors.toList());
 
-                removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+                var funcionalidades = List.of(
+                    FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES,
+                    FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+
+                removerPermissoesEspeciais(usuariosIds, funcionalidades);
                 gerarUsuarioHistorico(usuariosIds, true);
             }
         } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
@@ -75,7 +80,7 @@ public class FeederService {
             }
 
             var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
-            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
 
             removerPermissoesEspeciais(usuariosIds, funcionalidades);
             gerarUsuarioHistorico(usuariosIds, false);
@@ -106,7 +111,7 @@ public class FeederService {
             && (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
-                .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
+                .map(usuarioNovo -> getPermissoesEspeciaisDoColaboradorConformeCargo(usuarioNovo,
                     usuarioMqRequest.getAgenteAutorizadoFeeder(), usuarioMqRequest.getUsuarioCadastroId(),
                     usuarioMqRequest.getCargo()))
                 .orElse(List.of());
@@ -223,25 +228,34 @@ public class FeederService {
             .filter(Objects::nonNull)
             .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
             .filter(usuario -> CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuario.getCargoCodigo())
-            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador, tipoFeeder,
+            .flatMap(colaborador -> getPermissoesEspeciaisDoColaboradorConformeCargo(colaborador, tipoFeeder,
                 usuarioCadastroId, colaborador.getCargoCodigo()).stream())
             .collect(Collectors.toList());
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
+    private List<PermissaoEspecial> getPermissoesEspeciaisDoColaboradorConformeCargo(Usuario colaborador,
                                                                                       ETipoFeeder tipoFeeder,
                                                                                       Integer usuarioCadastroId,
                                                                                       CodigoCargo cargoCodigo) {
-        if (isBackOffice(cargoCodigo)) {
-            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-                FUNCIONALIDADES_FEEDER_PARA_AA);
-        }
+        var funcionalidades = new ArrayList<Integer>();
+
         if (isColaboradoresAaFeederResidencial(cargoCodigo, tipoFeeder)) {
-            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-                FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
         }
-        return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-            List.of(FUNCIONALIDADE_TRATAR_LEAD_ID));
+        if (isAaFeederResidencial(tipoFeeder, colaborador)) {
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+        }
+        if (isBackOffice(cargoCodigo)) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+        } else {
+            funcionalidades.add(FUNCIONALIDADE_TRATAR_LEAD_ID);
+        }
+
+        return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId, funcionalidades);
+    }
+
+    private boolean isAaFeederResidencial(ETipoFeeder tipoFeeder, Usuario usuario) {
+        return tipoFeeder == ETipoFeeder.RESIDENCIAL && usuario.getDepartamentoCodigo() == AGENTE_AUTORIZADO;
     }
 
     private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId,
@@ -250,7 +264,8 @@ public class FeederService {
         var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
 
         if (ETipoFeeder.RESIDENCIAL == tipoFeeder) {
-            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
         }
 
         return usuarioService.getPermissoesEspeciaisDoUsuario(socioPrincipalId, usuarioCadastroId,

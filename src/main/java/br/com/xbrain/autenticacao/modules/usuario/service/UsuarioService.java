@@ -26,7 +26,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
-import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
@@ -86,8 +85,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1240,7 +1238,8 @@ public class UsuarioService {
 
             var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
             if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
-                funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+                funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+                funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
             }
             feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()), funcionalidades);
         }
@@ -2442,7 +2441,7 @@ public class UsuarioService {
     private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
         List<Integer> usuariosId, Integer aaId) {
         var predicate = new UsuarioPredicate();
-        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
         predicate.comIds(usuariosId);
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(usuario -> preencherAaId(usuario, aaId))
