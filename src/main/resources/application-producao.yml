@@ -43,7 +43,7 @@ app-config:
   url: https://autenticacao.conexaoclarobrasil.com.br
 
   minio:
-    url: http://192.168.2.25:9000
+    url: https://minio-prod.xbrain.com.br
     access:
       name: xbrain
       secret: '@xbr41n@@'
