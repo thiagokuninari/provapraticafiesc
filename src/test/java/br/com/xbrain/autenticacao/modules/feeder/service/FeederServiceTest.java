@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamento;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissoesHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -82,11 +83,13 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(100)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999),
+            eq(List.of(20018, 20101, 15000, 15005, 15012, 3046))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
             .thenReturn(List.of(umaPermissaoTratarLead(100)));
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999),
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
@@ -103,11 +106,11 @@ public class FeederServiceTest {
         verify(usuarioHistoricoService, times(1))
             .save(anyList());
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
-        verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018)));
+            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(20018, 20101, 15000, 15005, 15012, 3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100)));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(permissoes);
     }
@@ -135,6 +138,7 @@ public class FeederServiceTest {
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
         var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
         funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
@@ -156,6 +160,8 @@ public class FeederServiceTest {
 
         var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
         funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
                 funcionalidades,
@@ -174,13 +180,14 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(1000)).thenReturn(
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999),
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046,20018)));
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100)));
     }
 
     @Test
@@ -271,16 +278,19 @@ public class FeederServiceTest {
         var usuarioNovo = umUsuarioMqRequest();
         usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
 
+        var permissoesEsperadas = new ArrayList<Integer>();
+        permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
-
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA)))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas)))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA));
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(eq(umaListaPermissoesFuncionalidadesFeederParaAa(1111)));
     }
@@ -555,6 +565,7 @@ public class FeederServiceTest {
             Usuario.builder()
                 .id(id)
                 .situacao(situacao)
+                .departamento(umDepartamento(1, "Departamento"))
                 .cargo(
                     Cargo.builder()
                         .codigo(codigoCargo)
