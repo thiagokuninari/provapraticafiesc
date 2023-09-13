@@ -571,8 +571,8 @@ public class UsuarioController {
         return usuarioService.findByCpf(cpf);
     }
 
-    @GetMapping("inside-sales")
-    public UsuarioSubCanalResponse findUsuarioInsideSalesByCpf(@RequestParam String cpf) {
-        return usuarioService.findUsuarioInsideSalesByCpf(cpf);
+    @GetMapping("d2d")
+    public UsuarioSubCanalResponse findUsuarioD2dByCpf(@RequestParam String cpf) {
+        return usuarioService.findUsuarioD2dByCpf(cpf);
     }
 }

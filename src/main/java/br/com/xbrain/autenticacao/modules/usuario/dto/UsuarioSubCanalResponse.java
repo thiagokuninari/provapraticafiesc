@@ -22,8 +22,8 @@ public class UsuarioSubCanalResponse {
     private String nome;
     private String cpf;
     private ESituacao situacao;
-    private CodigoNivel nivel;
-    private ECanal canal;
+    private CodigoNivel codigoNivel;
+    private Set<ECanal> canais;
     private CodigoCargo codigoCargo;
     private Set<SubCanalDto> subCanais;
 
@@ -33,8 +33,8 @@ public class UsuarioSubCanalResponse {
             .nome(usuario.getNome())
             .cpf(usuario.getCpf())
             .situacao(usuario.getSituacao())
-            .nivel(usuario.getNivelCodigo())
-            .canal(usuario.hasCanal(ECanal.D2D_PROPRIO) ? ECanal.D2D_PROPRIO : null)
+            .codigoNivel(usuario.getNivelCodigo())
+            .canais(usuario.hasCanal(ECanal.D2D_PROPRIO) ? Set.of(ECanal.D2D_PROPRIO) : null)
             .codigoCargo(usuario.getCargoCodigo())
             .subCanais(SubCanalDto.of(usuario.getSubCanais()))
             .build();

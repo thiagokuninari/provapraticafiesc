@@ -21,7 +21,7 @@ public class UsuarioSubCanalResponseTest {
         usuario.setSubCanais(Set.of(umSubCanalInsideSales()));
 
         assertThat(UsuarioSubCanalResponse.of(usuario))
-            .extracting("id", "nome", "nivel", "subCanais")
+            .extracting("id", "nome", "codigoNivel", "subCanais")
             .containsExactly(100, "NED STARK", XBRAIN, Set.of(umSubCanalDto(4, INSIDE_SALES_PME, "Inside Sales PME")));
     }
 }

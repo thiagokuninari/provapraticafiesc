@@ -2550,9 +2550,10 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public UsuarioSubCanalResponse findUsuarioInsideSalesByCpf(String cpf) {
+    public UsuarioSubCanalResponse findUsuarioD2dByCpf(String cpf) {
         var predicate = new UsuarioPredicate();
-        predicate.comCpf(cpf);
+        predicate.comCpf(cpf)
+            .comCanalD2d(true);
         return findUsuarioByPredicate(predicate);
     }
 
