@@ -64,9 +64,8 @@ public class FeederService {
                     .filter(usuarioId -> usuarioRepository.exists(usuarioId))
                     .collect(Collectors.toList());
 
-                var funcionalidades = List.of(
-                    FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES,
-                    FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+                var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+                funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
                 removerPermissoesEspeciais(usuariosIds, funcionalidades);
                 gerarUsuarioHistorico(usuariosIds, true);
@@ -80,7 +79,8 @@ public class FeederService {
             }
 
             var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
-            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
             removerPermissoesEspeciais(usuariosIds, funcionalidades);
             gerarUsuarioHistorico(usuariosIds, false);
@@ -240,7 +240,7 @@ public class FeederService {
         var funcionalidades = new ArrayList<Integer>();
 
         if (isColaboradoresAaFeederResidencial(cargoCodigo, tipoFeeder)) {
-            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         }
         if (isAaFeederResidencial(tipoFeeder, colaborador)) {
             funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
@@ -264,7 +264,7 @@ public class FeederService {
         var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
 
         if (ETipoFeeder.RESIDENCIAL == tipoFeeder) {
-            funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
             funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
         }
 

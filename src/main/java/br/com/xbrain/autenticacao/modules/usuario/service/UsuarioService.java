@@ -1238,7 +1238,7 @@ public class UsuarioService {
 
             var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
             if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
-                funcionalidades.add(FUNCIONALIDADE_VISUALIZAR_CARGA_ALARMES);
+                funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
                 funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
             }
             feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()), funcionalidades);
