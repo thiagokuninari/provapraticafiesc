@@ -2076,9 +2076,9 @@ public class UsuarioControllerTest {
             .findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
 
         mvc.perform(get(BASE_URL + "/obter-usuario-por-cpf")
-            .param("cpf", cpf)
+                .param("cpf", cpf)
             )
-        .andExpect(status().isOk())
+            .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.situacao", is("A")))
             .andExpect(jsonPath("$.cpf", is("98471883007")))
@@ -2117,7 +2117,6 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$.nome", is("Usuario Ativo")))
             .andExpect(jsonPath("$.email", is("usuarioativo@email.com")));
 
-
         verify(usuarioService).findUsuarioByEmailComSituacaoAtivoOuInativo(email);
     }
 
@@ -2132,7 +2131,6 @@ public class UsuarioControllerTest {
 
         verifyNoMoreInteractions(usuarioService);
     }
-
 
     private static UsuarioResponse umUsuarioResponse() {
         return UsuarioResponse
