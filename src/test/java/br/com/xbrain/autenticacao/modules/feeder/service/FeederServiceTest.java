@@ -84,12 +84,12 @@ public class FeederServiceTest {
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
 
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999),
-            eq(List.of(20018, 20101, 15000, 15005, 15012, 3046))))
+            eq(List.of(20018, 20101, 20102, 15000, 15005, 15012, 3046))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
             .thenReturn(List.of(umaPermissaoTratarLead(100)));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999),
-            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100))))
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20102, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
@@ -108,9 +108,11 @@ public class FeederServiceTest {
         verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(20018, 20101, 15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(20018, 20101, 20102, 15000, 15005,
+                15012, 3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100)));
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018,
+                20101, 20102, 20100)));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(permissoes);
     }
@@ -181,13 +183,14 @@ public class FeederServiceTest {
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999),
-            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100))))
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20102, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20100)));
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018,
+                20101, 20102, 20100)));
     }
 
     @Test
