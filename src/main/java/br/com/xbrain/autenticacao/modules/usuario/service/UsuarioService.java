@@ -342,6 +342,12 @@ public class UsuarioService {
             .orElse(null);
     }
 
+    public UsuarioResponse findUsuarioByEmailComSituacaoAtivoOuInativo(String email) {
+        return repository.findTop1UsuarioByEmailAndSituacaoIn(email, List.of(ESituacao.A, ESituacao.I))
+            .map(UsuarioResponse::of)
+            .orElse(null);
+    }
+
     public UsuarioResponse buscarAtualByCpf(String cpf) {
         return UsuarioResponse.of(repository
             .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)

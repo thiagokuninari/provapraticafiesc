@@ -31,6 +31,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     Optional<Usuario> findTop1UsuarioByCpfAndSituacaoIn(String cpf, List<ESituacao> situacoes);
 
+    Optional<Usuario> findTop1UsuarioByEmailAndSituacaoIn(String email, List<ESituacao> situacoes);
+
     Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(String cpf, ESituacao situacao);
 
     Optional<Usuario> findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(String email, ESituacao situacao);

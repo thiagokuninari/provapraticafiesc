@@ -33,11 +33,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
 import static helpers.TestBuilders.umUsuario;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -2070,10 +2070,22 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser
     public void findUsuarioByCpfComSituacaoAtivoOuInativo_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/obter-usuario-por-cpf/31114231827"))
-            .andExpect(status().isOk());
+        var cpf = "98471883007";
+        doReturn(umUsuarioResponse())
+            .when(usuarioService)
+            .findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
 
-        verify(usuarioService).findUsuarioByCpfComSituacaoAtivoOuInativo("31114231827");
+        mvc.perform(get(BASE_URL + "/obter-usuario-por-cpf")
+            .param("cpf", cpf)
+            )
+        .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.cpf", is("98471883007")))
+            .andExpect(jsonPath("$.nome", is("Usuario Ativo")))
+            .andExpect(jsonPath("$.email", is("usuarioativo@email.com")));
+
+        verify(usuarioService).findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
     }
 
     @Test
@@ -2084,5 +2096,52 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuarioByEmailComSituacaoAtivoOuInativo_deveRetornarOk_quandoUsuarioAutenticado() {
+        var email = "usuarioativo@email.com";
+        doReturn(umUsuarioResponse())
+            .when(usuarioService)
+            .findUsuarioByEmailComSituacaoAtivoOuInativo(email);
+
+        mvc.perform(get(BASE_URL + "/obter-usuario-por-email")
+                .param("email", email)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.cpf", is("98471883007")))
+            .andExpect(jsonPath("$.nome", is("Usuario Ativo")))
+            .andExpect(jsonPath("$.email", is("usuarioativo@email.com")));
+
+
+        verify(usuarioService).findUsuarioByEmailComSituacaoAtivoOuInativo(email);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findUsuarioByEmailComSituacaoAtivoOuInativo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/obter-usuario-por-email")
+                .param("email", "usuarioativo@email.com")
+            )
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+
+    private static UsuarioResponse umUsuarioResponse() {
+        return UsuarioResponse
+            .builder()
+            .id(1)
+            .situacao(A)
+            .cpf("98471883007")
+            .nome("Usuario Ativo")
+            .email("usuarioativo@email.com")
+            .build();
     }
 }
