@@ -32,13 +32,13 @@ public class SolicitacaoRamalRepositoryTest {
     }
 
     @Test
-    public void findAllByAaId_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusEnviado() {
-        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(3334).size());
+    public void findAllByAaId_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(3334).size());
     }
 
     @Test
-    public void findAllByAaId_listaVazia_quandoHouverSolicitacaoPeloAaIdComStatusEnviado() {
-        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(1).size());
+    public void findAllByAaId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(2).size());
     }
 
 }

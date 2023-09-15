@@ -180,7 +180,7 @@ public class SolicitacaoRamalService {
     }
 
     private boolean validarQuantidade(Integer aaId) {
-        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(aaId)
+        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(aaId)
             .size() >= agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(aaId).size() ;
     }
 

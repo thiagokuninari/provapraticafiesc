@@ -93,7 +93,7 @@ public class SolicitacaoRamalServiceTest {
 
     @Test
     public void save_validacaoException_quandoValidarQuantidadeTrue() {
-        when(repository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(eq(1) ))
+        when(repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(eq(1) ))
             .thenReturn(umaListaSolicitacaoRamal());
         when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(1))
             .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse(1)));
@@ -107,7 +107,7 @@ public class SolicitacaoRamalServiceTest {
 
     @Test
     public void save_salvarSolicitacaoRamal_quandoSolicitado() {
-        when(repository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(eq(1) ))
+        when(repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(eq(1) ))
             .thenReturn(umaListaSolicitacaoRamalEmpty());
         when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(1))
             .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse(1)));

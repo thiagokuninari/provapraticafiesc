@@ -19,7 +19,7 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId);
 
-    List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviado(Integer aaId);
+    List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(Integer aaId);
 
     Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId);
 

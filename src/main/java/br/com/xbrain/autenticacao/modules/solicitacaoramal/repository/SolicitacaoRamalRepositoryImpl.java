@@ -98,13 +98,12 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviado(Integer aaId) {
+    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(Integer aaId) {
         return new JPAQueryFactory(entityManager)
             .select(solicitacaoRamal)
             .from(solicitacaoRamal)
             .where(solicitacaoRamal.agenteAutorizadoId.eq(aaId)
-                .and(solicitacaoRamal.situacao.eq(ENVIADO)))
-
+                .and(solicitacaoRamal.situacao.in(ENVIADO, CONCLUIDO)))
             .fetch();
     }
 
