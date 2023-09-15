@@ -1620,7 +1620,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void findUsuarioInsideSalesByCpf_deveRetornarOk_quandoUsuarioExistir() {
+    public void findUsuarioD2dByCpf_deveRetornarOk_quandoUsuarioExistir() {
         mvc.perform(get(USUARIOS_ENDPOINT + "/d2d")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .param("cpf", "38957979875"))
@@ -1631,7 +1631,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void findUsuarioInsideSalesByCpf_naoDeveRetornarNotFound_quandoUsuarioNaoExistir() {
+    public void findUsuarioD2dByCpf_naoDeveRetornarNotFound_quandoUsuarioNaoExistir() {
         mvc.perform(get(USUARIOS_ENDPOINT + "/d2d")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .param("cpf", "00000000000"))
