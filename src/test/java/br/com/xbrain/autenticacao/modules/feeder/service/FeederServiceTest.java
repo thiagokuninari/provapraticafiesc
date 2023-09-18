@@ -286,6 +286,24 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoesSocioSecundario_quandoUsuarioForSocioSecundario() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, ESituacao.A, 1111));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioService)
+            .getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA);
+        verify(usuarioService)
+            .salvarPermissoesEspeciais(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+    }
+
+    @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesEmpresarial_quandoUsuarioMsoComTiposFeederEmpresarial() {
         when(usuarioRepository.findById(eq(150016)))
@@ -481,6 +499,52 @@ public class FeederServiceTest {
         verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
     }
 
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioNaoExistir() {
+        when(usuarioRepository.exists(1)).thenReturn(false);
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verifyZeroInteractions(permissaoEspecialRepository);
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioJaPossuirPermissoes() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000, 15005, 15012, 3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioNaoPossuirPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of());
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciaisSocioSecundario());
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioPossuirUmaPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciais(15000, 15005, 15012));
+    }
+
     private List<PermissaoEspecial> umaListaPermissoesEspeciaisComUmaFuncionalidade(Integer funcionalidadeId) {
         var localDateTime = dataHoraAtual.getDataHora();
         return List.of(PermissaoEspecial.builder()
@@ -508,6 +572,35 @@ public class FeederServiceTest {
                 .build(),
             PermissaoEspecial.builder()
                 .funcionalidade(Funcionalidade.builder().id(visualizar).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build());
+    }
+
+    private List<PermissaoEspecial> umaListaPermissoesEspeciaisSocioSecundario() {
+        var localDateTime = dataHoraAtual.getDataHora();
+        return List.of(
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15000).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15005).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15012).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(3046).build())
                 .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
                 .dataCadastro(localDateTime)
                 .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())

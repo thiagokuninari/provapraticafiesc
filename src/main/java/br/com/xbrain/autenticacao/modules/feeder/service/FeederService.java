@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESI
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 
 @Service
+@Slf4j
 public class FeederService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Usuario não encontrado.");
@@ -221,7 +223,7 @@ public class FeederService {
     private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
                                                                                       Integer usuarioCadastroId,
                                                                                       CodigoCargo cargoCodigo) {
-        if (isBackOffice(cargoCodigo)) {
+        if (isBackOfficeOrSocioSecundario(cargoCodigo)) {
             return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
                 FUNCIONALIDADES_FEEDER_PARA_AA);
         }
@@ -235,8 +237,9 @@ public class FeederService {
             FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
-    private boolean isBackOffice(CodigoCargo codigoCargo) {
-        return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
+    private boolean isBackOfficeOrSocioSecundario(CodigoCargo codigoCargo) {
+        return codigoCargo != null
+            && (CARGOS_BACKOFFICE.contains(codigoCargo) || CARGOS_SOCIO_SECUNDARIO.contains(codigoCargo));
     }
 
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
@@ -257,6 +260,30 @@ public class FeederService {
                             .build())
                         .collect(Collectors.toList()));
             }
+            }
+        );
+    }
+
+    public void salvarPermissoesEspeciaisSociosSecundarios(List<Integer> usuariosIds, int usuarioAutenticadoId) {
+        usuariosIds.forEach(usuarioId -> {
+                if (usuarioRepository.exists(usuarioId)) {
+                    var permissoes = permissaoEspecialRepository.findByUsuario(usuarioId);
+                    log.info("Atualizando Usuario: {}", usuarioId);
+                    log.info("Permissoes do usuario: {}", permissoes);
+                    permissaoEspecialRepository.save(
+                        FUNCIONALIDADES_FEEDER_PARA_AA
+                            .stream()
+                            .filter(funcionalidade -> !permissoes.contains(funcionalidade))
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(new Funcionalidade(id))
+                                .usuario(new Usuario(usuarioId))
+                                .dataCadastro(dataHoraAtual.getDataHora())
+                                .usuarioCadastro(new Usuario(usuarioAutenticadoId))
+                                .build())
+                            .collect(Collectors.toList()));
+                    log.info("Permissões do usuario {} atualizadas", usuarioId);
+                }
             }
         );
     }

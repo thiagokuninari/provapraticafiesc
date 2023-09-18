@@ -2627,7 +2627,7 @@ public class UsuarioService {
     }
 
     public void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
-        if (!ObjectUtils.isEmpty(permissoesEspeciais)) {
+        if (!permissoesEspeciais.isEmpty()) {
             permissaoEspecialRepository.save(permissoesEspeciais);
         }
     }

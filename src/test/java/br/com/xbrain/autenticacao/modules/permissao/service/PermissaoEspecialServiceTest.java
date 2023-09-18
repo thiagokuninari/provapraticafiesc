@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -17,8 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
@@ -112,6 +112,86 @@ public class PermissaoEspecialServiceTest {
 
         verify(agenteAutorizadoService, never()).getUsuariosAaFeederPorCargo(any(), any());
         verify(feederService, never()).salvarPermissoesEspeciaisCoordenadoresGerentes(any(), anyInt());
+    }
+
+    @Test
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_naoDeveReprocessarPermissoes_quandoUsuarioNaoForXbrain() {
+        var usuarioAutenticado = umUsuarioAutenticado();
+        usuarioAutenticado.setNivelCodigo(CodigoNivel.OPERACAO.name());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of()))
+            .withMessage("Usuário não autorizado!");
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verifyZeroInteractions(agenteAutorizadoService);
+        verifyZeroInteractions(feederService);
+    }
+
+    @Test
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_naoDeveReprocessarPermissoes_quandoErroComClient() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        doThrow(RetryableException.class)
+            .when(agenteAutorizadoService)
+            .getUsuariosAaFeederPorCargo(List.of(), List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
+
+        assertThatExceptionOfType(RetryableException.class)
+            .isThrownBy(() -> service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of()));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(),
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
+        verifyZeroInteractions(feederService);
+    }
+
+    @Test
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveReprocessarPermissoes_quandoListaIdNull() {
+        var usuarioAutenticado = umUsuarioAutenticado();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(null,
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
+
+        service.reprocessarPermissoesEspeciaisSociosSecundarios(null);
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(null,
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
+        verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
+    }
+
+    @Test
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveReprocessarPermissoes_quandoAaIdPreenchido() {
+        var usuarioAutenticado = umUsuarioAutenticado();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(List.of(1),
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
+
+        service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of(1));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(1),
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
+        verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
+    }
+
+    @Test
+    public void reprocessarPermissoesEspeciaisSociosSecundarios_deveReprocessarPermissoes_quandoListaIdVazia() {
+        var usuarioAutenticado = umUsuarioAutenticado();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(List.of(),
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
+
+        service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of());
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(),
+            List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
+        verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
