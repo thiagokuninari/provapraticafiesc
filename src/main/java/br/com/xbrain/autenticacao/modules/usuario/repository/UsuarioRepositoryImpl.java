@@ -1343,4 +1343,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetchOne());
     }
 
+    @Override
+    public List<Integer> getIdUsuarioHierarquiaPorCargo(Set<CodigoCargo> codigoCargos) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.cargo.codigo.in(codigoCargos))
+            .fetch();
+    }
+
 }

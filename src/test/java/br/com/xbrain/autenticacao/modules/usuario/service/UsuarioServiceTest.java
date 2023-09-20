@@ -1332,6 +1332,35 @@ public class UsuarioServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioRepository).findAll(predicate.build(), new PageRequest());
+        verify(usuarioRepository, never()).getIdUsuarioHierarquiaPorCargo(anySet());
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoSupervisorCanalInternet() {
+        var usuarioAutenticado = umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_SUPERVISOR);
+        usuarioAutenticado.setCanais(Set.of(ECanal.INTERNET));
+        usuarioAutenticado.setOrganizacaoId(1);
+
+        doReturn(usuarioAutenticado)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(5436278))
+            .when(usuarioRepository)
+            .getIdUsuarioHierarquiaPorCargo(anySet());
+        doReturn(umaPageUsuario(new PageRequest(), List.of(umUsuarioVendedorInternet())))
+            .when(usuarioRepository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
+
+        assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
+            .extracting(Usuario::getId, Usuario::getNome)
+            .containsExactly(tuple( 5436278, "VENDEDOR"));
+
+        verify(autenticacaoService)
+            .getUsuarioAutenticado();
+        verify(usuarioRepository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
+        verify(usuarioRepository)
+            .getIdUsuarioHierarquiaPorCargo(Set.of(INTERNET_BACKOFFICE, INTERNET_VENDEDOR, INTERNET_COORDENADOR));
     }
 
     @Test
@@ -2167,6 +2196,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository).findAll(predicate, sort);
         verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, never()).getIdUsuarioHierarquiaPorCargo(anySet());
     }
 
     @Test
@@ -2181,6 +2211,7 @@ public class UsuarioServiceTest {
             .comCodigosCargos(List.of(INTERNET_VENDEDOR))
             .ignorarAa(true).ignorarXbrain(true)
             .comOrganizacaoEmpresaId(1)
+            .comIds(List.of(5436278, 1))
             .build();
 
         var sort = new Sort(ASC, "situacao", "nome");
@@ -2191,6 +2222,9 @@ public class UsuarioServiceTest {
         doReturn(List.of(umUsuarioVendedorInternet()))
             .when(usuarioRepository)
             .findAll(predicate, sort);
+        doReturn(List.of(5436278))
+            .when(usuarioRepository)
+            .getIdUsuarioHierarquiaPorCargo(anySet());
 
         assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
             .extracting("label", "value")
@@ -2198,6 +2232,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository).findAll(predicate, sort);
         verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository).getIdUsuarioHierarquiaPorCargo(anySet());
     }
 
     @Test

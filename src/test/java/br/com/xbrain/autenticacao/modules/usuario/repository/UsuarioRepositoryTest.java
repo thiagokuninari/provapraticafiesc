@@ -22,11 +22,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -307,5 +307,11 @@ public class UsuarioRepositoryTest {
             .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
         assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
+    }
+
+    @Test
+    public void getIdUsuarioHierarquiaPorCargo_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
+        assertThat(repository.getIdUsuarioHierarquiaPorCargo(Set.of(INTERNET_VENDEDOR)))
+            .containsExactly(219);
     }
 }

@@ -463,7 +463,7 @@ public class UsuarioPredicate {
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);
         } else if (usuario.hasCanal(ECanal.INTERNET)) {
-            filtrarPermitidosCanalInternet(usuario);
+            usuarioService.filtrarPermitidosCanalInternet(usuario, this);
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
@@ -567,17 +567,6 @@ public class UsuarioPredicate {
 
     public BooleanBuilder build() {
         return this.builder;
-    }
-
-    private void filtrarPermitidosCanalInternet(UsuarioAutenticado usuario) {
-        if (usuario.isGerenteInternetOperacao()) {
-            comCanal(ECanal.INTERNET);
-        } else if (usuario.isCoordenadorInternetOperacao() || usuario.isSupervisorInternetOperacao()
-            || usuario.isBackofficeInternetOperacao()) {
-            comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
-        } else if (usuario.isVendedorInternetOperacao()) {
-            comIds(List.of(usuario.getId()));
-        }
     }
 
 }
