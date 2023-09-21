@@ -1332,7 +1332,7 @@ public class UsuarioServiceTest {
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioRepository).findAll(predicate.build(), new PageRequest());
-        verify(usuarioRepository, never()).getIdUsuarioHierarquiaPorCargo(anySet());
+        verify(usuarioRepository, never()).getIdsUsuariosHierarquiaPorCargos(anySet());
     }
 
     @Test
@@ -1346,7 +1346,7 @@ public class UsuarioServiceTest {
             .getUsuarioAutenticado();
         doReturn(List.of(5436278))
             .when(usuarioRepository)
-            .getIdUsuarioHierarquiaPorCargo(anySet());
+            .getIdsUsuariosHierarquiaPorCargos(anySet());
         doReturn(umaPageUsuario(new PageRequest(), List.of(umUsuarioVendedorInternet())))
             .when(usuarioRepository)
             .findAll(any(Predicate.class), any(PageRequest.class));
@@ -1360,7 +1360,7 @@ public class UsuarioServiceTest {
         verify(usuarioRepository)
             .findAll(any(Predicate.class), any(PageRequest.class));
         verify(usuarioRepository)
-            .getIdUsuarioHierarquiaPorCargo(Set.of(INTERNET_BACKOFFICE, INTERNET_VENDEDOR, INTERNET_COORDENADOR));
+            .getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_BACKOFFICE, INTERNET_VENDEDOR, INTERNET_COORDENADOR));
     }
 
     @Test
@@ -2196,7 +2196,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository).findAll(predicate, sort);
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository, never()).getIdUsuarioHierarquiaPorCargo(anySet());
+        verify(usuarioRepository, never()).getIdsUsuariosHierarquiaPorCargos(anySet());
     }
 
     @Test
@@ -2224,7 +2224,7 @@ public class UsuarioServiceTest {
             .findAll(predicate, sort);
         doReturn(List.of(5436278))
             .when(usuarioRepository)
-            .getIdUsuarioHierarquiaPorCargo(anySet());
+            .getIdsUsuariosHierarquiaPorCargos(anySet());
 
         assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
             .extracting("label", "value")
@@ -2232,7 +2232,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository).findAll(predicate, sort);
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository).getIdUsuarioHierarquiaPorCargo(anySet());
+        verify(usuarioRepository).getIdsUsuariosHierarquiaPorCargos(anySet());
     }
 
     @Test

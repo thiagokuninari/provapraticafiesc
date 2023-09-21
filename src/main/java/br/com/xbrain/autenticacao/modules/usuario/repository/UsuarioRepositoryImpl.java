@@ -1344,7 +1344,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> getIdUsuarioHierarquiaPorCargo(Set<CodigoCargo> codigoCargos) {
+    public List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario)

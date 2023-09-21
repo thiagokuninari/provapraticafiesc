@@ -2587,7 +2587,7 @@ public class UsuarioService {
             predicate.comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
             predicate.comIds(
                 Stream.concat(
-                    getIdUsuarioHierarquiaPorCargo(validarCargosPermitidosParaFiltroCanalInternet(usuario)).stream(),
+                    getIdsUsuariosHierarquiaPorCargos(validarCargosPermitidosParaFiltroCanalInternet(usuario)).stream(),
                     Stream.of(usuario.getUsuario().getId())
                 ).collect(toList())
             );
@@ -2605,7 +2605,7 @@ public class UsuarioService {
         return CARGOS_PERMITIDOS_INTERNET_SUPERVISOR;
     }
 
-    private List<Integer> getIdUsuarioHierarquiaPorCargo(Set<CodigoCargo> codigoCargos) {
-        return repository.getIdUsuarioHierarquiaPorCargo(codigoCargos);
+    private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
+        return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
     }
 }

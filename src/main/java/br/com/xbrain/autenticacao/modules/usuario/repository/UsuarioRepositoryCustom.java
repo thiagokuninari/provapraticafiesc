@@ -188,5 +188,5 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
 
-    List<Integer> getIdUsuarioHierarquiaPorCargo(Set<CodigoCargo> codigoCargos);
+    List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos);
 }

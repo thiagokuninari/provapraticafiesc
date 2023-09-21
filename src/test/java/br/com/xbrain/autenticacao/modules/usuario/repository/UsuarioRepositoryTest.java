@@ -310,8 +310,8 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void getIdUsuarioHierarquiaPorCargo_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
-        assertThat(repository.getIdUsuarioHierarquiaPorCargo(Set.of(INTERNET_VENDEDOR)))
+    public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
+        assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
             .containsExactly(219);
     }
 }
