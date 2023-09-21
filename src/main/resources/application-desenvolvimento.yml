@@ -33,7 +33,7 @@ app-config:
     integracao-vendas:
       url: http://172.10.10.45:8086
     lei-nao-perturbe:
-      url: http://lei-nao-perturbe-api:8107
+      url: http://lei-nao-perturbe-api:8109
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

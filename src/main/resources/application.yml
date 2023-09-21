@@ -275,8 +275,8 @@ app-config:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
     lei-nao-perturbe:
-      #url: http://localhost:8107
-      url: http://192.168.50.1:8107
+      #url: http://localhost:8109
+      url: http://192.168.50.1:8109
 
 flyway:
   enabled: true
