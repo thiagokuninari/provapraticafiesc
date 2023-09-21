@@ -2597,7 +2597,7 @@ public class UsuarioService {
     }
 
     private Set<CodigoCargo> validarCargosPermitidosParaFiltroCanalInternet(UsuarioAutenticado usuario) {
-        if (usuario.isVendedorInternetOperacao()) {
+        if (usuario.isBackofficeInternetOperacao()) {
             return Set.of(INTERNET_VENDEDOR);
         } else if (usuario.isCoordenadorInternetOperacao()) {
             return CARGOS_PERMITIDOS_INTERNET_COODERNADOR;
