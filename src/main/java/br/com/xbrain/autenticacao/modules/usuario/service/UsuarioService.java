@@ -145,6 +145,10 @@ public class UsuarioService {
     private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR, INTERNET_COORDENADOR);
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR);
 
     @Autowired
     private UsuarioRepository repository;
@@ -2583,5 +2587,35 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
+    }
+
+    public void filtrarPermitidosCanalInternet(UsuarioAutenticado usuario, UsuarioPredicate predicate) {
+        if (usuario.isGerenteInternetOperacao()) {
+            predicate.comCanal(ECanal.INTERNET);
+        } else if (usuario.isSupervisorInternetOperacao() || usuario.isCoordenadorInternetOperacao()
+            || usuario.isBackofficeInternetOperacao()) {
+            predicate.comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
+            predicate.comIds(
+                Stream.concat(
+                    getIdsUsuariosHierarquiaPorCargos(validarCargosPermitidosParaFiltroCanalInternet(usuario)).stream(),
+                    Stream.of(usuario.getUsuario().getId())
+                ).collect(toList())
+            );
+        } else if (usuario.isVendedorInternetOperacao()) {
+            predicate.comIds(List.of(usuario.getId()));
+        }
+    }
+
+    private Set<CodigoCargo> validarCargosPermitidosParaFiltroCanalInternet(UsuarioAutenticado usuario) {
+        if (usuario.isBackofficeInternetOperacao()) {
+            return Set.of(INTERNET_VENDEDOR);
+        } else if (usuario.isCoordenadorInternetOperacao()) {
+            return CARGOS_PERMITIDOS_INTERNET_COODERNADOR;
+        }
+        return CARGOS_PERMITIDOS_INTERNET_SUPERVISOR;
+    }
+
+    private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
+        return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
     }
 }
