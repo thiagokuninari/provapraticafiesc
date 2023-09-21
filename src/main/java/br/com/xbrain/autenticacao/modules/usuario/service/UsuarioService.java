@@ -1570,22 +1570,33 @@ public class UsuarioService {
     }
 
     private void validarSubcanal(Usuario usuario) {
-        var isUsuarioOperacaoTelevendas = VENDEDOR_OPERACAO.equals(usuario.getCargoCodigo());
-        if (usuario.getCanais().contains(ECanal.D2D_PROPRIO) && isUsuarioOperacaoTelevendas) {
-            var supervisor = usuario.getUsuariosHierarquia().stream()
-                .map(UsuarioHierarquia::getUsuarioSuperior)
-                .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
-                .findFirst().orElseThrow(() -> new ValidacaoException("Supervisor do Vendedor não foi encontrado"));
-            var subCanalVendedor = usuario.getSubCanais().stream()
-                .findFirst().orElseThrow(() -> new ValidacaoException("Subcanal do Vendedor não foi encontrado"));
-            var subCanalSupervisor = supervisor.getSubCanais().stream()
-                .findFirst().orElseThrow(() -> new ValidacaoException("Subcanal do Supervisor não foi encontrado"));
-
+        if (validarCanalEOperador(usuario)) {
+            var supervisor = validarSupervisor(usuario);
+            var subCanalVendedor = obterSubcanal(usuario);
+            var subCanalSupervisor = obterSubcanal(supervisor);
             if (subCanalVendedor.getCodigo() != subCanalSupervisor.getCodigo()) {
                 throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
                     + "do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
             }
         }
+    }
+
+    private boolean validarCanalEOperador(Usuario usuario) {
+        return usuario.getCanais().contains(ECanal.D2D_PROPRIO)
+            && VENDEDOR_OPERACAO.equals(usuario.getCargoCodigo());
+    }
+
+    private Usuario validarSupervisor(Usuario usuario) {
+        return usuario.getUsuariosHierarquia().stream()
+            .map(UsuarioHierarquia::getUsuarioSuperior)
+            .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
+            .findFirst().orElseThrow(() -> new ValidacaoException("Supervisor do Vendedor não foi encontrado"));
+    }
+
+    private SubCanal obterSubcanal(Usuario usuario) {
+        return usuario.getSubCanais().stream()
+            .findFirst()
+            .orElseThrow(() -> new ValidacaoException("Não foi encontrado o subcanal do " + usuario.getCargo().getCodigo()));
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
