@@ -371,6 +371,28 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umSupervisorD2d() {
+        return Usuario.builder()
+            .id(11127)
+            .nome("Supervisor2 operacao ativo local")
+            .email("SUPERVISOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(10, SUPERVISOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(A)
+            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .cidades(Set.of(new UsuarioCidade()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+    }
+
     public static Usuario outroSupervisor() {
         return Usuario.builder()
             .id(11123)

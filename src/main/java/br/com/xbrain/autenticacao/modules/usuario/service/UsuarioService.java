@@ -1522,6 +1522,7 @@ public class UsuarioService {
         usuario.setDataReativacao(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
+        validarSubcanal(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
                 getUsuarioAtivacao(dto),
@@ -1566,6 +1567,25 @@ public class UsuarioService {
         }
 
         repository.save(usuario);
+    }
+
+    private void validarSubcanal(Usuario usuario) {
+        var isUsuarioOperacaoTelevendas = VENDEDOR_OPERACAO.equals(usuario.getCargoCodigo());
+        if (usuario.getCanais().contains(ECanal.D2D_PROPRIO) && isUsuarioOperacaoTelevendas) {
+            var supervisor = usuario.getUsuariosHierarquia().stream()
+                .map(UsuarioHierarquia::getUsuarioSuperior)
+                .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
+                .findFirst().orElseThrow(() -> new ValidacaoException("Supervisor do Vendedor não foi encontrado"));
+            var subCanalVendedor = usuario.getSubCanais().stream()
+                .findFirst().orElseThrow(() -> new ValidacaoException("Subcanal do Vendedor não foi encontrado"));
+            var subCanalSupervisor = supervisor.getSubCanais().stream()
+                .findFirst().orElseThrow(() -> new ValidacaoException("Subcanal do Supervisor não foi encontrado"));
+
+            if (subCanalVendedor.getCodigo() != subCanalSupervisor.getCodigo()) {
+                throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
+                    + "do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
+            }
+        }
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {

@@ -313,6 +313,35 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void ativar_deveAtivarVendedorD2d_quandoSubcanalSupervisorIgual() {
+        doReturn(Optional.of(umUsuarioD2D(PAP_PREMIUM)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        usuarioService.ativar(umUsuarioAtivacaoDtoD2d());
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoSubcanalSupervisorDiferente() {
+        doReturn(Optional.of(umUsuarioD2D(PAP)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
+            .withMessage("Favor deve-se por este usuario no mesmo subcanal"
+                + "do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
+    }
+
+    @Test
     public void inativar_deveRetornarExcecao_quandoUsuarioAtivoLocalEPossuiAgendamento() {
         when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
             .thenReturn(Long.valueOf(1));
