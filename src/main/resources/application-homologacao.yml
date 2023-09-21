@@ -64,6 +64,8 @@ app-config:
       url: http://172.10.10.85:8086
     mailing-importacao:
       url: http://172.10.10.86:8087
+    lei-nao-perturbe:
+      url: http://lei-nao-perturbe-api:8109
 
   email:
     enviar: true

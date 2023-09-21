@@ -230,6 +230,9 @@ app-config:
     claro-indico-api:
       client: claro-indico-api
       secret: cl4r0_1nd1c0_4p1
+    lei-nao-perturbe-api:
+      client: lei-nao-perturbe-api
+      secret: l31n4op3rtur8e4p1
     bloqueio-ligacao-api:
       client: bloqueio-ligacao-api
       secret: bl0qu310l1g4c404p1
@@ -284,6 +287,9 @@ app-config:
     mailing-importacao:
 #      url: http://localhost:8087
       url: http://192.168.50.1:6530
+    lei-nao-perturbe:
+      #url: http://localhost:8109
+      url: http://192.168.50.1:8109
 
 flyway:
   enabled: true
@@ -335,6 +341,9 @@ zuul:
     mailing-importacao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.mailing-importacao.url}
+    lei-nao-perturbe:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.lei-nao-perturbe.url}
 
   host:
     connect-timeout-millis: 1800000

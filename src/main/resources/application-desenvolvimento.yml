@@ -35,6 +35,8 @@ app-config:
       url: http://172.10.10.45:8086
     mailing-importacao:
       url: http://172.10.10.32:8087
+    lei-nao-perturbe:
+      url: http://lei-nao-perturbe-api:8109
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
