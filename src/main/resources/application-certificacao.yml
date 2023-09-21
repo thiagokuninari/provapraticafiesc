@@ -70,6 +70,8 @@ app-config:
       url: http://gestao-colaborador-pol-api:8310
     extrato-comissao:
       url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.113:8304
 
   email:
     enviar: true

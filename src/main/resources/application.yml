@@ -290,6 +290,12 @@ app-config:
     lei-nao-perturbe:
       #url: http://localhost:8109
       url: http://192.168.50.1:8109
+    extrato-comissao:
+      #url: http://localhost:8309
+      url: http://192.168.50.1:8309
+    funil-prospeccao:
+      #url: http://localhost:8100
+      url: http://192.168.50.1:6605
 
 flyway:
   enabled: true
@@ -344,6 +350,12 @@ zuul:
     lei-nao-perturbe:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.lei-nao-perturbe.url}
+    extrato-comissao:
+      sensitive-headers: Cookie,Set-Cookie
+      url: ${app-config.services.extrato-comissao.url}
+    funil-prospeccao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.funil-prospeccao.url}
 
   host:
     connect-timeout-millis: 1800000

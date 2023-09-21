@@ -76,6 +76,10 @@ app-config:
       url: http://172.10.10.86:8087
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
+    extrato-comissao:
+      url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.49:8100
 
   email:
     enviar: true
