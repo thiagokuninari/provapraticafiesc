@@ -303,6 +303,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + " FROM USUARIO_SUBCANAL US "
                 + "  JOIN USUARIO U ON U.ID = US.FK_USUARIO "
                 + "  JOIN USUARIO_HIERARQUIA UH ON UH.FK_USUARIO = U.ID "
+                + " WHERE U.SITUACAO = 'A' "
                 + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ",
             new MapSqlParameterSource()
