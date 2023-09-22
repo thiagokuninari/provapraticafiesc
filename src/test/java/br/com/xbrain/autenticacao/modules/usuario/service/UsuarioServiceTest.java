@@ -338,7 +338,7 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
             .withMessage("Favor deve-se por este usuario no mesmo subcanal"
-                + "do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
+                + " do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
     }
 
     @Test

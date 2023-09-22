@@ -1576,7 +1576,7 @@ public class UsuarioService {
             var subCanalSupervisor = obterSubcanal(supervisor);
             if (subCanalVendedor.getCodigo() != subCanalSupervisor.getCodigo()) {
                 throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
-                    + "do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
+                    + " do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
             }
         }
     }
