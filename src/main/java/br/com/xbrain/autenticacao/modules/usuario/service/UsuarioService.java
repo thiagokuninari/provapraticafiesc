@@ -2410,11 +2410,24 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
-                                                                              boolean buscarInativos) {
+                                                                                     boolean buscarInativos) {
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponse> findOperadoresBkoCentralizadoByFornecedor(Integer fornecedorId,
+                                                                           boolean buscarInativos) {
+        var cargosOperadoresBkoCentralizado = List.of(
+            BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+            BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS);
+
+        return repository.findByOrganizacaoIdAndCargo_CodigoIn(fornecedorId, cargosOperadoresBkoCentralizado)
+            .stream()
+            .filter(usuario -> buscarInativos || usuario.isAtivo())
+            .map(usuario -> new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getEmail()))
             .collect(Collectors.toList());
     }
 

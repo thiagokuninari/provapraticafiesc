@@ -69,6 +69,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .antMatchers("/api/usuarios/bko-centralizado/**").hasRole(
+                CodigoFuncionalidade.BKO_PRIORIZAR_INDICACOES.name())
             .antMatchers("/api/emular**").hasRole(
                 CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(

@@ -1880,6 +1880,29 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void findOperadoresBkoCentralizadoByFornecedor_deveBuscarCargosBkoCentralizado_quandoSolicitado() {
+        usuarioService.findOperadoresBkoCentralizadoByFornecedor(10, false);
+
+        verify(usuarioRepository).findByOrganizacaoIdAndCargo_CodigoIn(10, List.of(
+            BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS, BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS));
+    }
+
+    @Test
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarSelectResponse_quandoSolicitado() {
+        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(5, List.of(
+                BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+                BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
+            .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
+
+        assertThat(usuarioService.findOperadoresBkoCentralizadoByFornecedor(5, true))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                tuple(10, "Usuario Ativo", "usuarioativo@email.com"),
+                tuple(11, "Usuario Inativo", "usuarioinativo@email.com"),
+                tuple(1, "NOME UM", "email@email.com"));
+    }
+
+    @Test
     public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
         when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))

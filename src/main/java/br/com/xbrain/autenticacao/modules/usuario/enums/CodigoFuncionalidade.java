@@ -43,7 +43,8 @@ public enum CodigoFuncionalidade {
     VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo"),
     CTR_20014("Solicitar Ramal AA"),
     CTR_20015("Solicitar Ramal D2D"),
-    AUT_20024("Visualizar status do Horário de Acesso");
+    AUT_20024("Visualizar status do Horário de Acesso"),
+    BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico");
 
     @Getter
     private String descricao;
