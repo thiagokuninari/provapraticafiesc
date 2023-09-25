@@ -59,27 +59,31 @@ public class FeederService {
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
 
             if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
-                var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
-                    .filter(usuarioId -> usuarioRepository.exists(usuarioId))
-                    .collect(Collectors.toList());
-
-                removerPermissoesEspeciais(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
-                gerarUsuarioHistorico(usuariosIds, true);
+                removerPermissoes(agenteAutorizadoPermissaoFeederDto, true);
             }
         } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
-            var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
-                .filter(usuarioId -> usuarioRepository.exists(usuarioId))
-                .collect(Collectors.toList());
-            if (!agenteAutorizadoPermissaoFeederDto.isSocioDeOutroAaComPermissaoFeeder()) {
-                usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
-            }
-
-            var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
-            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
-
-            removerPermissoesEspeciais(usuariosIds, funcionalidades);
-            gerarUsuarioHistorico(usuariosIds, false);
+            removerPermissoes(agenteAutorizadoPermissaoFeederDto, false);
         }
+    }
+
+    private void removerPermissoes(AgenteAutorizadoPermissaoFeederDto agenteAutorizadoPermissaoFeederDto,
+                                   boolean permissaoFeeder) {
+        var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
+            .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+            .collect(Collectors.toList());
+
+        if (!agenteAutorizadoPermissaoFeederDto.isSocioDeOutroAaComPermissaoFeeder()) {
+            usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
+        }
+
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+
+        if (!permissaoFeeder) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+        }
+
+        removerPermissoesEspeciais(usuariosIds, funcionalidades);
+        gerarUsuarioHistorico(usuariosIds, permissaoFeeder);
     }
 
     @Transactional
@@ -106,7 +110,7 @@ public class FeederService {
             && (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
-                .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
+                .map(usuarioNovo -> getPermissoesEspeciaisDoColaboradorConformeCargo(usuarioNovo,
                     usuarioMqRequest.getAgenteAutorizadoFeeder(), usuarioMqRequest.getUsuarioCadastroId(),
                     usuarioMqRequest.getCargo()))
                 .orElse(List.of());
@@ -223,25 +227,27 @@ public class FeederService {
             .filter(Objects::nonNull)
             .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
             .filter(usuario -> CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuario.getCargoCodigo())
-            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador, tipoFeeder,
+            .flatMap(colaborador -> getPermissoesEspeciaisDoColaboradorConformeCargo(colaborador, tipoFeeder,
                 usuarioCadastroId, colaborador.getCargoCodigo()).stream())
             .collect(Collectors.toList());
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
-                                                                                      ETipoFeeder tipoFeeder,
-                                                                                      Integer usuarioCadastroId,
-                                                                                      CodigoCargo cargoCodigo) {
+    private List<PermissaoEspecial> getPermissoesEspeciaisDoColaboradorConformeCargo(Usuario colaborador,
+                                                                                     ETipoFeeder tipoFeeder,
+                                                                                     Integer usuarioCadastroId,
+                                                                                     CodigoCargo cargoCodigo) {
+        var funcionalidades = new ArrayList<Integer>();
+
         if (isBackOffice(cargoCodigo)) {
-            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-                FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
         }
         if (isColaboradoresAaFeederResidencial(cargoCodigo, tipoFeeder)) {
-            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-                FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        } else {
+            funcionalidades.add(FUNCIONALIDADE_TRATAR_LEAD_ID);
         }
-        return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-            List.of(FUNCIONALIDADE_TRATAR_LEAD_ID));
+
+        return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId, funcionalidades);
     }
 
     private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId,
