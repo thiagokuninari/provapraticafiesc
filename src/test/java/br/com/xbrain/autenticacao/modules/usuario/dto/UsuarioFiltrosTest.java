@@ -20,7 +20,6 @@ public class UsuarioFiltrosTest {
                 + "lower(usuario.email) like %lucas@xbrain.com% && "
                 + "any(usuario.canais) = D2D_PROPRIO && "
                 + "any(usuario.subCanais).id = 1 && "
-                + "usuario.organizacaoEmpresa.id = 1 && "
                 + "usuario.cargo.nivel.id = 1 && "
                 + "usuario.cargo.id = 1 && "
                 + "usuario.departamento.id = 1 && "
@@ -39,7 +38,6 @@ public class UsuarioFiltrosTest {
             .cnpjAa("11146546000171")
             .departamentoId(1)
             .nivelId(1)
-            .organizacaoEmpresaId(1)
             .build();
     }
 
