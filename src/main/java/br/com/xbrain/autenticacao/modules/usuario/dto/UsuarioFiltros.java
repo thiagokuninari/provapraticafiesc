@@ -20,6 +20,7 @@ import java.util.List;
 @Data
 public class UsuarioFiltros {
 
+    private Integer id;
     private String nome;
     private String emailUsuario;
     private String cpf;
@@ -66,6 +67,7 @@ public class UsuarioFiltros {
             .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
                 ? Collections.singletonList(departamentoId) : null)
             .excluiIds(excluiIds)
-            .comCodigosCargos(codigosCargos);
+            .comCodigosCargos(codigosCargos)
+            .comId(id);
     }
 }
