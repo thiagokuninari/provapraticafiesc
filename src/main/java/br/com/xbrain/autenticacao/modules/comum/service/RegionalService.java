@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.predicate.RegionalPredicate;
@@ -31,6 +33,13 @@ public class RegionalService {
         RegionalPredicate predicate = new RegionalPredicate();
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.getAll(predicate.build());
+    }
+
+    public List<RegionalDto> findAllAtivos() {
+        return repository.findAllBySituacaoAndNovaRegional(ESituacao.A, Eboolean.V)
+            .stream()
+            .map(RegionalDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SelectResponse> getAllByUsuarioId(Integer usuarioId) {

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
