@@ -30,13 +30,12 @@ public class FileServiceTest {
 
     @Before
     public void setup() {
-        ReflectionTestUtils.setField(service, "usuarioFotoDir", "desenvolvimento/autenticacao/usuario/foto");
-        ReflectionTestUtils.setField(service, "defaultBucketName", "conexao-claro-brasil");
-        ReflectionTestUtils.setField(service, "minioUrl", "https://minio-dev.xbrain.com.br");
+        ReflectionTestUtils.setField(service, "usuarioFotoDir", "public/desenvolvimento/autenticacao/usuario/foto/");
+        ReflectionTestUtils.setField(service, "urlFotoUsuario", "desenvolvimento/autenticacao/usuario/foto/");
     }
 
     @Test
-    public void salvarArquivo_deveFazerUpload_seSolicitado() throws NoSuchFieldException, IllegalAccessException {
+    public void salvarArquivo_deveFazerUpload_seSolicitado() {
         service.salvarArquivo(umUsuario(), umDocumentoPng());
 
         verify(minioFileService).salvarArquivo(any(InputStream.class), anyString());

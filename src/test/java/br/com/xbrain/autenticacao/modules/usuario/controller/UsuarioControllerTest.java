@@ -2036,7 +2036,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void moverAvatarMinio_deveRetornarUnauthorized_quandoNaoAutenticado() {
-        mvc.perform(put(BASE_URL.concat("/mover-avatar-minio"))
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
@@ -2047,7 +2047,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser
     public void moverAvatarMinio_deveRetornarOk_quandoAutenticado() {
-        mvc.perform(put(BASE_URL.concat("/mover-avatar-minio"))
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 

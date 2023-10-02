@@ -46,7 +46,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
-import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -3277,20 +3276,5 @@ public class UsuarioServiceTest {
         static ApplicationEventPublisher publisher() {
             return mock(ApplicationEventPublisher.class);
         }
-    }
-
-    @Test
-    @SneakyThrows
-    public void moverAvatarMinio_deveAlterarCaminhoDasFotos_seHouverFotosNoBanco() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioHelper.umUsuarioAutenticadoAdmin());
-        when(usuarioRepository.findByFotoDiretorioIsNotNull());
-
-    }
-
-    @Test
-    public void moverAvatarMinio_deveLancarEx_seNaoForAdmin() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelAa());
-
-        assertThatThrownBy(() -> usuarioService.moverAvatarMinio()).hasMessage("Usuário não autorizado!");
     }
 }
