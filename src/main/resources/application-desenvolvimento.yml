@@ -1,5 +1,5 @@
 app-config:
-  url-origin-cors: dev.conexaoclarobrasil.com.br,http://localhost
+  url-origin-cors: dev.conexaoclarobrasil.com.br,http://localhost,http://192.168.50.1
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
