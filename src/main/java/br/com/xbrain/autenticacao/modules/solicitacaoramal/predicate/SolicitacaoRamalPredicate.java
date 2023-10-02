@@ -59,4 +59,12 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
 
         return this;
     }
+
+    public SolicitacaoRamalPredicate comEquipeId(Integer equipeId) {
+        if (equipeId != null) {
+            builder.and(solicitacaoRamal.equipeId.eq(equipeId));
+        }
+
+        return this;
+    }
 }

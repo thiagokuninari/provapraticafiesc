@@ -55,4 +55,22 @@ public class SolicitacaoRamalPredicateTest {
         assertThat(new SolicitacaoRamalPredicate().comAgenteAutorizadoId(null).build())
             .isEqualTo(new BooleanBuilder());
     }
+
+    @Test
+    public void comSubCanalId_deveRetornarPredicate_seHouverSubCanalId() {
+        assertThat(new SolicitacaoRamalPredicate().comSubCanalId(1).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanal.id.eq(1)));
+    }
+
+    @Test
+    public void comEquipeId_deveMontarPredicate_seHouverEquipeId() {
+        assertThat(new SolicitacaoRamalPredicate().comEquipeId(123).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.equipeId.eq(123)));
+    }
+
+    @Test
+    public void comEquipeId_naoDeveMontarPredicate_seEquipeIdNulo() {
+        assertThat(new SolicitacaoRamalPredicate().comEquipeId(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
 }

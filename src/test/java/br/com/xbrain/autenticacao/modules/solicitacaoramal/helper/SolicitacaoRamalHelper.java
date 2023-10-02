@@ -31,6 +31,8 @@ public class SolicitacaoRamalHelper {
             .emailTi("reanto@ti.com.br")
             .telefoneTi("(18) 3322-2388")
             .usuariosSolicitadosIds(Arrays.asList(100, 101))
+            .situacao(ESituacaoSolicitacao.CONCLUIDO)
+            .usuariosSolicitadosIds(List.of(2))
             .canal(ECanal.AGENTE_AUTORIZADO)
             .build();
     }
@@ -46,6 +48,8 @@ public class SolicitacaoRamalHelper {
             .emailTi("    ")
             .telefoneTi("    ")
             .usuariosSolicitadosIds(List.of())
+            .situacao(ESituacaoSolicitacao.EM_ANDAMENTO)
+            .usuariosSolicitadosIds(List.of(3))
             .canal(ECanal.AGENTE_AUTORIZADO)
             .build();
     }
