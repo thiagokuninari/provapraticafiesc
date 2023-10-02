@@ -1443,6 +1443,7 @@ public class UsuarioServiceTest {
             .nivelCodigo(nivelCodigo)
             .cargoCodigo(cargo)
             .id(usuarioId)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
             .permissoes(getPermissoes(permissoes))
             .build();
     }
@@ -2537,6 +2538,7 @@ public class UsuarioServiceTest {
         vendedor.setUsuariosHierarquia(new HashSet<>());
         vendedor.setEmail("vendedortest@xbrain.com.br");
         vendedor.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+        vendedor.setCanais(Set.of(ECanal.D2D_PROPRIO));
 
         doReturn(Optional.of(vendedor))
             .when(usuarioRepository)

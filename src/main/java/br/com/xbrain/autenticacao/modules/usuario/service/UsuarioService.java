@@ -57,6 +57,7 @@ import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -981,6 +982,27 @@ public class UsuarioService {
         validarPadraoEmail(usuario.getEmail());
     }
 
+    private void validarCanais(Usuario usuario, Set<UsuarioHierarquia> usuariosHierarquia) {
+        var superioresId = getUsuarioHierarquias(usuariosHierarquia);
+        if (!superioresId.isEmpty()) {
+            var contains = usuariosHierarquia.stream()
+                .map(u -> repository.findById(u.getUsuarioSuperiorId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .anyMatch(usuarioHierarquia -> usuarioHierarquia.getCanais().stream()
+                    .anyMatch(canal -> usuario.getCanais().contains(canal)));
+            if (!contains) {
+                throw new ValidacaoException("Canal do Usuário Hierarquia é diferente do canal do usuário editado");
+            }
+        }
+    }
+
+    private List<UsuarioHierarquia> getUsuarioHierarquias(Set<UsuarioHierarquia> usuariosHierarquia) {
+        return usuariosHierarquia.stream()
+            .filter(usuarioHierarquia -> usuarioHierarquia.getUsuarioSuperior() != null)
+            .collect(Collectors.toList());
+    }
+
     private void validarPadraoEmail(String email) {
         var pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.\\+]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)"
             + "|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})$");
@@ -1050,6 +1072,7 @@ public class UsuarioService {
         removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
+        validarCanais(usuario, usuario.getUsuariosHierarquia());
 
         repository.save(usuario);
     }
