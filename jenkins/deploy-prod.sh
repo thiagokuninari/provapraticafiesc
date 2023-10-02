@@ -79,6 +79,8 @@ else
 			-p $HOST_PORT:$APP_PORT \
 			-d \
 			-e JAVA_OPTS="'$JAVA_OPTS'" \
+      -e MINIO_TOKEN="'$MINIO_TOKEN'" \
+      -e MINIO_SECRET="'$MINIO_SECRET'" \
 			--net network_xbrain \
 			--ip $CONTAINER_IP \
 			--add-host minio-prod.xbrain.com.br:192.168.2.25 \
