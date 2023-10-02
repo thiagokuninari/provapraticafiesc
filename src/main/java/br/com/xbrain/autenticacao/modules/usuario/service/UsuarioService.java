@@ -17,7 +17,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
-import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
@@ -76,9 +75,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -101,6 +97,7 @@ import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.util.ObjectUtils.isEmpty;
+import static org.thymeleaf.util.StringUtils.concat;
 
 @Service
 @Slf4j
@@ -245,14 +242,8 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
-    @Autowired
-    private MinioFileService minioFileService;
-    @Value("${app-config.upload-foto-usuario}")
+    @Value("${app-config.url-foto-usuario}")
     private String urlDir;
-    @Value("${app-config.minio.url}")
-    private String minioUrl;
-    @Value("${app-config.minio.bucket.name}")
-    private String defaultBucketName;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2805,36 +2796,23 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void moverAvatarMinio() throws IOException {
+    public void moverAvatarMinio() {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
-        log.info("Inicia migração das fotos para o diretório MinIO.");
-        var files = new ArrayList<File>();
-        fileService.buscaArquivosEstatico(urlDir).ifPresent(files::addAll);
-        if (!files.isEmpty()) {
-            moverArquivos(files);
-            var usuariosEstatico = repository.findByFotoDiretorioIsNotNull();
-            alteraColunaFotoDiretorio(usuariosEstatico);
-            log.info("Finaliza migração das fotos para o diretório MinIO");
-        }
+        log.info("Inicia alteração caminho do banco das fotos do MinIO.");
+        var fotoCaminho = repository.findByFotoDiretorioIsNotNull();
+        alteraColunaFotoDiretorio(fotoCaminho);
+        log.info("Finaliza alteração caminho do banco das fotos do MinIO.");
     }
 
-    private void moverArquivos(List<File> files) {
-        files.forEach(file -> {
-            try (var fileInput = new FileInputStream(file)) {
-                minioFileService.salvarArquivo(fileInput, gerarNovoCaminhoMinio(file.getPath()));
-                log.info("Movendo arquivo: {}", file.getName());
-            } catch (IOException ex) {
-                log.error("Error ao enviar arquivo ao MinIO", ex);
-            }
-        });
-    }
-
-    private String gerarNovoCaminhoMinio(String path) {
-        if (isNotBlank(path) && path.length() > 1) {
-            var split = path.split("\\/(\\d{4})")[0];
-            return path.replace(split, urlDir);
+    private void alteraColunaFotoDiretorio(List<Usuario> fotoCaminho) {
+        if (!isEmpty(fotoCaminho)) {
+            log.info("Inicia update coluna FotoDiretório");
+            fotoCaminho.forEach(user -> {
+                var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
+                log.info("Update usuario Id: {}", user.getId());
+                repository.updateFotoDiretorio(fileName, user.getId());
+            });
         }
-        return path;
     }
 
     private String gerarNovoCaminhoBanco(String path) {
@@ -2842,22 +2820,9 @@ public class UsuarioService {
             var pattern = Pattern.compile(".*/([^/]+)$");
             var matcher = pattern.matcher(path);
             if (matcher.find()) {
-                return path.replace(path, urlDir.concat(matcher.group(1)));
+                return path.replace(path, concat(urlDir, matcher.group(1)));
             }
         }
         return path;
-    }
-
-    private void alteraColunaFotoDiretorio(List<Usuario> usuariosEstatico) {
-        if (!isEmpty(usuariosEstatico)) {
-            log.info("Inicia update coluna FotoDiretório");
-            usuariosEstatico.forEach(user -> {
-                var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
-                log.info("Update usuario Id: {}", user.getId());
-                repository.updateFotoDiretorio(
-                    minioUrl.concat("/").concat(defaultBucketName).concat("/").concat(fileName), user.getId()
-                );
-            });
-        }
     }
 }

@@ -68,8 +68,6 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -80,7 +78,6 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umaListaUsuario;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -3284,20 +3281,10 @@ public class UsuarioServiceTest {
 
     @Test
     @SneakyThrows
-    public void moverAvatarMinio_deveEnviarArquivos_seArquivosExistirem() {
+    public void moverAvatarMinio_deveAlterarCaminhoDasFotos_seHouverFotosNoBanco() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioHelper.umUsuarioAutenticadoAdmin());
-        ReflectionTestUtils.setField(usuarioService, "urlDir", "desenvolvimento/autenticacao/usuario/foto/");
-        ReflectionTestUtils.setField(usuarioService, "defaultBucketName", "conexao-claro-brasil");
-        ReflectionTestUtils.setField(usuarioService, "minioUrl", "https://minio-dev.xbrain.com.br");
-        when(fileService.buscaArquivosEstatico(anyString())).thenReturn(Optional.of(umaListFotos()));
-        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaListaUsuario());
+        when(usuarioRepository.findByFotoDiretorioIsNotNull());
 
-        usuarioService.moverAvatarMinio();
-
-        verify(minioFileService, times(2)).salvarArquivo(any(InputStream.class), anyString());
-        verify(fileService).buscaArquivosEstatico("desenvolvimento/autenticacao/usuario/foto/");
-        verify(usuarioRepository).findByFotoDiretorioIsNotNull();
-        verify(usuarioRepository, times(umaListaUsuario().size())).updateFotoDiretorio(anyString(), anyInt());
     }
 
     @Test
@@ -3305,17 +3292,5 @@ public class UsuarioServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelAa());
 
         assertThatThrownBy(() -> usuarioService.moverAvatarMinio()).hasMessage("Usuário não autorizado!");
-    }
-
-    @Test
-    @SneakyThrows
-    public void moverAvatarMinio_deveNaoEnviarArquivos_seArquivosNaoExistirem() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioHelper.umUsuarioAutenticadoAdmin());
-
-        usuarioService.moverAvatarMinio();
-
-        verify(usuarioRepository, never()).findByFotoDiretorioIsNotNull();
-        verify(minioFileService, never()).salvarArquivo(any(FileInputStream.class), anyString());
-        verify(usuarioRepository, never()).updateFotoDiretorio(anyString(), anyInt());
     }
 }

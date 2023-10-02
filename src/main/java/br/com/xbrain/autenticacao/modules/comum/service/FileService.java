@@ -9,29 +9,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static org.thymeleaf.util.StringUtils.concat;
 
 @Service
 @RequiredArgsConstructor
 public class FileService {
 
     private final MinioFileService minioFileService;
-    @Value("${app-config.minio.bucket.name}")
-    private String defaultBucketName;
-    @Value("${app-config.minio.url}")
-    private String minioUrl;
     @Value("${app-config.upload-foto-usuario}")
     private String usuarioFotoDir;
-    @Value("${app-config.url-estatico}")
-    private String urlEstatico;
+    @Value("${app-config.url-foto-usuario}")
+    private String urlFotoUsuario;
 
     public void salvarArquivo(Usuario request, MultipartFile file) {
         var fileName = new SimpleDateFormat("yyyyMMdd_HHmmss_")
@@ -39,25 +31,12 @@ public class FileService {
 
         request.setFotoContentType(file.getContentType());
         request.setFotoNomeOriginal(file.getOriginalFilename());
-        request.setFotoDiretorio(
-            minioUrl.concat("/").concat(defaultBucketName).concat("/").concat(usuarioFotoDir).concat(fileName));
+        request.setFotoDiretorio(concat(urlFotoUsuario, fileName));
 
         try {
-            minioFileService.salvarArquivo(file.getInputStream(), usuarioFotoDir.concat(fileName));
+            minioFileService.salvarArquivo(file.getInputStream(), concat(usuarioFotoDir, fileName));
         } catch (IOException ex) {
             throw new IntegracaoException(ex, MinioClient.class.getName(), EErrors.ERRO_SALVAR_ARQUIVO);
-        }
-    }
-
-    public Optional<List<File>> buscaArquivosEstatico(String caminho) throws IOException {
-        var path = Paths.get(urlEstatico.concat(caminho));
-        try (var stream = Files.walk(path, Integer.MAX_VALUE)) {
-            return Optional.of(stream
-                .map(String::valueOf)
-                .map(File::new)
-                .filter(File::isFile)
-                .sorted()
-                .collect(Collectors.toList()));
         }
     }
 }

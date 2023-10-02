@@ -15,8 +15,6 @@ import java.io.InputStream;
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umDocumentoPng;
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umUsuario;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.willAnswer;
@@ -33,7 +31,6 @@ public class FileServiceTest {
     @Before
     public void setup() {
         ReflectionTestUtils.setField(service, "usuarioFotoDir", "desenvolvimento/autenticacao/usuario/foto");
-        ReflectionTestUtils.setField(service, "urlEstatico", "src/test/resources/");
         ReflectionTestUtils.setField(service, "defaultBucketName", "conexao-claro-brasil");
         ReflectionTestUtils.setField(service, "minioUrl", "https://minio-dev.xbrain.com.br");
     }
@@ -54,17 +51,5 @@ public class FileServiceTest {
         assertThatThrownBy(() -> service.salvarArquivo(umUsuario(), umDocumentoPng()))
             .isInstanceOf(IntegracaoException.class)
             .hasMessage("#051 - Desculpe, ocorreu um erro interno. Contate o administrador.");
-    }
-
-    @Test
-    public void buscaArquivosEstatico_deveRetornarListaDeArquivos_seSolicitado() throws IOException {
-        var caminho = "foto_usuario/";
-
-        var result = service.buscaArquivosEstatico(caminho);
-
-        assertTrue(result.isPresent());
-        assertEquals(2, result.get().size());
-        assertEquals("download.jpeg", result.get().get(0).getName());
-        assertEquals("file.png", result.get().get(1).getName());
     }
 }

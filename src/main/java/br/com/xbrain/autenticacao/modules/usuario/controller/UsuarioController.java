@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -572,8 +571,8 @@ public class UsuarioController {
         return usuarioService.findByCpf(cpf);
     }
 
-    @PutMapping("mover-avatar-minio")
-    public void moverAvatarMinio() throws IOException {
+    @PostMapping("mover-avatar-minio")
+    public void moverAvatarMinio() {
         usuarioService.moverAvatarMinio();
     }
 }

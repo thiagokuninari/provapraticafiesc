@@ -73,17 +73,17 @@ app-config:
   nome: Colaboradores
   url: http://localhost:3100
   url-origin-cors: http://localhost
-  url-estatico: /opt/servidor_estatico/conexao_claro_brasil/
-  dir-upload: desenvolvimento/autenticacao
-  upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
+  upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
+  url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
 
   minio:
-    url: https://minio-dev.xbrain.com.br
+    url: http://192.168.50.6:9000
     access:
-      name: xbrain
-      secret: L1b3rd4d3@
+      name: ${MINIO_TOKEN}
+      secret: ${MINIO_SECRET}
     bucket:
       name: conexao-claro-brasil
+    public: https://files-dev.conexaoclarobrasil.com.br/public
 
   email:
     enviar: true
@@ -125,6 +125,7 @@ app-config:
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
+    inativar-colaborador-pol-failure: inativar-colaborador-pol-failure.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue

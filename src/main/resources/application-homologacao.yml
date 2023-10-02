@@ -30,8 +30,8 @@ app-config:
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
 
   url: https://autenticacao-hom.conexaoclarobrasil.com.br
-  dir-upload: homologacao/autenticacao
-  upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
+  upload-foto-usuario: public/homologacao/autenticacao/usuario/foto/
+  url-foto-usuario: ${app-config.minio.public}/homologacao/autenticacao/usuario/foto/
 
   services:
     autenticacao:

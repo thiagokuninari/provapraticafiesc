@@ -76,7 +76,6 @@ else
 			--name=$CONTAINER \
             --restart=unless-stopped \
 			--mount type=bind,source=$VARPATHDESTINY/app.jar,target=/app.jar \
-			-v /opt/servidor_estatico:/opt/servidor_estatico \
 			-p $HOST_PORT:$APP_PORT \
 			-d \
 			-e JAVA_OPTS="'$JAVA_OPTS'" \

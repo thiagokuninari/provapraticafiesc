@@ -37,8 +37,8 @@ app-config:
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
-  dir-upload: producao/autenticacao
-  upload-foto-usuario: ${app-config.dir-upload}/usuario/foto/
+  upload-foto-usuario: public/producao/autenticacao/usuario/foto/
+  url-foto-usuario: ${app-config.minio.public}/producao/autenticacao/usuario/foto/
 
   url: https://autenticacao.conexaoclarobrasil.com.br
 
