@@ -125,7 +125,6 @@ app-config:
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
-    inativar-colaborador-pol-failure: inativar-colaborador-pol-failure.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
