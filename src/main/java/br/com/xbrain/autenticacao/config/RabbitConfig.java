@@ -80,9 +80,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-colaborador-pol}")
     private String inativarColaboradorPolMq;
 
-    @Value("${app-config.queue.inativar-colaborador-pol-failure}")
-    private String inativarColaboradorPolFailureMq;
-
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
 
@@ -205,11 +202,7 @@ public class RabbitConfig {
 
     @Bean
     Queue inativarColaboradorPolMq() {
-        return QueueBuilder
-            .durable(inativarColaboradorPolMq)
-            .withArgument(DEAD_LETTER_EXCHANGE, "")
-            .withArgument(DEAD_LETTER_ROUTING_KEY, inativarColaboradorPolFailureMq)
-            .build();
+        return new Queue(inativarColaboradorPolMq, false);
     }
 
     @Bean

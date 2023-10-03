@@ -45,10 +45,11 @@ app-config:
   minio:
     url: https://minio-prod.xbrain.com.br
     access:
-      name: xbrain
-      secret: '@xbr41n@@'
+      name: ${MINIO_TOKEN}
+      secret: ${MINIO_SECRET}
     bucket:
       name: conexao-claro-brasil
+    public: https://files.conexaoclarobrasil.com.br/public
 
   services:
     autenticacao:
