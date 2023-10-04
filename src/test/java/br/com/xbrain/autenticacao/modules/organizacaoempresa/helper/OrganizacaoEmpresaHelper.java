@@ -74,6 +74,19 @@ public class OrganizacaoEmpresaHelper {
                 .build());
     }
 
+    public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponseComNivel() {
+        return List.of(OrganizacaoEmpresaResponse.builder()
+                .id(1)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponse())
+                .build(),
+            OrganizacaoEmpresaResponse.builder()
+                .id(2)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponseReceptivo())
+                .build());
+    }
+
     public static Nivel umNivel() {
         return Nivel.builder()
             .id(1)
@@ -103,6 +116,14 @@ public class OrganizacaoEmpresaHelper {
             .id(1)
             .nome("BACKOFFICE")
             .codigo(CodigoNivel.BACKOFFICE.name())
+            .build();
+    }
+
+    public static NivelResponse umNivelResponseReceptivo() {
+        return NivelResponse.builder()
+            .id(2)
+            .nome("RECEPTIVO")
+            .codigo(CodigoNivel.RECEPTIVO.name())
             .build();
     }
 }

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq;
 
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaDto;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,9 @@ public class OrganizacaoEmpresaMqSender {
     @Value("${app-config.queue.organizacao-empresa-ativar-situacao-success}")
     private String organizacaoEmpresaAtivarSituacaoSuccessQueue;
 
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome}")
+    private String organizacaoEmpresaAtualizacaoNomeQueue;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -38,5 +42,9 @@ public class OrganizacaoEmpresaMqSender {
 
     public void sendAtivarSituacaoSuccess(OrganizacaoEmpresaDto organizacaoEmpresaDto) {
         rabbitTemplate.convertAndSend(organizacaoEmpresaAtivarSituacaoSuccessQueue, organizacaoEmpresaDto);
+    }
+
+    public void sendUpdateNomeSucess(OrganizacaoEmpresaUpdateDto organizacaoEmpresaDto) {
+        rabbitTemplate.convertAndSend(organizacaoEmpresaAtualizacaoNomeQueue, organizacaoEmpresaDto);
     }
 }

@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
@@ -41,6 +42,8 @@ import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESitua
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -281,7 +284,10 @@ public class OrganizacaoEmpresaServiceTest {
 
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(3, A);
+            .containsExactlyInAnyOrder(3, ESituacaoOrganizacaoEmpresa.A).containsExactlyInAnyOrder(3, A);
+
+        var organizcaoDto = new OrganizacaoEmpresaUpdateDto("Organizacao 3", "Organizacao 3 alterado", 3);
+        verify(sender).sendUpdateNomeSucess(eq(organizcaoDto));
 
         verify(sender).sendUpdateSuccess(any());
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
@@ -445,6 +451,62 @@ public class OrganizacaoEmpresaServiceTest {
             .email("usuario@teste.com")
             .organizacaoCodigo("CODIGO")
             .build();
+    }
+
+    @Test
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
+        when(organizacaoEmpresaRepository.findAllAtivosByNivelIdInAndSituacao(List.of(1), ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+
+        Assertions.assertThat(service.findAllOrganizacoesAtivasByNiveisIds(List.of(1)))
+            .extracting("id", "nome", "nivel")
+            .containsExactly(
+                tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllAtivosByNivelIdInAndSituacao(eq(List.of(1)), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void findAllOrganizacoesAtivasByNiveisIds_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        when(organizacaoEmpresaRepository.findAllAtivosByNivelIdInAndSituacao(List.of(1), ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findAllOrganizacoesAtivasByNiveisIds(List.of(1)))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllAtivosByNivelIdInAndSituacao(eq(List.of(1)), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveRetornarTrue_quandoOrganizacaoAtiva() {
+        when(organizacaoEmpresaRepository.existsByNomeAndSituacao("ORGANIZACAO", ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(true);
+
+        assertTrue(service.isOrganizacaoAtiva("ORGANIZACAO"));
+
+        verify(organizacaoEmpresaRepository)
+            .existsByNomeAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveRetornarFalse_quandoOrganizacaoInativa() {
+        assertFalse(service.isOrganizacaoAtiva("ORGANIZACAO"));
+
+        verify(organizacaoEmpresaRepository)
+            .existsByNomeAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void isOrganizacaoAtiva_deveLancarNotFoundException_quandoOrganizacaoForNull() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.isOrganizacaoAtiva(null))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, never())
+            .existsByNomeAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {

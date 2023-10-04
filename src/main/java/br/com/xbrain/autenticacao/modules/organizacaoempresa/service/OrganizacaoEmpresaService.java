@@ -5,10 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaDto;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -16,7 +13,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.Organizaca
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
@@ -39,20 +37,11 @@ public class  OrganizacaoEmpresaService {
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-    @Autowired
-    private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
-
-    @Autowired
-    private OrganizacaoEmpresaHistoricoService historicoService;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private NivelRepository nivelRepository;
-
-    @Autowired
-    private OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+    private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
+    private final OrganizacaoEmpresaHistoricoService historicoService;
+    private final AutenticacaoService autenticacaoService;
+    private final NivelRepository nivelRepository;
+    private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -109,9 +98,15 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
 
+        var organizacaoNome = organizacaoEmpresaToUpdate.getNome();
         organizacaoEmpresaToUpdate.setNome(request.getNome());
         organizacaoEmpresaToUpdate.setCodigo(request.getCodigo());
 
+        var organizacaoNomeAtualizado = request.getNome();
+        var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
+        var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
+
+        organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
         var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
 
         organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
@@ -190,5 +185,22 @@ public class  OrganizacaoEmpresaService {
         } else if (!usuario.isGerenteInternetOperacao()) {
             filtros.setOrganizacaoId(usuario.getOrganizacaoId());
         }
+    }
+
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(List<Integer> niveisIds) {
+        var organizacoes = organizacaoEmpresaRepository
+            .findAllAtivosByNivelIdInAndSituacao(niveisIds, ESituacaoOrganizacaoEmpresa.A)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
+    }
+
+    public boolean isOrganizacaoAtiva(String organizacao) {
+        if (organizacao == null) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 }

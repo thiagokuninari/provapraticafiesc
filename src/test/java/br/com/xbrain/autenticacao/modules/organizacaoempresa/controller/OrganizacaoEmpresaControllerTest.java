@@ -312,4 +312,69 @@ public class OrganizacaoEmpresaControllerTest {
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(organizacaoEmpresaService.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1,2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
+
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "1,2")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarBadRequest_quandoParametroNaoPreenchidoCorretamente() {
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "a")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarListaOrganizacoesEmpresaIdsPorNiveisId_quandoSolicitado() {
+        when(organizacaoEmpresaService.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1,2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
+
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "1,2")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[1].id", is(2)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void verificarOrganizacaoAtiva_deveRetornarSituacaoOrganizacao_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+
+        when(organizacaoEmpresaService.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(API_URI + "/{organizacao}/ativa", "ORGANIZAO")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void isOrganizacaoAtiva_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(organizacaoEmpresaService.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(API_URI + "/{organizacao}/ativa", "ORGANIZACAO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
 }

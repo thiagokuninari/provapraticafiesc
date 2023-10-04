@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.repository;
 
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
@@ -22,4 +23,8 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
     boolean existsByNomeIgnoreCase(String nome);
 
     boolean existsByNomeAndIdNot(String nome, Integer id);
+
+    List<OrganizacaoEmpresa> findAllAtivosByNivelIdInAndSituacao(List<Integer> nivelId, ESituacaoOrganizacaoEmpresa situacao);
+
+    boolean existsByNomeAndSituacao(String nome, ESituacaoOrganizacaoEmpresa situacao);
 }
