@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
@@ -36,6 +37,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
 import static helpers.TestBuilders.umUsuario;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
@@ -1715,7 +1717,7 @@ public class UsuarioControllerTest {
                 .param("buscarInativos", "false"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, false);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false);
     }
 
     @Test
@@ -1726,7 +1728,7 @@ public class UsuarioControllerTest {
                 .param("organizacaoId", "1"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, true);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true);
     }
 
     @Test
@@ -1971,6 +1973,21 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).buscarVendedoresReceptivosPorId(List.of(1));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
+        when(usuarioService.getCanaisPermitidosParaOrganizacao())
+            .thenReturn(List.of(SelectResponse.of(ECanal.INTERNET.name(), ECanal.INTERNET.getDescricao())));
+
+        mvc.perform(get(BASE_URL.concat("/canais/organizacao")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(ECanal.INTERNET.name())))
+            .andExpect(jsonPath("$[0].label", is(ECanal.INTERNET.getDescricao())));
+
+        verify(usuarioService).getCanaisPermitidosParaOrganizacao();
     }
 
     @Test

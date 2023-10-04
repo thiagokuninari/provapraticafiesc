@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -96,7 +95,6 @@ public class UsuarioDto implements Serializable {
     private String fotoNomeOriginal;
     private String fotoContentType;
     private Integer organizacaoId;
-    private Integer organizacaoEmpresaId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
     private String urlLojaBase;
@@ -124,10 +122,7 @@ public class UsuarioDto implements Serializable {
         });
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
-            usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
-        }
-        if (!isEmpty(usuarioDto.getOrganizacaoEmpresaId())) {
-            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoEmpresaId()));
+            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoId()));
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
@@ -156,11 +151,10 @@ public class UsuarioDto implements Serializable {
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
-        usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        usuarioDto.setOrganizacaoId(getOrganizacaoEmpresaId(usuario));
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
-        usuarioDto.setOrganizacaoEmpresaId(getOrganizacaoEmpresaId(usuario));
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
 
         return usuarioDto;
@@ -171,10 +165,6 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
 
         return usuarioDto;
-    }
-
-    private static Integer getOrganizacaoId(Usuario usuario) {
-        return !isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     private static Integer getOrganizacaoEmpresaId(Usuario usuario) {

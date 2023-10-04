@@ -102,6 +102,10 @@ app-config:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
+    organizacao-empresa-cadastro-success: organizacao-empresa-cadastro-success.queue
+    organizacao-empresa-atualizacao-success: organizacao-empresa-atualizacao-success.queue
+    organizacao-empresa-inativar-situacao-success: organizacao-empresa-inativar-situacao-success.queue
+    organizacao-empresa-ativar-situacao-success: organizacao-empresa-ativar-situacao-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
@@ -144,6 +148,8 @@ app-config:
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
     atualizar-permissao-tecnico-indicador: atualizar-permissao-tecnico-indicador.queue
     atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
+    organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
+    organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
 
   oauth-clients:
     autenticacao-api:

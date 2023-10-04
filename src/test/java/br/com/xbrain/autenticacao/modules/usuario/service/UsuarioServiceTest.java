@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
@@ -13,16 +14,21 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.*;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
@@ -42,6 +48,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSend
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
@@ -83,6 +90,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
@@ -1380,12 +1388,24 @@ public class UsuarioServiceTest {
             .nome("Backoffice")
             .cargo(new Cargo(110))
             .departamento(new Departamento(69))
-            .organizacao(new Organizacao(5))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(5))
             .cpf("097.238.645-92")
             .email("usuario@teste.com")
             .telefone("43995565661")
             .hierarquiasId(List.of())
             .usuariosHierarquia(new HashSet<>())
+            .build();
+    }
+
+    private Usuario umUsuarioVendedorInternet() {
+        return Usuario.builder()
+            .id(5436278)
+            .nome("VENDEDOR")
+            .loginNetSales("VENDEDOR_LOGIN")
+            .email("VENDEDOR@TESTE.COM")
+            .situacao(ESituacao.A)
+            .cargo(umCargoVendedorInternet())
+            .departamento(umDepartamentoComercial())
             .build();
     }
 
@@ -1647,7 +1667,7 @@ public class UsuarioServiceTest {
     public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForReceptivo() {
         var umUsuarioComLogin = 1000;
         var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
-        user.setOrganizacao(Organizacao.builder().codigo("ATENTO").build());
+        user.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("ATENTO").build());
         user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build());
         when(usuarioRepository.findById(umUsuarioComLogin))
             .thenReturn(Optional.of(user));
@@ -1726,6 +1746,53 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
             .isNotEmpty();
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoColaboradorCanalInternet() {
+        var predicate = new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).comCanal(ECanal.INTERNET);
+
+        var usuarioAutenticado = umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_GERENTE);
+        usuarioAutenticado.setCanais(Set.of(ECanal.INTERNET));
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
+        when(usuarioRepository.findAll(predicate.build(), new PageRequest()))
+            .thenReturn(umaPageUsuario(new PageRequest(), List.of(umUsuario())));
+
+        assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
+            .isNotEmpty();
+
+        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(usuarioRepository).findAll(predicate.build(), new PageRequest());
+        verify(usuarioRepository, never()).getIdsUsuariosHierarquiaPorCargos(anySet());
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoSupervisorCanalInternet() {
+        var usuarioAutenticado = umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_SUPERVISOR);
+        usuarioAutenticado.setCanais(Set.of(ECanal.INTERNET));
+        usuarioAutenticado.setOrganizacaoId(1);
+
+        doReturn(usuarioAutenticado)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(5436278))
+            .when(usuarioRepository)
+            .getIdsUsuariosHierarquiaPorCargos(anySet());
+        doReturn(umaPageUsuario(new PageRequest(), List.of(umUsuarioVendedorInternet())))
+            .when(usuarioRepository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
+
+        assertThat(usuarioService.getAll(new PageRequest(), new UsuarioFiltros()))
+            .isNotEmpty();
+
+        verify(autenticacaoService, times(2))
+            .getUsuarioAutenticado();
+        verify(usuarioRepository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
+        verify(usuarioRepository)
+            .getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_BACKOFFICE, INTERNET_VENDEDOR, INTERNET_COORDENADOR));
     }
 
     @Test
@@ -1883,13 +1950,13 @@ public class UsuarioServiceTest {
     public void findOperadoresBkoCentralizadoByFornecedor_deveBuscarCargosBkoCentralizado_quandoSolicitado() {
         usuarioService.findOperadoresBkoCentralizadoByFornecedor(10, false);
 
-        verify(usuarioRepository).findByOrganizacaoIdAndCargo_CodigoIn(10, List.of(
+        verify(usuarioRepository).findByOrganizacaoEmpresaIdAndCargo_CodigoIn(10, List.of(
             BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS, BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS));
     }
 
     @Test
     public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarSelectResponse_quandoSolicitado() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(5, List.of(
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(
                 BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
                 BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
@@ -1903,12 +1970,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, true))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -1917,12 +1984,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, false))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -2602,7 +2669,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2618,7 +2685,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2634,7 +2701,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2681,6 +2748,73 @@ public class UsuarioServiceTest {
                 .ignorarAa(true).ignorarXbrain(true)
                 .comIds(List.of(3, 2, 4, 5, 1, 1))
                 .build()), eq(new Sort(ASC, "situacao", "nome")));
+    }
+
+    @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUsuario_quandoUsuarioVendedorInternet() {
+        var usuario = umUsuarioAutenticado(1, "OPERACAO",
+            INTERNET_VENDEDOR);
+        usuario.setCanais(Set.of(ECanal.INTERNET));
+
+        var predicate = new UsuarioPredicate()
+            .comCanal(ECanal.INTERNET)
+            .comCodigosCargos(List.of(INTERNET_VENDEDOR))
+            .ignorarAa(true).ignorarXbrain(true)
+            .comIds(List.of(1))
+            .build();
+
+        var sort = new Sort(ASC, "situacao", "nome");
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+                .getUsuarioAutenticado();
+        doReturn(List.of(umUsuarioVendedorInternet()))
+            .when(usuarioRepository)
+                .findAll(predicate, sort);
+
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
+            .extracting("label", "value")
+            .containsExactly(tuple("VENDEDOR", 5436278));
+
+        verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, never()).getIdsUsuariosHierarquiaPorCargos(anySet());
+    }
+
+    @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUsuario_quandoUsuarioBackofficeInternet() {
+        var usuario = umUsuarioAutenticado(1, "OPERACAO",
+            INTERNET_BACKOFFICE);
+        usuario.setOrganizacaoId(1);
+        usuario.setCanais(Set.of(ECanal.INTERNET));
+
+        var predicate = new UsuarioPredicate()
+            .comCanal(ECanal.INTERNET)
+            .comCodigosCargos(List.of(INTERNET_VENDEDOR))
+            .ignorarAa(true).ignorarXbrain(true)
+            .comOrganizacaoEmpresaId(1)
+            .comIds(List.of(5436278, 1))
+            .build();
+
+        var sort = new Sort(ASC, "situacao", "nome");
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(umUsuarioVendedorInternet()))
+            .when(usuarioRepository)
+            .findAll(predicate, sort);
+        doReturn(List.of(5436278))
+            .when(usuarioRepository)
+            .getIdsUsuariosHierarquiaPorCargos(anySet());
+
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
+            .extracting("label", "value")
+            .containsExactly(tuple("VENDEDOR", 5436278));
+
+        verify(usuarioRepository).findAll(predicate, sort);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository).getIdsUsuariosHierarquiaPorCargos(anySet());
     }
 
     @Test
@@ -2970,73 +3104,6 @@ public class UsuarioServiceTest {
         assertThat(usuarioService.findByCpf("00000000000")).isEqualTo(new UsuarioSubCanalNivelResponse());
 
         verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
-    }
-
-    private Usuario outroUsuarioNivelOpCanalAa() {
-        var usuario = Usuario
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(EXECUTIVO_HUNTER)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
-                    .nome("OPERACAO")
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .codigo(CodigoEmpresa.CLARO_TV)
-                .build()))
-            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
-            .build();
-        return usuario;
-    }
-
-    private UsuarioResponse outroUsuarioNivelOpCanalAaResponse() {
-        var usuarioResponse = UsuarioResponse
-            .builder()
-            .id(2)
-            .nome("NOME DOIS")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .rg(null)
-            .telefone(null)
-            .telefone02(null)
-            .telefone03(null)
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .dataCadastro(null)
-            .codigoNivel(OPERACAO)
-            .nomeNivel("OPERACAO")
-            .codigoDepartamento(null)
-            .codigoCargo(EXECUTIVO_HUNTER)
-            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
-            .permissoes(null)
-            .nascimento(null)
-            .aaId(null)
-            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
-            .tipoCanal(null)
-            .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
-            .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
-            .build();
-
-        return usuarioResponse;
     }
 
     @Test
@@ -3371,4 +3438,566 @@ public class UsuarioServiceTest {
             return mock(ApplicationEventPublisher.class);
         }
     }
+
+    @Test
+    public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
+        assertThat(usuarioService.getCanaisPermitidosParaOrganizacao())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple("INTERNET", "Internet")
+            );
+    }
+
+    @Test
+    public void getUsuariosCargoSuperiorByCanal_deveRetornarUsuarioSuperior_quandoSolicitadoComOrganizacaoId() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        var usuarioSuperior = umUsuarioCompleto(ESituacao.A, INTERNET_GERENTE, 500,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.INTERNET);
+        usuarioSuperior.getCargo().setNome("INTERNET_GERENTE");
+
+        doReturn(List.of(usuarioSuperior))
+            .when(usuarioRepository)
+            .getUsuariosFilter(any(Predicate.class));
+
+        var cargo = umCargo(98436, INTERNET_SUPERVISOR);
+        cargo.setSuperiores(Set.of(umCargo(98436, INTERNET_GERENTE)));
+
+        doReturn(cargo)
+            .when(cargoService)
+            .findById(501);
+
+        assertThat(usuarioService.getUsuariosCargoSuperiorByCanal(501,
+            UsuarioCargoSuperiorPost.builder().organizacaoId(1).build(), Set.of(ECanal.INTERNET)))
+            .extracting("nome", "cargoNome")
+            .containsExactly(
+                tuple("NOME UM", "INTERNET_GERENTE")
+            );
+    }
+
+    private Usuario outroUsuarioNivelOpCanalAa() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .codigo(CodigoEmpresa.CLARO_TV)
+                .build()))
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .build();
+        return usuario;
+    }
+
+    private UsuarioResponse outroUsuarioNivelOpCanalAaResponse() {
+        var usuarioResponse = UsuarioResponse
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .rg(null)
+            .telefone(null)
+            .telefone02(null)
+            .telefone03(null)
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .dataCadastro(null)
+            .codigoNivel(OPERACAO)
+            .nomeNivel("OPERACAO")
+            .codigoDepartamento(null)
+            .codigoCargo(EXECUTIVO_HUNTER)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .permissoes(null)
+            .nascimento(null)
+            .aaId(null)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .tipoCanal(null)
+            .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
+            .build();
+
+        return usuarioResponse;
+    }
+
+    private Canal umCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    private Canal umOutroCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.VAREJO)
+            .build();
+    }
+
+    private AgenteAutorizadoUsuarioDto umAgenteAutorizadoUsuarioDto() {
+        return AgenteAutorizadoUsuarioDto
+            .builder()
+            .usuarioId(2)
+            .cnpj("78300110000166")
+            .razaoSocial("Razao Social")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioOperacaoCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(1)
+            .nome("Usuario_1_teste")
+            .email("usuario1@teste.com")
+            .telefone("999999999")
+            .cpf("11111111111")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Operação")
+            .hierarquia("hierarquia")
+            .razaoSocial("razaoSocial")
+            .cnpj("cnpj")
+            .organizacaoEmpresa("organizacao")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioAaCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(2)
+            .nome("Usuario_2_teste")
+            .email("usuario2@teste.com")
+            .telefone("999999998")
+            .cpf("22222222222")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Agente Autorizado")
+            .organizacaoEmpresa("organizacao")
+            .build();
+    }
+
+    private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
+        return UsuarioDtoVendas
+            .builder()
+            .id(id)
+            .build();
+    }
+
+    private Usuario umUsuarioCompleto(CodigoCargo codigoCargo, Integer idCargo,
+                                      CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .email("email@email.com")
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(idCargo)
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(departamento)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(canal)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo,
+                                      CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .email("email@email.com")
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(situacao)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(idCargo)
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(departamento)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(canal)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(OPERACAO_TELEVENDAS)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                    .nome("AGENTE AUTORIZADO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(int cargoId, CodigoNivel nivel, int departamentoId) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .nome(nivel.name())
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .id(departamentoId)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario outroUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umVendedorReceptivo() {
+        var usuario = umUsuarioCompleto();
+        var cargo = Cargo.builder()
+            .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
+            .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
+            .build();
+        var organizacaoEmpresa = OrganizacaoEmpresa.builder().id(1).nome("Org teste").build();
+        usuario.setCargo(cargo);
+        usuario.setOrganizacaoEmpresa(organizacaoEmpresa);
+        return usuario;
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoInativo() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (INATIVO)"))
+            .value(vendedorReceptivo.getId())
+            .build();
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoRealocado() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (REALOCADO)"))
+            .value(vendedorReceptivo.getId())
+            .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltro() {
+        return UsuarioFiltros.builder()
+            .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+            .canal(ECanal.D2D_PROPRIO)
+            .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltroInternet() {
+        return UsuarioFiltros.builder()
+            .codigosCargos(List.of(INTERNET_VENDEDOR))
+            .canal(ECanal.INTERNET)
+            .build();
+    }
+
+    private UsuarioAtivacaoDto umUsuarioAtivacaoDto() {
+        return UsuarioAtivacaoDto.builder()
+            .idUsuario(10)
+            .idUsuarioAtivacao(20)
+            .observacao("Teste")
+            .build();
+    }
+
+    private Usuario umUsuarioSocioPrincipalEAa() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        return usuario;
+    }
+
+    private List<EquipeVendaUsuarioResponse> listaVazia() {
+        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
+        return lista;
+    }
+
+    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
+        return Usuario.builder().id(1)
+            .cargo(new Cargo(cargoId))
+            .departamento(new Departamento(3))
+            .build();
+    }
+
+    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
+        return EquipeVendaUsuarioResponse.builder().id(1)
+            .build();
+    }
+
 }

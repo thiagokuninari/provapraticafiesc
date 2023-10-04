@@ -31,7 +31,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CargoServiceTest {
@@ -104,6 +104,23 @@ public class CargoServiceTest {
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003);
+    }
+
+    @Test
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarCargosPermitidosParaAqueleCanal_quandoCanalForInternet() {
+        mockUmUsuarioGerenteVisualizarGeral();
+
+        var predicate = new CargoPredicate()
+            .comNivel(1)
+            .comCanal(ECanal.INTERNET)
+            .build();
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanaisInternet());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(1, Set.of(ECanal.INTERNET), true))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1000, 1001);
+
+        verify(cargoRepository).findAll(predicate);
     }
 
     @Test
@@ -308,6 +325,15 @@ public class CargoServiceTest {
             umCargo(1000, ECanal.AGENTE_AUTORIZADO),
             umCargo(1001, ECanal.D2D_PROPRIO),
             umCargo(1002),
+            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
+            umCargo(1004, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO)
+        );
+    }
+
+    private List<Cargo> umaListadeCargosComCanaisInternet() {
+        return List.of(
+            umCargo(1000, ECanal.INTERNET),
+            umCargo(1001, ECanal.INTERNET),
             umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
             umCargo(1004, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO)
         );

@@ -730,6 +730,35 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getUsuariosCargoSuperiorByCanal_deveRetornarTodos_porCargoSuperiorEFiltroOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(43)
+                        .build())))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getUsuariosCargoSuperiorByCanal_naoDeveRetornar_quandoNaoLocalizarAtravesDeOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(12399)
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void getUsuariosCargoSuperior_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(post(API_URI + "/cargo-superior/4")

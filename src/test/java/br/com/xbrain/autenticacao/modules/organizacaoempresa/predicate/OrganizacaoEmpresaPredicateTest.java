@@ -1,10 +1,9 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate;
 
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
-
-import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,56 +29,29 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialNull() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial(null)
+            .comNome(null)
             .build();
         var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialVazio() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeVazio() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial("")
+            .comNome("")
             .build();
         var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialNaoNullENaoVazio() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeNaoNullENaoVazio() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial("Thiago teste")
+            .comNome("Thiago teste")
             .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.razaoSocial.containsIgnoreCase("Thiago teste"));
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj(null)
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjVazio() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj("")
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comCnpj_organizacaoEmpresaPredicate_quandoCnpjNaoNullENaoVazio() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comCnpj("53.501.393/0001-83")
-            .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.cnpj.containsIgnoreCase("53501393000183"));
+        var expected = new BooleanBuilder(organizacaoEmpresa.nome.containsIgnoreCase("Thiago teste"));
         assertThat(predicate).isEqualTo(expected);
     }
 
@@ -102,24 +74,6 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comModalidades_organizacaoEmpresaPredicate_quandoModalidadeNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comModalidades(null)
-            .build();
-        var expected = new BooleanBuilder();
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
-    public void comModalidades_organizacaoEmpresaPredicate_quandoModalidadeNaoNull() {
-        var predicate = new OrganizacaoEmpresaPredicate()
-            .comModalidades(List.of(1))
-            .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.modalidadesEmpresa.any().id.eq(1));
-        assertThat(predicate).isEqualTo(expected);
-    }
-
-    @Test
     public void comSituacao_organizacaoEmpresaPredicate_quandoSituacaoNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
             .comSituacao(null)
@@ -134,6 +88,51 @@ public class OrganizacaoEmpresaPredicateTest {
             .comSituacao(ESituacaoOrganizacaoEmpresa.I)
             .build();
         var expected = new BooleanBuilder(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.I));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoNull() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo(null)
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo("")
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoNaoNullENaoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo("codigo")
+            .build();
+        var expected = new BooleanBuilder(organizacaoEmpresa.codigo.containsIgnoreCase("codigo"));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comECanal_deveMontarPredicate_quandoCanalNaoNullENaoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comECanal(ECanal.INTERNET)
+            .build();
+        var expected = new BooleanBuilder(organizacaoEmpresa.canal.eq(ECanal.INTERNET));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comECanal_naoDeveMontarPredicate_quandoCanalNull() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comECanal(null)
+            .build();
+        var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 }

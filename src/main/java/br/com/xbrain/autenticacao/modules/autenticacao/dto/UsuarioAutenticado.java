@@ -88,7 +88,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.subCanais = usuario.getSubCanais().stream()
             .map(SubCanalDto::of)
             .collect(Collectors.toSet());
-        getOrganizacao(usuario);
+        getOrganizacaoEmpresa(usuario);
     }
 
     public UsuarioAutenticado(Usuario usuario,
@@ -117,11 +117,11 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.subCanais = usuario.getSubCanais().stream()
             .map(SubCanalDto::of)
             .collect(Collectors.toSet());
-        getOrganizacao(usuario);
+        getOrganizacaoEmpresa(usuario);
     }
 
-    private void getOrganizacao(Usuario usuario) {
-        Optional.ofNullable(usuario.getOrganizacao())
+    private void getOrganizacaoEmpresa(Usuario usuario) {
+        Optional.ofNullable(usuario.getOrganizacaoEmpresa())
             .ifPresent(organizacao -> {
                 this.organizacaoId = organizacao.getId();
                 this.organizacaoCodigo = organizacao.getCodigo();
@@ -214,6 +214,26 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean isGerenteInternetOperacao() {
+        return isOperacao() && INTERNET_GERENTE.equals(cargoCodigo);
+    }
+
+    public boolean isSupervisorInternetOperacao() {
+        return isOperacao() && INTERNET_SUPERVISOR.equals(cargoCodigo);
+    }
+
+    public boolean isCoordenadorInternetOperacao() {
+        return isOperacao() && INTERNET_COORDENADOR.equals(cargoCodigo);
+    }
+
+    public boolean isVendedorInternetOperacao() {
+        return isOperacao() && INTERNET_VENDEDOR.equals(cargoCodigo);
+    }
+
+    public boolean isBackofficeInternetOperacao() {
+        return isOperacao() && INTERNET_BACKOFFICE.equals(cargoCodigo);
     }
 
     public boolean haveCanalAgenteAutorizado() {

@@ -80,8 +80,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(100)))
             .andExpect(jsonPath("$.nome", is("ADMIN")))

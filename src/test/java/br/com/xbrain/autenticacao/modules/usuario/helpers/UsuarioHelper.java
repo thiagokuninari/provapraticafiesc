@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
@@ -23,7 +22,6 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
-import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacaoCallink;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -398,7 +396,6 @@ public class UsuarioHelper {
             .cpf("28667582506")
             .cargo(umCargoMsoAnalista())
             .departamento(umDepartamentoAdministrativoMso())
-            .organizacao(umaOrganizacaoCallink())
             .dataCadastro(LocalDateTime.now())
             .situacao(ESituacao.A)
             .build();
@@ -426,13 +423,11 @@ public class UsuarioHelper {
                     UsuarioHierarquia.criar(new Usuario(101), 370, 100)
                 ))
             .departamento(new Departamento(51))
-            .organizacao(umaOrganizacaoCallink())
             .dataCadastro(LocalDateTime.now())
             .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
             .alterarSenha(Eboolean.F)
             .situacao(ESituacao.A)
             .canais(Set.of(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO))
-            .organizacao(new Organizacao(2))
             .cidades(Set.of(UsuarioCidade.criar(new Usuario(100), 5578, 100)))
             .cargo(umCargoAaSupervisorXbrain())
             .build();

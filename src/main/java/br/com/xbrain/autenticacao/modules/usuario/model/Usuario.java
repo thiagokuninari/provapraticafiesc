@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
@@ -227,11 +226,6 @@ public class Usuario {
     @Column(name = "TIPO_CANAL")
     @Enumerated(EnumType.STRING)
     private ETipoCanal tipoCanal;
-
-    @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Organizacao organizacao;
 
     @JoinColumn(name = "FK_ORGANIZACAO_EMPRESA", referencedColumnName = "ID",
         foreignKey = @ForeignKey(name = "FK_USUARIO_ORG_EMPRESA"))

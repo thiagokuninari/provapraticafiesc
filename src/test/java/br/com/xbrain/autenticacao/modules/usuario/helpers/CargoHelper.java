@@ -33,6 +33,16 @@ public class CargoHelper {
             .build();
     }
 
+    public static Cargo umCargoVendedorInternet() {
+        return Cargo.builder()
+            .id(7)
+            .nome("Internet Vendedor")
+            .codigo(CodigoCargo.INTERNET_VENDEDOR)
+            .situacao(ESituacao.A)
+            .nivel(umNivelOperacao())
+            .build();
+    }
+
     public static Cargo umCargoCoordernador() {
         return Cargo.builder()
             .id(4)

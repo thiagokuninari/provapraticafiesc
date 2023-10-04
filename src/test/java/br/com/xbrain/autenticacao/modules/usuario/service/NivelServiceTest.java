@@ -206,14 +206,12 @@ public class NivelServiceTest {
 
     @Test
     public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
-        when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.VAREJO, CodigoNivel.RECEPTIVO)))
-            .thenReturn(umaListaComNiveisVarejoEReceptivo());
+        when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE, CodigoNivel.OPERACAO)))
+            .thenReturn(umaListaComNiveisReceptivoBkoEOperacao());
 
         assertThat(service.getPermitidosParaOrganizacao())
             .extracting("codigo")
-            .contains(
-                CodigoNivel.VAREJO.name(),
-                CodigoNivel.RECEPTIVO.name());
+            .contains(CodigoNivel.RECEPTIVO.name(), CodigoNivel.BACKOFFICE.name());
     }
 
     @Test

@@ -5,8 +5,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -16,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -144,7 +145,7 @@ public class UsuarioServiceHelper {
             .hierarquia("hierarquia")
             .razaoSocial("razaoSocial")
             .cnpj("cnpj")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -164,7 +165,7 @@ public class UsuarioServiceHelper {
             .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
             .loginNetSales("loginNetSales")
             .nivel("Agente Autorizado")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -420,9 +421,9 @@ public class UsuarioServiceHelper {
             .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
             .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
             .build();
-        var organizacao = Organizacao.builder().id(1).nome("Org teste").build();
+        var organizacao = OrganizacaoEmpresa.builder().id(1).nome("Org teste").build();
         usuario.setCargo(cargo);
-        usuario.setOrganizacao(organizacao);
+        usuario.setOrganizacaoEmpresa(organizacao);
         return usuario;
     }
 
@@ -483,6 +484,40 @@ public class UsuarioServiceHelper {
             .id(id)
             .nome(nome)
             .situacao(situacao)
+            .build();
+    }
+
+    public static Usuario umUsuarioAtivo() {
+        return Usuario.builder()
+            .id(10)
+            .cpf("98471883007")
+            .nome("Usuario Ativo")
+            .situacao(ESituacao.A)
+            .email("usuarioativo@email.com")
+            .build();
+    }
+
+    public static Usuario umUsuarioInativo() {
+        return Usuario.builder()
+            .id(11)
+            .cpf("31114231827")
+            .nome("Usuario Inativo")
+            .situacao(ESituacao.I)
+            .email("usuarioinativo@email.com")
+            .build();
+    }
+
+    public static Usuario umUsuarioBackoffice() {
+        return Usuario.builder()
+            .nome("Backoffice")
+            .cargo(new Cargo(110))
+            .departamento(new Departamento(69))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(5))
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .telefone("43995565661")
+            .hierarquiasId(List.of())
+            .usuariosHierarquia(new HashSet<>())
             .build();
     }
 

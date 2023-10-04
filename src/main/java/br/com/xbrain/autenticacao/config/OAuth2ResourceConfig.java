@@ -46,7 +46,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/cep/**",
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/sites/{id}/supervisores",
-            "/api/sites/permitidos"
+            "/api/sites/permitidos",
+            "/api/organizacao-empresa-historico/**",
+            "/api/nivel-empresa/**"
         };
 
         http
@@ -114,11 +116,10 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.AUT_20024.name())
             .antMatchers("/api/horarios-acesso/status", "/api/horarios-acesso/status/{siteId}").hasAnyRole(
                 CodigoFuncionalidade.AUT_20024.name())
-            .antMatchers("/api/organizacao-empresa/**",
-                "/api/organizacao-empresa-historico/**",
-                "/api/nivel-empresa/**",
-                "/api/modalidade-empresa/**")
-            .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
+            .antMatchers(HttpMethod.POST, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
+            .antMatchers(HttpMethod.PUT, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
             .anyRequest().authenticated();
     }
 

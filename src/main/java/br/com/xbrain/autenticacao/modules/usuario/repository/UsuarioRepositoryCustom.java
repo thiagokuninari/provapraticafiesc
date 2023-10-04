@@ -198,4 +198,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findByCpfs(Predicate predicate);
 
     Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
+
+    List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos);
 }

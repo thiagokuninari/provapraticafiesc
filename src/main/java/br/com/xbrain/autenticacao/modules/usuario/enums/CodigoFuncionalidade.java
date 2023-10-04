@@ -40,11 +40,11 @@ public enum CodigoFuncionalidade {
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
     AUT_20010("Adicionar novo usuário"),
-    VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo"),
     CTR_20014("Solicitar Ramal AA"),
     CTR_20015("Solicitar Ramal D2D"),
     AUT_20024("Visualizar status do Horário de Acesso"),
-    BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico");
+    BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
+    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
 
     @Getter
     private String descricao;

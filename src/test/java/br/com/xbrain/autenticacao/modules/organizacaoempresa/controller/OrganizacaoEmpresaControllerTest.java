@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
-import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
@@ -26,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,8 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = OrganizacaoEmpresaController.class)
 public class OrganizacaoEmpresaControllerTest {
 
-    private static final String API_URI = "/api/organizacao-empresa";
-    private static final String GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO = "VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO";
+    private static final String ORGANIZACOES_API = "/api/organizacoes";
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,428 +55,298 @@ public class OrganizacaoEmpresaControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getOrganizacaoEmpresa_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        mockMvc.perform(get(API_URI))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+    public void getAllSelect_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/select")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
 
-        verify(service, never()).getAll(any(), any());
+        verify(service, never()).getAllSelect(any());
     }
 
     @Test
     @SneakyThrows
-    public void getOrganizacaoEmpresa_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        mockMvc.perform(get(API_URI))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
+    @WithMockUser
+    public void getAllSelect_deveRetornarBadRequest_quandoParamentrosForemInvalidos() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/select?organizacaoId=e&nome=2")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
 
-        verify(service, never()).getAll(any(), any());
+        verify(service, never()).getAllSelect(any());
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void getOrganizacaoEmpresa_deveRetornarOk_quandoDadosVaidos() {
-        when(service.getAll(new OrganizacaoEmpresaFiltros(), new PageRequest())).thenReturn(new PageImpl<>(List.of()));
-
-        mockMvc.perform(get(API_URI))
+    @WithMockUser
+    public void getAllSelect_deveRetornarOk_seUsuarioAutenticado() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/select")
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).getAll(new OrganizacaoEmpresaFiltros(), new PageRequest());
+        verify(service, times(1)).getAllSelect(any());
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void findById_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        mockMvc.perform(get(API_URI + "/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+    public void findById_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
 
         verify(service, never()).findById(any());
     }
 
     @Test
     @SneakyThrows
-    public void findById_deveRetornarForbidden_quandoUsuarioSemPermissao() {
-        mockMvc.perform(get(API_URI + "/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
-
-        verify(service, never()).findById(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void findById_deveRetornarOk_quandoDadosValidos() {
-        mockMvc.perform(get(API_URI + "/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
+    @WithMockUser
+    public void findById_deveRetornarOk_seUsuarioPossuirPermissao() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/1")
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).findById(eq(1));
+        verify(service, times(1)).findById(1);
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void save_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        mockMvc.perform(post(API_URI))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+    public void ativar_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/ativar", 2))
+            .andExpect(status().isUnauthorized());
 
-        verify(service, never()).save(any());
+        verify(service, never()).ativar(any());
     }
 
     @Test
     @SneakyThrows
-    public void save_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        mockMvc.perform(post(API_URI)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
+    @WithMockUser(username = "usuario-sem-permissao", roles = "CRN_GERENCIAR_CHAMADO")
+    public void ativar_deveRetornarForbidden_quandoNaoTiverPermissao() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/ativar", 2))
+            .andExpect(status().isForbidden());
 
-        verify(service, never()).save(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
-        mockMvc.perform(post(API_URI)
-                .content(convertObjectToJsonBytes(new OrganizacaoEmpresaRequest()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nivelId é obrigatório.",
-                "O campo modalidadesEmpresaIds é obrigatório.",
-                "O campo razaoSocial é obrigatório.",
-                "O campo cnpj may not be empty")));
-
-        verify(service, never()).save(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioListEmpty() {
-        var requestEmpty = organizacaoEmpresaRequest();
-        requestEmpty.setModalidadesEmpresaIds(List.of());
-
-        mockMvc.perform(post(API_URI)
-                .content(convertObjectToJsonBytes(requestEmpty))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo modalidadesEmpresaIds é obrigatório.")));
-
-        verify(service, never()).save(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioStringBlank() {
-        var requestBlank = organizacaoEmpresaRequest();
-        requestBlank.setRazaoSocial("   ");
-        requestBlank.setCnpj("   ");
-
-        mockMvc.perform(post(API_URI)
-                .content(convertObjectToJsonBytes(requestBlank))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo cnpj não é um cnpj válido.",
-                "O campo cnpj may not be empty")));
-
-        verify(service, never()).save(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void save_deveRetornarCreated_quandoDadosValidos() {
-        when(service.save(organizacaoEmpresaRequest())).thenReturn(organizacaoEmpresa());
-
-        mockMvc.perform(post(API_URI)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(organizacaoEmpresaRequest())))
-            .andExpect(status().isCreated());
-
-        verify(service).save(eq(organizacaoEmpresaRequest()));
+        verify(service, never()).ativar(any());
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
     public void inativar_deveRetornarUnauthorized_quandoNaoAutenticado() {
-        mockMvc.perform(put(API_URI + "/{id}/inativar", 2))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/inativar", 2))
+            .andExpect(status().isUnauthorized());
 
-        verify(service, never()).inativar(any());
+        verify(service, never()).ativar(any());
     }
 
     @Test
     @SneakyThrows
+    @WithMockUser(username = "usuario-sem-permissao", roles = "CRN_GERENCIAR_CHAMADO")
     public void inativar_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        mockMvc.perform(put(API_URI + "/{id}/inativar", 2))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/inativar", 2))
+            .andExpect(status().isForbidden());
 
         verify(service, never()).inativar(any());
     }
 
     @Test
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
     @SneakyThrows
-    public void inativar_deveRetornarOk_quandoDadosValidos() {
-        mockMvc.perform(put(API_URI + "/{id}/inativar", 2))
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void inativar_deveRetornarOk_seForPossivelInativarOrganizacao() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/inativar", 2)
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).inativar(eq(2));
+        verify(service, times(1)).inativar(2);
     }
 
     @Test
     @SneakyThrows
-    @WithAnonymousUser
-    public void ativar_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        mockMvc.perform(put(API_URI + "/{id}/ativar", 2))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
-
-        verify(service, never()).ativar(any());
-    }
-
-    @Test
-    @SneakyThrows
-    public void ativar_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        mockMvc.perform(put(API_URI + "/{id}/ativar", 2))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
-
-        verify(service, never()).ativar(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void ativar_deveRetornarOk_quandoDadosValidos() {
-        mockMvc.perform(put(API_URI + "/{id}/ativar", 2))
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void ativar_deveRetornarOk_seForPossivelAtivarOrganizacao() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/ativar", 2)
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).ativar(eq(2));
+        verify(service, times(1)).ativar(2);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void save_deveRetornarOk_seUsuarioPossuirPermissao() {
+        var salvarOrganizacao = organizacaoEmpresaRequest();
+
+        mockMvc.perform(post(ORGANIZACOES_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(salvarOrganizacao)))
+            .andExpect(status().isCreated());
+
+        verify(service, times(1)).save(salvarOrganizacao);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-sem-permissao", roles = "CRN_GERENCIAR_CHAMADO")
+    public void save_deveRetornarForbidden_seNaoTiverPermissao() {
+        var salvarOrganizacao = organizacaoEmpresaRequest();
+
+        mockMvc.perform(post(ORGANIZACOES_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(salvarOrganizacao)))
+            .andExpect(status().isForbidden());
+
+        verify(service, never()).save(any());
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
     public void update_deveRetornarUnauthorized_quandoNaoAutenticado() {
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/editar", 5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(organizacaoEmpresaRequest())))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+            .andExpect(status().isUnauthorized());
 
-        verify(service, never()).update(any(), any());
+        verify(service, never()).update(anyInt(), any());
     }
 
     @Test
     @SneakyThrows
-    public void update_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
+    @WithMockUser(username = "usuario-sem-permissao", roles = "CRN_GERENCIAR_CHAMADO")
+    public void update_deveRetornarForbidden_seNaoTiverPermissao() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/editar", 5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(organizacaoEmpresaRequest())))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
+            .andExpect(status().isForbidden());
 
-        verify(service, never()).update(any(), any());
+        verify(service, never()).update(anyInt(), any());
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void update_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
-        when(service.update(5, new OrganizacaoEmpresaRequest())).thenReturn(organizacaoEmpresa());
-
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(new OrganizacaoEmpresaRequest())))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nivelId é obrigatório.",
-                "O campo modalidadesEmpresaIds é obrigatório.",
-                "O campo razaoSocial é obrigatório.",
-                "O campo cnpj may not be empty")));
-
-        verify(service, never()).update(any(), any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void update_deveRetornarBadRequest_quandoDadoObrigatorioListEmpty() {
-        var requestEmpty = organizacaoEmpresaRequest();
-        requestEmpty.setModalidadesEmpresaIds(List.of());
-
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(requestEmpty)))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo modalidadesEmpresaIds é obrigatório.")));
-
-        verify(service, never()).update(any(), any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void update_deveRetornarBadRequest_quandoDadoObrigatorioStringBlank() {
-        var requestBlank = organizacaoEmpresaRequest();
-        requestBlank.setRazaoSocial("   ");
-        requestBlank.setCnpj("  ");
-
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(new OrganizacaoEmpresaRequest())))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nivelId é obrigatório.",
-                "O campo modalidadesEmpresaIds é obrigatório.",
-                "O campo razaoSocial é obrigatório.",
-                "O campo cnpj may not be empty")));
-
-        verify(service, never()).update(any(), any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void update_deveRetornarOk_quandoDadosValidos() {
-        when(service.update(5, organizacaoEmpresaRequest())).thenReturn(organizacaoEmpresa());
-
-        mockMvc.perform(put(API_URI + "/{id}/editar", 5)
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void update_deveRetornarOk_seUsuarioPossuirPermissao() {
+        mockMvc.perform(put(ORGANIZACOES_API + "/{id}/editar", 5)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(organizacaoEmpresaRequest())))
             .andExpect(status().isOk());
 
-        verify(service).update(eq(5), eq(organizacaoEmpresaRequest()));
+        verify(service, times(1)).update(5, organizacaoEmpresaRequest());
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void findAllAtivosByNivelId_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        when(service.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
-        mockMvc.perform(get(API_URI + "/nivel")
-                .param("nivelId", "100")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
+    public void getOrganizacaoEmpresa_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mockMvc.perform(get(ORGANIZACOES_API))
+            .andExpect(status().isUnauthorized());
 
-        verify(service, never()).findAllAtivosByNivelId(any());
+        verify(service, never()).getAll(any(), any());
     }
 
     @Test
     @SneakyThrows
-    public void findAllByNivelId_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        when(service.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void getOrganizacaoEmpresa_deveRetornarListaDeOrganizacaoEmpresa_quandoExistiremOrganizacoesCadastradas() {
+        when(service.getAll(any(), any()))
+            .thenReturn(new PageImpl<>(List.of()));
 
-        mockMvc.perform(get(API_URI + "/nivel")
-                .param("nivelId", "100")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
-
-        verify(service, never()).findAllAtivosByNivelId(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void findAllByNivelId_deveRetornarBadRequest_quandonNivelIdNaoInformado() {
-        when(service.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
-
-        mockMvc.perform(get(API_URI + "/nivel")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
-
-        verify(service, never()).findAllAtivosByNivelId(any());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void findAllByNivelId_deveRetornarOk_quandoDadosValidos() {
-        when(service.findAllAtivosByNivelId(100)).thenReturn(umaListaOrganizacaoEmpresaResponse());
-
-        mockMvc.perform(get(API_URI + "/nivel")
-                .param("nivelId", "100")
-                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(ORGANIZACOES_API)
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).findAllAtivosByNivelId(eq(100));
+        verify(service, times(1)).getAll(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findAllByNivelId_deveRetornarOk_quandoSolicitado() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/por-nivel")
+                .param("nivelId", "100")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service, times(1)).findAllByNivelId(100);
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void findByNivel_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        when(service.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(service.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1, 2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
 
-        mockMvc.perform(get(API_URI + "/por-nivel")
-                .param("nivelId", "100")
+        mockMvc.perform(get(ORGANIZACOES_API + "/niveis-ids")
+                .param("niveisIds", "1,2")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error", is("unauthorized")));
-
-        verify(service, never()).findAllByNivelId(any());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void findByNivel_deveRetornarForbidden_quandoNaoTiverPermissao() {
-        when(service.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+    @WithMockUser
+    public void findAllAtivos_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
+        when(service.findAllAtivos(any())).thenReturn(umaListaOrganizacaoEmpresaResponse());
 
-        mockMvc.perform(get(API_URI + "/por-nivel")
-                .param("nivelId", "100")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.error", is("access_denied")));
-
-        verify(service, never()).findAllByNivelId(any());
+        mockMvc.perform(get(ORGANIZACOES_API + "/consultar-ativos")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].situacao", is("A")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].situacao", is("A")));
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void findByNivel_deveRetornarBadRequest_quandoDadosValidos() {
-        when(service.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
-
-        mockMvc.perform(get(API_URI + "/por-nivel")
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarBadRequest_quandoParametroNaoPreenchidoCorretamente() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/niveis-ids")
+                .param("niveisIds", "a")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
-
-        verify(service, never()).findAllByNivelId(any());
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(roles = {GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO})
-    public void findByNivel_deveRetornarOk_quandoDadosValidos() {
-        when(service.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarListaOrganizacoesEmpresaIdsPorNiveisId_quandoSolicitado() {
+        when(service.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1, 2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
 
-        mockMvc.perform(get(API_URI + "/por-nivel")
-                .param("nivelId", "100")
+        mockMvc.perform(get(ORGANIZACOES_API + "/niveis-ids")
+                .param("niveisIds", "1,2")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(service).findAllByNivelId(eq(100));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[1].id", is(2)));
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void verificarOrganizacaoAtiva_deveRetornarSituacaoOrganizacao_quandoSolicitado() {
+        when(service.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(ORGANIZACOES_API + "/{organizacao}/ativa", "ORGANIZAO")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void isOrganizacaoAtiva_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(service.isOrganizacaoAtiva("ORGANIZACAO"))
+            .thenReturn(true);
+
+        mockMvc.perform(get(ORGANIZACOES_API + "/{organizacao}/ativa", "ORGANIZACAO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
 }

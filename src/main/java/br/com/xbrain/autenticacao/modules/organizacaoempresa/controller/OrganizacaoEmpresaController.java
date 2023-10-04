@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
@@ -17,7 +18,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "api/organizacao-empresa")
+@RequestMapping(value = "api/organizacoes")
 public class OrganizacaoEmpresaController {
 
     private final OrganizacaoEmpresaService service;
@@ -56,13 +57,28 @@ public class OrganizacaoEmpresaController {
         return OrganizacaoEmpresaResponse.of(service.update(id, request));
     }
 
-    @GetMapping("nivel")
-    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(@NotNull @RequestParam Integer nivelId) {
-        return service.findAllAtivosByNivelId(nivelId);
+    @GetMapping("consultar-ativos")
+    public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
+        return service.findAllAtivos(filtros);
     }
 
     @GetMapping("por-nivel")
     public List<OrganizacaoEmpresaResponse> findByNivel(@NotNull @RequestParam Integer nivelId) {
         return service.findAllByNivelId(nivelId);
+    }
+
+    @GetMapping("select")
+    public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return service.getAllSelect(filtros);
+    }
+
+    @GetMapping("niveis-ids")
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(@RequestParam List<Integer> niveisIds) {
+        return service.findAllOrganizacoesAtivasByNiveisIds(niveisIds);
+    }
+
+    @GetMapping("{organizacao}/ativa")
+    public boolean verificarOrganizacaoAtiva(@PathVariable String organizacao) {
+        return service.isOrganizacaoAtiva(organizacao);
     }
 }

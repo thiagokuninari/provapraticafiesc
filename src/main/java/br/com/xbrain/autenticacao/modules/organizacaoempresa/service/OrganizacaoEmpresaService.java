@@ -2,61 +2,46 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
-    private static final NotFoundException EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA =
-        new NotFoundException("Modalidade empresa não encontrada.");
     private static final ValidacaoException ORGANIZACAO_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo nome.");
-    private static final ValidacaoException CNPJ_OU_RAZAO_SOCIAL_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada.");
-    private static final ValidacaoException CNPJ_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada com o mesmo CNPJ.");
     private static final ValidacaoException ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-    @Autowired
-    private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
-
-    @Autowired
-    private OrganizacaoEmpresaHistoricoService historicoService;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private NivelRepository nivelRepository;
-
-    @Autowired
-    private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
+    private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
+    private final OrganizacaoEmpresaHistoricoService historicoService;
+    private final AutenticacaoService autenticacaoService;
+    private final NivelRepository nivelRepository;
+    private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -67,13 +52,14 @@ public class  OrganizacaoEmpresaService {
     }
 
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
-        validarRazaoSocial(request);
-        validarCnpj(request);
-        var nivel = validarNivel(request.getNivelId());
-        var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
+        var nivel = findNivelById(request.getNivelId());
 
-        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
-            autenticacaoService.getUsuarioId(), nivel, modalidades));
+        validarNome(request.getNome());
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+            autenticacaoService.getUsuarioId(), nivel));
+
+        organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
+        return organizacaoEmpresa;
     }
 
     @Transactional
@@ -82,10 +68,11 @@ public class  OrganizacaoEmpresaService {
         if (!organizacaoEmpresa.isAtivo()) {
             throw ORGANIZACAO_INATIVA;
         }
+
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-
+        organizacaoEmpresaMqSender.sendInativarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
@@ -94,66 +81,66 @@ public class  OrganizacaoEmpresaService {
         var organizacaoEmpresa = findById(id);
         if (organizacaoEmpresa.isAtivo()) {
             throw ORGANIZACAO_ATIVA;
-
         }
+
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-
+        organizacaoEmpresaMqSender.sendAtivarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
-        if (validarOrganizacaoJaExistente(id, request)) {
-            throw CNPJ_OU_RAZAO_SOCIAL_EXISTENTE;
-        }
         var organizacaoEmpresaToUpdate = findById(id);
-
-        var nivel = validarNivel(request.getNivelId());
-        var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
-
-        organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
+        validarNomeParaUpdate(request.getNome(), id);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
 
-        return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+        var organizacaoNome = organizacaoEmpresaToUpdate.getNome();
+        organizacaoEmpresaToUpdate.setNome(request.getNome());
+        organizacaoEmpresaToUpdate.setCodigo(request.getCodigo());
+
+        var organizacaoNomeAtualizado = request.getNome();
+        var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
+        var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
+
+        organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+
+        organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
+
+        return organizacaoEmpresa;
     }
 
-    private boolean validarOrganizacaoJaExistente(Integer id, OrganizacaoEmpresaRequest request) {
-        return organizacaoEmpresaRepository.existsByRazaoSocialAndCnpjAndIdNot(request.getRazaoSocial(),
-            request.getCnpjSemMascara(), id);
-    }
-
-    private void validarCnpj(OrganizacaoEmpresaRequest request) {
-        if (organizacaoEmpresaRepository.existsByCnpj(request.getCnpjSemMascara())) {
-            throw CNPJ_EXISTENTE;
-        }
-    }
-
-    private void validarRazaoSocial(OrganizacaoEmpresaRequest request) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request.getRazaoSocial())) {
+    private void validarNome(String nome) {
+        if (organizacaoEmpresaRepository.existsByNomeIgnoreCase(nome)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
 
-    public Nivel validarNivel(Integer id) {
+    private void validarNomeParaUpdate(String nome, Integer id) {
+        if (organizacaoEmpresaRepository.existsByNomeAndIdNot(nome, id)) {
+            throw ORGANIZACAO_EXISTENTE;
+        }
+    }
+
+    public Nivel findNivelById(Integer id) {
         return nivelRepository.findById(id)
             .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
     }
 
-    public List<ModalidadeEmpresa> validarModalidadeEmpresa(List<Integer> ids) {
-        var modalidades = modalidadeEmpresaRepository.findAll(ids);
-        if (CollectionUtils.isEmpty(modalidades)) {
-            throw EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA;
-        }
-        return modalidades;
-    }
+    public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
+        validarFiltrosConsultaAtivos(filtros);
 
-    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
-        var organizacoes = organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
-            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        var predicate = filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build();
+
+        var organizacoes = organizacaoEmpresaRepository
+            .findAll(predicate)
+            .stream().map(OrganizacaoEmpresaResponse::of)
+            .collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(organizacoes)) {
             throw EX_NAO_ENCONTRADO;
         }
@@ -167,5 +154,53 @@ public class  OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacoes;
+    }
+
+    public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build())
+            .stream()
+            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getNome()))
+            .collect(Collectors.toList());
+    }
+
+    private OrganizacaoEmpresaFiltros getFiltros(OrganizacaoEmpresaFiltros filtros) {
+        filtros = Objects.isNull(filtros) ? new OrganizacaoEmpresaFiltros() : filtros;
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        if (usuario.isBackoffice()) {
+            filtros.setOrganizacaoId(usuario.getOrganizacaoId());
+        }
+        return filtros;
+    }
+
+    public OrganizacaoEmpresaResponse getById(Integer id) {
+        return OrganizacaoEmpresaResponse.of(organizacaoEmpresaRepository.findById(id)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO));
+    }
+
+    private void validarFiltrosConsultaAtivos(OrganizacaoEmpresaFiltros filtros) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+
+        if (filtros.getNivelId() == null) {
+            throw new ValidacaoException("O campo nível Id é obrigatório!");
+        } else if (!usuario.isGerenteInternetOperacao()) {
+            filtros.setOrganizacaoId(usuario.getOrganizacaoId());
+        }
+    }
+
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(List<Integer> niveisIds) {
+        var organizacoes = organizacaoEmpresaRepository
+            .findAllAtivosByNivelIdInAndSituacao(niveisIds, ESituacaoOrganizacaoEmpresa.A)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
+    }
+
+    public boolean isOrganizacaoAtiva(String organizacao) {
+        if (organizacao == null) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 }
