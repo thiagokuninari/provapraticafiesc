@@ -138,8 +138,8 @@ public class FeederServiceTest {
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
-        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
-        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
         funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
         verify(permissaoEspecialRepository, times(1))
@@ -160,8 +160,8 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
 
-        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
-        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
         funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
         verify(permissaoEspecialRepository, times(1))
