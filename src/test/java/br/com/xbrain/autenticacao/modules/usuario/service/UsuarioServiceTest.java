@@ -3282,8 +3282,6 @@ public class UsuarioServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(1, "OPERACAO",
             CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL));
 
-        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
-
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> usuarioService.moverAvatarMinio())
             .withMessage("Usuário não autorizado!");
