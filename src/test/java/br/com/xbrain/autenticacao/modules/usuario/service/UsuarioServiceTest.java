@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
@@ -3262,6 +3263,33 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.getIdDosUsuariosSubordinados(1, true))
             .isEqualTo(List.of(2, 1));
+    }
+
+    @Test
+    public void moverAvatarMinio_deveFazerUpdate_seUsuarioAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin(1));
+
+        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
+
+        usuarioService.moverAvatarMinio();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository).findByFotoDiretorioIsNotNull();
+    }
+
+    @Test
+    public void moverAvatarMinio_deveNaoFazerUpdate_seUsuarioNaoAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(1, "OPERACAO",
+            CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL));
+
+        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> usuarioService.moverAvatarMinio())
+            .withMessage("Usuário não autorizado!");
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, never()).findByFotoDiretorioIsNotNull();
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
