@@ -126,7 +126,7 @@ public class  OrganizacaoEmpresaService {
     }
 
     private void validarNivelOperacao(CodigoNivel nivel, ECanal canal) {
-        if (CodigoNivel.OPERACAO == nivel && canal == null){
+        if (CodigoNivel.OPERACAO == nivel && canal == null) {
             throw EX_CANAL_VAZIO;
         }
     }
