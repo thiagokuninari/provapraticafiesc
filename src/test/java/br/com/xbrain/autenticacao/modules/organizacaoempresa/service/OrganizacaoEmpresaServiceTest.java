@@ -140,7 +140,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_deveSalvarOrganizacaoEmpresa_quandoOrganizacaoComMesmoNomeECodigoENivelDiferent() {
+    public void save_deveSalvarOrganizacaoEmpresa_quandoOrganizacaoComMesmoNomeECodigoENivelDiferente() {
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
             .thenReturn(umaOrganizacaoEmpresaBackoffice(2, "Organizacao 2", "BACKOFFICE"));
         when(autenticacaoService.getUsuarioId()).thenReturn(1);

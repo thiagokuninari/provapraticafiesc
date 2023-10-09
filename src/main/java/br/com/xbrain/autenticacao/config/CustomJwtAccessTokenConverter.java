@@ -191,11 +191,11 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getOrganizacaoEmpresa(Usuario usuario) {
-        return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getNome() : "";
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getNome() : "";
     }
 
     private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
-        return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {
@@ -206,7 +206,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private Integer getOrganizacaoEmpresaId(Usuario usuario) {
-        return ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? null : usuario.getOrganizacaoEmpresa().getId();
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getId() : null;
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
