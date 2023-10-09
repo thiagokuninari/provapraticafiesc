@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.sound.midi.MidiFileFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -33,13 +32,13 @@ public class  OrganizacaoEmpresaService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
-    private static final ValidacaoException ORGANIZACAO_EXISTENTE =
+    private static final ValidacaoException EX_ORGANIZACAO_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo nome ou código nesse nível.");
-    private static final ValidacaoException ORGANIZACAO_ATIVA =
+    private static final ValidacaoException EX_ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
-    private static final ValidacaoException ORGANIZACAO_INATIVA =
+    private static final ValidacaoException EX_ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
-    private static final ValidacaoException CANAL_VAZIO =
+    private static final ValidacaoException EX_CANAL_VAZIO =
         new ValidacaoException("Esse nível requer um canal válido.");
 
     private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
@@ -69,7 +68,7 @@ public class  OrganizacaoEmpresaService {
     public void inativar(Integer id) {
         var organizacaoEmpresa = findById(id);
         if (!organizacaoEmpresa.isAtivo()) {
-            throw ORGANIZACAO_INATIVA;
+            throw EX_ORGANIZACAO_INATIVA;
         }
 
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
@@ -82,7 +81,7 @@ public class  OrganizacaoEmpresaService {
     public void ativar(Integer id) {
         var organizacaoEmpresa = findById(id);
         if (organizacaoEmpresa.isAtivo()) {
-            throw ORGANIZACAO_ATIVA;
+            throw EX_ORGANIZACAO_ATIVA;
         }
 
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
@@ -115,20 +114,20 @@ public class  OrganizacaoEmpresaService {
     public void validarNomeECodigoPorNivelId(String nome, String codigo, Integer nivel) {
         if (organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivel)
             || organizacaoEmpresaRepository.existsByNomeAndNivelId(nome, nivel)) {
-            throw ORGANIZACAO_EXISTENTE;
+            throw EX_ORGANIZACAO_EXISTENTE;
         }
     }
 
     public void validarNomeECodigoParaUpdate(String nome, String codigo, Integer nivelId, Integer id) {
         if (organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(nome, nivelId, id)
             || organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
-            throw ORGANIZACAO_EXISTENTE;
+            throw EX_ORGANIZACAO_EXISTENTE;
         }
     }
 
     private void validarNivelOperacao(CodigoNivel nivel, ECanal canal) {
         if (CodigoNivel.OPERACAO == nivel && canal == null){
-            throw CANAL_VAZIO;
+            throw EX_CANAL_VAZIO;
         }
     }
 

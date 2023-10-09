@@ -67,7 +67,7 @@ public class OrganizacaoEmpresaServiceTest {
     private OrganizacaoEmpresaMqSender sender;
 
     @Test
-    public void findById_notFoundException_quandoNaoExistirOrganizacaoCadastrada() {
+    public void findById_deveLancarNotFoundException_quandoNaoExistirOrganizacaoCadastrada() {
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.findById(1))
             .withMessage("Organização não encontrada.");
@@ -76,7 +76,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void validarNivel_notFoundException_quandoNaoExistirNivelCadastrada() {
+    public void validarNivel_deveLancarNotFoundException_quandoNaoExistirNivelCadastrada() {
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.findNivelById(1))
             .withMessage("Nível empresa não encontrada.");
@@ -114,7 +114,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComMesmoNomeEMesmoNivel() {
+    public void save_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComMesmoNomeEMesmoNivel() {
         when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(organizacaoEmpresaRepository.existsByNomeAndNivelId("Organizacao 1", 1)).thenReturn(true);
 
@@ -190,7 +190,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_validacaoException_quandoOrganizacaoEmpresaNivelOperacaoNaoTiverCanal() {
+    public void save_deveLancarValidacaoException_quandoOrganizacaoEmpresaNivelOperacaoNaoTiverCanal() {
         when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelOperacao()));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -201,7 +201,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void inativar_validacaoException_quandoOrganizacaoEmpresaInativa() {
+    public void inativar_deveLancarValidacaoException_quandoOrganizacaoEmpresaInativa() {
         var organizacaoEmpresa = umaOrganizacaoInativa();
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
@@ -235,7 +235,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void ativar_validacaoException_quandoOrganizacaoEmpresaAtiva() {
+    public void ativar_deveLancarValidacaoException_quandoOrganizacaoEmpresaAtiva() {
         var organizacaoEmpresa = umaOrganizacaoAtiva();
 
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
@@ -270,7 +270,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void update_notFoundException_quandoNaoExistirOrganizacaoEmpresa() {
+    public void update_deveLancarNotFoundException_quandoNaoExistirOrganizacaoEmpresa() {
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> service.update(1, umaOrganizacaoEmpresaRequest()))
             .withMessage("Organização não encontrada.");
@@ -365,7 +365,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoENivelIdEIdNot() {
+    public void update_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoENivelIdEIdNot() {
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1,
             "Organizacao 1", "CODIGO")));
         when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt())).thenReturn(true);
@@ -478,7 +478,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findAll_organizacoesFiltradas_quandoUsuarioBackoffice() {
+    public void findAll_deveRetornarOrganizacoesFiltradas_quandoUsuarioBackoffice() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
         var filtros = OrganizacaoEmpresaFiltros.builder().organizacaoId(1).nome("organizacao 1").build();
 
@@ -495,7 +495,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findAll_organizacoesFiltradas_quandoParametroCodigoNivel() {
+    public void findAll_deveRetornarOrganizacoesFiltradas_quandoParametroCodigoNivel() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
         var filtros = OrganizacaoEmpresaFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).organizacaoId(1).build();
 
