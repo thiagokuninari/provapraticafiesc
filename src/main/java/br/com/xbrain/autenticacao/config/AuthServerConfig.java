@@ -17,30 +17,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.util.Collections;
 
-import static br.com.xbrain.autenticacao.config.EScopes.APP;
-import static br.com.xbrain.autenticacao.config.EScopes.AUTENTICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.PARCEIROS_ONLINE;
-import static br.com.xbrain.autenticacao.config.EScopes.VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_BRSCAN;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_IMPORTACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.EQUIPE_VENDA;
-import static br.com.xbrain.autenticacao.config.EScopes.CALL;
-import static br.com.xbrain.autenticacao.config.EScopes.DASHBOARD;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA_ECCP;
-import static br.com.xbrain.autenticacao.config.EScopes.CONTATO_CRN;
-import static br.com.xbrain.autenticacao.config.EScopes.CHAMADO;
-import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
-import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
-import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
-import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
-import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
-import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
+import static br.com.xbrain.autenticacao.config.EScopes.*;
 
 
 @Configuration
@@ -166,6 +143,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String claroIndicoApiClient;
     @Value("${app-config.oauth-clients.claro-indico-api.secret}")
     private String claroIndicoApiSecret;
+    @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.client}")
+    private String gestaoColaboradoresPolApiClient;
+    @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.secret}")
+    private String gestaoColaboradoresPolApiSecret;
+
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -303,7 +285,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .and()
             .withClient(backofficeApiClient)
             .secret(backofficeApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(geradorLeadApiClient)
@@ -314,13 +296,13 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .and()
             .withClient(agenteAutorizadoApiClient)
             .secret(agenteAutorizadoApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes("agente-autorizado-api")
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(colaboradorVendasApiClient)
             .secret(colaboradorVendasApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes("colaborador-vendas-api")
             .authorities(ROLE_APPLICATION)
             .and()
@@ -346,6 +328,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(claroIndicoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CLARO_INDICO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(gestaoColaboradoresPolApiClient)
+            .secret(gestaoColaboradoresPolApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(GESTAO_COLABORADORES_POL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

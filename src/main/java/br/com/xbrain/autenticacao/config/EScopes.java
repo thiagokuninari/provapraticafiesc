@@ -27,7 +27,8 @@ public enum EScopes {
     GERADOR_LEAD("gerador-lead-api"),
     CHATBOT("chatbot-api"),
     SOLICITACAO_PAP("solicitacao-pap"),
-    CLARO_INDICO("claro-indico-api");
+    CLARO_INDICO("claro-indico-api"),
+    GESTAO_COLABORADORES_POL("gestao-colaborador-pol-api");
 
     @Getter
     private String scope;
