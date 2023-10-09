@@ -127,7 +127,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoEMesmoNivel() {
+    public void save_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoEMesmoNivel() {
         when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(organizacaoEmpresaRepository.existsByCodigoAndNivelId("Organizacao1", 1)).thenReturn(true);
 
@@ -187,6 +187,17 @@ public class OrganizacaoEmpresaServiceTest {
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
         verify(nivelRepository).findById(3);
+    }
+
+    @Test
+    public void save_validacaoException_quandoOrganizacaoEmpresaNivelOperacaoNaoTiverCanal() {
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelOperacao()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
+            .withMessage("Esse nível requer um canal válido.");
+
+        verify(nivelRepository).findById(1);
     }
 
     @Test
@@ -337,7 +348,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNomeENivelIdEIdNot() {
+    public void update_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNomeENivelIdEIdNot() {
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1,
             "Organizacao 1", "CODIGO")));
         when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt())).thenReturn(true);

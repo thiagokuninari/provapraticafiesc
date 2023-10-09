@@ -11,6 +11,8 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrga
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.sound.midi.MidiFileFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -36,6 +39,8 @@ public class  OrganizacaoEmpresaService {
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
+    private static final ValidacaoException CANAL_VAZIO =
+        new ValidacaoException("Esse nível requer um canal válido.");
 
     private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
     private final OrganizacaoEmpresaHistoricoService historicoService;
@@ -54,6 +59,7 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = findNivelById(request.getNivelId());
 
+        validarNivelOperacao(nivel.getCodigo(), request.getCanal());
         validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
         return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
@@ -117,6 +123,12 @@ public class  OrganizacaoEmpresaService {
         if (organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(nome, nivelId, id)
             || organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
             throw ORGANIZACAO_EXISTENTE;
+        }
+    }
+
+    private void validarNivelOperacao(CodigoNivel nivel, ECanal canal) {
+        if (CodigoNivel.OPERACAO == nivel && canal == null){
+            throw CANAL_VAZIO;
         }
     }
 
