@@ -114,16 +114,47 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComAMesmoNome() {
+    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComMesmoNomeEMesmoNivel() {
         when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
-        when(organizacaoEmpresaRepository.existsByNomeIgnoreCase("Organizacao 1")).thenReturn(true);
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelId("Organizacao 1", 1)).thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
-            .withMessage("Organização já cadastrada com o mesmo nome.");
+            .withMessage("Organização já cadastrada com o mesmo nome ou código nesse nível.");
 
-        verify(organizacaoEmpresaRepository).existsByNomeIgnoreCase("Organizacao 1");
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelId("Organizacao 1", 1);
         verify(nivelRepository).findById(1);
+    }
+
+    @Test
+    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoEMesmoNivel() {
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelId("Organizacao1", 1)).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
+            .withMessage("Organização já cadastrada com o mesmo nome ou código nesse nível.");
+
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelId("Organizacao1", 1);
+        verify(nivelRepository).findById(1);
+    }
+
+    @Test
+    public void save_deveSalvarOrganizacaoEmpresa_quandoOrganizacaoComMesmoNomeECodigoENivelDiferent() {
+        when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
+            .thenReturn(umaOrganizacaoEmpresaBackoffice(2, "Organizacao 2", "BACKOFFICE"));
+        when(autenticacaoService.getUsuarioId()).thenReturn(1);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelId("BACKOFFICE", 2)).thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelId("Organizacao 2", 2)).thenReturn(false);
+
+        when(nivelRepository.findById(2)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
+        assertThat(service.save(umaOrganizacaoEmpresaBackofficeRequest()))
+            .extracting("nome", "nivel.id", "codigo")
+            .contains("Organizacao 2", 2, "BACKOFFICE");
+
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelId("BACKOFFICE", 2);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelId("Organizacao 2", 2);
     }
 
     @Test
@@ -138,7 +169,6 @@ public class OrganizacaoEmpresaServiceTest {
             .contains("Organizacao 2", 2, "BACKOFFICE");
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
-        verify(sender).sendSuccess(any());
         verify(nivelRepository).findById(2);
     }
 
@@ -156,7 +186,6 @@ public class OrganizacaoEmpresaServiceTest {
             .contains("Organizacao 3", 3, "RECEPTIVO");
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
-        verify(sender).sendSuccess(any());
         verify(nivelRepository).findById(3);
     }
 
@@ -191,7 +220,6 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
 
-        verify(sender).sendInativarSituacaoSuccess(any());
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
@@ -227,7 +255,6 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, A);
 
-        verify(sender).sendAtivarSituacaoSuccess(any());
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
@@ -261,7 +288,6 @@ public class OrganizacaoEmpresaServiceTest {
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(2, A);
 
-        verify(sender).sendUpdateSuccess(any());
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
@@ -289,24 +315,58 @@ public class OrganizacaoEmpresaServiceTest {
         var organizcaoDto = new OrganizacaoEmpresaUpdateDto("Organizacao 3", "Organizacao 3 alterado", 3);
         verify(sender).sendUpdateNomeSucess(eq(organizcaoDto));
 
-        verify(sender).sendUpdateSuccess(any());
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test
-    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNome() {
+    public void update_deveSalvarOrganizacaoEmpresa_quandoOrganizacaoComMesmoNomeECodigoDiferenteNivelEIdDiferente() {
+        when(organizacaoEmpresaRepository.findById(3)).thenReturn(Optional.of(umaOrganizacaoEmpresaReceptivo(3,
+            "Organizacao 3", "RECEPTIVO")));
+        when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
+
+        var request = umaOrganizacaoEmpresaReceptivoRequest();
+        request.setNome("Organizacao 3 alterado");
+
+        service.update(3, request);
+        Assertions.assertThat(service.findById(3))
+            .extracting("id", "nome", "nivel.id", "situacao")
+            .containsExactlyInAnyOrder(3, "Organizacao 3 alterado", 3, A);
+
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot("Organizacao 3 alterado", 3, 3);
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot("RECEPTIVO", 3, 3);
+    }
+
+    @Test
+    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNomeENivelIdEIdNot() {
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1,
             "Organizacao 1", "CODIGO")));
-        when(organizacaoEmpresaRepository.existsByNomeAndIdNot(anyString(), anyInt())).thenReturn(true);
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt())).thenReturn(true);
 
         var organizacaoEmpresaRequest = umaOrganizacaoEmpresaRequest();
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.update(1, organizacaoEmpresaRequest))
-            .withMessage("Organização já cadastrada com o mesmo nome.");
+            .withMessage("Organização já cadastrada com o mesmo nome ou código nesse nível.");
 
         verify(organizacaoEmpresaRepository).findById(1);
-        verify(organizacaoEmpresaRepository).existsByNomeAndIdNot(organizacaoEmpresaRequest.getNome(), 1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(organizacaoEmpresaRequest.getNome(), 1,1);
+        verify(organizacaoEmpresaRepository, never()).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoENivelIdEIdNot() {
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1,
+            "Organizacao 1", "CODIGO")));
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt())).thenReturn(true);
+
+        var organizacaoEmpresaRequest = umaOrganizacaoEmpresaRequest();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.update(1, organizacaoEmpresaRequest))
+            .withMessage("Organização já cadastrada com o mesmo nome ou código nesse nível.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(organizacaoEmpresaRequest.getCodigo(), 1,1);
         verify(organizacaoEmpresaRepository, never()).save(any(OrganizacaoEmpresa.class));
     }
 
@@ -538,6 +598,7 @@ public class OrganizacaoEmpresaServiceTest {
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 1")
+            .codigo("Organizacao1")
             .nivelId(1)
             .situacao(A)
             .build();
@@ -546,6 +607,7 @@ public class OrganizacaoEmpresaServiceTest {
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaBackofficeRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 2")
+            .codigo("BACKOFFICE")
             .nivelId(2)
             .situacao(A)
             .build();
@@ -554,6 +616,7 @@ public class OrganizacaoEmpresaServiceTest {
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaReceptivoRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 3")
+            .codigo("RECEPTIVO")
             .nivelId(3)
             .situacao(A)
             .build();

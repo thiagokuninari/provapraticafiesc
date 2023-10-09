@@ -31,7 +31,7 @@ public class  OrganizacaoEmpresaService {
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
     private static final ValidacaoException ORGANIZACAO_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada com o mesmo nome.");
+        new ValidacaoException("Organização já cadastrada com o mesmo nome ou código nesse nível.");
     private static final ValidacaoException ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException ORGANIZACAO_INATIVA =
@@ -54,12 +54,9 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = findNivelById(request.getNivelId());
 
-        validarNome(request.getNome());
-        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+        validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
+        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
-
-        organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
-        return organizacaoEmpresa;
     }
 
     @Transactional
@@ -72,7 +69,6 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-        organizacaoEmpresaMqSender.sendInativarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
@@ -86,14 +82,14 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-        organizacaoEmpresaMqSender.sendAtivarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
         var organizacaoEmpresaToUpdate = findById(id);
-        validarNomeParaUpdate(request.getNome(), id);
+
+        validarNomeECodigoParaUpdate(request.getNome(), request.getCodigo(), request.getNivelId(), id);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
@@ -107,21 +103,19 @@ public class  OrganizacaoEmpresaService {
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
 
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
-        var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
-
-        organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
-
-        return organizacaoEmpresa;
+        return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
     }
 
-    private void validarNome(String nome) {
-        if (organizacaoEmpresaRepository.existsByNomeIgnoreCase(nome)) {
+    public void validarNomeECodigoPorNivelId(String nome, String codigo, Integer nivel) {
+        if (organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivel)
+            || organizacaoEmpresaRepository.existsByNomeAndNivelId(nome, nivel)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
 
-    private void validarNomeParaUpdate(String nome, Integer id) {
-        if (organizacaoEmpresaRepository.existsByNomeAndIdNot(nome, id)) {
+    public void validarNomeECodigoParaUpdate(String nome, String codigo, Integer nivelId, Integer id) {
+        if (organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(nome, nivelId, id)
+            || organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }

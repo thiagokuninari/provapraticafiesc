@@ -100,10 +100,6 @@ app-config:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
-    organizacao-empresa-cadastro-success: organizacao-empresa-cadastro-success.queue
-    organizacao-empresa-atualizacao-success: organizacao-empresa-atualizacao-success.queue
-    organizacao-empresa-inativar-situacao-success: organizacao-empresa-inativar-situacao-success.queue
-    organizacao-empresa-ativar-situacao-success: organizacao-empresa-ativar-situacao-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue

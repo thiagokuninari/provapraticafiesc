@@ -156,6 +156,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("fotoNomeOriginal", usuario.getFotoNomeOriginal());
         token.getAdditionalInformation().put("fotoContentType", usuario.getFotoContentType());
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
+        token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -191,6 +192,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private String getOrganizacaoEmpresa(Usuario usuario) {
         return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getNome() : "";
+    }
+
+    private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
+        return !ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {
