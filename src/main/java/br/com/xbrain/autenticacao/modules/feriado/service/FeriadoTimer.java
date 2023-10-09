@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class FeriadoTimer {
 
     private static final String TODO_DIA_AS_DUAS_DA_MANHA = "0 0 2 ? * * ";
-    private static final String UMA_VEZ_POR_ANO_EM_CINCO_DE_DEZEMBRO = "0 0 2 5 12 ? *";
+    private static final String UMA_VEZ_POR_ANO_EM_CINCO_DE_DEZEMBRO = "0 0 2 5 12 ?";
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
     private final FeriadoService feriadoService;
