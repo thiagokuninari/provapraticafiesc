@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import lombok.*;
 
@@ -31,7 +33,19 @@ public class SubCanal {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
+    @Column(name = "NOVA_CHECAGEM_CREDITO", length = 1, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Eboolean novaChecagemCredito;
+
     public SubCanal(Integer id) {
         this.id = id;
+    }
+
+    public SubCanal editar(SubCanalDto request) {
+        this.codigo = request.getCodigo();
+        this.nome = request.getNome().trim();
+        this.situacao = request.getSituacao();
+        this.novaChecagemCredito = request.getNovaChecagemCredito();
+        return this;
     }
 }

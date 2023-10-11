@@ -1,10 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,19 +18,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SubCanalService {
-
-    private static final ValidacaoException SUBCANAL_NAO_ENCONTRADO =
-        new ValidacaoException("Erro, subcanal não encontrado.");
 
     public static final List<Integer> FUNC_CONSULTAR_INDICACAO_PREMIUM = List.of(3062);
     public static final List<Integer> FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME = List.of(3071);
+    private static final ValidacaoException SUBCANAL_NAO_ENCONTRADO =
+        new ValidacaoException("Erro, subcanal não encontrado.");
 
-    @Autowired
-    private SubCanalRepository repository;
-
-    @Autowired
-    private UsuarioService usuarioService;
+    private final SubCanalRepository repository;
+    private final UsuarioService usuarioService;
+    private final AutenticacaoService autenticacaoService;
 
     public List<SubCanalDto> getAll() {
         return repository.findAll()
@@ -33,9 +37,18 @@ public class SubCanalService {
             .collect(Collectors.toList());
     }
 
+    public Page<SubCanalDto> getAllConfiguracoes(PageRequest pageRequest, SubCanalFiltros filtros) {
+        return repository.findAll(filtros.toPredicate().build(), pageRequest)
+            .map(SubCanalDto::of);
+    }
+
     public SubCanalDto getSubCanalById(Integer id) {
-        return SubCanalDto.of(repository.findById(id)
-            .orElseThrow(() -> SUBCANAL_NAO_ENCONTRADO));
+        return SubCanalDto.of(findById(id));
+    }
+
+    private SubCanal findById(Integer id) {
+        return repository.findById(id)
+            .orElseThrow(() -> SUBCANAL_NAO_ENCONTRADO);
     }
 
     public Set<SubCanalDto> getSubCanalByUsuarioId(Integer usuarioId) {
@@ -76,6 +89,18 @@ public class SubCanalService {
     public void removerPermissaoIndicacaoInsideSalesPme(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
             usuarioService.removerPermissoesEspeciais(FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME, List.of(usuario.getId()));
+        }
+    }
+
+    public void editar(SubCanalDto request) {
+        validarUsuarioAdm();
+        var subCanal = findById(request.getId());
+        repository.save(subCanal.editar(request));
+    }
+
+    private void validarUsuarioAdm() {
+        if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+            throw new PermissaoException("O usuário logado não possuí permissão para acessar essa funcionalidade.");
         }
     }
 }

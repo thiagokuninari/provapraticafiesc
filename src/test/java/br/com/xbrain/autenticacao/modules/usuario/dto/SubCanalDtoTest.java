@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ public class SubCanalDtoTest {
         var response = SubCanalDto.of(umSubCanal());
 
         assertThat(response).isEqualTo(
-            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
+            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F));
     }
 
     @Test
