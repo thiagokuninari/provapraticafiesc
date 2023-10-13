@@ -288,8 +288,8 @@ app-config:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
     gestao-colaborador-pol:
-      url: http://localhost:8310
-#      url: http://192.168.50.1:8310
+      #url: http://localhost:8310
+      url: http://192.168.50.1:8310
 
 flyway:
   enabled: true
