@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -217,6 +218,31 @@ public class SubCanalControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Eboolean.V.toString())));
 
+        verify(subCanalService).isNovaChecagemCredito(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemCredito_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        when(subCanalService.isNovaChecagemCredito(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito"))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).isNovaChecagemCredito(any());
+    }
+
+    @Test
+    public void isNovaChecagemCredito_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.isNovaChecagemCredito(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
         verify(subCanalService).isNovaChecagemCredito(eq(1));
     }
 }

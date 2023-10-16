@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
@@ -32,6 +33,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*
 import static br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService.FUNC_CONSULTAR_INDICACAO_INSIDE_SALES_PME;
 import static br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService.FUNC_CONSULTAR_INDICACAO_PREMIUM;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -274,5 +276,22 @@ public class SubCanalServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(subCanalRepository, never()).findById(anyInt());
         verify(subCanalRepository, never()).save(any(SubCanal.class));
+    }
+
+    @Test
+    public void isNovaChecagemCredito_deveRetornarEBoolean_quandoTudoOk() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.of(umSubCanal()));
+        assertEquals(subCanalService.isNovaChecagemCredito(1), Eboolean.F);
+        verify(subCanalRepository).findById(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemCredito_deveNotFoundException_quandoSubCanalNaoEncontrado() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> subCanalService.isNovaChecagemCredito(1))
+                .withMessage("Erro, subcanal não encontrado.");
+
+        verify(subCanalRepository).findById(eq(1));
     }
 }
