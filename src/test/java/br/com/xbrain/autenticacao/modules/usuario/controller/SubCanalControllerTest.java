@@ -205,4 +205,18 @@ public class SubCanalControllerTest {
 
         verify(subCanalService, never()).editar(any());
     }
+
+    @Test
+    public void isNovaChecagemCredito_deveDevolverBoolean_quandoOk() throws Exception {
+        when(subCanalService.isNovaChecagemCredito(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Eboolean.V.toString())));
+
+        verify(subCanalService).isNovaChecagemCredito(eq(1));
+    }
 }

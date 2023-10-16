@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
@@ -102,5 +103,9 @@ public class SubCanalService {
         if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
             throw new PermissaoException("O usuário logado não possuí permissão para acessar essa funcionalidade.");
         }
+    }
+
+    public Eboolean isNovaChecagemCredito(Integer id) {
+        return findById(id).getNovaChecagemCredito();
     }
 }
