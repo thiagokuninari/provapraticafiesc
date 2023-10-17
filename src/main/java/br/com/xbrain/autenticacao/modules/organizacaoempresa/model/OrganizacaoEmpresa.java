@@ -29,7 +29,7 @@ public class OrganizacaoEmpresa {
     @Column(name = "NOME", nullable = false)
     private String nome;
 
-    @Column(name = "CODIGO", length = 80, nullable = false, unique = true)
+    @Column(name = "CODIGO", length = 80, nullable = false)
     private String codigo;
 
     @JoinColumn(name = "FK_NIVEL", referencedColumnName = "ID",

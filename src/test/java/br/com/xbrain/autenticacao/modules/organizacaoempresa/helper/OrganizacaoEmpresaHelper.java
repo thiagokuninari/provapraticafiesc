@@ -95,6 +95,14 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
+    public static Nivel umNivelOperacao() {
+        return Nivel.builder()
+            .id(10)
+            .nome("OPERACAO")
+            .codigo(CodigoNivel.OPERACAO)
+            .build();
+    }
+
     public static Nivel umNivelBackoffice() {
         return Nivel.builder()
             .id(2)

@@ -11,6 +11,8 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrga
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +32,14 @@ public class  OrganizacaoEmpresaService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
-    private static final ValidacaoException ORGANIZACAO_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada com o mesmo nome.");
-    private static final ValidacaoException ORGANIZACAO_ATIVA =
+    private static final ValidacaoException EX_ORGANIZACAO_EXISTENTE =
+        new ValidacaoException("Organização já cadastrada com o mesmo nome ou código nesse nível.");
+    private static final ValidacaoException EX_ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
-    private static final ValidacaoException ORGANIZACAO_INATIVA =
+    private static final ValidacaoException EX_ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
+    private static final ValidacaoException EX_CANAL_VAZIO =
+        new ValidacaoException("Esse nível requer um canal válido.");
 
     private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
     private final OrganizacaoEmpresaHistoricoService historicoService;
@@ -54,25 +58,22 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = findNivelById(request.getNivelId());
 
-        validarNome(request.getNome());
-        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+        validarNivelOperacao(nivel.getCodigo(), request.getCanal());
+        validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
+        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
-
-        organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
-        return organizacaoEmpresa;
     }
 
     @Transactional
     public void inativar(Integer id) {
         var organizacaoEmpresa = findById(id);
         if (!organizacaoEmpresa.isAtivo()) {
-            throw ORGANIZACAO_INATIVA;
+            throw EX_ORGANIZACAO_INATIVA;
         }
 
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-        organizacaoEmpresaMqSender.sendInativarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
@@ -80,20 +81,20 @@ public class  OrganizacaoEmpresaService {
     public void ativar(Integer id) {
         var organizacaoEmpresa = findById(id);
         if (organizacaoEmpresa.isAtivo()) {
-            throw ORGANIZACAO_ATIVA;
+            throw EX_ORGANIZACAO_ATIVA;
         }
 
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-        organizacaoEmpresaMqSender.sendAtivarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
         var organizacaoEmpresaToUpdate = findById(id);
-        validarNomeParaUpdate(request.getNome(), id);
+
+        validarNomeECodigoParaUpdate(request.getNome(), request.getCodigo(), request.getNivelId(), id);
 
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
@@ -107,22 +108,26 @@ public class  OrganizacaoEmpresaService {
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
 
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
-        var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
-
-        organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
-
-        return organizacaoEmpresa;
+        return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
     }
 
-    private void validarNome(String nome) {
-        if (organizacaoEmpresaRepository.existsByNomeIgnoreCase(nome)) {
-            throw ORGANIZACAO_EXISTENTE;
+    public void validarNomeECodigoPorNivelId(String nome, String codigo, Integer nivel) {
+        if (organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivel)
+            || organizacaoEmpresaRepository.existsByNomeAndNivelId(nome, nivel)) {
+            throw EX_ORGANIZACAO_EXISTENTE;
         }
     }
 
-    private void validarNomeParaUpdate(String nome, Integer id) {
-        if (organizacaoEmpresaRepository.existsByNomeAndIdNot(nome, id)) {
-            throw ORGANIZACAO_EXISTENTE;
+    public void validarNomeECodigoParaUpdate(String nome, String codigo, Integer nivelId, Integer id) {
+        if (organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(nome, nivelId, id)
+            || organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
+            throw EX_ORGANIZACAO_EXISTENTE;
+        }
+    }
+
+    private void validarNivelOperacao(CodigoNivel nivel, ECanal canal) {
+        if (CodigoNivel.OPERACAO == nivel && canal == null) {
+            throw EX_CANAL_VAZIO;
         }
     }
 

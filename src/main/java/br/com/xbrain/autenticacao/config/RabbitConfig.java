@@ -32,18 +32,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-failure}")
     private String usuarioCadastroFailureMq;
 
-    @Value("${app-config.queue.organizacao-empresa-cadastro-success}")
-    private String organizacaoEmpresaCadastroSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-atualizacao-success}")
-    private String organizacaoEmpresaAtualizacaoSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-inativar-situacao-success}")
-    private String organizacaoEmpresaInativarSituacaoSuccessMq;
-
-    @Value("${app-config.queue.organizacao-empresa-ativar-situacao-success}")
-    private String organizacaoEmpresaAtivarSituacaoSuccessMq;
-
     @Value("${app-config.queue.usuario-atualizacao}")
     private String usuarioAtualizacaoMq;
 
@@ -232,26 +220,6 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroSuccessMq() {
         return new Queue(usuarioCadastroSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaCadastroSuccessMq() {
-        return new Queue(organizacaoEmpresaCadastroSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaAtualizacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaAtualizacaoSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaInativarSituacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaInativarSituacaoSuccessMq, false);
-    }
-
-    @Bean
-    Queue organizacaoEmpresaAtivarSituacaoSuccessMq() {
-        return new Queue(organizacaoEmpresaAtivarSituacaoSuccessMq, false);
     }
 
     @Bean
@@ -481,30 +449,6 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioCadastroSuccessFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroFailureMq()).to(exchange).with(usuarioCadastroFailureMq);
-    }
-
-    @Bean
-    public Binding organizacaoEmpresaCadastroSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(organizacaoEmpresaCadastroSuccessMq()).to(exchange)
-            .with(organizacaoEmpresaCadastroSuccessMq);
-    }
-
-    @Bean
-    public Binding organizacaoEmpresaAtualizacaoSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(organizacaoEmpresaAtualizacaoSuccessMq()).to(exchange)
-            .with(organizacaoEmpresaAtualizacaoSuccessMq);
-    }
-
-    @Bean
-    public Binding organizacaoEmpresaInativarSituacaoSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(organizacaoEmpresaInativarSituacaoSuccessMq()).to(exchange)
-            .with(organizacaoEmpresaInativarSituacaoSuccessMq);
-    }
-
-    @Bean
-    public Binding organizacaoEmpresaAtivarSituacaoSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(organizacaoEmpresaAtivarSituacaoSuccessMq()).to(exchange)
-            .with(organizacaoEmpresaAtivarSituacaoSuccessMq);
     }
 
     @Bean
