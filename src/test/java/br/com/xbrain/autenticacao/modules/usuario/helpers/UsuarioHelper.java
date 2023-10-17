@@ -335,6 +335,31 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umCoordenadorD2d() {
+        return Usuario.builder()
+            .id(11122)
+            .nome("Coordenador operacao D2D")
+            .email("COORDENADOR_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.COORDENADOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11122), 1200, 10),
+                UsuarioCidade.criar(new Usuario(11122), 1300, 10)
+            ))
+            .build();
+    }
+
     public static Usuario outroCoordenador() {
         return Usuario.builder()
             .id(11126)
@@ -349,6 +374,30 @@ public class UsuarioHelper {
             .alterarSenha(Eboolean.F)
             .situacao(ESituacao.A)
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11126), 1700, 10)
+            ))
+            .build();
+    }
+
+    public static Usuario umDiretor() {
+        return Usuario.builder()
+            .id(11126)
+            .nome("diretor sem site operacao ativo local")
+            .email("COORDENADOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.DIRETOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
             .cidades(Set.of(
                 UsuarioCidade.criar(new Usuario(11126), 1700, 10)
             ))

@@ -1571,10 +1571,10 @@ public class UsuarioService {
 
     private void validarSubcanal(Usuario usuario) {
         if (validarCanalEOperador(usuario)) {
-            var supervisor = validarSupervisor(usuario);
+            var superior = validarSuperior(usuario);
             var subCanalVendedor = obterSubcanal(usuario);
-            var subCanalSupervisor = obterSubcanal(supervisor);
-            if (subCanalVendedor.getCodigo() != subCanalSupervisor.getCodigo()) {
+            var subCanalSuperior = obterSubcanal(superior);
+            if (subCanalVendedor.getCodigo() != subCanalSuperior.getCodigo()) {
                 throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
                     + " do supervisor ou trocar a hierarquia para um supervisor do mesmo subcanal");
             }
@@ -1586,11 +1586,12 @@ public class UsuarioService {
             && VENDEDOR_OPERACAO.equals(usuario.getCargoCodigo());
     }
 
-    private Usuario validarSupervisor(Usuario usuario) {
+    private Usuario validarSuperior(Usuario usuario) {
         return usuario.getUsuariosHierarquia().stream()
             .map(UsuarioHierarquia::getUsuarioSuperior)
-            .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
-            .findFirst().orElseThrow(() -> new ValidacaoException("Supervisor do Vendedor não foi encontrado"));
+            .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo())
+                || COORDENADOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
+            .findFirst().orElseThrow(() -> new ValidacaoException("Superior do Vendedor não foi encontrado"));
     }
 
     private SubCanal obterSubcanal(Usuario usuario) {
