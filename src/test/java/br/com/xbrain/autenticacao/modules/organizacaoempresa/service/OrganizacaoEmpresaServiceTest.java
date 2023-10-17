@@ -427,7 +427,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findAllAtivos_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+    public void findAllAtivos_deveRetornarListaVazia_quandoNivelIdNaoEncontrado() {
         var filtros = OrganizacaoEmpresaFiltros.builder().nivelId(1).build();
 
         doReturn(umUsuarioGerenteInternet())
@@ -437,12 +437,8 @@ public class OrganizacaoEmpresaServiceTest {
             .when(organizacaoEmpresaRepository)
                 .findAll(filtros.toPredicate().comSituacao(A).build());
 
-        assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.findAllAtivos(filtros))
-            .withMessage("Organização não encontrada.");
-
-        verify(organizacaoEmpresaRepository, times(1))
-            .findAll(any(Predicate.class));
+        Assertions.assertThat(service.findAllAtivos(filtros))
+            .hasSize(0);
     }
 
     @Test
