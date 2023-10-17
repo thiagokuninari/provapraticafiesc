@@ -220,4 +220,10 @@ public class CidadeService {
         }
         return new ArrayList<CodigoIbgeRegionalResponse>();
     }
+
+    public CidadeResponse getCidadeDistrito(String uf, String cidade, String distrito) {
+        return cidadeRepository.buscarCidadeDistrito(uf, cidade, distrito)
+            .map(CidadeResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }

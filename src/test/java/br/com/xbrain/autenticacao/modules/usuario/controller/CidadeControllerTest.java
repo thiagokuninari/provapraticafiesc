@@ -571,6 +571,20 @@ public class CidadeControllerTest {
             .getCodigoIbgeRegionalByCidadeNomeAndUf(any(CidadesUfsRequest.class));
     }
 
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getCidadeDistrito_deveRetornarOk_quandoInformarParametrosCorretos() {
+        mvc.perform(get(BASE_URL + "/cidade-distrito")
+                .param("uf", "PR")
+                .param("cidade", "LONDRINA")
+                .param("distrito", "SAO LUIZ")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        
+        verify(cidadeService).getCidadeDistrito(eq("PR"), eq("LONDRINA"), eq("SAO LUIZ"));
+    }
+
     private Cidade umaCidade() {
         return Cidade.builder()
             .id(5578)

@@ -149,4 +149,11 @@ public class CidadeController {
                                                                                List<Integer> cidadesId) {
         return service.getCodigoIbgeRegionalByCidade(cidadesId);
     }
+
+    @GetMapping("cidade-distrito")
+    public CidadeResponse buscarCidadeDistrito(@RequestParam String uf,
+                                               @RequestParam String cidade,
+                                               @RequestParam String distrito) {
+        return service.getCidadeDistrito(uf, cidade, distrito);
+    }
 }
