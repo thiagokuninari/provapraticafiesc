@@ -141,15 +141,10 @@ public class  OrganizacaoEmpresaService {
 
         var predicate = filtros.toPredicate().comSituacao(ESituacaoOrganizacaoEmpresa.A).build();
 
-        var organizacoes = organizacaoEmpresaRepository
+        return organizacaoEmpresaRepository
             .findAll(predicate)
             .stream().map(OrganizacaoEmpresaResponse::of)
             .collect(Collectors.toList());
-
-        if (CollectionUtils.isEmpty(organizacoes)) {
-            throw EX_NAO_ENCONTRADO;
-        }
-        return organizacoes;
     }
 
     public List<OrganizacaoEmpresaResponse> findAllByNivelId(Integer nivelId) {
