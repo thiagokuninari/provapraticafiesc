@@ -1,13 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 
 import java.util.List;
 import java.util.Set;
@@ -84,6 +79,22 @@ public class UsuarioAutenticadoHelper {
             .organizacaoId(8)
             .cargoId(47)
             .nivelId(3)
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioSuperiorAtivoLocal() {
+        return UsuarioAutenticado.builder()
+            .id(2)
+            .subCanais(Set.of(SubCanalHelper.umSubCanalDto(1, ETipoCanal.PAP, "a")))
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioSuperiorD2d() {
+        return UsuarioAutenticado.builder()
+            .id(2)
+            .subCanais(Set.of(SubCanalHelper.umSubCanalDto(1, ETipoCanal.PAP, "a")))
+            .canais(Set.of(ECanal.D2D_PROPRIO))
             .build();
     }
 }

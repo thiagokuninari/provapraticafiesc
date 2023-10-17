@@ -603,6 +603,79 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_deveLancarException_seUsuarioNaoPossuirCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2),
+            new SubCanal(3)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+
+        when(usuarioRepository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.AGENTE_AUTORIZADO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorAtivoLocal())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui canal em comum com usuários da hierarquia.");
+    }
+
+    @Test
+    public void save_naoDeveLancarException_seUsuarioPossuirCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2),
+            new SubCanal(3)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+
+        when(usuarioRepository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorD2d())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(usuarioRepository.getAllSubordinadosComSubCanalId(usuario.getId()))
+            .thenReturn(List.of());
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
     public void save_deveLancarExcecao_quandoEmailConterCedilha() {
         var usuario = Usuario.builder().email("emailç@gmail.com").build();
 

@@ -57,7 +57,6 @@ import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
