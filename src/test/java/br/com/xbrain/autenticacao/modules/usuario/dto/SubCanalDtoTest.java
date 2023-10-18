@@ -30,4 +30,15 @@ public class SubCanalDtoTest {
                 tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A),
                 tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
     }
+
+    @Test
+    public void ofNotChecagemCredito_deveRetornarListaResponseExcluindCampos_quandoSolicitado() {
+        var response = SubCanalDto.of(umSetSubCanais(), "novaChecagemCredito");
+
+        assertThat(response).hasSize(2)
+            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito")
+            .containsExactlyInAnyOrder(
+                tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A, null),
+                tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, null));
+    }
 }

@@ -251,7 +251,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getSubCanais())
                     ? Sets.newHashSet()
-                    : SubCanalDto.of(usuario.getSubCanais());
+                    : SubCanalDto.of(usuario.getSubCanais(), "novaChecagemCredito");
             default:
                 return Sets.newHashSet();
         }

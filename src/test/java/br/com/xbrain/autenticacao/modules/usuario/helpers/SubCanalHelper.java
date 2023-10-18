@@ -34,6 +34,7 @@ public class SubCanalHelper {
             .codigo(ETipoCanal.PAP_PME)
             .nome("PAP PME")
             .situacao(A)
+            .novaChecagemCredito(Eboolean.V)
             .build();
     }
 

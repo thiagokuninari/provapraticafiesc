@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +18,13 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(NON_NULL)
 public class SubCanalDto implements Serializable {
 
     @NotNull
@@ -34,16 +38,16 @@ public class SubCanalDto implements Serializable {
     @NotNull
     private Eboolean novaChecagemCredito;
 
-    public static Set<SubCanalDto> of(Collection<SubCanal> subcanais) {
+    public static Set<SubCanalDto> of(Collection<SubCanal> subcanais, String... camposExcluidos) {
         return subcanais
             .stream()
-            .map(SubCanalDto::of)
+            .map(subcanal -> of(subcanal, camposExcluidos))
             .collect(Collectors.toSet());
     }
 
-    public static SubCanalDto of(SubCanal subcanal) {
+    public static SubCanalDto of(SubCanal subcanal, String... camposExcluidos) {
         var response = new SubCanalDto();
-        BeanUtils.copyProperties(subcanal, response);
+        BeanUtils.copyProperties(subcanal, response, camposExcluidos);
         return response;
     }
 }
