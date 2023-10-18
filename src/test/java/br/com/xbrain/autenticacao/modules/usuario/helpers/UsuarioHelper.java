@@ -28,10 +28,11 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubcanal;
 
 public class UsuarioHelper {
 
@@ -349,7 +350,7 @@ public class UsuarioHelper {
             .alterarSenha(Eboolean.F)
             .situacao(ESituacao.A)
             .canais(Set.of(ECanal.D2D_PROPRIO))
-            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .subCanais(umaListaSubcanal())
             .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
             .usuariosHierarquia(Set.of())
             .unidadesNegocios(List.of(new UnidadeNegocio()))

@@ -57,4 +57,12 @@ public class SubCanalHelper {
     public static UsuarioSubCanalId umUsuarioSubCanalId(Integer id, String nome, Integer subCanalId) {
         return new UsuarioSubCanalId(id, nome, subCanalId);
     }
+
+    public static Set<SubCanal> umaListaSubcanal() {
+        return Set.of(umSubcanal(PAP_PME), umSubcanal(INSIDE_SALES_PME), umSubcanal(PAP_PREMIUM));
+    }
+
+    private static SubCanal umSubcanal(ETipoCanal tipoCanal) {
+        return SubCanal.builder().codigo(tipoCanal).build();
+    }
 }

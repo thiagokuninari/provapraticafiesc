@@ -1573,8 +1573,7 @@ public class UsuarioService {
         if (validarCanalEOperador(usuario)) {
             var superior = validarSuperior(usuario);
             var subCanalVendedor = obterSubcanal(usuario);
-            var subCanalSuperior = obterSubcanal(superior);
-            if (subCanalVendedor.getCodigo() != subCanalSuperior.getCodigo()) {
+            if (!superior.getSubCanais().contains(subCanalVendedor)) {
                 throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
                     + " do superior ou trocar a hierarquia para um superior do mesmo subcanal");
             }
