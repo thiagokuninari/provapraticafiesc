@@ -991,7 +991,7 @@ public class UsuarioService {
                 .anyMatch(usuarioHierarquia -> usuarioHierarquia.getCanais().stream()
                     .anyMatch(canal -> usuario.getCanais().contains(canal)));
             if (!contains) {
-                throw new ValidacaoException("Canal do Usuário Hierarquia é diferente do canal do usuário editado");
+                throw new ValidacaoException("Usuário não possui canal em comum com usuários da hierarquia.");
             }
         }
     }
