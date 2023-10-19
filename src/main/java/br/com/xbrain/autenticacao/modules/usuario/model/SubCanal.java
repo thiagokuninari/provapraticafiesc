@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import lombok.*;
 
@@ -41,7 +41,7 @@ public class SubCanal {
         this.id = id;
     }
 
-    public SubCanal editar(SubCanalDto request) {
+    public SubCanal editar(SubCanalCompletDto request) {
         this.codigo = request.getCodigo();
         this.nome = request.getNome().trim();
         this.situacao = request.getSituacao();

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
@@ -26,7 +27,7 @@ public class SubCanalController {
     }
 
     @GetMapping("listar")
-    public Page<SubCanalDto> getAllSubCanaisConfiguracoes(PageRequest pageRequest, SubCanalFiltros filtros) {
+    public Page<SubCanalCompletDto> getAllSubCanaisConfiguracoes(PageRequest pageRequest, SubCanalFiltros filtros) {
         return service.getAllConfiguracoes(pageRequest, filtros);
     }
 
@@ -41,7 +42,7 @@ public class SubCanalController {
     }
 
     @PostMapping("editar")
-    public void editar(@RequestBody @Validated SubCanalDto request) {
+    public void editar(@RequestBody @Validated SubCanalCompletDto request) {
         service.editar(request);
     }
 

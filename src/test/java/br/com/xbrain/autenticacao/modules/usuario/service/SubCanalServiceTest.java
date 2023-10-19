@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -56,7 +57,7 @@ public class SubCanalServiceTest {
 
         assertThat(subCanalService.getAll())
             .hasSize(1)
-            .containsExactly(new SubCanalDto(1, PAP, "PAP", ESituacao.A, Eboolean.F));
+            .containsExactly(new SubCanalDto(1, PAP, "PAP", ESituacao.A));
     }
 
     @Test
@@ -64,7 +65,7 @@ public class SubCanalServiceTest {
         when(subCanalRepository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
 
         assertThat(subCanalService.getSubCanalById(1))
-            .isEqualTo(new SubCanalDto(1, PAP, "PAP", ESituacao.A, Eboolean.F));
+            .isEqualTo(new SubCanalDto(1, PAP, "PAP", ESituacao.A));
     }
 
     @Test
@@ -206,7 +207,7 @@ public class SubCanalServiceTest {
     }
 
     @Test
-    public void getAllConfiguracoes_deveRetornarPageDeSubCanalDto_quandoTudoOk() {
+    public void getAllConfiguracoes_deveRetornarPageDeSubCanalCompletDto_quandoTudoOk() {
         var pageRequest = new PageRequest();
         var filtros = new SubCanalFiltros();
         when(subCanalRepository
@@ -228,7 +229,7 @@ public class SubCanalServiceTest {
 
     @Test
     public void editar_deveEditarSubCanal_quandoTudoOk() {
-        var dto = new SubCanalDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
         var suCanal = new SubCanal(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
@@ -246,7 +247,7 @@ public class SubCanalServiceTest {
 
     @Test
     public void editar_deveLancarException_quandoSubCanalNaoEncontrado() {
-        var dto = new SubCanalDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
         when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
@@ -264,7 +265,7 @@ public class SubCanalServiceTest {
     public void editar_deveLancarPermissaoException_quandoUsuarioNaoForAmdin() {
         var user = umUsuarioAutenticadoAdmin();
         user.setNivelCodigo(OPERACAO.name());
-        var dto = new SubCanalDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
 

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalInativoCompletDto;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
@@ -55,8 +56,8 @@ public class SubCanalControllerTest {
     @Test
     public void getAllSubCanais_deveRetornarOsSubCanais_quandoSolicitado() throws Exception {
         when(subCanalService.getAll()).thenReturn(List.of(
-            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V),
-            new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F)));
+            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A),
+            new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
 
         mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -67,18 +68,16 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[0].codigo", is("PAP")))
             .andExpect(jsonPath("$[0].nome", is("PAP")))
             .andExpect(jsonPath("$[0].situacao", is("A")))
-            .andExpect(jsonPath("$[0].novaChecagemCredito", is("V")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].codigo", is("PAP_PME")))
             .andExpect(jsonPath("$[1].nome", is("PAP PME")))
-            .andExpect(jsonPath("$[1].situacao", is("A")))
-            .andExpect(jsonPath("$[1].novaChecagemCredito", is("F")));
+            .andExpect(jsonPath("$[1].situacao", is("A")));
     }
 
     @Test
     public void getAllSubCanalById_deveRetornarSubCanal_quandoExistir() throws Exception {
         when(subCanalService.getSubCanalById(anyInt())).thenReturn(
-            new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F));
+            new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
 
         mvc.perform(get(API_URI + "/2")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -87,8 +86,7 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$.id", is(2)))
             .andExpect(jsonPath("$.codigo", is("PAP_PME")))
             .andExpect(jsonPath("$.nome", is("PAP PME")))
-            .andExpect(jsonPath("$.situacao", is("A")))
-            .andExpect(jsonPath("$.novaChecagemCredito", is("F")));
+            .andExpect(jsonPath("$.situacao", is("A")));
     }
 
     @Test
@@ -97,8 +95,8 @@ public class SubCanalControllerTest {
         var filtros = new SubCanalFiltros();
         when(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .thenReturn(new PageImpl<>(List.of(
-            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F),
-            new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V))));
+            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F),
+            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V))));
 
         mvc.perform(get(API_URI + "/listar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -130,9 +128,7 @@ public class SubCanalControllerTest {
 
     @Test
     public void editar_deveEditarSubCanal_quandoOk() throws Exception {
-        var dto = umSubCanalDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
-        dto.setSituacao(ESituacao.I);
-        dto.setNovaChecagemCredito(Eboolean.V);
+        var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
 
         mvc.perform(post(API_URI + "/editar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -176,8 +172,7 @@ public class SubCanalControllerTest {
 
     @Test
     public void editar_deveRetornarException_quandoUsuarioLogadoNaoForAdmin() throws Exception {
-        var dto = umSubCanalDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
-        dto.setSituacao(ESituacao.I);
+        var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
 
         doThrow(PermissaoException.class).when(subCanalService).editar(dto);
@@ -195,9 +190,8 @@ public class SubCanalControllerTest {
 
     @Test
     public void editar_deveRetornarUnauthorized_quandoNaoHouverUsuarioLogado() throws Exception {
-        var dto = umSubCanalDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
+        var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setSituacao(ESituacao.I);
-        dto.setNovaChecagemCredito(Eboolean.V);
 
         mvc.perform(post(API_URI + "/editar")
                 .contentType(MediaType.APPLICATION_JSON)

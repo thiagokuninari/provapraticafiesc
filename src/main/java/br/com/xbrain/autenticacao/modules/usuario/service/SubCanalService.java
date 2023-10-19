@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
@@ -38,9 +39,9 @@ public class SubCanalService {
             .collect(Collectors.toList());
     }
 
-    public Page<SubCanalDto> getAllConfiguracoes(PageRequest pageRequest, SubCanalFiltros filtros) {
+    public Page<SubCanalCompletDto> getAllConfiguracoes(PageRequest pageRequest, SubCanalFiltros filtros) {
         return repository.findAll(filtros.toPredicate().build(), pageRequest)
-            .map(SubCanalDto::of);
+            .map(SubCanalCompletDto::of);
     }
 
     public SubCanalDto getSubCanalById(Integer id) {
@@ -93,7 +94,7 @@ public class SubCanalService {
         }
     }
 
-    public void editar(SubCanalDto request) {
+    public void editar(SubCanalCompletDto request) {
         validarUsuarioAdm();
         var subCanal = findById(request.getId());
         repository.save(subCanal.editar(request));

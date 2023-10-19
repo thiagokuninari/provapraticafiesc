@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import org.junit.Test;
 
@@ -17,7 +16,7 @@ public class SubCanalDtoTest {
         var response = SubCanalDto.of(umSubCanal());
 
         assertThat(response).isEqualTo(
-            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F));
+            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 
     @Test
@@ -29,16 +28,5 @@ public class SubCanalDtoTest {
             .containsExactlyInAnyOrder(
                 tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A),
                 tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
-    }
-
-    @Test
-    public void ofNotChecagemCredito_deveRetornarListaResponseExcluindCampos_quandoSolicitado() {
-        var response = SubCanalDto.of(umSetSubCanais(), "novaChecagemCredito");
-
-        assertThat(response).hasSize(2)
-            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito")
-            .containsExactlyInAnyOrder(
-                tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A, null),
-                tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, null));
     }
 }

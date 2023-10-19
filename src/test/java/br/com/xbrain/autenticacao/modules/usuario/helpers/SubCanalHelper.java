@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -44,6 +46,15 @@ public class SubCanalHelper {
             .codigo(codigo)
             .nome(nome)
             .situacao(A)
+            .build();
+    }
+
+    public static SubCanalCompletDto umSubCanalInativoCompletDto(Integer id, ETipoCanal codigo, String nome) {
+        return SubCanalCompletDto.builder()
+            .id(id)
+            .codigo(codigo)
+            .nome(nome)
+            .situacao(ESituacao.I)
             .novaChecagemCredito(Eboolean.F)
             .build();
     }
