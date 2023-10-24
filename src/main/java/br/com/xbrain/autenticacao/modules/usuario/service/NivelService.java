@@ -72,7 +72,7 @@ public class NivelService {
 
     public List<NivelResponse> getPermitidosParaOrganizacao() {
         return nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE,
-                CodigoNivel.OPERACAO))
+                CodigoNivel.OPERACAO, CodigoNivel.BACKOFFICE_CENTRALIZADO))
             .stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());
