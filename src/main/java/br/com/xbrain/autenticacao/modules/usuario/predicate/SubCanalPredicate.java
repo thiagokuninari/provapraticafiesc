@@ -9,6 +9,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QSubCanal.subCanal;
 import static net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class SubCanalPredicate {
 
@@ -30,7 +31,7 @@ public class SubCanalPredicate {
     }
 
     public SubCanalPredicate comNome(String nome) {
-        if (!isEmpty(nome)) {
+        if (!isNotBlank(nome)) {
             builder.and(subCanal.nome.equalsIgnoreCase(nome));
         }
         return this;
