@@ -106,7 +106,7 @@ public class SubCanalService {
         }
     }
 
-    public Eboolean isNovaChecagemCredito(Integer id) {
+    public Eboolean isNovaChecagemCreditoD2d(Integer id) {
         return findById(id).getNovaChecagemCredito();
     }
 }

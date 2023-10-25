@@ -31,7 +31,7 @@ public class SubCanalPredicate {
 
     public SubCanalPredicate comNome(String nome) {
         if (!isEmpty(nome)) {
-            builder.and(subCanal.nome.containsIgnoreCase(nome));
+            builder.and(subCanal.nome.equalsIgnoreCase(nome));
         }
         return this;
     }

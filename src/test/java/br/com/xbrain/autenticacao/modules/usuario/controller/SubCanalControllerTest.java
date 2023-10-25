@@ -203,40 +203,40 @@ public class SubCanalControllerTest {
 
     @Test
     public void isNovaChecagemCredito_deveDevolverBoolean_quandoOk() throws Exception {
-        when(subCanalService.isNovaChecagemCredito(1))
+        when(subCanalService.isNovaChecagemCreditoD2d(1))
             .thenReturn(Eboolean.V);
 
-        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito")
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito-d2d")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Eboolean.V.toString())));
 
-        verify(subCanalService).isNovaChecagemCredito(eq(1));
+        verify(subCanalService).isNovaChecagemCreditoD2d(eq(1));
     }
 
     @Test
     public void isNovaChecagemCredito_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
-        when(subCanalService.isNovaChecagemCredito(1))
+        when(subCanalService.isNovaChecagemCreditoD2d(1))
             .thenReturn(Eboolean.V);
 
-        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito"))
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito-d2d"))
             .andExpect(status().isUnauthorized());
 
-        verify(subCanalService, never()).isNovaChecagemCredito(any());
+        verify(subCanalService, never()).isNovaChecagemCreditoD2d(any());
     }
 
     @Test
     public void isNovaChecagemCredito_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
-        when(subCanalService.isNovaChecagemCredito(1))
+        when(subCanalService.isNovaChecagemCreditoD2d(1))
             .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
 
-        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito")
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito-d2d")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Erro, subcanal não encontrado.")));
-        verify(subCanalService).isNovaChecagemCredito(eq(1));
+        verify(subCanalService).isNovaChecagemCreditoD2d(eq(1));
     }
 }

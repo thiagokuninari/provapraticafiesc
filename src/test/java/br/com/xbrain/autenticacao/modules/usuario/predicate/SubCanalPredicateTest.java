@@ -31,7 +31,7 @@ public class SubCanalPredicateTest {
             .comNome("Um SubCanal Nome")
             .build();
 
-        var expected = new BooleanBuilder(subCanal.nome.containsIgnoreCase("Um SubCanal Nome"));
+        var expected = new BooleanBuilder(subCanal.nome.equalsIgnoreCase("Um SubCanal Nome"));
         assertThat(predicate).isEqualTo(expected);
     }
 

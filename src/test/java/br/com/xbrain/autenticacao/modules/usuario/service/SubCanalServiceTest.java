@@ -281,7 +281,7 @@ public class SubCanalServiceTest {
     @Test
     public void isNovaChecagemCredito_deveRetornarEBoolean_quandoTudoOk() {
         when(subCanalRepository.findById(1)).thenReturn(Optional.of(umSubCanal()));
-        assertEquals(subCanalService.isNovaChecagemCredito(1), Eboolean.F);
+        assertEquals(subCanalService.isNovaChecagemCreditoD2d(1), Eboolean.F);
         verify(subCanalRepository).findById(eq(1));
     }
 
@@ -289,7 +289,7 @@ public class SubCanalServiceTest {
     public void isNovaChecagemCredito_deveNotFoundException_quandoSubCanalNaoEncontrado() {
         when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> subCanalService.isNovaChecagemCredito(1))
+            .isThrownBy(() -> subCanalService.isNovaChecagemCreditoD2d(1))
                 .withMessage("Erro, subcanal não encontrado.");
 
         verify(subCanalRepository).findById(eq(1));

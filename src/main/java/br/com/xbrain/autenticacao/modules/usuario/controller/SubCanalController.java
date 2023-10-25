@@ -46,8 +46,8 @@ public class SubCanalController {
         service.editar(request);
     }
 
-    @GetMapping("{id}/verificar-nova-checagem-credito")
-    public Eboolean isNovaChecagemCredito(@PathVariable Integer id) {
-        return service.isNovaChecagemCredito(id);
+    @GetMapping("{id}/verificar-nova-checagem-credito-d2d")
+    public Eboolean isNovaChecagemCreditoD2d(@PathVariable Integer id) {
+        return service.isNovaChecagemCreditoD2d(id);
     }
 }
