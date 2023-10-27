@@ -40,5 +40,5 @@ public interface FeriadoRepositoryCustom {
 
     List<LocalDate> findAllNacional(LocalDate now);
 
-    Optional<Feriado> findByCidadeIdAndDataAtual(Integer cidadeId, LocalDate dataAtual);
+    boolean hasFeriadoByCidadeIdAndDataAtual(Integer cidadeId, LocalDate dataAtual);
 }

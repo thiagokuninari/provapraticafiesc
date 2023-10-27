@@ -289,7 +289,7 @@ public class FeriadoService {
     }
 
     public boolean isFeriadoComCidadeId(Integer cidadeId) {
-        return repository.findByCidadeIdAndDataAtual(cidadeId, dataHoraAtual.getData()).isPresent();
+        return repository.hasFeriadoByCidadeIdAndDataAtual(cidadeId, dataHoraAtual.getData());
     }
 
     public void flushCacheFeriadoTelefonia() {
