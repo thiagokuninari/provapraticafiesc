@@ -62,4 +62,9 @@ public class FeriadoController {
     public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
         return service.buscarTotalDeFeriadosPorMesAno();
     }
+
+    @GetMapping("/{cidadeId}/feriado")
+    public boolean isFeriadoComCidadeId(@PathVariable Integer cidadeId) {
+        return service.isFeriadoComCidadeId(cidadeId);
+    }
 }

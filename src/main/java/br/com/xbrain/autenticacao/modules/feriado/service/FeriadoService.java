@@ -288,6 +288,10 @@ public class FeriadoService {
         return repository.buscarTotalDeFeriadosPorMesAno();
     }
 
+    public boolean isFeriadoComCidadeId(Integer cidadeId) {
+        return repository.findByCidadeIdAndDataAtual(cidadeId, dataHoraAtual.getData()).isPresent();
+    }
+
     public void flushCacheFeriadoTelefonia() {
         callService.cleanCacheFeriadosTelefonia();
     }

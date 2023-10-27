@@ -163,4 +163,14 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                     )
             .fetch();
     }
+
+    @Override
+    public Optional<Feriado> findByCidadeIdAndDataAtual(Integer cidadeId, LocalDate dataAtual) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .selectFrom(feriado)
+            .where(feriado.dataFeriado.eq(dataAtual)
+                .and(feriado.feriadoNacional.eq(Eboolean.V)
+                    .or(feriado.cidade.id.eq(cidadeId))))
+            .fetchFirst());
+    }
 }
