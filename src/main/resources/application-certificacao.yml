@@ -72,6 +72,8 @@ app-config:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
       url: http://172.10.10.113:8304
+    ata-reuniao:
+      url: http://ata-reuniao-api:8308
 
   email:
     enviar: true

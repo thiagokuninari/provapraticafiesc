@@ -102,6 +102,7 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
         usuarioResponse.setNomeNivel(usuario.getNivelNome());
         usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
+        usuarioResponse.setNomeCargo(usuario.getCargo().getNome());
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());

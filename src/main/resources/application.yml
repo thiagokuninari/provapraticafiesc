@@ -298,6 +298,9 @@ app-config:
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    ata-reuniao:
+      url: http://localhost:8308
+#      url: http://192.168.50.1:8308
 
 flyway:
   enabled: true
@@ -358,6 +361,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    ata-reuniao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.ata-reuniao.url}
 
   host:
     connect-timeout-millis: 1800000
