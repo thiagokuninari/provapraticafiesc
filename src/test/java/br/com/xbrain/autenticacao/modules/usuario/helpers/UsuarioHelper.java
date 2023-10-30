@@ -530,7 +530,6 @@ public class UsuarioHelper {
         return EquipeVendaUsuarioRequest.builder()
             .usuarioId(1)
             .usuarioNome("NAKANO")
-            .cargoNome("VENDEDOR_OPERACAO")
             .isTrocaDeSubCanal(false)
             .build();
     }
@@ -539,7 +538,6 @@ public class UsuarioHelper {
         return EquipeVendaUsuarioRequest.builder()
             .usuarioId(1)
             .usuarioNome("NAKANO")
-            .cargoNome("VENDEDOR_OPERACAO")
             .isTrocaDeSubCanal(true)
             .build();
     }

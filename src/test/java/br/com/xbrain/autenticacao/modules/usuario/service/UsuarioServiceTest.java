@@ -809,15 +809,14 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveEnviarNovosDadosParaEquipeVendas_quandoUsuarioForAlterado() {
+    public void save_deveEnviarNovosDadosParaEquipeVendas_quandoNomeDoUsuarioForAlterado() {
         doReturn(umUsuarioAutenticadoNivelAa())
             .when(autenticacaoService).getUsuarioAutenticado();
 
         var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
         novoUsuario.setNome("NAKANO");
-        novoUsuario.getCargo().setNome(VENDEDOR_OPERACAO.name());
 
-        doReturn(Optional.of(novoUsuario))
+        doReturn(Optional.of(umUsuario()))
             .when(usuarioRepository).findById(1);
 
         doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
@@ -838,7 +837,6 @@ public class UsuarioServiceTest {
 
         var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
         novoUsuario.setNome("NAKANO");
-        novoUsuario.getCargo().setNome(VENDEDOR_OPERACAO.name());
 
         doReturn(Optional.of(novoUsuario))
             .when(usuarioRepository).findById(1);
@@ -866,6 +864,27 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(novoUsuario))
             .when(usuarioRepository).findById(1);
+
+        assertThatCode(() -> usuarioService.save(novoUsuario))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verifyZeroInteractions(equipeVendasUsuarioService);
+    }
+
+    @Test
+    public void save_naoDeveEnviarNovosDadosParaEquipeVendas_quandoNaoPossuirNenhumaAlteracaoNoNomeOuSubCanal() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
+        novoUsuario.setNome("NAKANO");
+
+        doReturn(Optional.of(novoUsuario))
+            .when(usuarioRepository).findById(1);
+
+        doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
+            .when(usuarioRepository).getSubCanaisByUsuarioIds(List.of(1));
 
         assertThatCode(() -> usuarioService.save(novoUsuario))
             .doesNotThrowAnyException();
