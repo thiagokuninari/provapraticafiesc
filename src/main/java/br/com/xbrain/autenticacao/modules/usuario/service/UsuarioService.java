@@ -636,8 +636,8 @@ public class UsuarioService {
     private void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
-                if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior) // Tem que ser D2D
-                    && verificarCargosDiferentes(usuario, usuarioAnterior)) { // O Cargos precisam ser diferentes
+                if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
+                    && verificarCargosDiferentes(usuario, usuarioAnterior)) {
                     verificarCadastroEmOutraEquipe(usuarioAnterior);
                 }
             });
