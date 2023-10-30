@@ -8,8 +8,10 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarUsuarioFeederMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
@@ -55,6 +57,8 @@ public class UsuarioAcessoService {
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
+    private InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
+    @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -88,7 +92,11 @@ public class UsuarioAcessoService {
                 .peek(usuario -> {
                     usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
                     usuarioHistoricoService.gerarHistoricoInativacao(usuario.getId(), origem);
-                    inativarColaboradorPol(usuario);
+                    if (usuario.getNivelCodigo() == CodigoNivel.FEEDER) {
+                        inativarUsuarioFeeder(usuario);
+                    } else {
+                        inativarColaboradorPol(usuario);
+                    }
                 })
                 .collect(Collectors.toList());
 
@@ -138,6 +146,14 @@ public class UsuarioAcessoService {
     private void inativarColaboradorPol(UsuarioDto usuario) {
         if (usuario.getEmail() != null) {
             inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+        } else {
+            log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
+        }
+    }
+
+    private void inativarUsuarioFeeder(UsuarioDto usuario) {
+        if (usuario.getEmail() != null) {
+            inativarUsuarioFeederMqSender.sendSuccess(usuario.getEmail());
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
         }

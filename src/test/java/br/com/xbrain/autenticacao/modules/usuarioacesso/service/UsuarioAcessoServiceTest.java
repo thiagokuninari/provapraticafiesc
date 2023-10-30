@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarUsuarioFeederMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioFeederDto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.tuple;
@@ -54,6 +56,8 @@ public class UsuarioAcessoServiceTest {
     @Mock
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Mock
+    private InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
+    @Mock
     private AutenticacaoService autenticacaoService;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
@@ -65,12 +69,14 @@ public class UsuarioAcessoServiceTest {
                 umUsuarioDto(103, "useremail@xbrain.com"),
                 umUsuarioDto(104, "useremail@xbrain.com"),
                 umUsuarioDto(105, "useremail@xbrain.com"),
-                umUsuarioDto(106, "useremail@xbrain.com")));
+                umUsuarioDto(106, "useremail@xbrain.com"),
+                umUsuarioFeederDto(109, "useremail@xbrain.com")));
 
         when(usuarioRepository
             .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(any()))
             .thenReturn(List.of(umUsuarioDto(107, "useremail@xbrain.com"),
-                umUsuarioDto(108, "useremail@xbrain.com")));
+                umUsuarioDto(108, "useremail@xbrain.com"),
+                umUsuarioFeederDto(110, "useremail@xbrain.com")));
     }
 
     @Test
@@ -87,9 +93,10 @@ public class UsuarioAcessoServiceTest {
 
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(7)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(7)).gerarHistoricoInativacao(anyInt(), any(String.class));
+        verify(usuarioRepository, times(9)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(9)).gerarHistoricoInativacao(anyInt(), any(String.class));
         verify(inativarColaboradorMqSender, times(7)).sendSuccess(anyString());
+        verify(inativarUsuarioFeederMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test

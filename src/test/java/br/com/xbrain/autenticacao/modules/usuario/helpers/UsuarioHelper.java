@@ -24,8 +24,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPR
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
@@ -167,6 +166,14 @@ public class UsuarioHelper {
         return UsuarioDto.builder()
             .id(usuarioId)
             .email(usuarioEmail)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioFeederDto(Integer usuarioId, String usuarioEmail) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .email(usuarioEmail)
+            .nivelCodigo(FEEDER)
             .build();
     }
 
