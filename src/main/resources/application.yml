@@ -299,8 +299,8 @@ app-config:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
     ata-reuniao:
-      url: http://localhost:8308
-#      url: http://192.168.50.1:8308
+      #url: http://localhost:8308
+      url: http://192.168.50.1:8308
 
 flyway:
   enabled: true
