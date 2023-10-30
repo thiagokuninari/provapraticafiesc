@@ -140,4 +140,24 @@ public class UsuarioPredicateTest {
 
         assertThat(predicate).isEqualTo(expected);
     }
+
+    @Test
+    public void comId_deveFiltrarPorId_quandoIdNaoNull() {
+        var predicate = new UsuarioPredicate()
+            .comId(1)
+            .build();
+        var expected = new BooleanBuilder(usuario.id.eq(1));
+
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comId_naoDeveFiltrarPorId_quandoIdNull() {
+        var predicate = new UsuarioPredicate()
+            .comId(null)
+            .build();
+        var expected = new BooleanBuilder();
+
+        assertThat(predicate).isEqualTo(expected);
+    }
 }
