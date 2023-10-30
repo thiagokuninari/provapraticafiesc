@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -564,6 +565,7 @@ public class UsuarioService {
             validar(usuario);
             validarEdicao(usuario);
             validarPromocaoCargo(usuario);
+            enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
@@ -634,8 +636,8 @@ public class UsuarioService {
     private void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
-                if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
-                    && verificarCargosDiferentes(usuario, usuarioAnterior)) {
+                if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior) // Tem que ser D2D
+                    && verificarCargosDiferentes(usuario, usuarioAnterior)) { // O Cargos precisam ser diferentes
                     verificarCadastroEmOutraEquipe(usuarioAnterior);
                 }
             });
@@ -2880,5 +2882,25 @@ public class UsuarioService {
 
     private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
+    }
+
+    private void enviarNovosDadosParaEquipeVendasUsuario(Usuario usuario) {
+        if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
+            var request = EquipeVendaUsuarioRequest.builder()
+                .usuarioId(usuario.getId())
+                .usuarioNome(usuario.getNome())
+                .cargoNome(usuario.getCargo().getCodigo().name())
+                .build();
+            verificarTrocaDeSubCanal(usuario, request);
+            equipeVendasUsuarioService.updateEquipeVendasUsuario(request);
+        }
+    }
+
+    private void verificarTrocaDeSubCanal(Usuario usuario, EquipeVendaUsuarioRequest request) {
+        var subCanal = repository.getSubCanaisByUsuarioIds(List.of(usuario.getId()));
+        var trocaDeSubCanal = subCanal.stream()
+            .noneMatch(canal -> usuario.getSubCanais().stream()
+                .anyMatch(usuarioSubCanal -> Objects.equals(canal.getId(), usuarioSubCanal.getId())));
+        request.setTrocaDeSubCanal(trocaDeSubCanal);
     }
 }

@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class EquipeVendaUsuarioRequest {
 
     public Integer usuarioId;
+    public String usuarioNome;
+    public String cargoNome;
+    public boolean isTrocaDeSubCanal;
 }

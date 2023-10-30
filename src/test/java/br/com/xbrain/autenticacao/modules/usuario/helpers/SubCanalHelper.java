@@ -13,6 +13,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 
 public class SubCanalHelper {
 
+    public static Set<SubCanal> umSetSubCanal(Integer id, ETipoCanal tipoCanal, String nomeCanal) {
+        return Set.of(umSubCanal(id, tipoCanal, nomeCanal));
+    }
+
     public static Set<SubCanal> umSetSubCanais() {
         return Set.of(umSubCanal(), doisSubCanal());
     }
@@ -22,6 +26,15 @@ public class SubCanalHelper {
             .id(1)
             .codigo(ETipoCanal.PAP)
             .nome("PAP")
+            .situacao(A)
+            .build();
+    }
+
+    public static SubCanal umSubCanal(Integer id, ETipoCanal tipoCanal, String nomeCanal) {
+        return SubCanal.builder()
+            .id(id)
+            .codigo(tipoCanal)
+            .nome(nomeCanal)
             .situacao(A)
             .build();
     }

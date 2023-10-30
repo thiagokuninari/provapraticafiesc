@@ -115,7 +115,6 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
-        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
         Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
             usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
             usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());

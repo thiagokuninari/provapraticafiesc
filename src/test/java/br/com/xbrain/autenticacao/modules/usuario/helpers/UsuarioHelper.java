@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -26,6 +27,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
@@ -127,6 +129,8 @@ public class UsuarioHelper {
                 SubCanal.builder()
                     .id(subCanalId)
                     .codigo(codigoSubCanal)
+                    .nome(PAP.getDescricao())
+                    .situacao(A)
                     .build()))
             .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
             .usuariosHierarquia(new HashSet<>())
@@ -520,5 +524,23 @@ public class UsuarioHelper {
             umUsuarioAdminSimples(103, "USUARIO ADMIN 3", "ADMIN3@XBRAIN.COM.BR"),
             umUsuarioAdminSimples(104, "USUARIO ADMIN 4", "ADMIN4@XBRAIN.COM.BR")
         );
+    }
+
+    public static EquipeVendaUsuarioRequest umaEquipeVendaUsuarioRequest() {
+        return EquipeVendaUsuarioRequest.builder()
+            .usuarioId(1)
+            .usuarioNome("NAKANO")
+            .cargoNome("VENDEDOR_OPERACAO")
+            .isTrocaDeSubCanal(false)
+            .build();
+    }
+
+    public static EquipeVendaUsuarioRequest umaEquipeVendaUsuarioRequestComTrocaDeSubcanal() {
+        return EquipeVendaUsuarioRequest.builder()
+            .usuarioId(1)
+            .usuarioNome("NAKANO")
+            .cargoNome("VENDEDOR_OPERACAO")
+            .isTrocaDeSubCanal(true)
+            .build();
     }
 }
