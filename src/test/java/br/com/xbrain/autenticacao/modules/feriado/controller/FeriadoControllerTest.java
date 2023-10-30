@@ -287,7 +287,7 @@ public class FeriadoControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void isFeriadoComCidadeId_deveRetornarUnauthorized_quandoTokenInvalido() {
-        mvc.perform(get(URL_BASE + "/1520/feriado")
+        mvc.perform(get(URL_BASE + "/1520")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
@@ -297,7 +297,7 @@ public class FeriadoControllerTest {
     @Test
     @SneakyThrows
     public  void isFeriadoComCidadeId_deveRetornarOk_quandoDadosOk() {
-        mvc.perform(get(URL_BASE + "/1520/feriado")
+        mvc.perform(get(URL_BASE + "/1520")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
