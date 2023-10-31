@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -21,7 +22,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -91,10 +91,13 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -189,6 +192,8 @@ public class UsuarioServiceTest {
     private PermissaoEspecialService permissaoEspecialService;
     @Mock
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
+    @Mock
+    private CidadeService cidadeService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -197,6 +202,51 @@ public class UsuarioServiceTest {
             .email("TESTE@TESTE.COM")
             .agenteAutorizadoId(aaId)
             .build();
+    }
+
+    @Test
+    public void findCidadesByUsuario_deveLancarValidacaoException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.findCidadesByUsuario(101214))
+            .withMessage("Usuário não encontrado.");
+
+        verify(usuarioRepository).findComCidade(101214);
+    }
+
+    @Test
+    public void findCidadesByUsuario_deveRetornarListaVazia_quandoUsuarioNaoPossuirCidadesAtreladas() {
+        when(usuarioRepository.findComCidade(101214)).thenReturn(Optional.of(List.of()));
+
+        assertThat(usuarioService.findCidadesByUsuario(101214)).isEmpty();
+
+        verify(usuarioRepository).findComCidade(101214);
+    }
+
+    @Test
+    public void findCidadesByUsuario_deveRetornarListaCidadeResponse_quandoUsuarioPossuirCidadesAtreladas() {
+        when(usuarioRepository.findComCidade(101214))
+            .thenReturn(Optional.of(listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(usuarioService.findCidadesByUsuario(101214))
+            .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .hasSize(11)
+            .containsExactly(
+                tuple(30650, "BELA VISTA DO PIQUIRI", 1, "PARANA", 1027, "RPS", 3272, "CAMPINA DA LAGOA"),
+                tuple(3272, "CAMPINA DA LAGOA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(30858, "GUARAVERA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30574, "HERVEIRA", 1, "PARANA", 1027, "RPS", 3272, "CAMPINA DA LAGOA"),
+                tuple(30813, "IRERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30732, "LERROVILLE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30757, "MARAVILHA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30676, "PAIQUERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30780, "SALLES DE OLIVEIRA", 1, "PARANA", 1027, "RPS", 3272, "CAMPINA DA LAGOA"),
+                tuple(30848, "SAO LUIZ", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30910, "WARTA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA")
+            );
+
+        verify(usuarioRepository).findComCidade(101214);
     }
 
     @Test
@@ -3477,6 +3527,137 @@ public class UsuarioServiceTest {
             );
     }
 
+    @Test
+    public void getCidadesByUsuarioId_deveLancarValidacaoException_quandoNaoEncontrarPorUsuarioId() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.getCidadesByUsuarioId(101112))
+            .withMessage("Usuário não encontrado.");
+
+        verify(usuarioRepository).findComplete(101112);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getCidadesByUsuarioId_deveRetornarListaVazia_quandoEncontrarUsuarioQueNaoTenhaCidadesAtreladas() {
+        when(usuarioRepository.findComplete(181920)).thenReturn(Optional.of(umUsuarioSemCidades()));
+
+        assertThat(usuarioService.getCidadesByUsuarioId(181920)).isEmpty();
+
+        verify(usuarioRepository).findComplete(181920);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getCidadesByUsuarioId_deveRetornarListaCidadeResponseComCidadesSemDistritos_quandoEncontrarCidadesDoUsuario() {
+        when(usuarioRepository.findComplete(121314)).thenReturn(Optional.of(umUsuarioComCidades()));
+
+        assertThat(usuarioService.getCidadesByUsuarioId(121314))
+            .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(3248, "BANDEIRANTES", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3270, "CAMBE", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3272, "CAMPINA DA LAGOA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3287, "CASCAVEL", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3312, "CURITIBA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3426, "MARINGA", 1, "PARANA", 1027, "RPS", null, null)
+            );
+
+        verify(usuarioRepository).findComplete(121314);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getCidadesByUsuarioId_deveRetornarListaCidadeResponseComDistritosENomeCidadePai_quandoEncontrarCidadesDoUsuario() {
+        when(usuarioRepository.findComplete(151617)).thenReturn(Optional.of(umUsuarioComDistritos()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V)).thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(usuarioService.getCidadesByUsuarioId(151617))
+            .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(30858, "GUARAVERA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30813, "IRERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30732, "LERROVILLE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30757, "MARAVILHA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30676, "PAIQUERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30848, "SAO LUIZ", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30910, "WARTA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA")
+            );
+
+        verify(usuarioRepository).findComplete(151617);
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void findCidadesDoUsuarioLogado_deveLancarValidacaoException_quandoNaoEncontrarPorIdDoUsuarioAutenticado() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.findCidadesDoUsuarioLogado())
+            .withMessage("Usuário não encontrado.");
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verifyZeroInteractions(usuarioCidadeRepository);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void findCidadesDoUsuarioLogado_deveRetornarListaVazia_quandoUsuarioNaoPossuirCidadesAtreladas() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101112));
+        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112)).thenReturn(Set.of());
+
+        assertThat(usuarioService.findCidadesDoUsuarioLogado()).isEmpty();
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void findCidadesDoUsuarioLogado_deveRetornarListaUsuarioCidadeDtoComCidades_quandoEncontrarCidadesDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101112));
+        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112)).thenReturn(listaUsuarioCidadesDoParana());
+
+        assertThat(usuarioService.findCidadesDoUsuarioLogado())
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(3248, "BANDEIRANTES", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3270, "CAMBE", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3272, "CAMPINA DA LAGOA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3287, "CASCAVEL", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3312, "CURITIBA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS", null, null),
+                tuple(3426, "MARINGA", 1, "PARANA", 1027, "RPS", null, null)
+            );
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void findCidadesDoUsuarioLogado_deveRetornarListaUsuarioCidadeDtoComDistritosENomeCidadePai_quandoEncontrarCidadesDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101112));
+        when(usuarioCidadeRepository.findUsuarioCidadesByUsuarioId(101112)).thenReturn(listaUsuarioCidadeDeDistritosDeLondrina());
+        when(cidadeService.getCidadesDistritos(Eboolean.V)).thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(usuarioService.findCidadesDoUsuarioLogado())
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(30858, "GUARAVERA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30813, "IRERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30732, "LERROVILLE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30757, "MARAVILHA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30676, "PAIQUERE", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30848, "SAO LUIZ", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA"),
+                tuple(30910, "WARTA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA")
+            );
+
+        verify(autenticacaoService).getUsuarioAutenticadoId();
+        verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
@@ -3799,65 +3980,6 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    private Usuario umUsuarioCompleto(int cargoId, CodigoNivel nivel, int departamentoId) {
-        var usuario = Usuario
-            .builder()
-            .id(1)
-            .nome("NOME UM")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(VENDEDOR_OPERACAO)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(nivel)
-                    .nome(nivel.name())
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .id(departamentoId)
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
-    }
-
     private Usuario outroUsuarioCompleto() {
         var usuario = Usuario
             .builder()
@@ -3982,22 +4104,4 @@ public class UsuarioServiceTest {
             .build());
         return usuario;
     }
-
-    private List<EquipeVendaUsuarioResponse> listaVazia() {
-        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
-        return lista;
-    }
-
-    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
-        return Usuario.builder().id(1)
-            .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(3))
-            .build();
-    }
-
-    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
-        return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
-    }
-
 }

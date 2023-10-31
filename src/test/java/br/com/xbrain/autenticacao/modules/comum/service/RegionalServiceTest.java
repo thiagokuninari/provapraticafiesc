@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
@@ -37,9 +36,11 @@ public class RegionalServiceTest {
             .thenReturn(List.of(Regional.builder().id(1027).nome("RPS").build()));
 
         assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1027, "RPS"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1027, "RPS")
+            );
     }
 
     @Test
@@ -48,9 +49,9 @@ public class RegionalServiceTest {
             .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
 
         assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1025, "RNE"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(tuple(1025, "RNE"));
     }
 
     @Test

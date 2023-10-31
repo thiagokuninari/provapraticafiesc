@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
@@ -9,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
 import org.junit.Ignore;
@@ -21,10 +23,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.comum.helper.RegionalHelper.listaNovasRegionaisIds;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CidadeServiceTest {
@@ -37,17 +44,17 @@ public class CidadeServiceTest {
     private CidadeRepository cidadeRepository;
     @Mock
     private RegionalService regionalService;
+    @Mock
+    private CidadeService self;
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
         when(cidadeRepository.findCidadeComSite(any(Predicate.class)))
             .thenReturn(Optional.of(CidadeSiteResponse.builder()
                 .id(5578).nome("LONDRINA").uf("PR").siteId(100).build()));
+
         assertThat(service.getCidadeByCodigoCidadeDbm(3))
-            .extracting("id",
-                "siteId",
-                "nome",
-                "uf")
+            .extracting("id", "siteId", "nome", "uf")
             .containsExactly(5578, 100, "LONDRINA", "PR");
     }
 
@@ -63,11 +70,9 @@ public class CidadeServiceTest {
         when(cidadeRepository.findCidadeComSite(any(Predicate.class)))
             .thenReturn(Optional.of(CidadeSiteResponse.builder()
                 .id(5578).nome("LONDRINA").uf("PR").siteId(100).build()));
+
         assertThat(service.findCidadeComSiteByUfECidade("PR", "LONDRINA"))
-            .extracting("id",
-                "siteId",
-                "nome",
-                "uf")
+            .extracting("id", "siteId", "nome", "uf")
             .containsExactly(5578, 100, "LONDRINA", "PR");
     }
 
@@ -153,6 +158,7 @@ public class CidadeServiceTest {
             .thenReturn(List.of(Cidade.builder().id(5578).nome("LONDRINA")
                 .uf(Uf.builder().id(1).nome("PARANA").build())
                 .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
+
         assertThat(service.getAllCidadeByRegionalAndUf(1027, 1))
             .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome")
             .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
@@ -166,15 +172,419 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
+                    .regional(Regional.builder().id(1001).nome("RS").build()).build(),
+                Cidade.builder().id(4519).nome("FLORIANOPOLIS")
+                    .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
+                    .regional(Regional.builder().id(1001).nome("RS").build()).build()));
+        when(regionalService.getNovasRegionaisIds())
+            .thenReturn(listaNovasRegionaisIds());
+
+        assertThat(service.getAllByRegionalId(1001))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(
+                tuple(5578, "LONDRINA", 1, "PARANA", 1001, "RS"),
+                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1001, "RS")
+            );
+    }
+
+    @Test
+    public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1).build());
+        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
+            .thenReturn(List.of(
+                Cidade.builder().id(5578).nome("LONDRINA")
+                    .uf(Uf.builder().id(1).nome("PARANA").build())
                     .regional(Regional.builder().id(1027).nome("RS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1027).nome("RS").build()).build()
-            ));
+                    .regional(Regional.builder().id(1027).nome("RS").build()).build()));
+        when(regionalService.getNovasRegionaisIds())
+            .thenReturn(listaNovasRegionaisIds());
         assertThat(service.getAllByRegionalId(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(
                 tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RS"),
                 tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RS"));
+    }
+
+    @Test
+    public void getAll_deveRetornarListaCidadeResponseCompletaDasCidadesComDistritos_quandoInformarParametrosNull() {
+        var booleanBuilder = new CidadePredicate().build();
+
+        when(cidadeRepository.findAllByPredicate(booleanBuilder))
+            .thenReturn(umaListaComCidadesEDistritos());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.getAll(null, null)).hasSize(30);
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(autenticacaoService);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorRegionalId() {
+        var booleanBuilder = new CidadePredicate().comRegionalId(500).build();
+
+        assertThat(service.getAll(500, null)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorUfId() {
+        var booleanBuilder = new CidadePredicate().comUfId(50).build();
+
+        assertThat(service.getAll(null, 50)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_quandoNaoExistirPorRegionalIdComUfId() {
+        var booleanBuilder = new CidadePredicate().comRegionalId(500).comUfId(50).build();
+
+        assertThat(service.getAll(500, 50)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(booleanBuilder);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasRegionalId() {
+        var predicate = new CidadePredicate().comRegionalId(1027).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.getAll(1027, null))
+            .hasSize(14)
+            .extracting("id", "nome", "regional.id", "regional.nome")
+            .containsExactly(
+                tuple(3248, "BANDEIRANTES", 1027, "RPS"),
+                tuple(3270, "CAMBE", 1027, "RPS"),
+                tuple(3272, "CAMPINA DA LAGOA", 1027, "RPS"),
+                tuple(3287, "CASCAVEL", 1027, "RPS"),
+                tuple(3312, "CURITIBA", 1027, "RPS"),
+                tuple(30858, "GUARAVERA", 1027, "RPS"),
+                tuple(30813, "IRERE", 1027, "RPS"),
+                tuple(30732, "LERROVILLE", 1027, "RPS"),
+                tuple(5578, "LONDRINA", 1027, "RPS"),
+                tuple(30757, "MARAVILHA", 1027, "RPS"),
+                tuple(3426, "MARINGA", 1027, "RPS"),
+                tuple(30676, "PAIQUERE", 1027, "RPS"),
+                tuple(30848, "SAO LUIZ", 1027, "RPS"),
+                tuple(30910, "WARTA", 1027, "RPS")
+            );
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasUfId() {
+        var predicate = new CidadePredicate().comUfId(2).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDeSaoPaulo());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.getAll(null, 2))
+            .hasSize(12)
+            .extracting("id", "nome", "uf.id", "uf.uf")
+            .containsExactly(
+                tuple(33618, "ALDEIA", 2, "SP"),
+                tuple(4864, "BARUERI", 2, "SP"),
+                tuple(4870, "BERNARDINO DE CAMPOS", 2, "SP"),
+                tuple(4903, "CAJAMAR", 2, "SP"),
+                tuple(4943, "COSMOPOLIS", 2, "SP"),
+                tuple(4944, "COSMORAMA", 2, "SP"),
+                tuple(33252, "JARDIM BELVAL", 2, "SP"),
+                tuple(33255, "JARDIM SILVEIRA", 2, "SP"),
+                tuple(33269, "JORDANESIA", 2, "SP"),
+                tuple(5107, "LINS", 2, "SP"),
+                tuple(5128, "MARILIA", 2, "SP"),
+                tuple(33302, "POLVILHO", 2, "SP")
+            );
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaCidadeResponse_quandoInformarRegionalIdUfIdECidadePaiEstiverNaMesmaLista() {
+        var predicate = new CidadePredicate().comRegionalId(1027).comUfId(1).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.getAll(1027, 1))
+            .hasSize(14)
+            .extracting("id", "nome", "uf.id", "uf.uf", "regional.id", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(3248, "BANDEIRANTES", 1, "PR", 1027, null, null),
+                tuple(3270, "CAMBE", 1, "PR", 1027, null, null),
+                tuple(3272, "CAMPINA DA LAGOA", 1, "PR", 1027, null, null),
+                tuple(3287, "CASCAVEL", 1, "PR", 1027, null, null),
+                tuple(3312, "CURITIBA", 1, "PR", 1027, null, null),
+                tuple(30858, "GUARAVERA", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(30813, "IRERE", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(30732, "LERROVILLE", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(5578, "LONDRINA", 1, "PR", 1027, null, null),
+                tuple(30757, "MARAVILHA", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(3426, "MARINGA", 1, "PR", 1027, null, null),
+                tuple(30676, "PAIQUERE", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(30848, "SAO LUIZ", 1, "PR", 1027, 5578, "LONDRINA"),
+                tuple(30910, "WARTA", 1, "PR", 1027, 5578, "LONDRINA")
+            );
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void getAll_deveRetornarListaCidadeResponse_quandoInformarApenasRegionalIdUfIdECidadePaiNaoEstiverNaMesmaLista() {
+        var predicate = new CidadePredicate().comRegionalId(1031).comUfId(2).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(listaCidadesComUfSaoPauloERegionalSci());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.getAll(1031, 2))
+            .hasSize(10)
+            .extracting("id", "nome", "uf.id", "uf.uf", "regional.id", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(33618, "ALDEIA", 2, "SP", 1031, 4864, "BARUERI"),
+                tuple(4870, "BERNARDINO DE CAMPOS", 2, "SP", 1031, null, null),
+                tuple(4943, "COSMOPOLIS", 2, "SP", 1031, null, null),
+                tuple(4944, "COSMORAMA", 2, "SP", 1031, null, null),
+                tuple(33252, "JARDIM BELVAL", 2, "SP", 1031, 4864, "BARUERI"),
+                tuple(33255, "JARDIM SILVEIRA", 2, "SP", 1031, 4864, "BARUERI"),
+                tuple(33269, "JORDANESIA", 2, "SP", 1031, 4903, "CAJAMAR"),
+                tuple(5107, "LINS", 2, "SP", 1031, null, null),
+                tuple(5128, "MARILIA", 2, "SP", 1031, null, null),
+                tuple(33302, "POLVILHO", 2, "SP", 1031, 4903, "CAJAMAR")
+            );
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void buscarCidadesPorEstadosIds_deveRetornarListaVazia_quandoListaEstadosIdsForVazia() {
+        assertThat(service.buscarCidadesPorEstadosIds(List.of())).isEmpty();
+
+        verifyZeroInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void buscarCidadesPorEstadosIds_deveRetornarListaVazia_quandoNaoExistirPorEstadosIds() {
+        var estadosIds = List.of(50, 51);
+
+        assertThat(service.buscarCidadesPorEstadosIds(estadosIds)).isEmpty();
+
+        verify(cidadeRepository).findAllByUfIdInOrderByNome(estadosIds);
+        verifyZeroInteractions(self);
+    }
+
+    @Test
+    public void buscarCidadesPorEstadosIds_deveRetornarListaSelectResponse_quandoInformarListaEstadosIds() {
+        var estadosIds = List.of(1);
+
+        when(cidadeRepository.findAllByUfIdInOrderByNome(estadosIds))
+            .thenReturn(listaCidadesDoParanaEDistritosDeLondrina());
+        when(self.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.buscarCidadesPorEstadosIds(List.of(1)))
+            .hasSize(14)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(3248, "BANDEIRANTES - PR"),
+                tuple(3270, "CAMBE - PR"),
+                tuple(3272, "CAMPINA DA LAGOA - PR"),
+                tuple(3287, "CASCAVEL - PR"),
+                tuple(3312, "CURITIBA - PR"),
+                tuple(30858, "GUARAVERA - LONDRINA - PR"),
+                tuple(30813, "IRERE - LONDRINA - PR"),
+                tuple(30732, "LERROVILLE - LONDRINA - PR"),
+                tuple(5578, "LONDRINA - PR"),
+                tuple(30757, "MARAVILHA - LONDRINA - PR"),
+                tuple(3426, "MARINGA - PR"),
+                tuple(30676, "PAIQUERE - LONDRINA - PR"),
+                tuple(30848, "SAO LUIZ - LONDRINA - PR"),
+                tuple(30910, "WARTA - LONDRINA - PR")
+            );
+
+        verify(cidadeRepository).findAllByUfIdInOrderByNome(estadosIds);
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoFkCidadeForNull() {
+        assertFalse(hasFkCidadeSemNomeCidadePai(null, null));
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarFalse_quandoNomeCidadePaiNaoForNull() {
+        assertFalse(hasFkCidadeSemNomeCidadePai(5578, "LONDRINA"));
+    }
+
+    @Test
+    public void hasFkCidadeSemNomeCidadePai_deveRetornarTrue_quandoFkCidadeNaoForNullENomeCidadePaiForNull() {
+        assertTrue(hasFkCidadeSemNomeCidadePai(5578, null));
+    }
+
+    @Test
+    public void getCidadeById_deveLancarValidacaoException_quandoNaoEncontrarCidadePorId() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.getCidadeById(15000))
+            .withMessage("Cidade não encontrada.");
+
+        verify(cidadeRepository).findOne(15000);
+    }
+
+    @Test
+    public void getCidadeById_deveRetornarCidadeResponseSemCidadePai_quandoEncontrarCidadePorId() {
+        when(cidadeRepository.findOne(5578)).thenReturn(cidadeLondrina());
+
+        assertThat(service.getCidadeById(5578))
+            .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .containsExactly(5578, "LONDRINA", 1, "PARANA", 1027, "RPS", null, null);
+
+        verify(cidadeRepository).findOne(5578);
+    }
+
+    @Test
+    public void getCidadeById_deveRetornarCidadeResponseComCidadePai_quandoEncontrarCidadePorId() {
+        when(cidadeRepository.findOne(30910)).thenReturn(distritoWarta());
+        when(cidadeRepository.findOne(5578)).thenReturn(cidadeLondrina());
+
+        assertThat(service.getCidadeById(30910))
+            .extracting("id", "nome", "uf.id", "uf.nome", "regional.id", "regional.nome", "fkCidade", "cidadePai")
+            .containsExactly(30910, "WARTA", 1, "PARANA", 1027, "RPS", 5578, "LONDRINA");
+
+        verify(cidadeRepository).findOne(30910);
+        verify(cidadeRepository).findOne(5578);
+    }
+
+    @Test
+    public void getAllCidadeByUfs_deveRetornarListaVazia_quandoListaUfIdsForVazia() {
+        assertThat(service.getAllCidadeByUfs(List.of())).isEmpty();
+
+        verify(cidadeRepository, never()).findAllByUfIdInOrderByNome(anyList());
+    }
+
+    @Test
+    public void getAllCidadeByUfs_deveRetornarListaCidadeUfResponse_quandoInformarListaUfIds() {
+        var estadosIds = List.of(2);
+
+        when(cidadeRepository.findAllByUfIdInOrderByNome(estadosIds))
+            .thenReturn(listaCidadesDeSaoPaulo());
+
+        assertThat(service.getAllCidadeByUfs(estadosIds))
+            .hasSize(12)
+            .extracting("cidadeId", "cidade", "uf", "ufSigla", "ufId", "fkCidade", "cidadePai")
+            .containsExactly(
+                tuple(33618, "ALDEIA", "SAO PAULO", "SP", 2, 4864, "BARUERI"),
+                tuple(4870, "BERNARDINO DE CAMPOS", "SAO PAULO", "SP", 2, null, null),
+                tuple(4943, "COSMOPOLIS", "SAO PAULO", "SP", 2, null, null),
+                tuple(4944, "COSMORAMA", "SAO PAULO", "SP", 2, null, null),
+                tuple(33252, "JARDIM BELVAL", "SAO PAULO", "SP", 2, 4864, "BARUERI"),
+                tuple(33255, "JARDIM SILVEIRA", "SAO PAULO", "SP", 2, 4864, "BARUERI"),
+                tuple(33269, "JORDANESIA", "SAO PAULO", "SP", 2, 4903, "CAJAMAR"),
+                tuple(5107, "LINS", "SAO PAULO", "SP", 2, null, null),
+                tuple(5128, "MARILIA", "SAO PAULO", "SP", 2, null, null),
+                tuple(33302, "POLVILHO", "SAO PAULO", "SP", 2, 4903, "CAJAMAR"),
+                tuple(4864, "BARUERI", "SAO PAULO", "SP", 2, null, null),
+                tuple(4903, "CAJAMAR", "SAO PAULO", "SP", 2, null, null)
+            );
+
+        verify(cidadeRepository).findAllByUfIdInOrderByNome(estadosIds);
+    }
+
+    @Test
+    public void getCidadesDistritos_deveRetornarMapApenasComDistritos_quandoInformarApenasDistritosComoV() {
+        var predicate = new CidadePredicate().comDistritos(Eboolean.V).build();
+        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(umaListaApenasDistritos());
+
+        var predicateCidadesPai = new CidadePredicate().comCidadesId(umaListaApenasFkCidadeDosDistritos()).build();
+        when(cidadeRepository.findAllByPredicate(predicateCidadesPai)).thenReturn(umaListaApenasCidades());
+
+        assertThat(service.getCidadesDistritos(Eboolean.V)).hasSize(15);
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+        verify(cidadeRepository).findAllByPredicate(predicateCidadesPai);
+        verifyNoMoreInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void getCidadesDistritos_deveRetornarMapApenasComCidades_quandoInformarApenasDistritosComoF() {
+        var predicate = new CidadePredicate().comDistritos(Eboolean.F).build();
+        when(cidadeRepository.findAllByPredicate(predicate)).thenReturn(umaListaApenasCidades());
+
+        assertThat(service.getCidadesDistritos(Eboolean.F)).hasSize(15);
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+        verifyNoMoreInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void getCidadesDistritos_deveRetornarMapDeCidadesComDistritos_quandoInformarApenasDistritosComoNull() {
+        var predicate = new CidadePredicate().comDistritos(null).build();
+        var predicateCidadesPai = new CidadePredicate().comCidadesId(List.of(4864, 3272, 5578, 4903)).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(umaListaComCidadesEDistritos());
+        when(cidadeRepository.findAllByPredicate(predicateCidadesPai))
+            .thenReturn(List.of(cidadeCampinaDaLagoa(), cidadeBarueri(), cidadeCajamar(), cidadeLondrina()));
+
+        assertThat(service.getCidadesDistritos(null))
+            .hasSize(30);
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+        verify(cidadeRepository).findAllByPredicate(predicateCidadesPai);
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidade_deveRetornarListaVazia_quandoInformarListaVaziaDeCidadesId() {
+        assertThat(service.getCodigoIbgeRegionalByCidade(List.of())).isEmpty();
+
+        verifyZeroInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidade_deveRetornarListaVazia_quandoInformarListaComCidadesIdNaoExistentes() {
+        var cidadesIds = List.of(123123, 213213);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate)).thenReturn(List.of());
+
+        assertThat(service.getCodigoIbgeRegionalByCidade(cidadesIds)).isEmpty();
+
+        verify(cidadeRepository).findCodigoIbgeRegionalByCidade(predicate);
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidade_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadesId() {
+        var cidadesIds = List.of(5578, 3426, 5107);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate)).thenReturn(umaListaCodigoIbgeRegionalResponse());
+
+        assertThat(service.getCodigoIbgeRegionalByCidade(cidadesIds))
+            .hasSize(3)
+            .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome")
+            .containsExactlyInAnyOrder(
+                tuple(5578, "LONDRINA", "4113700", 1027, "RPS"),
+                tuple(3426, "MARINGA", "4115200", 1027, "RPS"),
+                tuple(5107, "LINS", "3527108", 1031, "RSI")
+            );
+
+        verify(cidadeRepository).findCodigoIbgeRegionalByCidade(predicate);
     }
 }

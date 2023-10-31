@@ -11,29 +11,33 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+@DataJpaTest
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@DataJpaTest
-@Sql(scripts = "classpath:/usuario-cidade-repository-test.sql")
+@Sql("classpath:/usuario-cidade-repository-test.sql")
 public class UsuarioCidadeRepositoryTest {
+
     @Autowired
     private UsuarioCidadeRepository repository;
 
     @Test
     public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(100))
+            .hasSize(5)
             .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617);
     }
 
     @Test
     public void findCidadesIdByUsuarioId_deveRetornarUmaListaVazia_quandoNaoEncontrarCidadesPorUsuarioId() {
-        assertThat(repository.findCidadesIdByUsuarioId(999)).isEmpty();
+        assertThat(repository.findCidadesIdByUsuarioId(999))
+            .isEmpty();
     }
 
     @Test
-    public void findCidadesDtoByUsuarioId_deveRetornarasCidades_quandoEncontrarCidadesPorUsuarioId() {
-        assertThat(repository.findCidadesDtoByUsuarioId(100))
-            .extracting("idUf", "nomeUf", "idCidade", "nomeCidade")
+    public void findUsuarioCidadesByUsuarioId_deveRetornarasCidades_quandoEncontrarCidadesPorUsuarioId() {
+        assertThat(repository.findUsuarioCidadesByUsuarioId(100))
+            .extracting("cidade.uf.id", "cidade.uf.nome", "cidade.id", "cidade.nome")
+            .hasSize(5)
             .containsExactlyInAnyOrder(
                 tuple(1, "PARANA", 3237, "ARAPONGAS"),
                 tuple(8, "MINAS GERAIS", 1443, "BELO VALE"),
@@ -43,7 +47,8 @@ public class UsuarioCidadeRepositoryTest {
     }
 
     @Test
-    public void findCidadesDtoByUsuarioId_deveRetornarUmaListaVazia_quandoNaoEncontrarCidadesPorUsuarioId() {
-        assertThat(repository.findCidadesDtoByUsuarioId(999)).isEmpty();
+    public void findUsuarioCidadesByUsuarioId_deveRetornarUmaListaVazia_quandoNaoEncontrarCidadesPorUsuarioId() {
+        assertThat(repository.findUsuarioCidadesByUsuarioId(999))
+            .isEmpty();
     }
 }

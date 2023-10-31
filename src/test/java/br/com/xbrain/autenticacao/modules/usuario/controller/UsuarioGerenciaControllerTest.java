@@ -15,7 +15,6 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
@@ -54,7 +53,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = UsuarioGerenciaController.class)
@@ -1158,7 +1156,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getCidadeByUsuario(anyInt());
+        verify(usuarioService).getCidadesByUsuarioId(anyInt());
     }
 
     @Test

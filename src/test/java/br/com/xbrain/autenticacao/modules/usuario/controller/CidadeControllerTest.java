@@ -1,13 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -27,14 +32,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.cidadeResponseLondrina;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.cidadeResponsePolvilhoComCidadePai;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -55,6 +60,8 @@ public class CidadeControllerTest {
     private MockMvc mvc;
     @MockBean
     private CidadeService cidadeService;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     @SneakyThrows
@@ -248,14 +255,6 @@ public class CidadeControllerTest {
         verify(cidadeService).getAtivosParaComunicados(1);
     }
 
-    public void deveRetornarTodosPorUf() throws Exception {
-        mvc.perform(get("/api/cidades?idUf=1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(8)));
-    }
-
     @Test
     @SneakyThrows
     @WithAnonymousUser
@@ -291,14 +290,59 @@ public class CidadeControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getCidadeById_deveRetornarOk_quandoUsuarioNaoAutenticado() {
-        when(cidadeService.findById(1)).thenReturn(umaCidade());
+    public void getCidadeById_deveRetornarBadRequest_quandoNaoEncontrarCidadePorId() {
+        doThrow(new ValidacaoException("Cidade não encontrada."))
+            .when(cidadeService)
+            .getCidadeById(15000);
 
-        mvc.perform(get(BASE_URL + "/1")
+        mvc.perform(get(BASE_URL + "/{cidadeId}", 15000)
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Cidade não encontrada.")));
 
-        verify(cidadeService).findById(1);
+        verify(cidadeService).getCidadeById(15000);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getCidadeById_deveRetornarOk_quandoEncontrarCidadePorIdSemNomeCidadePai() {
+        when(cidadeService.getCidadeById(5578)).thenReturn(cidadeResponseLondrina());
+
+        mvc.perform(get(BASE_URL + "/{cidadeId}", 5578)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(5578)))
+            .andExpect(jsonPath("$.nome", is("LONDRINA")))
+            .andExpect(jsonPath("$.uf.id", is(1)))
+            .andExpect(jsonPath("$.uf.nome", is("PARANA")))
+            .andExpect(jsonPath("$.regional.id", is(1027)))
+            .andExpect(jsonPath("$.regional.nome", is("RPS")))
+            .andExpect(jsonPath("$.fkCidade", is(nullValue())))
+            .andExpect(jsonPath("$.cidadePai", is(nullValue())));
+
+        verify(cidadeService).getCidadeById(5578);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getCidadeById_deveRetornarOk_quandoEncontrarCidadePorIdComNomeCidadePai() {
+        when(cidadeService.getCidadeById(33302)).thenReturn(cidadeResponsePolvilhoComCidadePai());
+
+        mvc.perform(get(BASE_URL + "/{cidadeId}", 33302)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(33302)))
+            .andExpect(jsonPath("$.nome", is("POLVILHO")))
+            .andExpect(jsonPath("$.uf.id", is(2)))
+            .andExpect(jsonPath("$.uf.nome", is("SAO PAULO")))
+            .andExpect(jsonPath("$.regional.id", is(1031)))
+            .andExpect(jsonPath("$.regional.nome", is("RSI")))
+            .andExpect(jsonPath("$.fkCidade", is(4903)))
+            .andExpect(jsonPath("$.cidadePai", is("CAJAMAR")));
+
+        verify(cidadeService).getCidadeById(33302);
     }
 
     @Test
@@ -525,7 +569,7 @@ public class CidadeControllerTest {
     @Test
     @SneakyThrows
     public void getCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarBadRequest_quandoNaoInformarListasDeCidadesEUfs() {
-        mvc.perform(post("/api/cidades/por-nome-e-ufs")
+        mvc.perform(post(BASE_URL + "/por-nome-e-ufs")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
 
@@ -569,6 +613,136 @@ public class CidadeControllerTest {
 
         verify(cidadeService, times(1))
             .getCodigoIbgeRegionalByCidadeNomeAndUf(any(CidadesUfsRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoNaoInformarParametros() {
+        mvc.perform(get(BASE_URL + "/todas")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getAll(null, null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoInformarApenasRegionalId() {
+        mvc.perform(get(BASE_URL + "/todas")
+                .param("regionalId", "1030")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getAll(1030, null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoInformarApenasUfId() {
+        mvc.perform(get(BASE_URL + "/todas")
+                .param("ufId", "2")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getAll(null, 2);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllCidades_deveRetornarOk_quandoInformarRegionalIdAndUfId() {
+        mvc.perform(get(BASE_URL + "/todas")
+                .param("regionalId", "1031")
+                .param("ufId", "2")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getAll(1031, 2);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadeById_deveRetornarOk_quandoEncontrarCidade() {
+        mvc.perform(get(BASE_URL + "/{cidadeId}", 5578)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getCidadeById(5578);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesDistritos_deveRetornarOk_quandoNaoInformarParametro() {
+        mvc.perform(get(BASE_URL + "/distritos")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getCidadesDistritos(null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCidadesDistritos_deveRetornarOk_quandoInformarApenasDistritos() {
+        mvc.perform(get(BASE_URL + "/distritos")
+                .param("apenasDistritos", "V")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void limparCacheCidadesDistritos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(delete(BASE_URL + "/distritos/limpar-cache"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(cidadeService);
+        verifyZeroInteractions(autenticacaoService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void limparCacheCidadesDistritos_deveRetornarForbidden_quandoUsuarioAutenticadoNaoTiverPermissao() {
+        var usuarioAutenticado = new UsuarioAutenticado();
+        usuarioAutenticado.setNivelCodigo(CodigoNivel.OPERACAO.name());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        mvc.perform(delete(BASE_URL + "/distritos/limpar-cache")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$[*].message",
+                containsInAnyOrder("Usuário sem permissão sobre a entidade requisitada.")));
+
+        verifyZeroInteractions(cidadeService);
+        verify(autenticacaoService).getUsuarioAutenticado();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void limparCacheCidadesDistritos_deveRetornarOk_quandoLimparCacheDeCidadesDistritos() {
+        var usuarioAutenticado = new UsuarioAutenticado();
+        usuarioAutenticado.setNivelCodigo(CodigoNivel.XBRAIN.name());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        mvc.perform(delete(BASE_URL + "/distritos/limpar-cache")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .flushCacheCidadesDistritos();
+        verify(autenticacaoService).getUsuarioAutenticado();
     }
 
     private Cidade umaCidade() {

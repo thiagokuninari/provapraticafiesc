@@ -59,7 +59,7 @@ public class SiteController {
 
     @GetMapping("{id}/detalhe")
     public SiteDetalheResponse getDetalheSiteById(@PathVariable Integer id) {
-        return SiteDetalheResponse.of(service.findById(id));
+        return service.getSiteDetalheResponseById(id);
     }
 
     @GetMapping("{id}/usuarios/ids")

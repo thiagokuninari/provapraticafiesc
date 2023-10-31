@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -92,6 +91,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
+import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
@@ -247,6 +248,8 @@ public class UsuarioService {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
+    @Autowired
+    private CidadeService cidadeService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -296,11 +299,21 @@ public class UsuarioService {
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
-        return repository.findComCidade(usuarioId)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO)
-            .stream()
-            .map(CidadeResponse::of)
-            .collect(toList());
+        var cidades = repository
+            .findComCidade(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
+        if (!cidades.isEmpty()) {
+            var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
+
+            cidadesResponse
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos));
+
+            return cidadesResponse;
+        }
+
+        return List.of();
     }
 
     public Usuario findCompleteById(int id) {
@@ -1959,12 +1972,14 @@ public class UsuarioService {
         return repository.getUsuariosIdsByNivel(nivel);
     }
 
-    public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
+    public List<CidadeResponse> getCidadesByUsuarioId(Integer usuarioId) {
         var usuario = findComplete(usuarioId);
 
-        return usuario.getCidades().stream()
-            .map(c -> UsuarioCidadeDto.of(c.getCidade()))
-            .collect(toList());
+        if (usuario.getCidades().isEmpty()) {
+            return List.of();
+        }
+
+        return getCidadesResponseByUsuarioCidades(usuario.getCidades());
     }
 
     @Transactional
@@ -2335,8 +2350,35 @@ public class UsuarioService {
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
-        return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
-            .orElseThrow(PermissaoException::new));
+        var cidades = usuarioCidadeRepository
+            .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
+                .orElseThrow(() -> EX_NAO_ENCONTRADO));
+
+        if (cidades.isEmpty()) {
+            return List.of();
+        }
+
+        var cidadesResponse = getCidadesResponseByUsuarioCidades(cidades);
+
+        return UsuarioCidadeDto.ofCidadesResponse(cidadesResponse);
+    }
+
+    private List<CidadeResponse> getCidadesResponseByUsuarioCidades(Set<UsuarioCidade> usuarioCidades) {
+        var cidadesResponse = usuarioCidades
+            .stream()
+            .map(usuarioCidade -> CidadeResponse.of(usuarioCidade.getCidade()))
+            .sorted(Comparator.comparing(CidadeResponse::getNome))
+            .collect(toList());
+
+        if (cidadesResponse.stream().anyMatch(cidadeResponse ->
+            hasFkCidadeSemNomeCidadePai(cidadeResponse.getFkCidade(), cidadeResponse.getCidadePai()))) {
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
+
+            cidadesResponse
+                .forEach(cidadeResponse -> CidadeResponse.definirNomeCidadePaiPorDistritos(cidadeResponse, distritos));
+        }
+
+        return cidadesResponse;
     }
 
     public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {

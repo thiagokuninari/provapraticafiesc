@@ -140,8 +140,8 @@ public class UsuarioController {
         return usuarioService.getUsuariosIdsByNivel(nivel);
     }
 
-    @GetMapping(value = "/{id}/cidades")
-    public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
+    @GetMapping("{id}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable int id) {
         return usuarioService.findCidadesByUsuario(id);
     }
 

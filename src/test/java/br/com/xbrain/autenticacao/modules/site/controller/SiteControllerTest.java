@@ -292,7 +292,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/{id}/detalhe", 100))
             .andExpect(status().isOk());
 
-        verify(service).findById(100);
+        verify(service).getSiteDetalheResponseById(100);
     }
 
     @Test

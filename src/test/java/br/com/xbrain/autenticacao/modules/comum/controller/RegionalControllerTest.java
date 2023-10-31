@@ -136,7 +136,7 @@ public class RegionalControllerTest {
     public void getNovasRegionaisIds_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_REGIONAL + "/novas-regionais-ids")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
 
         verify(service, never()).getNovasRegionaisIds();
     }
