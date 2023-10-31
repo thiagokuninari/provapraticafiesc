@@ -142,9 +142,11 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void getAll_deveLancarException_seParametroEquipeIdNaoInformado() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioGerenteOperacao());
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setCanal(ECanal.D2D_PROPRIO);
 
         assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
-                service.getAll(new PageRequest(), new SolicitacaoRamalFiltros()))
+                service.getAll(new PageRequest(), filtro))
             .withMessage("Campo equipe é obrigatório");
 
         verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));

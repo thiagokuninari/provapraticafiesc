@@ -112,7 +112,7 @@ public class SolicitacaoRamalService {
             } else if (!usuario.hasPermissao(CTR_2034)) {
                 throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO_AA);
             }
-        } else if (filtros.getEquipeId() == null) {
+        } else if (filtros.getEquipeId() == null && ECanal.D2D_PROPRIO == filtros.getCanal()) {
             throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO_D2D);
         }
     }
