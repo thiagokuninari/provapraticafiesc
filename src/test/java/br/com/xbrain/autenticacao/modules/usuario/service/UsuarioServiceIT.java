@@ -1537,7 +1537,7 @@ public class UsuarioServiceIT {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioComPermissoesEspeciais() {
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisComPermissoesEspeciais() {
         doReturn(umaListaFuncFeederEAcompIndicacoesTecnicoVendedor())
             .when(permissaoEspecialRepository)
             .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
@@ -1554,8 +1554,8 @@ public class UsuarioServiceIT {
             .save(permissaoCaptor.capture());
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
-            .containsExactlyInAnyOrder(List.of(50, 55), 32, true);
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
+            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true);
 
         assertThat(permissaoCaptor.getAllValues())
             .extracting("funcionalidade.id")
@@ -1564,7 +1564,7 @@ public class UsuarioServiceIT {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioSemPermissoesEspeciais() {
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisSemPermissoesEspeciais() {
         doReturn(List.of())
             .when(permissaoEspecialRepository)
             .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
@@ -1581,15 +1581,15 @@ public class UsuarioServiceIT {
             .save(any(PermissaoEspecial.class));
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
-            .containsExactlyInAnyOrder(List.of(50, 55), 32, true);
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
+            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true);
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigoSocioIdForNulo() {
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisIdsForNulo() {
         var umUsuarioMqRequestAntigoSocioIdNulo = umUsuarioMqRequestAtualizarSocioPrincipal();
-        umUsuarioMqRequestAntigoSocioIdNulo.setAntigoSocioPrincipalId(null);
+        umUsuarioMqRequestAntigoSocioIdNulo.setAntigosSociosPrincipaisIds(null);
 
         assertThatCode(() -> usuarioService
             .saveFromQueue(umUsuarioMqRequestAntigoSocioIdNulo))
@@ -1603,7 +1603,7 @@ public class UsuarioServiceIT {
             .save(any(PermissaoEspecial.class));
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigoSocioPrincipalId", "isAtualizarSocioPrincipal")
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
             .containsExactlyInAnyOrder(List.of(50, 55), null, true);
     }
 
@@ -1663,7 +1663,7 @@ public class UsuarioServiceIT {
             .agentesAutorizadosIds(List.of(50, 55))
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
-            .antigoSocioPrincipalId(32)
+            .antigosSociosPrincipaisIds(List.of(32))
             .build();
     }
 

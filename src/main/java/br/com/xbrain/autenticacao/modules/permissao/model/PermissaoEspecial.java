@@ -65,4 +65,13 @@ public class PermissaoEspecial {
         this.setUsuarioBaixa(new Usuario(usuarioId));
         this.setDataBaixa(LocalDateTime.now());
     }
+
+    public static PermissaoEspecial of(Integer usuarioId, Integer usuarioCadastroId, Integer funcionalidadeId) {
+        return PermissaoEspecial.builder()
+            .funcionalidade(new Funcionalidade(funcionalidadeId))
+            .usuarioCadastro(new Usuario(usuarioCadastroId))
+            .usuario(new Usuario(usuarioId))
+            .dataCadastro(LocalDateTime.now())
+            .build();
+    }
 }

@@ -1004,7 +1004,7 @@ public class UsuarioService {
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
-            enviarParaFilaDeAtualizarSocioPrincipal(usuarioMqRequest, usuarioDto);
+            enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
@@ -1019,49 +1019,42 @@ public class UsuarioService {
         }
     }
 
-    private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        if (usuarioMqRequest.isAtualizarSocioPrincipal()) {
-            enviarParaFilaDeAtualizarSocioPrincipalSalvo(usuarioDto);
-            atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioMqRequest, usuarioDto);
+    private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
+        if (socio.isAtualizarSocioPrincipal()) {
+            enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
+            atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
         }
     }
 
-    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioMqRequest request, UsuarioDto usuario) {
-        var permissoesEspeciais = getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(usuario);
-
-        if (!permissoesEspeciais.isEmpty()) {
-            permissoesEspeciais.forEach(permissao -> criarESalvarPermissaoEspecial(usuario, request, permissao));
+    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioDto socio) {
+        if (!isEmpty(socio.getAntigosSociosPrincipaisIds())) {
+            getFuncionalidadesIds(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, socio.getAntigosSociosPrincipaisIds())
+                .forEach(id -> criarESalvarPermissaoEspecial(socio, socio.getUsuarioCadastroId(), id));
         }
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisFeederEAcompanhamentoIndicacoesTecnicoVendedor(UsuarioDto usuario) {
-        return usuario.getAntigoSocioPrincipalId() != null
-            ? permissaoEspecialRepository
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(
-                FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR,
-                usuario.getAntigoSocioPrincipalId())
-            : emptyList();
+    private List<Integer> getFuncionalidadesIds(List<Integer> permissoesIds, List<Integer> usuariosIds) {
+        return usuariosIds.stream()
+            .map(usuarioId -> getFuncionalidadesId(permissoesIds, usuarioId))
+            .flatMap(Collection::stream)
+            .distinct()
+            .collect(toList());
     }
 
-    private void criarESalvarPermissaoEspecial(UsuarioDto usuario, UsuarioMqRequest request, PermissaoEspecial permissao) {
-        Optional.ofNullable(permissao.getFuncionalidade())
-            .ifPresent(funcionalidade -> {
-                var novaPermissaoEspecial = criarPermissaoEspecial(
-                    usuario.getId(),
-                    funcionalidade.getId(),
-                    request.getUsuarioCadastroId());
-
-                permissaoEspecialRepository.save(novaPermissaoEspecial);
-            });
+    private List<Integer> getFuncionalidadesId(List<Integer> permissoesIds, Integer usuarioId) {
+        return getPermissoesEspeciais(permissoesIds, usuarioId).stream()
+            .map(PermissaoEspecial::getFuncionalidade)
+            .map(Funcionalidade::getId)
+            .distinct()
+            .collect(toList());
     }
 
-    private PermissaoEspecial criarPermissaoEspecial(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
-        return PermissaoEspecial.builder()
-            .funcionalidade(new Funcionalidade(funcionalidadeId))
-            .usuarioCadastro(new Usuario(usuarioCadastroId))
-            .usuario(new Usuario(usuarioId))
-            .dataCadastro(LocalDateTime.now())
-            .build();
+    private List<PermissaoEspecial> getPermissoesEspeciais(List<Integer> permissoesIds, Integer usuarioId) {
+        return permissaoEspecialRepository.findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesIds, usuarioId);
+    }
+
+    private void criarESalvarPermissaoEspecial(UsuarioDto usuarioDto, Integer usuarioCadastroId, Integer funcionalidadeId) {
+        permissaoEspecialRepository.save(PermissaoEspecial.of(usuarioDto.getId(), usuarioCadastroId, funcionalidadeId));
     }
 
     @Transactional
@@ -1856,8 +1849,20 @@ public class UsuarioService {
     }
 
     public void inativarAntigoSocioPrincipal(String email) {
-        inativarSocioPrincipal(email);
+        var antigoSocioPrincipal = findOneByEmail(email);
+
+        if (Objects.equals(antigoSocioPrincipal.getSituacao(), ATIVO)) {
+            antigoSocioPrincipal.setSituacao(INATIVO);
+            repository.save(antigoSocioPrincipal);
+            autenticacaoService.logout(antigoSocioPrincipal.getId());
+        }
+
         agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
+    }
+
+    private Usuario findOneByEmail(String email) {
+        return repository.findByEmail(email)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public void inativarColaboradores(String cnpj) {
