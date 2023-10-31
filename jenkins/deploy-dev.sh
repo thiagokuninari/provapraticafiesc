@@ -64,7 +64,7 @@ if [ ! "$($REMOTE_CMD docker images -q $IMAGE_NAME)" ]; then
 fi
 
 # se o container estiver rodando
-if [ "$($REMOTE_CMD docker ps -q -f name=^/$CONTAINER)" ]; then
+if [ "$($REMOTE_CMD docker ps -q -f name=^/$CONTAINER$)" ]; then
 	echo "Reiniciando container..."
 	${REMOTE_CMD} docker stop "$CONTAINER"
 	${REMOTE_CMD} docker start "$CONTAINER"
