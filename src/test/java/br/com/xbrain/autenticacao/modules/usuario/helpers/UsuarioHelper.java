@@ -531,8 +531,8 @@ public class UsuarioHelper {
         return EquipeVendaUsuarioRequest.builder()
             .usuarioId(1)
             .usuarioNome("NAKANO")
-            .isTrocaDeSubCanal(false)
-            .isTrocaDeNome(true)
+            .trocaDeSubCanal(false)
+            .trocaDeNome(true)
             .build();
     }
 
@@ -540,8 +540,8 @@ public class UsuarioHelper {
         return EquipeVendaUsuarioRequest.builder()
             .usuarioId(1)
             .usuarioNome("NAKANO")
-            .isTrocaDeSubCanal(true)
-            .isTrocaDeNome(false)
+            .trocaDeSubCanal(true)
+            .trocaDeNome(false)
             .build();
     }
 }
