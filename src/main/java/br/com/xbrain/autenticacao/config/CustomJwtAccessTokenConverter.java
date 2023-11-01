@@ -164,6 +164,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
         token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
+        token.getAdditionalInformation().put("organizacaoNome", getOrganizacaoEmpresaNome(usuario));
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
 
         if (!isEmpty(empresas)) {
@@ -199,11 +200,15 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getOrganizacaoEmpresa(Usuario usuario) {
-        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getNome() : "";
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getDescricao() : "";
     }
 
     private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
         return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
+    }
+
+    private String getOrganizacaoEmpresaNome(Usuario usuario) {
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getNome() : "";
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {

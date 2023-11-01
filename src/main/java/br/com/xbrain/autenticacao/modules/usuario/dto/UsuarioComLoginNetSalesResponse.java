@@ -32,7 +32,9 @@ public class UsuarioComLoginNetSalesResponse {
             .nivelCodigo(getNivelCodigo(usuario))
             .razaoSocialEmpresa(CLARO_SA)
             .cpfNetSales(usuario.getCpf())
-            .organizacaoEmpresaNome(usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getNome() : null)
+            .organizacaoEmpresaNome(usuario.getOrganizacaoEmpresa() != null
+                ? usuario.getOrganizacaoEmpresa().getDescricao()
+                : null)
             .build();
     }
 

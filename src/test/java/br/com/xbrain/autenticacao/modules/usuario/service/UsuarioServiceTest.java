@@ -2669,7 +2669,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test
@@ -2685,7 +2685,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test
@@ -2701,7 +2701,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test

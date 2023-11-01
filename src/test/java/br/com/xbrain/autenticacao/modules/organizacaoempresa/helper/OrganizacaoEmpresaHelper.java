@@ -18,9 +18,10 @@ import java.util.List;
 public class OrganizacaoEmpresaHelper {
 
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
-        return OrganizacaoEmpresaRequest.builder()
-            .nome("Marcos AA")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+        return OrganizacaoEmpresaRequest
+            .builder()
+            .descricao("Marcos AA")
+            .nome("MARCOS_AA")
             .nivelId(1)
             .codigo("CODIGO")
             .build();
@@ -28,7 +29,8 @@ public class OrganizacaoEmpresaHelper {
 
     public static OrganizacaoEmpresa organizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .nome("Marcos AA")
+            .descricao("Marcos AA")
+            .nome("MARCOS_AA")
             .id(2)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();

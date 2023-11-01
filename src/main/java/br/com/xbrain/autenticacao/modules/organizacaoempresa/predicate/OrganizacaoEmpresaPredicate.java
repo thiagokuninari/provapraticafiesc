@@ -29,6 +29,14 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
         return this;
     }
 
+    public OrganizacaoEmpresaPredicate comDescricao(String descricao) {
+        if (StringUtils.isNotBlank(descricao)) {
+            builder.and(organizacaoEmpresa.descricao.containsIgnoreCase(descricao));
+        }
+
+        return this;
+    }
+
     public OrganizacaoEmpresaPredicate comNivel(Integer nivelId) {
         if (nivelId != null) {
             builder.and(organizacaoEmpresa.nivel.id.eq(nivelId));

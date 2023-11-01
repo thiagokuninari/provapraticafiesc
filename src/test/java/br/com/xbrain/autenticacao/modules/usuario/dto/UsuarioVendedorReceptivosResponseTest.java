@@ -18,7 +18,7 @@ public class UsuarioVendedorReceptivosResponseTest {
         assertThat(usuariosVendedorReceptivoResponse)
             .extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
             .containsExactly(usuario.getNome(), usuario.getEmail(), usuario.getLoginNetSales(),
-                usuario.getNivelNome(), usuario.getOrganizacaoEmpresa().getNome());
+                usuario.getNivelNome(), usuario.getOrganizacaoEmpresa().getDescricao());
     }
 
     private Usuario umUsuario() {

@@ -26,10 +26,13 @@ public class OrganizacaoEmpresa {
     @GeneratedValue(generator = "SEQ_ORGANIZACAO_EMPRESA", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
+    @Column(name = "DESCRICAO", nullable = false)
+    private String descricao;
+
     @Column(name = "NOME", nullable = false)
     private String nome;
 
-    @Column(name = "CODIGO", length = 80, nullable = false)
+    @Column(name = "CODIGO", length = 80)
     private String codigo;
 
     @JoinColumn(name = "FK_NIVEL", referencedColumnName = "ID",
@@ -57,18 +60,13 @@ public class OrganizacaoEmpresa {
         return OrganizacaoEmpresa.builder()
             .nome(request.getNome())
             .nivel(nivel)
+            .descricao(request.getDescricao())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(new Usuario(usuarioId))
             .codigo(request.getCodigo())
             .canal(request.getCanal())
             .build();
-    }
-
-    public void of(OrganizacaoEmpresaRequest request, Nivel nivel) {
-        this.nome = request.getNome();
-        this.nivel = nivel;
-        this.codigo = request.getCodigo();
     }
 
     public void inativar() {
