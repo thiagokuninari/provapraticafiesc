@@ -115,6 +115,7 @@ public class UsuarioHelper {
                                                        ETipoCanal codigoSubCanal) {
         return Usuario.builder()
             .id(usuarioId)
+            .nome("NAKANO")
             .email("USUARIO.OPERACAO@CLARO.COM.BR")
             .cargo(Cargo.builder()
                 .codigo(VENDEDOR_OPERACAO)
@@ -531,6 +532,7 @@ public class UsuarioHelper {
             .usuarioId(1)
             .usuarioNome("NAKANO")
             .isTrocaDeSubCanal(false)
+            .isTrocaDeNome(true)
             .build();
     }
 
@@ -539,6 +541,7 @@ public class UsuarioHelper {
             .usuarioId(1)
             .usuarioNome("NAKANO")
             .isTrocaDeSubCanal(true)
+            .isTrocaDeNome(false)
             .build();
     }
 }

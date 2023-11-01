@@ -786,7 +786,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository, times(5)).findById(101112);
+        verify(usuarioRepository, times(6)).findById(101112);
         verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -804,7 +804,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository, times(5)).findById(101112);
+        verify(usuarioRepository, times(6)).findById(101112);
         verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -814,7 +814,6 @@ public class UsuarioServiceTest {
             .when(autenticacaoService).getUsuarioAutenticado();
 
         var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
-        novoUsuario.setNome("NAKANO");
 
         doReturn(Optional.of(umUsuario()))
             .when(usuarioRepository).findById(1);

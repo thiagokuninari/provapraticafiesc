@@ -12,14 +12,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EquipeVendaUsuarioRequest {
 
-    public Integer usuarioId;
-    public String usuarioNome;
-    public boolean isTrocaDeSubCanal;
+    private Integer usuarioId; // Ver com o Diogo porque isso aqui era público
+    private String usuarioNome;
+    private boolean isTrocaDeSubCanal;
+    private boolean isTrocaDeNome;
 
-    public static EquipeVendaUsuarioRequest of(Usuario usuario) {
+    public static EquipeVendaUsuarioRequest of(Usuario usuario, boolean isTrocaDeSubCanal, boolean isTrocaDeNome) {
         return EquipeVendaUsuarioRequest.builder()
             .usuarioId(usuario.getId())
             .usuarioNome(usuario.getNome())
+            .isTrocaDeSubCanal(isTrocaDeSubCanal)
+            .isTrocaDeNome(isTrocaDeNome)
             .build();
     }
 }

@@ -2886,26 +2886,25 @@ public class UsuarioService {
 
     private void enviarNovosDadosParaEquipeVendasUsuario(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
-            var request = EquipeVendaUsuarioRequest.of(usuario);
-            if (isTrocaDeSubCanal(usuario, request) || isTrocaDeNome(usuario)) {
+            var trocaDeSubCanal = isTrocaDeSubCanal(usuario);
+            var trocaDeNome = isTrocaDeNome(usuario);
+
+            if (trocaDeSubCanal || trocaDeNome) {
+                var request = EquipeVendaUsuarioRequest.of(usuario, trocaDeSubCanal, trocaDeNome);
                 equipeVendasUsuarioService.updateEquipeVendasUsuario(request);
             }
         }
     }
 
-    public boolean isTrocaDeNome(Usuario usuario) {
-        return repository.findById(usuario.getId())
-            .map(antigoUsuario -> !antigoUsuario.getNome().equals(usuario.getNome()))
-            .orElse(true);
+    private boolean isTrocaDeNome(Usuario usuario) {
+        return repository.findById(usuario.getId()).stream()
+            .anyMatch(antigoUsuario -> !antigoUsuario.getNome().equals(usuario.getNome()));
     }
 
-    private boolean isTrocaDeSubCanal(Usuario usuario, EquipeVendaUsuarioRequest request) {
-        var subCanal = repository.getSubCanaisByUsuarioIds(List.of(usuario.getId()));
-        var trocaDeSubCanal = subCanal.stream()
-            .noneMatch(canal -> usuario.getSubCanais().stream()
-                .anyMatch(usuarioSubCanal -> Objects.equals(canal.getId(), usuarioSubCanal.getId())));
-        request.setTrocaDeSubCanal(trocaDeSubCanal);
-
-        return trocaDeSubCanal;
+    private boolean isTrocaDeSubCanal(Usuario usuario) {
+        return repository.getSubCanaisByUsuarioIds(List.of(usuario.getId())).stream()
+            .map(SubCanal::getId)
+            .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
+                .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
     }
 }
