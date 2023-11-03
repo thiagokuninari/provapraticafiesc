@@ -1540,6 +1540,7 @@ public class UsuarioService {
         usuario.setDataReativacao(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
+        validarSubcanal(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
                 getUsuarioAtivacao(dto),
@@ -1584,6 +1585,36 @@ public class UsuarioService {
         }
 
         repository.save(usuario);
+    }
+
+    private void validarSubcanal(Usuario usuario) {
+        if (validarCanalEOperador(usuario)) {
+            var superior = validarSuperior(usuario);
+            var subCanalVendedor = obterSubcanal(usuario);
+            if (!superior.getSubCanais().contains(subCanalVendedor)) {
+                throw new ValidacaoException("Favor deve-se por este usuario no mesmo subcanal"
+                    + " do superior ou trocar a hierarquia para um superior do mesmo subcanal");
+            }
+        }
+    }
+
+    private boolean validarCanalEOperador(Usuario usuario) {
+        return usuario.getCanais().contains(ECanal.D2D_PROPRIO)
+            && VENDEDOR_OPERACAO.equals(usuario.getCargoCodigo());
+    }
+
+    private Usuario validarSuperior(Usuario usuario) {
+        return usuario.getUsuariosHierarquia().stream()
+            .map(UsuarioHierarquia::getUsuarioSuperior)
+            .filter(usuarioHierquia -> SUPERVISOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo())
+                || COORDENADOR_OPERACAO.equals(usuarioHierquia.getCargoCodigo()))
+            .findFirst().orElseThrow(() -> new ValidacaoException("Superior do Vendedor não foi encontrado"));
+    }
+
+    private SubCanal obterSubcanal(Usuario usuario) {
+        return usuario.getSubCanais().stream()
+            .findFirst()
+            .orElseThrow(() -> new ValidacaoException("Não foi encontrado o subcanal do " + usuario.getCargo().getCodigo()));
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {

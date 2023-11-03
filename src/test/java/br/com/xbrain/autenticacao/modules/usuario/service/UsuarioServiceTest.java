@@ -102,6 +102,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umUsuarioD2DSemSubcanal;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -368,6 +369,94 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
             .withMessage(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
+    }
+
+    @Test
+    public void ativar_deveAtivarVendedorD2d_quandoSubcanalSupervisorIgual() {
+        doReturn(Optional.of(umUsuarioD2D(PAP_PREMIUM)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        usuarioService.ativar(umUsuarioAtivacaoDtoD2d());
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoSubcanalSupervisorDiferente() {
+        doReturn(Optional.of(umUsuarioD2D(PAP)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
+            .withMessage("Favor deve-se por este usuario no mesmo subcanal"
+                + " do superior ou trocar a hierarquia para um superior do mesmo subcanal");
+    }
+
+    @Test
+    public void ativar_deveAtivarVendedorD2d_quandoSubcanalCoordenadorIgual() {
+        doReturn(Optional.of(umUsuarioD2DComCoordenador(PAP_PREMIUM)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        usuarioService.ativar(umUsuarioAtivacaoDtoD2d());
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoSubcanalCoordenadorDiferente() {
+        doReturn(Optional.of(umUsuarioD2DComCoordenador(PAP)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
+            .withMessage("Favor deve-se por este usuario no mesmo subcanal"
+                + " do superior ou trocar a hierarquia para um superior do mesmo subcanal");
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoSuperiorNaoEncontrado() {
+        doReturn(Optional.of(umUsuarioD2DSemCoordenador(PAP)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
+            .withMessage("Superior do Vendedor não foi encontrado");
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoSubcanalNaoEncontrado() {
+        doReturn(Optional.of(umUsuarioD2DSemSubcanal(null)))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
+            .withMessage("Não foi encontrado o subcanal do " + umUsuarioD2DSemSubcanal(null).getCargo().getCodigo());
     }
 
     @Test

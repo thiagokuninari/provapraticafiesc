@@ -19,11 +19,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 
 public class UsuarioServiceHelper {
 
@@ -247,6 +251,7 @@ public class UsuarioServiceHelper {
             .cpf("111.111.111-11")
             .situacao(situacao)
             .loginNetSales("login123")
+            .subCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).build()))
             .cargo(Cargo
                 .builder()
                 .id(idCargo)
@@ -415,6 +420,206 @@ public class UsuarioServiceHelper {
         return usuario;
     }
 
+    public static Usuario umUsuarioD2D(ETipoCanal subcanal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.I)
+            .subCanais(Set.of(SubCanal.builder().codigo(subcanal).build()))
+            .usuariosHierarquia(Set.of(usuarioSupervisorHierarquia()))
+            .cargo(Cargo
+                .builder()
+                .id(120)
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(COMERCIAL)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(D2D_PROPRIO)
+            )
+        );
+        return usuario;
+    }
+
+    public static Usuario umUsuarioD2DComCoordenador(ETipoCanal subcanal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME DOIS")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.I)
+            .subCanais(Set.of(SubCanal.builder().codigo(subcanal).build()))
+            .usuariosHierarquia(Set.of(usuarioCoodernadorHierarquia()))
+            .cargo(Cargo
+                .builder()
+                .id(120)
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(COMERCIAL)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(D2D_PROPRIO)
+            )
+        );
+        return usuario;
+    }
+
+    public static Usuario umUsuarioD2DSemCoordenador(ETipoCanal subcanal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME TRES")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.I)
+            .subCanais(Set.of(SubCanal.builder().codigo(subcanal).build()))
+            .usuariosHierarquia(Set.of(umDiretorHierarquia()))
+            .cargo(Cargo
+                .builder()
+                .id(120)
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(COMERCIAL)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(D2D_PROPRIO)
+            )
+        );
+        return usuario;
+    }
+
+    public static Usuario umUsuarioD2DSemSubcanal(ETipoCanal subcanal) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME QUATRO")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.I)
+            .subCanais(Set.of())
+            .usuariosHierarquia(Set.of(usuarioCoodernadorHierarquia()))
+            .cargo(Cargo
+                .builder()
+                .id(120)
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(COMERCIAL)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(D2D_PROPRIO)
+            )
+        );
+        return usuario;
+    }
+
     public static Usuario umVendedorReceptivo() {
         var usuario = umUsuarioCompleto();
         var cargo = Cargo.builder()
@@ -448,13 +653,21 @@ public class UsuarioServiceHelper {
     public static UsuarioFiltros umUsuarioFiltro() {
         return UsuarioFiltros.builder()
             .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
-            .canal(ECanal.D2D_PROPRIO)
+            .canal(D2D_PROPRIO)
             .build();
     }
 
     public static UsuarioAtivacaoDto umUsuarioAtivacaoDto() {
         return UsuarioAtivacaoDto.builder()
             .idUsuario(10)
+            .idUsuarioAtivacao(20)
+            .observacao("Teste")
+            .build();
+    }
+
+    public static UsuarioAtivacaoDto umUsuarioAtivacaoDtoD2d() {
+        return UsuarioAtivacaoDto.builder()
+            .idUsuario(1)
             .idUsuarioAtivacao(20)
             .observacao("Teste")
             .build();
@@ -568,6 +781,27 @@ public class UsuarioServiceHelper {
             .id(1)
             .codigo(OPERACAO)
             .nome(OPERACAO.name())
+            .build();
+    }
+
+    private static UsuarioHierarquia usuarioSupervisorHierarquia() {
+        return UsuarioHierarquia.builder()
+            .usuario(Usuario.builder().id(1).build())
+            .usuarioSuperior(umSupervisorD2d())
+            .build();
+    }
+
+    private static UsuarioHierarquia usuarioCoodernadorHierarquia() {
+        return UsuarioHierarquia.builder()
+            .usuario(Usuario.builder().id(1).build())
+            .usuarioSuperior(umCoordenadorD2d())
+            .build();
+    }
+
+    private static UsuarioHierarquia umDiretorHierarquia() {
+        return UsuarioHierarquia.builder()
+            .usuario(Usuario.builder().id(1).build())
+            .usuarioSuperior(umDiretor())
             .build();
     }
 }

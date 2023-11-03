@@ -26,10 +26,11 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubcanal;
 
 public class UsuarioHelper {
 
@@ -333,6 +334,31 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umCoordenadorD2d() {
+        return Usuario.builder()
+            .id(11122)
+            .nome("Coordenador operacao D2D")
+            .email("COORDENADOR_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.COORDENADOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(umaListaSubcanal())
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11122), 1200, 10),
+                UsuarioCidade.criar(new Usuario(11122), 1300, 10)
+            ))
+            .build();
+    }
+
     public static Usuario outroCoordenador() {
         return Usuario.builder()
             .id(11126)
@@ -353,6 +379,30 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umDiretor() {
+        return Usuario.builder()
+            .id(11126)
+            .nome("diretor sem site operacao ativo local")
+            .email("COORDENADOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.DIRETOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11126), 1700, 10)
+            ))
+            .build();
+    }
+
     public static Usuario umSupervisor() {
         return Usuario.builder()
             .id(11127)
@@ -366,6 +416,28 @@ public class UsuarioHelper {
             .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
             .alterarSenha(Eboolean.F)
             .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario umSupervisorD2d() {
+        return Usuario.builder()
+            .id(11127)
+            .nome("Supervisor2 operacao ativo local")
+            .email("SUPERVISOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(10, SUPERVISOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(A)
+            .subCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()))
+            .empresas(List.of(Empresa.builder().codigo(CodigoEmpresa.NET).build()))
+            .cidades(Set.of(new UsuarioCidade()))
+            .usuariosHierarquia(Set.of())
+            .unidadesNegocios(List.of(new UnidadeNegocio()))
+            .canais(Set.of(ECanal.D2D_PROPRIO))
             .build();
     }
 
