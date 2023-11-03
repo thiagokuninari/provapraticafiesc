@@ -870,8 +870,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioDto.class,
                 usuario.id,
-                usuario.email))
+                usuario.email,
+                usuario.cargo.nivel.codigo))
             .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
             .where(usuario.situacao.eq(A)
                 .and(usuario.cargo.nivel.codigo.ne(CodigoNivel.INTEGRACAO))
                 .and(usuario.dataUltimoAcesso.isNull())
@@ -1332,8 +1335,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioDto.class,
                 usuario.id,
-                usuario.email))
+                usuario.email,
+                usuario.cargo.nivel.codigo))
             .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
             .where(usuario.dataUltimoAcesso.after(dataHoraInativarUsuario)
                 .and(usuario.situacao.ne(I))
                 .and(usuario.cargo.nivel.codigo.ne(CodigoNivel.INTEGRACAO))

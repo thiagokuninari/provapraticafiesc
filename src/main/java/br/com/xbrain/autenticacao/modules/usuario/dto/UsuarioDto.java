@@ -198,4 +198,10 @@ public class UsuarioDto implements Serializable {
         this.id = id;
         this.email = email;
     }
+
+    public UsuarioDto(Integer id, String email, CodigoNivel nivelCodigo) {
+        this.id = id;
+        this.email = email;
+        this.nivelCodigo = nivelCodigo;
+    }
 }
