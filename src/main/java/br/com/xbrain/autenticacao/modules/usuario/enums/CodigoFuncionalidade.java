@@ -43,6 +43,7 @@ public enum CodigoFuncionalidade {
     CTR_20014("Solicitar Ramal AA"),
     CTR_20015("Solicitar Ramal D2D"),
     AUT_20024("Visualizar status do Horário de Acesso"),
+    AUT_20025("Editar nova checagem de crédito - Sub-canais"),
     BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
     VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
 
