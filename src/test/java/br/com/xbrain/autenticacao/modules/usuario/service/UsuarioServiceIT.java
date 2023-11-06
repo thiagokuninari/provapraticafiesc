@@ -1162,6 +1162,19 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarUsuarios_quandoSolicitado() {
+        assertThat(service.findColaboradoresAtivosOperacaoComericialPorCargoCodigo(EXECUTIVO))
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(149, "USUARIO INFERIOR"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(998, "USUARIO REMANEJAR"),
+                tuple(1000, "USUARIO REMANEJAR")
+            );
+    }
+
+    @Test
     public void validarUsuarioComCpfDiferenteRemanejado_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);

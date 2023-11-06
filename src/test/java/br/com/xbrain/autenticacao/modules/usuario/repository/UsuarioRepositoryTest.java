@@ -65,7 +65,7 @@ public class UsuarioRepositoryTest {
     @SuppressWarnings("LineLength")
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)
-            ))
+        ))
             .extracting("id", "email")
             .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR"), tuple(104, "MARIA@HOTMAIL.COM"));
     }
@@ -194,6 +194,21 @@ public class UsuarioRepositoryTest {
     public void findUsuariosAtivosOperacaoComercialByCargoId_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
         assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoId(1000))
             .isEmpty();
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarDoisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(EXECUTIVO_HUNTER))
+            .hasSize(2)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(OUVIDORIA)).isEmpty();
     }
 
     @Test

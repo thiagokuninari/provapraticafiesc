@@ -71,4 +71,9 @@ public class CargoController {
     public List<SelectResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
         return service.getPermitidosAosComunicados(niveisId);
     }
+
+    @GetMapping("obter-cargos-atas-reuniao")
+    public List<SelectResponse> findCargosForAtaReuniao() {
+        return service.findCargosForAtaReuniao();
+    }
 }

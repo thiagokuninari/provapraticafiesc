@@ -56,7 +56,7 @@ public class CargoService {
     }
 
     private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
-                                                          boolean permiteEditarCompleto) {
+                                                           boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate();
         if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
             predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
@@ -102,14 +102,14 @@ public class CargoService {
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
         return repository.buscarTodosComNiveis(
-            new CargoPredicate()
-                .comNiveis(niveisIds)
-                .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
-                .build())
+                new CargoPredicate()
+                    .comNiveis(niveisIds)
+                    .filtrarPermitidos(usuarioAutenticado, cargosIds)
+                    .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
+                    .build())
             .stream()
             .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ",
-                 cargo.getNome(), cargo.getNivel().getNome())))
+                cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 
@@ -159,6 +159,16 @@ public class CargoService {
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
+    }
+
+    public List<SelectResponse> findCargosForAtaReuniao() {
+        return repository.findByCodigoIn(List.of(CodigoCargo.ASSISTENTE_OPERACAO, CodigoCargo.ASSISTENTE_HUNTER,
+                CodigoCargo.OPERACAO_CONSULTOR, CodigoCargo.COORDENADOR_OPERACAO, CodigoCargo.DIRETOR_OPERACAO,
+                CodigoCargo.EXECUTIVO, CodigoCargo.EXECUTIVO_HUNTER, CodigoCargo.GERENTE_OPERACAO)
+            )
+            .stream()
+            .map(cargo -> SelectResponse.of(cargo.getCodigo(), cargo.getNome()))
+            .collect(Collectors.toList());
     }
 
     private List<Integer> getCargosPermitidosParaEditar() {

@@ -328,6 +328,26 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findColaboradoresAtivosOperacaoComericialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findColaboradoresAtivosOperacaoComericialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void getUsuarioById_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/1")))

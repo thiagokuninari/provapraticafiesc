@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosAtaReuniao;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
@@ -262,6 +265,28 @@ public class CargoServiceTest {
         mockUmUsuarioGerenteVisualizarGeral();
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null, true))
             .hasSize(12);
+    }
+
+    @Test
+    public void findCargosForAtaReuniao_deveRetornarCargosParaAtaReuniao_quandoSolicitado() {
+        doReturn(umaListaDeCargosAtaReuniao())
+            .when(cargoRepository)
+            .findByCodigoIn(anyList());
+
+        assertThat(service.findCargosForAtaReuniao())
+            .extracting(SelectResponse::getValue, SelectResponse::getLabel)
+            .containsExactlyInAnyOrder(
+                tuple(CodigoCargo.ASSISTENTE_OPERACAO, "Assistente"),
+                tuple(CodigoCargo.ASSISTENTE_HUNTER, "Assistente Hunter"),
+                tuple(CodigoCargo.OPERACAO_CONSULTOR, "Consultor"),
+                tuple(CodigoCargo.COORDENADOR_OPERACAO, "Coordenador"),
+                tuple(CodigoCargo.DIRETOR_OPERACAO, "Diretor"),
+                tuple(CodigoCargo.EXECUTIVO, "Executivo"),
+                tuple(CodigoCargo.EXECUTIVO_HUNTER, "Executivo Hunter"),
+                tuple(CodigoCargo.GERENTE_OPERACAO, "Gerente")
+            );
+
+        verify(cargoRepository).findByCodigoIn(anyList());
     }
 
     private void mockUmUsuarioGerenteVisualizarGeral() {

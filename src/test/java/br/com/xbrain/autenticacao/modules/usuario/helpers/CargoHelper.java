@@ -249,4 +249,31 @@ public class CargoHelper {
                 .build())
             .build();
     }
+
+    public static List<Cargo> umaListaDeCargosAtaReuniao() {
+        return List.of(
+            umCargo(1, "Assistente", CodigoCargo.ASSISTENTE_OPERACAO),
+            umCargo(2, "Assistente Hunter", CodigoCargo.ASSISTENTE_HUNTER),
+            umCargo(3, "Consultor", CodigoCargo.OPERACAO_CONSULTOR),
+            umCargo(4, "Coordenador", CodigoCargo.COORDENADOR_OPERACAO),
+            umCargo(6, "Diretor", CodigoCargo.DIRETOR_OPERACAO),
+            umCargo(5, "Executivo", CodigoCargo.EXECUTIVO),
+            umCargo(7, "Executivo Hunter", CodigoCargo.EXECUTIVO_HUNTER),
+            umCargo(10, "Gerente", CodigoCargo.GERENTE_OPERACAO)
+        );
+    }
+
+    public static Cargo umCargo(Integer id, String nome, CodigoCargo codigoCargo) {
+        return Cargo.builder()
+            .id(id)
+            .nome(nome)
+            .codigo(codigoCargo)
+            .situacao(ESituacao.A)
+            .nivel(Nivel
+                .builder()
+                .id(1)
+                .build()
+            )
+            .build();
+    }
 }

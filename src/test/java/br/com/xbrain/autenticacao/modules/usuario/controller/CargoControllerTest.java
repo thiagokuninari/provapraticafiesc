@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -7,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +36,7 @@ import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -176,5 +178,53 @@ public class CargoControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", not(empty())))
             .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
+    }
+
+    @Test
+    @WithMockUser
+    @SneakyThrows
+    public void findCargosForAtaReuniao_deveRetornarOk_quandoUsuarioAutenticado() {
+        var cargos = umaListaDeCargosAtaReuniao()
+            .stream()
+            .map(cargo -> SelectResponse.of(cargo.getCodigo(), cargo.getNome()))
+            .collect(Collectors.toList());
+
+        doReturn(cargos)
+            .when(cargoService)
+            .findCargosForAtaReuniao();
+
+        mvc.perform(get(API_CARGO + "/obter-cargos-atas-reuniao")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", not(empty())))
+            .andExpect(jsonPath("$[0].value", is("ASSISTENTE_OPERACAO")))
+            .andExpect(jsonPath("$[0].label", is("Assistente")))
+            .andExpect(jsonPath("$[1].value", is("ASSISTENTE_HUNTER")))
+            .andExpect(jsonPath("$[1].label", is("Assistente Hunter")))
+            .andExpect(jsonPath("$[2].value", is("OPERACAO_CONSULTOR")))
+            .andExpect(jsonPath("$[2].label", is("Consultor")))
+            .andExpect(jsonPath("$[3].value", is("COORDENADOR_OPERACAO")))
+            .andExpect(jsonPath("$[3].label", is("Coordenador")))
+            .andExpect(jsonPath("$[4].value", is("DIRETOR_OPERACAO")))
+            .andExpect(jsonPath("$[4].label", is("Diretor")))
+            .andExpect(jsonPath("$[5].value", is("EXECUTIVO")))
+            .andExpect(jsonPath("$[5].label", is("Executivo")))
+            .andExpect(jsonPath("$[6].value", is("EXECUTIVO_HUNTER")))
+            .andExpect(jsonPath("$[6].label", is("Executivo Hunter")))
+            .andExpect(jsonPath("$[7].value", is("GERENTE_OPERACAO")))
+            .andExpect(jsonPath("$[7].label", is("Gerente")));
+
+        verify(cargoService).findCargosForAtaReuniao();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findCargosForAtaReuniao_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_CARGO + "/obter-cargos-atas-reuniao")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(cargoService, never()).findCargosForAtaReuniao();
     }
 }

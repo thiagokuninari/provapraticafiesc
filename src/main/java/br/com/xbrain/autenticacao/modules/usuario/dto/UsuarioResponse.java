@@ -88,30 +88,20 @@ public class UsuarioResponse {
             usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
             usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
             usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
-                ? usuario.getSubCanais().stream()
-                    .map(SubCanalDto::of)
-                    .collect(Collectors.toSet())
+                ? usuario.getSubCanais()
+                .stream()
+                .map(SubCanalDto::of)
+                .collect(Collectors.toSet())
                 : null);
         }
         return usuarioResponse;
     }
 
     public static UsuarioResponse of(Usuario usuario, List<String> permissoes) {
-        UsuarioResponse usuarioResponse = new UsuarioResponse();
-        BeanUtils.copyProperties(usuario, usuarioResponse);
-        usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
-        usuarioResponse.setNomeNivel(usuario.getNivelNome());
-        usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
+        var usuarioResponse = of(usuario);
         usuarioResponse.setNomeCargo(usuario.getCargo().getNome());
-        usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
-        usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
-        usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
-        usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
-            ? usuario.getSubCanais().stream()
-                .map(SubCanalDto::of)
-                .collect(Collectors.toSet())
-            : null);
+
         return usuarioResponse;
     }
 }
