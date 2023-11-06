@@ -48,6 +48,10 @@ public class SubCanalService {
         return SubCanalDto.of(findById(id));
     }
 
+    public SubCanalCompletDto getSubCanalCompletById(Integer id) {
+        return SubCanalCompletDto.of(findById(id));
+    }
+
     private SubCanal findById(Integer id) {
         return repository.findById(id)
             .orElseThrow(() -> SUBCANAL_NAO_ENCONTRADO);

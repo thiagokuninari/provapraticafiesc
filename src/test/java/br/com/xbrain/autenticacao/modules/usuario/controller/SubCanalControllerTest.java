@@ -90,6 +90,48 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    public void getSubCanalCompletById_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        mvc.perform(get(API_URI + "/1/detalhar")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getSubCanalCompletById(any());
+    }
+
+    @Test
+    public void getSubCanalCompletById_deveRetornarSubCanal_quandoOk() throws Exception {
+        when(subCanalService.getSubCanalCompletById(1)).thenReturn(
+            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V));
+
+        mvc.perform(get(API_URI + "/1/detalhar")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.codigo", is("PAP_PME")))
+            .andExpect(jsonPath("$.nome", is("PAP PME")))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.novaChecagemCredito", is("V")));
+
+        verify(subCanalService).getSubCanalCompletById(1);
+    }
+
+    @Test
+    public void getSubCanalCompletById_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.getSubCanalCompletById(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/detalhar")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
+
+        verify(subCanalService).getSubCanalCompletById(1);
+    }
+
+    @Test
     public void getAllSubCanaisConfiguracoes_deveRetornarPageDeSubCanais_quandoOk() throws Exception {
         var pageRequest = new PageRequest();
         var filtros = new SubCanalFiltros();

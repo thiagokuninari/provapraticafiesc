@@ -69,6 +69,21 @@ public class SubCanalServiceTest {
     }
 
     @Test
+    public void getSubCanalCompletById_deveRetornarSubCanalCompletResponse_quandoHouverSubCanal() {
+        when(subCanalRepository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
+
+        assertThat(subCanalService.getSubCanalCompletById(1))
+            .isEqualTo(new SubCanalCompletDto(1, PAP, "PAP", ESituacao.A, Eboolean.F));
+    }
+
+    @Test
+    public void getSubCanalCompletById_deveLancarException_quandoNaoHouverSubCanal() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> subCanalService.getSubCanalCompletById(100))
+            .withMessage("Erro, subcanal não encontrado.");
+    }
+
+    @Test
     public void getSubCanalById_deveLancarException_quandoNaoHouverSubCanal() {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> subCanalService.getSubCanalById(100))

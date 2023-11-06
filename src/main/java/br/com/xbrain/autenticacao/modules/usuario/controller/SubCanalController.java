@@ -36,6 +36,11 @@ public class SubCanalController {
         return service.getSubCanalById(id);
     }
 
+    @GetMapping("{id}/detalhar")
+    public SubCanalCompletDto getSubCanalCompletById(@PathVariable int id) {
+        return service.getSubCanalCompletById(id);
+    }
+
     @GetMapping("usuario-subcanal/{usuarioId}")
     public Set<SubCanalDto> getByUsuarioId(@PathVariable Integer usuarioId) {
         return service.getSubCanalByUsuarioId(usuarioId);
