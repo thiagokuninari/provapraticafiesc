@@ -358,6 +358,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    suporte-vendas-bko-api:
+      client: suporte-vendas-bko-api
+      secret: sup0rt3v3nd4sbk0
 
   host:
     connect-timeout-millis: 1800000
