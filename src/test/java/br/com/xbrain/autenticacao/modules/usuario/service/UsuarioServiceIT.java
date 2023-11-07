@@ -1162,8 +1162,8 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarUsuarios_quandoSolicitado() {
-        assertThat(service.findColaboradoresAtivosOperacaoComericialPorCargoCodigo(EXECUTIVO))
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarUsuarios_quandoSolicitado() {
+        assertThat(service.findColaboradoresAtivosOperacaoComercialPorCargoCodigo(EXECUTIVO))
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
                 tuple(116, "ALBERTO PEREIRA"),

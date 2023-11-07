@@ -70,7 +70,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
@@ -296,7 +295,7 @@ public class UsuarioService {
         return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
     }
 
-    public List<SelectResponse> findColaboradoresAtivosOperacaoComericialPorCargoCodigo(CodigoCargo cargo) {
+    public List<SelectResponse> findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo cargo) {
         return repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(cargo);
     }
 

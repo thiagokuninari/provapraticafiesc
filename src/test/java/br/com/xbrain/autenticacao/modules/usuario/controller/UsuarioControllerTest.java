@@ -329,21 +329,21 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarOk_quandoUsuarioAutenticado() {
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findColaboradoresAtivosOperacaoComericialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
+        verify(usuarioService).findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void findColaboradoresAtivosOperacaoComericialPorCargoCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService, never()).findColaboradoresAtivosOperacaoComericialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
+        verify(usuarioService, never()).findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
     }
 
     @Test

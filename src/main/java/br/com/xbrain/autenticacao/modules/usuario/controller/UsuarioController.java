@@ -119,8 +119,8 @@ public class UsuarioController {
     }
 
     @GetMapping("obter-cargos-operacao-comercial/{cargo}")
-    public List<SelectResponse> findColaboradoresAtivosOperacaoComericialPorCargoCodigo(@PathVariable CodigoCargo cargo) {
-        return usuarioService.findColaboradoresAtivosOperacaoComericialPorCargoCodigo(cargo);
+    public List<SelectResponse> findColaboradoresAtivosOperacaoComercialPorCargoCodigo(@PathVariable CodigoCargo cargo) {
+        return usuarioService.findColaboradoresAtivosOperacaoComercialPorCargoCodigo(cargo);
     }
 
     @GetMapping("/{id}")
