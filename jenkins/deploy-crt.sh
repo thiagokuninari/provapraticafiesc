@@ -88,7 +88,6 @@ else
 			--ip $CONTAINER_IP \
             --memory $MAXIMO_MEMORIA \
             --memory-swap $MAXIMO_MEMORIA \
-      --add-host minio-dev.xbrain.com.br:192.168.50.6 \
 			$IMAGE_NAME
 	fi
 fi

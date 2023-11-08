@@ -83,7 +83,6 @@ else
       -e MINIO_SECRET="'$MINIO_SECRET'" \
 			--net network_xbrain \
 			--ip $CONTAINER_IP \
-			--add-host minio-prod.xbrain.com.br:192.168.2.25 \
 			$IMAGE_NAME
 	fi
 fi
