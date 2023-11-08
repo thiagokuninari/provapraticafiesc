@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -8,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
 
 public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<OrganizacaoEmpresa>
     implements OrganizacaoEmpresaRepositoryCustom {
@@ -19,6 +21,14 @@ public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<Organizac
             .from(organizacaoEmpresa)
             .where(predicate)
             .orderBy(organizacaoEmpresa.nome.asc())
+            .fetch();
+    }
+
+    public List<OrganizacaoEmpresa> findAllBsvAtivos() {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(organizacaoEmpresa)
+            .where(organizacaoEmpresa.nivel.codigo.eq(BACKOFFICE_SUPORTE_VENDAS)
+                .and(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.A)))
             .fetch();
     }
 }

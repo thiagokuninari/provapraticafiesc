@@ -82,8 +82,8 @@ public class OrganizacaoEmpresaController {
         return service.isOrganizacaoAtiva(organizacao);
     }
 
-    @GetMapping("select/ativos")
-    public List<SelectResponse> getSelectAtivos(@RequestParam Integer nivelId) {
-        return service.getSelectAtivos(nivelId);
+    @GetMapping("select/bsv/ativos")
+    public List<SelectResponse> getSelectBsvAtivos() {
+        return service.getSelectBsvAtivos();
     }
 }

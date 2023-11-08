@@ -204,14 +204,8 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 
-    public List<SelectResponse> getSelectAtivos(Integer nivelId) {
-        var filtro = new OrganizacaoEmpresaFiltros();
-        var predicate = filtro.toPredicate()
-            .comSituacao(ESituacaoOrganizacaoEmpresa.A)
-            .comNivel(nivelId)
-            .build();
-
-        return organizacaoEmpresaRepository.findAll(predicate)
+    public List<SelectResponse> getSelectBsvAtivos() {
+        return organizacaoEmpresaRepository.findAllBsvAtivos()
             .stream()
             .map(organizacaoEmpresa -> SelectResponse.of(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome()))
             .collect(Collectors.toList());
