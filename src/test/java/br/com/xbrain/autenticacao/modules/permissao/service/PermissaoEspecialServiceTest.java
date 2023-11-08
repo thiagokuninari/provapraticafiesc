@@ -5,8 +5,10 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import feign.RetryableException;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
@@ -194,10 +197,83 @@ public class PermissaoEspecialServiceTest {
         verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
     }
 
+    @Test
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveAtualizarAsPermissoesDoNovoSocio_quandoSolicitado() {
+        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101);
+        doReturn(umaListPermissaoEspecial())
+            .when(repository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
+
+        assertThatCode(() -> service
+            .atualizarPermissoesEspeciaisNovoSocioPrincipal(umUsuarioDto()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
+        verify(repository).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveAtualizarAsPermissoesDoNovoSocio_mesmoSeUsuarioCadastroIdNulo() {
+        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101);
+        doReturn(umaListPermissaoEspecial())
+            .when(repository)
+            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
+
+        var socio = umUsuarioDto();
+        socio.setUsuarioCadastroId(null);
+
+        assertThatCode(() -> service
+            .atualizarPermissoesEspeciaisNovoSocioPrincipal(socio))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
+        verify(repository).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_naoDeveAtualizarAsPermissoesDoSocio_quandoAntigosSociosPrincipaisForVazio() {
+        var socio = umUsuarioDto();
+        socio.setAntigosSociosPrincipaisIds(null);
+
+        assertThatCode(() -> service
+            .atualizarPermissoesEspeciaisNovoSocioPrincipal(socio))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(repository);
+    }
+
+    private UsuarioDto umUsuarioDto() {
+        return UsuarioDto.builder()
+            .id(1)
+            .nome("USUARIO")
+            .usuarioCadastroId(2)
+            .agenteAutorizadoId(1)
+            .antigosSociosPrincipaisIds(List.of(1, 2))
+            .usuarioCadastroId(1)
+            .build();
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
             .id(1)
             .nivelCodigo(CodigoNivel.XBRAIN.name())
+            .build();
+    }
+
+    private List<PermissaoEspecial> umaListPermissaoEspecial() {
+        return List.of(umaPermissaoEspecial(), umaPermissaoEspecial());
+    }
+
+    private PermissaoEspecial umaPermissaoEspecial() {
+        return PermissaoEspecial.builder()
+            .id(1)
+            .funcionalidade(
+                Funcionalidade.builder()
+                    .id(1)
+                    .nome("teste")
+                    .build())
             .build();
     }
 

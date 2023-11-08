@@ -42,8 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.io.ByteStreams.toByteArray;
-import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.convertObjectToJsonString;
+import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -69,6 +68,7 @@ public class UsuarioGerenciaControllerTest {
     private static final int ID_USUARIO_HELPDESK = 101;
     private static final String API_URI = "/api/usuarios/gerencia";
     private static final String API_URI_BACKOFFICE = "/api/usuarios/gerencia/backoffice";
+    public static final String USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
 
     @Autowired
     private MockMvc mvc;
@@ -1412,6 +1412,145 @@ public class UsuarioGerenciaControllerTest {
         verifyNoMoreInteractions(usuarioService);
     }
 
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void findByAndCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
+        mvc.perform(get(API_URI)
+                .param("cpf", "123.456.789-10")
+                .param("situacao", "R"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findByAndCpfAndSituacaoIsNot("123.456.789-10", ESituacao.R);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
+    public void findByAndCpfAndSituacaoIsNot_deveRetornarForbidden_seUsuarioSemPermissao() {
+        mvc.perform(get(API_URI)
+            .param("cpf", "123.456.789-10")
+            .param("situacao", "R"))
+            .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findByAndCpfAndSituacaoIsNot_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+        mvc.perform(get(API_URI)
+                .param("cpf", "123.456.789-10")
+                .param("situacao", "R"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativarAntigoSocioPrincipal_deveRetornarBadRequest_quandoNaoEmailNaoForPassadoPorParametro() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal"))
+            .andExpect(status().isBadRequest());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).inativarAntigoSocioPrincipal(eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void inativarAntigoSocioPrincipal_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void inativarAntigoSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).limparCpfAntigoSocioPrincipal(eq(300));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(300));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarEmailSocioInativo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void atualizarEmailSocioInativo_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         var dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
@@ -1443,13 +1582,6 @@ public class UsuarioGerenciaControllerTest {
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         return dto;
-    }
-
-    private UsuarioDto umUsuarioParaEditar() {
-        return UsuarioDto.builder()
-            .nome("JOAOZINHO")
-            .loginNetSales("MIDORIYA SHOUNEN")
-            .build();
     }
 
     private UsuarioDto umUsuario(String nome) {

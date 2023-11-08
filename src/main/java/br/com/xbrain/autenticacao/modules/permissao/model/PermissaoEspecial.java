@@ -69,7 +69,7 @@ public class PermissaoEspecial {
     public static PermissaoEspecial of(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
         return PermissaoEspecial.builder()
             .funcionalidade(new Funcionalidade(funcionalidadeId))
-            .usuarioCadastro(new Usuario(usuarioCadastroId))
+            .usuarioCadastro(usuarioCadastroId != null ? new Usuario(usuarioCadastroId) : null)
             .usuario(new Usuario(usuarioId))
             .dataCadastro(LocalDateTime.now())
             .build();

@@ -71,4 +71,12 @@ public interface AgenteAutorizadoClient {
     @GetMapping(API_COLABORADOR_VENDAS + "/cargos")
     List<Integer> getUsuariosAaFeederPorCargo(@RequestParam("aaIds") List<Integer> aaIds,
                                               @RequestParam("cargos") List<CodigoCargo> cargos);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
+    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{idSocioPrincipal}")
+    void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
+                                             @RequestParam("emailInativo") String emailInativo,
+                                             @PathVariable("idSocioPrincipal") Integer idSocioPrincipal);
 }

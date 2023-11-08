@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -77,6 +78,11 @@ public class UsuarioGerenciaController {
         return service.findByEmail(email);
     }
 
+    @GetMapping(params = {"cpf", "situacao"})
+    public UsuarioDto findByAndCpfAndSituacaoIsNot(@RequestParam String cpf, @RequestParam ESituacao situacao) {
+        return service.findByAndCpfAndSituacaoIsNot(cpf, situacao);
+    }
+
     @PostMapping("/configuracao")
     public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
         return service.saveUsuarioConfiguracao(dto);
@@ -140,5 +146,20 @@ public class UsuarioGerenciaController {
     @GetMapping("existir/usuario")
     public Boolean validarSeUsuarioNovoCadastro(UsuarioExistenteValidacaoRequest usuarioParaValidar) {
         return service.validarSeUsuarioCpfEmailNaoCadastrados(usuarioParaValidar);
+    }
+
+    @PutMapping("inativar/socio-principal")
+    public void inativarAntigoSocioPrincipal(@RequestParam String email) {
+        service.inativarAntigoSocioPrincipal(email);
+    }
+
+    @PutMapping("limpar-cpf/socio-principal/{id}")
+    public void limparCpfAntigoSocioPrincipal(@PathVariable Integer id) {
+        service.limparCpfAntigoSocioPrincipal(id);
+    }
+
+    @PutMapping("inativar-email/{idSocioPrincipal}")
+    public void atualizarEmailSocioInativo(@PathVariable Integer idSocioPrincipal) {
+        service.atualizarEmailSocioInativo(idSocioPrincipal);
     }
 }

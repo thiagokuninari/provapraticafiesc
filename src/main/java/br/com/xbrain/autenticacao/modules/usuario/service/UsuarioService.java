@@ -87,6 +87,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -255,6 +256,10 @@ public class UsuarioService {
         return usuario;
     }
 
+    private Usuario findOneById(Integer id) {
+        return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
     @Transactional
     public Usuario findByIdCompleto(int id) {
         return repository.findOne(
@@ -316,6 +321,11 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+    }
+
+    public UsuarioDto findByAndCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
+        return UsuarioDto.of(repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
@@ -955,6 +965,11 @@ public class UsuarioService {
         return true;
     }
 
+    public void validarSeUsuarioCpfEmailNaoCadastrados(String cpf, String email) {
+        validarCpfCadastrado(cpf, null);
+        validarEmailCadastrado(email, null);
+    }
+
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
@@ -1586,6 +1601,12 @@ public class UsuarioService {
         agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
     }
 
+    public void limparCpfAntigoSocioPrincipal(Integer id) {
+        var socio = findOneById(id);
+        socio.setCpf(null);
+        repository.save(socio);
+    }
+
     @Transactional
     public Usuario limpaCpf(Integer id) {
         var usuario = findComplete(id);
@@ -1860,6 +1881,17 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
+    public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
+        var socio = findOneById(idSocioPrincipal);
+        var emailAtual = socio.getEmail();
+        var emailInativo = atualizarEmailInativo(emailAtual);
+
+        socio.setEmail(emailInativo);
+        repository.save(socio);
+
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+    }
+
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
         var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
@@ -2061,6 +2093,23 @@ public class UsuarioService {
                 repository.save(user);
             });
         });
+    }
+
+    public void inativarAntigoSocioPrincipal(String email) {
+        var antigoSocioPrincipal = findOneByEmail(email);
+
+        if (Objects.equals(antigoSocioPrincipal.getSituacao(), ATIVO)) {
+            antigoSocioPrincipal.setSituacao(INATIVO);
+            repository.save(antigoSocioPrincipal);
+            autenticacaoService.logout(antigoSocioPrincipal.getId());
+        }
+
+        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
+    }
+
+    private Usuario findOneByEmail(String email) {
+        return repository.findByEmail(email)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public void inativarColaboradores(String cnpj) {
