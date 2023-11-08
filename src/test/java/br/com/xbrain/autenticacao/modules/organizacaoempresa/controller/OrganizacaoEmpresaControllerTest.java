@@ -349,4 +349,23 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getSelectBsvAtivos_deveRetornarUnauthorized_quandoTokenInvalida() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/select/bsv/ativos"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(service);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getSelectBsvAtivos_deveRetornarOk_quandoTokenValida() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/select/bsv/ativos"))
+            .andExpect(status().isOk());
+
+        verify(service).getSelectBsvAtivos();
+    }
 }

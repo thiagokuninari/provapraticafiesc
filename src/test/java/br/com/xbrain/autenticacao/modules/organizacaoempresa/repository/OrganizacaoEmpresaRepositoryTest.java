@@ -24,14 +24,15 @@ public class OrganizacaoEmpresaRepositoryTest {
     @Test
     public void findAll_todasOrganizacoes_quandoPesquisar() {
         assertThat(organizacaoEmpresaRepository.findAll())
-            .hasSize(6)
+            .hasSize(7)
             .extracting("codigo", "nome")
             .contains(tuple("BCC", "Brasil Center"),
                 tuple("CALLINK", "Callink"),
                 tuple("PROPRIO", "Próprio"),
                 tuple("ATENTO", "Atento"),
                 tuple("VGX", "VGX"),
-                tuple("INTERNET", "INTERNET"));
+                tuple("INTERNET", "INTERNET"),
+                tuple("BSV", "SUPORTE DE VENDAS"));
     }
 
     @Test
@@ -60,5 +61,12 @@ public class OrganizacaoEmpresaRepositoryTest {
         assertThat(response.getId()).isEqualTo(3);
         assertThat(response.getNome()).isEqualTo("Próprio");
         assertThat(response.getCodigo()).isEqualTo("PROPRIO");
+    }
+
+    @Test
+    public void findAllBsvAtivos_deveRetornarListaDeOrganizacoes_quandoHouver() {
+        assertThat(organizacaoEmpresaRepository.findAllBsvAtivos())
+            .extracting("id", "nome")
+            .contains(tuple(44, "SUPORTE DE VENDAS"));
     }
 }

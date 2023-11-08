@@ -10,6 +10,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 
 public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<OrganizacaoEmpresa>
     implements OrganizacaoEmpresaRepositoryCustom {
@@ -27,7 +28,8 @@ public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<Organizac
     public List<OrganizacaoEmpresa> findAllBsvAtivos() {
         return new JPAQueryFactory(entityManager)
             .selectFrom(organizacaoEmpresa)
-            .where(organizacaoEmpresa.nivel.codigo.eq(BACKOFFICE_SUPORTE_VENDAS)
+            .innerJoin(organizacaoEmpresa.nivel, nivel)
+            .where(nivel.codigo.eq(BACKOFFICE_SUPORTE_VENDAS)
                 .and(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.A)))
             .fetch();
     }
