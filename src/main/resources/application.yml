@@ -238,6 +238,9 @@ app-config:
     bloqueio-ligacao-api:
       client: bloqueio-ligacao-api
       secret: bl0qu310l1g4c404p1
+    suporte-vendas-bko-api:
+      client: suporte-vendas-bko-api
+      secret: sup0rt3v3nd4sbk0
 
   services:
     autenticacao:
@@ -298,6 +301,9 @@ app-config:
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    suporte-vendas-bko:
+      #url: http://localhost:8050
+      url: http://192.168.50.1:8050
 
 flyway:
   enabled: true
@@ -358,9 +364,6 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
-    suporte-vendas-bko-api:
-      client: suporte-vendas-bko-api
-      secret: sup0rt3v3nd4sbk0
 
   host:
     connect-timeout-millis: 1800000

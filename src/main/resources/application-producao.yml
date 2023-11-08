@@ -80,6 +80,8 @@ app-config:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
       url: http://172.10.10.49:8100
+    suporte-vendas-bko:
+      url: http://suporte-vendas-bko-api:8050
 
   email:
     enviar: true
