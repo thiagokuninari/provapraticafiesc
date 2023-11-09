@@ -42,7 +42,7 @@ public class UsuarioComLoginNetSalesResponse {
         if (CodigoNivel.OPERACAO.equals(usuario.getNivelCodigo())) {
             return CodigoNivel.OPERACAO.name() + "_" + usuario.getCanais().iterator().next().name();
         } else if (CodigoNivel.RECEPTIVO.equals(usuario.getNivelCodigo())) {
-            return CodigoNivel.RECEPTIVO + "_" + usuario.getOrganizacaoEmpresa().getCodigo();
+            return CodigoNivel.RECEPTIVO + "_" + usuario.getOrganizacaoEmpresa().getNome();
         }
         return usuario.getNivelCodigo().name();
     }
