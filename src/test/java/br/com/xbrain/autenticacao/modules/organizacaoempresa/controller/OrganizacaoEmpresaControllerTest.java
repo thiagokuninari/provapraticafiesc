@@ -353,7 +353,7 @@ public class OrganizacaoEmpresaControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void getSelectBsvAtivos_deveRetornarUnauthorized_quandoTokenInvalida() {
-        mockMvc.perform(get(ORGANIZACOES_API + "/select/bsv/ativos"))
+        mockMvc.perform(get(ORGANIZACOES_API + "/select/suporte-vendas-bko-ativos"))
             .andExpect(status().isUnauthorized());
 
         verifyZeroInteractions(service);
@@ -363,7 +363,7 @@ public class OrganizacaoEmpresaControllerTest {
     @SneakyThrows
     @WithMockUser
     public void getSelectBsvAtivos_deveRetornarOk_quandoTokenValida() {
-        mockMvc.perform(get(ORGANIZACOES_API + "/select/bsv/ativos"))
+        mockMvc.perform(get(ORGANIZACOES_API + "/select/suporte-vendas-bko-ativos"))
             .andExpect(status().isOk());
 
         verify(service).getSelectBsvAtivos();
