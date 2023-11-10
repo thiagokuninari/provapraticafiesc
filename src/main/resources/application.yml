@@ -238,6 +238,9 @@ app-config:
     bloqueio-ligacao-api:
       client: bloqueio-ligacao-api
       secret: bl0qu310l1g4c404p1
+    comunicados-pol-api:
+      client: comunicados-pol-api
+      secret: c0mun1c4d0sp0l
 
   services:
     autenticacao:
@@ -298,6 +301,9 @@ app-config:
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    comunicados-pol:
+      #url: http://localhost:8312
+      url: http://192.168.50.1:8312
 
 flyway:
   enabled: true
@@ -358,6 +364,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    comunicados-pol:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.comunicados-pol.url}
 
   host:
     connect-timeout-millis: 1800000

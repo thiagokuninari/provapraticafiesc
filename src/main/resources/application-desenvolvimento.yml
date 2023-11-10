@@ -41,6 +41,8 @@ app-config:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
       url: http://172.10.10.109:8304
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

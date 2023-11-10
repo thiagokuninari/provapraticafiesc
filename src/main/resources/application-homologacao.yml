@@ -70,6 +70,8 @@ app-config:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
       url: http://172.10.10.113:8304
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
 
   email:
     enviar: true
