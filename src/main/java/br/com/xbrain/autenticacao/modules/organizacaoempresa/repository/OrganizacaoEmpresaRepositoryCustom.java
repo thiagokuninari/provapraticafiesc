@@ -9,5 +9,4 @@ public interface OrganizacaoEmpresaRepositoryCustom {
 
     List<OrganizacaoEmpresa> findByPredicate(Predicate predicate);
 
-    List<OrganizacaoEmpresa> findAllBsvAtivos();
 }

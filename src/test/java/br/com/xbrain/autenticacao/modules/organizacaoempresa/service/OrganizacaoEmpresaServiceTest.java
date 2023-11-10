@@ -576,30 +576,6 @@ public class OrganizacaoEmpresaServiceTest {
             .existsByNomeAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
-    @Test
-    public void getSelectBsvAtivos_deveRetornarListaDeSelectResponse_quandoHouverOrganizacoesBsv() {
-        when(organizacaoEmpresaRepository.findAllBsvAtivos()).thenReturn(umaListaOrganizacaoBkoSuporteVendas());
-
-        assertThat(service.getSelectBsvAtivos())
-            .extracting("value", "label")
-            .containsExactly(
-                tuple(1, "Organizacao backoffice suporte vendas"),
-                tuple(2, "Organizacao backoffice suporte vendas"),
-                tuple(3, "Organizacao backoffice suporte vendas"));
-
-        verify(organizacaoEmpresaRepository).findAllBsvAtivos();
-    }
-
-    @Test
-    public void getSelectBsvAtivos_deveRetornarListaVazia_quandoNaoHouverOrganizacoesBsv() {
-        when(organizacaoEmpresaRepository.findAllBsvAtivos()).thenReturn(List.of());
-
-        assertThat(service.getSelectBsvAtivos())
-            .isEmpty();
-
-        verify(organizacaoEmpresaRepository).findAllBsvAtivos();
-    }
-
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {
         return OrganizacaoEmpresaHistorico.builder()
             .organizacaoEmpresa(umaOrganizacaoEmpresaBackoffice(1, "Organizacao 1",
@@ -697,31 +673,6 @@ public class OrganizacaoEmpresaServiceTest {
             .usuarioCadastro(umUsuario())
             .codigo(codigo)
             .build();
-    }
-
-    public static OrganizacaoEmpresa umaOrganizacaoEmpresaBsv(Integer id) {
-        return OrganizacaoEmpresa.builder()
-            .id(id)
-            .nome("Organizacao backoffice suporte vendas")
-            .nivel(Nivel.builder()
-                .id(2)
-                .codigo(CodigoNivel.BACKOFFICE_SUPORTE_VENDAS)
-                .nome("BACKOFFICE_SUPORTE_VENDAS")
-                .situacao(ESituacao.A)
-                .exibirCadastroUsuario(Eboolean.V)
-                .build())
-            .situacao(A)
-            .dataCadastro(LocalDateTime.now())
-            .usuarioCadastro(umUsuario())
-            .build();
-    }
-
-    private List<OrganizacaoEmpresa> umaListaOrganizacaoBkoSuporteVendas() {
-        return List.of(
-            umaOrganizacaoEmpresaBsv(1),
-            umaOrganizacaoEmpresaBsv(2),
-            umaOrganizacaoEmpresaBsv(3)
-        );
     }
 
     public static OrganizacaoEmpresa umaOrganizacaoEmpresaReceptivo(Integer id, String nome, String codigo) {

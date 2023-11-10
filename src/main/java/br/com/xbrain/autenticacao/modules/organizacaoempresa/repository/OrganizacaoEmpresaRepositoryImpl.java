@@ -24,13 +24,4 @@ public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<Organizac
             .orderBy(organizacaoEmpresa.nome.asc())
             .fetch();
     }
-
-    public List<OrganizacaoEmpresa> findAllBsvAtivos() {
-        return new JPAQueryFactory(entityManager)
-            .selectFrom(organizacaoEmpresa)
-            .innerJoin(organizacaoEmpresa.nivel, nivel)
-            .where(nivel.codigo.eq(BACKOFFICE_SUPORTE_VENDAS)
-                .and(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.A)))
-            .fetch();
-    }
 }

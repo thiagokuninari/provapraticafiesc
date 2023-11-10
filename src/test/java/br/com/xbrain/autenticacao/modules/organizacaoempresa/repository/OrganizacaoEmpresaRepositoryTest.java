@@ -62,11 +62,4 @@ public class OrganizacaoEmpresaRepositoryTest {
         assertThat(response.getNome()).isEqualTo("Próprio");
         assertThat(response.getCodigo()).isEqualTo("PROPRIO");
     }
-
-    @Test
-    public void findAllBsvAtivos_deveRetornarListaDeOrganizacoes_quandoHouver() {
-        assertThat(organizacaoEmpresaRepository.findAllBsvAtivos())
-            .extracting("id", "nome")
-            .contains(tuple(44, "SUPORTE DE VENDAS"));
-    }
 }

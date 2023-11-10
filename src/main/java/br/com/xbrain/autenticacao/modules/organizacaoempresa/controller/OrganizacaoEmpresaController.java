@@ -81,9 +81,4 @@ public class OrganizacaoEmpresaController {
     public boolean verificarOrganizacaoAtiva(@PathVariable String organizacao) {
         return service.isOrganizacaoAtiva(organizacao);
     }
-
-    @GetMapping("select/suporte-vendas-bko-ativos")
-    public List<SelectResponse> getSelectBsvAtivos() {
-        return service.getSelectBsvAtivos();
-    }
 }
