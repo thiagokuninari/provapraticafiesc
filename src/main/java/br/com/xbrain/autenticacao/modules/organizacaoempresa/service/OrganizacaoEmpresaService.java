@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
@@ -25,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
+
 @Service
 @RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {
@@ -46,6 +50,7 @@ public class  OrganizacaoEmpresaService {
     private final AutenticacaoService autenticacaoService;
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+    private final CallService callService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -60,8 +65,10 @@ public class  OrganizacaoEmpresaService {
 
         validarNivelOperacao(nivel.getCodigo(), request.getCanal());
         validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
-        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
+        salvarConfiguracaoSuporteVendas(nivel.getCodigo(), organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        return organizacaoEmpresa;
     }
 
     @Transactional
@@ -204,10 +211,9 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 
-    public List<SelectResponse> getSelectBsvAtivos() {
-        return organizacaoEmpresaRepository.findAllBsvAtivos()
-            .stream()
-            .map(organizacaoEmpresa -> SelectResponse.of(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome()))
-            .collect(Collectors.toList());
+    private void salvarConfiguracaoSuporteVendas(CodigoNivel nivel, Integer fornecedorId, String nome) {
+        if (BACKOFFICE_SUPORTE_VENDAS == nivel){
+            callService.salvarConfiguracaoSuporteVendas(fornecedorId, nome);
+        }
     }
 }

@@ -139,7 +139,10 @@ public enum EErrors {
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
     ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
         "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo.");
+        "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
+    ERRO_SALVAR_CONFIGURACAO_FORNECEDOR(
+        "#046 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#046 - Ocorreu um erro ao salvar configuração do fornecedor");
 
 
     @Getter
