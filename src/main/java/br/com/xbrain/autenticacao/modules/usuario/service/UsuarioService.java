@@ -324,8 +324,9 @@ public class UsuarioService {
     }
 
     public UsuarioDto findByAndCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
-        return UsuarioDto.of(repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
+            .map(UsuarioDto::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {

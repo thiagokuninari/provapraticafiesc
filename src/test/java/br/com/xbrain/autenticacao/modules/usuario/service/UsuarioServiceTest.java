@@ -3567,7 +3567,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void limparCpfAntigoSocioPrincipal_deveRetornarValidacaoException_quandoUsuarioNaoCadastrado() {
+    public void limparCpfAntigoSocioPrincipal_deveLancarException_quandoUsuarioNaoCadastrado() {
         doThrow(new ValidacaoException(USUARIO_NAO_ENCONTRADO)).when(usuarioRepository).findById(eq(21));
 
         assertThatCode(() -> usuarioService.limparCpfAntigoSocioPrincipal(21))

@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,7 @@ public class PermissaoEspecialService {
 
     @Transactional
     public void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioDto socio) {
-        if (socio.getAntigosSociosPrincipaisIds() != null) {
+        if (!ObjectUtils.isEmpty(socio.getAntigosSociosPrincipaisIds())) {
             getFuncionalidadesIds(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, socio.getAntigosSociosPrincipaisIds())
                 .forEach(funcionalidadeId -> criarESalvarPermissaoEspecial(socio, funcionalidadeId));
         }
