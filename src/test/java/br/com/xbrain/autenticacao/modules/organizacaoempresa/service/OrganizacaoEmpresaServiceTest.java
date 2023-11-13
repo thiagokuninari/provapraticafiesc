@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -65,6 +67,8 @@ public class OrganizacaoEmpresaServiceTest {
     private NivelRepository nivelRepository;
     @Mock
     private OrganizacaoEmpresaMqSender sender;
+    @Mock
+    private CallService callService;
 
     @Test
     public void findById_deveLancarNotFoundException_quandoNaoExistirOrganizacaoCadastrada() {
@@ -198,6 +202,23 @@ public class OrganizacaoEmpresaServiceTest {
             .withMessage("Esse nível requer um canal válido.");
 
         verify(nivelRepository).findById(1);
+    }
+
+    @Test
+    public void save_deveSalvarOrganizacaoEmpresaESalvarConfiguracaoTelefonia_quandoNivelSuporteVendas() {
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(umNivelSuporteVendas()));
+        when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
+            .thenReturn(umaOrganizacaoEmpresaSuporteVendas(1, "Organizacao Suporte Vendas", "Suporte Vendas"));
+        when(autenticacaoService.getUsuarioId()).thenReturn(100);
+
+        assertThat(service.save(umaOrganizacaoEmpresaSuporteVendasRequest()))
+            .extracting("nome", "nivel.id", "codigo")
+            .containsExactly("Organizacao Suporte Vendas", 1, "Suporte Vendas");
+
+        verify(nivelRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(autenticacaoService).getUsuarioId();
+        verify(callService).salvarConfiguracaoSuporteVendas(1, "Organizacao Suporte Vendas");
     }
 
     @Test
