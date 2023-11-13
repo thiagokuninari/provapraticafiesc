@@ -10,7 +10,8 @@ public enum EObservacaoHistorico {
     ATIVACAO_POL("Ativação do usuário pelo Parceiros Online."),
     ALTERACAO_CPF("Alteração de CPF do usuário."),
     REMANEJAMENTO("Remanejamento de usuário para outro Agente Autorizado."),
-    INATIVACAO_AA("Inativado pelo Agente Autorizado.");
+    INATIVACAO_AA("Inativado pelo Agente Autorizado."),
+    INATIVACAO_ORGANIZACAO("Inativado pela organização inativa.");
 
     @Getter
     private String observacao;

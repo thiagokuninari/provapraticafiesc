@@ -15,9 +15,12 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.ORGANIZACAO_EMPRESA_INATIVA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.INATIVACAO_AA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.INATIVACAO_ORGANIZACAO;
 
 @Service
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioHistoricoService {
 
     @Autowired
@@ -43,6 +46,13 @@ public class UsuarioHistoricoService {
         usuarioHistoricoRepository.save(UsuarioHistorico
             .gerarHistorico(usuarioId, motivoInativacaoService
                 .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
+    }
+
+    public void gerarHistoricoDeInativacaoPorOrganizacaoEmpresa(Integer usuarioId) {
+        usuarioHistoricoRepository.save(UsuarioHistorico
+            .gerarHistorico(usuarioId, motivoInativacaoService
+                .findByCodigoMotivoInativacao(ORGANIZACAO_EMPRESA_INATIVA),
+                INATIVACAO_ORGANIZACAO.getObservacao(), ESituacao.I));
     }
 
     public Optional<String> findMotivoInativacaoByUsuarioId(Integer usuarioId) {

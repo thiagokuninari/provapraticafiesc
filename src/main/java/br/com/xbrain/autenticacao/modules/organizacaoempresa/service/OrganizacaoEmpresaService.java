@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ public class  OrganizacaoEmpresaService {
     private final AutenticacaoService autenticacaoService;
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+    private final UsuarioService usuarioService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -75,6 +77,7 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        usuarioService.inativarPorOrganizacaoEmpresa(id);
     }
 
     @Transactional

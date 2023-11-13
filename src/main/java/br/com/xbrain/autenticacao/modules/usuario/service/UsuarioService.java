@@ -1297,6 +1297,27 @@ public class UsuarioService {
         }
     }
 
+    public void inativarPorOrganizacaoEmpresa(Integer organizacaoId) {
+        var usuarios = repository.findByOrganizacaoEmpresaId(organizacaoId);
+
+        if (!usuarios.isEmpty()) {
+            usuarios.forEach(this::inativarUsuarioDaOrganizacao);
+        }
+    }
+
+    private void inativarUsuarioDaOrganizacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            try {
+                usuario.setSituacao(ESituacao.I);
+                repository.save(usuario);
+                usuarioHistoricoService.gerarHistoricoDeInativacaoPorOrganizacaoEmpresa(usuario.getId());
+                autenticacaoService.logout(usuario.getId());
+            } catch (Exception ex) {
+                log.error("Erro ao inativar o usuário " + usuario.getId(), ex);
+            }
+        }
+    }
+
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
