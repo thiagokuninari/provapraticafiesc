@@ -22,6 +22,8 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     boolean existsByNomeAndNivelId(String nome, Integer nivelId);
 
+    boolean existsByCodigoAndNivelId(String nome, Integer nivelId);
+
     boolean existsByDescricaoAndNivelId(String codigo, Integer nivelId);
 
     boolean existsByNomeAndNivelIdAndIdNot(String nome, Integer nivelId, Integer id);
@@ -30,5 +32,5 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     List<OrganizacaoEmpresa> findAllAtivosByNivelIdInAndSituacao(List<Integer> nivelId, ESituacaoOrganizacaoEmpresa situacao);
 
-    boolean existsByNomeAndSituacao(String nome, ESituacaoOrganizacaoEmpresa situacao);
+    boolean existsByDescricaoAndSituacao(String descricao, ESituacaoOrganizacaoEmpresa situacao);
 }

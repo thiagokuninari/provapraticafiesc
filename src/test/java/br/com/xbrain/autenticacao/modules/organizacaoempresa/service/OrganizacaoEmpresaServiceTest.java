@@ -547,13 +547,13 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void isOrganizacaoAtiva_deveRetornarTrue_quandoOrganizacaoAtiva() {
-        when(organizacaoEmpresaRepository.existsByNomeAndSituacao("ORGANIZACAO", ESituacaoOrganizacaoEmpresa.A))
+        when(organizacaoEmpresaRepository.existsByDescricaoAndSituacao("ORGANIZACAO", ESituacaoOrganizacaoEmpresa.A))
             .thenReturn(true);
 
         assertTrue(service.isOrganizacaoAtiva("ORGANIZACAO"));
 
         verify(organizacaoEmpresaRepository)
-            .existsByNomeAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+            .existsByDescricaoAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     @Test
@@ -561,7 +561,7 @@ public class OrganizacaoEmpresaServiceTest {
         assertFalse(service.isOrganizacaoAtiva("ORGANIZACAO"));
 
         verify(organizacaoEmpresaRepository)
-            .existsByNomeAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
+            .existsByDescricaoAndSituacao(eq("ORGANIZACAO"), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     @Test
@@ -571,7 +571,7 @@ public class OrganizacaoEmpresaServiceTest {
             .withMessage("Organização não encontrada.");
 
         verify(organizacaoEmpresaRepository, never())
-            .existsByNomeAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
+            .existsByDescricaoAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {
