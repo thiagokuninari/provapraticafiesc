@@ -22,6 +22,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -65,6 +67,8 @@ public class OrganizacaoEmpresaServiceTest {
     private NivelRepository nivelRepository;
     @Mock
     private OrganizacaoEmpresaMqSender sender;
+    @Mock
+    private UsuarioService usuarioService;
 
     @Test
     public void findById_deveLancarNotFoundException_quandoNaoExistirOrganizacaoCadastrada() {
@@ -232,6 +236,7 @@ public class OrganizacaoEmpresaServiceTest {
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(usuarioService).inativarPorOrganizacaoEmpresa(eq(1));
     }
 
     @Test
