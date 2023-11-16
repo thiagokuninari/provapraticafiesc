@@ -195,7 +195,7 @@ public class SubCanalControllerTest {
 
     @Test
     public void editar_deveRetornarException_quandoCamposObrigatoriosNaoPresentes() throws Exception {
-        var dto = new SubCanalDto();
+        var dto = new SubCanalCompletDto();
 
         mvc.perform(post(API_URI + "/editar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -205,7 +205,7 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo id é obrigatório.",
                 "O campo codigo é obrigatório.",
-                "O campo nome Não pode estar em branco",
+                "O campo nome não pode estar em branco.",
                 "O campo situacao é obrigatório.",
                 "O campo novaChecagemCredito é obrigatório.")));
 
