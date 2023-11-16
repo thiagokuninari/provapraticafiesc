@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.predicate.UnidadeNegocioPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -18,7 +19,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDE
 import static helpers.TestBuilders.umUsuarioAutenticado;
 import static helpers.UnidadesNegocio.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnidadeNegocioServiceTest {
@@ -60,6 +62,23 @@ public class UnidadeNegocioServiceTest {
             .hasSize(2)
             .extracting("nome")
             .containsExactly("Pessoal", "Residencial e Combos");
+    }
+
+    @Test
+    public void findWithoutXbrain_deveRetornarListaUnidadesNegocioSemXbrain_quandoSolicitado() {
+        doReturn(List.of(UNIDADE_PESSOAL, UNIDADE_RESIDENCIAL_E_COMBOS, UNIDADE_CLARO_RESIDENCIAL))
+            .when(unidadeNegocioRepository)
+            .findAll();
+
+        assertThat(unidadeNegocioService.findWithoutXbrain())
+            .extracting(SelectResponse::getValue, SelectResponse::getLabel)
+            .containsExactlyInAnyOrder(
+                tuple(1, "Pessoal"),
+                tuple(2, "Residencial e Combos"),
+                tuple(4, "Claro Residencial")
+            );
+
+        verify(unidadeNegocioRepository).findAll();
     }
 
     private BooleanBuilder getBooleanBuilder(UsuarioAutenticado usuarioAutenticado) {

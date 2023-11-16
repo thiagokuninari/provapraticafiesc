@@ -9,6 +9,7 @@ public class Empresas {
     public static final Empresa CLARO_TV = empresa(2, "Claro TV");
     public static final Empresa NET = empresa(3, "NET");
     public static final Empresa XBRAIN = empresa(4, "XBRAIN");
+    public static final Empresa CLARO_RESIDENCIAL = empresa(5, "Claro Residencial");
 
     private static Empresa empresa(int id, String nome) {
         Empresa empresa = new Empresa();

@@ -13,6 +13,8 @@ import java.util.List;
 public interface UnidadeNegocioRepository extends PagingAndSortingRepository<UnidadeNegocio, Integer>,
         UnidadeNegocioRepositoryCustom {
 
+    List<UnidadeNegocio> findAll();
+
     @Cacheable("unidadeNegocioFindAll")
     Iterable<UnidadeNegocio> findAll(Sort var1);
 
