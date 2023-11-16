@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -1297,6 +1298,7 @@ public class UsuarioService {
         }
     }
 
+    @Async
     public void inativarPorOrganizacaoEmpresa(Integer organizacaoId) {
         var usuarios = repository.findByOrganizacaoEmpresaId(organizacaoId);
 
