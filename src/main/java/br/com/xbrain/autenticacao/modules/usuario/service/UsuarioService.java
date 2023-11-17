@@ -59,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
@@ -225,6 +226,7 @@ public class UsuarioService {
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Autowired
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
+    @Lazy
     @Autowired
     private FeederService feederService;
     @Autowired
@@ -241,6 +243,7 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Lazy
     @Autowired
     private SubCanalService subCanalService;
     @Autowired

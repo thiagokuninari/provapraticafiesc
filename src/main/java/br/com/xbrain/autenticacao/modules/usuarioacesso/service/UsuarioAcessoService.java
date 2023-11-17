@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.annotation.Async;
@@ -56,6 +57,7 @@ public class UsuarioAcessoService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Lazy
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
