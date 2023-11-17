@@ -1,11 +1,15 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -24,6 +28,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +52,7 @@ public class  OrganizacaoEmpresaService {
     private final AutenticacaoService autenticacaoService;
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+    private final CallService callService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -75,6 +82,7 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -88,6 +96,7 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        ativarConfiguracaoSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -202,5 +211,17 @@ public class  OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (BACKOFFICE_SUPORTE_VENDAS == organizacaoEmpresa.getNivel().getCodigo()) {
+            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (BACKOFFICE_SUPORTE_VENDAS == organizacaoEmpresa.getNivel().getCodigo()) {
+            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
+        }
     }
 }
