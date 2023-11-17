@@ -403,6 +403,69 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
+    public void update_deveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNivelSuporteVendas() {
+        var request = umaOrganizacaoEmpresaRequest();
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, "SUPORTE_VENDAS", "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, request);
+
+        verify(callService).atualizarConfiguracaoSuporteVendas(1, "Organizacao 1");
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_naoDeveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNaoForNiveSuporteVendas() {
+        var request = umaOrganizacaoEmpresaRequest();
+        var organizacao = umaOrganizacaoEmpresaBackoffice(1, "organizacao 1", "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, request);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_naoDeveSalvarConfiguracaoSuporteVendas_quandoNomeAntigoIgualNomeNovo() {
+        var request = umaOrganizacaoEmpresaRequest();
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, request.getNome(), "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, request);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
     public void findAllByNivelId_deveRetornarUmaListaDeOrganizacaoEmpresa_quandoSolicitado() {
         when(organizacaoEmpresaRepository.findAllByNivelId(1))
             .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));

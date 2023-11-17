@@ -306,4 +306,40 @@ public class CallServiceTest {
 
         verify(callClient).salvarConfiguracaoSuporteVendas(any(SuporteVendasBkoRequest.class));
     }
+
+    @Test
+    public void atualizarConfiguracaoSuporteVendas_naoDeveLancarException_quandoRequisicaoEnviadaComSucesso() {
+        var request = SuporteVendasBkoRequest.of("organizacao");
+
+        doNothing().when(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+
+        assertThatCode(() -> callService.atualizarConfiguracaoSuporteVendas(1, "organizacao"))
+            .doesNotThrowAnyException();
+
+        verify(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+    }
+
+    @Test
+    public void atualizarConfiguaracaoSuporteVendas_deveLancarException_quandoErroConexaoComClient() {
+        var request = SuporteVendasBkoRequest.of("organizacao");
+
+        doThrow(RetryableException.class).when(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> callService.atualizarConfiguracaoSuporteVendas(1, "organizacao"));
+
+        verify(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+    }
+
+    @Test
+    public void atualizarConfiguaracaoSuporteVendas_deveLancarException_quandoErroDeRequisicao() {
+        var request = SuporteVendasBkoRequest.of("organizacao");
+
+        doThrow(HystrixBadRequestException.class).when(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> callService.atualizarConfiguracaoSuporteVendas(1, "organizacao"));
+
+        verify(callClient).atualizarConfiguracaoSuporteVendas(1, request);
+    }
 }

@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +70,7 @@ public class  OrganizacaoEmpresaService {
         validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
         var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
-        salvarConfiguracaoSuporteVendas(nivel.getCodigo(), organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        salvarConfiguracaoSuporteVendas(organizacaoEmpresa);
         return organizacaoEmpresa;
     }
 
@@ -115,7 +116,8 @@ public class  OrganizacaoEmpresaService {
         var organizacaoNomeAtualizado = request.getNome();
         var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
-
+        atualizarConfiguracaoSuporteVendas(organizacaoEmpresaToUpdate.isSuporteVendas(), organizacaoNome,
+            organizacaoNomeAtualizado, id);
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
         return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
     }
@@ -213,9 +215,16 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 
-    private void salvarConfiguracaoSuporteVendas(CodigoNivel nivel, Integer fornecedorId, String nome) {
-        if (BACKOFFICE_SUPORTE_VENDAS == nivel) {
-            callService.salvarConfiguracaoSuporteVendas(fornecedorId, nome);
+    private void salvarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.salvarConfiguracaoSuporteVendas(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        }
+    }
+
+    private void atualizarConfiguracaoSuporteVendas(boolean isSuporteVendas, String nomeAntigo, String nomeNovo,
+                                                    Integer fornecedorId) {
+        if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
+            callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
         }
     }
 }

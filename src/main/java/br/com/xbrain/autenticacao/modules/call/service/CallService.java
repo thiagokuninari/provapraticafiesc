@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_SALVAR_CONFIGURACAO_FORNECEDOR;
 
 @Service
@@ -103,6 +104,14 @@ public class CallService {
             callClient.salvarConfiguracaoSuporteVendas(SuporteVendasBkoRequest.of(fornecedorId, nome));
         } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex, CallService.class.getName(), ERRO_SALVAR_CONFIGURACAO_FORNECEDOR);
+        }
+    }
+
+    public void atualizarConfiguracaoSuporteVendas(Integer fornecedorId, String nome) {
+        try {
+            callClient.atualizarConfiguracaoSuporteVendas(fornecedorId, SuporteVendasBkoRequest.of(nome));
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex, CallService.class.getName(), ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR);
         }
     }
 }

@@ -142,7 +142,10 @@ public enum EErrors {
         "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
     ERRO_SALVAR_CONFIGURACAO_FORNECEDOR(
         "#046 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#046 - Ocorreu um erro ao salvar configuração do fornecedor");
+        "#046 - Ocorreu um erro ao salvar configuração do fornecedor"),
+    ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR(
+        "#047 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#047 - Ocorreu um erro ao atualizar configuração do fornecedor");
 
 
     @Getter

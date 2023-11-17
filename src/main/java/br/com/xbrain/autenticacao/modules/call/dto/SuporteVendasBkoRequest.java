@@ -14,7 +14,6 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class SuporteVendasBkoRequest {
 
-    @NotNull
     Integer fornecedorId;
     @NotBlank
     String nome;
@@ -22,6 +21,12 @@ public class SuporteVendasBkoRequest {
     public static SuporteVendasBkoRequest of(Integer fornecedorId, String nome) {
         return SuporteVendasBkoRequest.builder()
             .fornecedorId(fornecedorId)
+            .nome(nome)
+            .build();
+    }
+
+    public static SuporteVendasBkoRequest of(String nome) {
+        return SuporteVendasBkoRequest.builder()
             .nome(nome)
             .build();
     }

@@ -51,4 +51,8 @@ public interface CallClient {
 
     @PostMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO)
     void salvarConfiguracaoSuporteVendas(@RequestBody SuporteVendasBkoRequest request);
+
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/atualizar")
+    void atualizarConfiguracaoSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId,
+                                            @RequestBody SuporteVendasBkoRequest request);
 }

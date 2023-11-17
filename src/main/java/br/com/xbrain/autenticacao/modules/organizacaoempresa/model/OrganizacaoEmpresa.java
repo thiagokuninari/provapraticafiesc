@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.model;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -11,6 +12,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
 
 @Data
 @Entity
@@ -86,6 +89,10 @@ public class OrganizacaoEmpresa {
 
     public Boolean isAtivo() {
         return situacao == ESituacaoOrganizacaoEmpresa.A;
+    }
+
+    public boolean isSuporteVendas() {
+        return nivel.getCodigo() == BACKOFFICE_SUPORTE_VENDAS;
     }
 
     public OrganizacaoEmpresa(Integer id) {
