@@ -226,7 +226,6 @@ public class UsuarioService {
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Autowired
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
-    @Lazy
     @Autowired
     private FeederService feederService;
     @Autowired
