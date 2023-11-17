@@ -205,7 +205,7 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo id é obrigatório.",
                 "O campo codigo é obrigatório.",
-                "O campo nome não pode estar em branco.",
+                "O campo nome é obrigatório.",
                 "O campo situacao é obrigatório.",
                 "O campo novaChecagemCredito é obrigatório.")));
 
