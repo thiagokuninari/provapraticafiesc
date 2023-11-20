@@ -78,6 +78,7 @@ public class CargoServiceIT {
                 tuple(1253, "Supervisor Técnico - Agente Autorizado"),
                 tuple(1254, "Coordenador Técnico - Agente Autorizado"),
                 tuple(1255, "Gerente da Equipe Técnico - Agente Autorizado"),
+                tuple(1256, "Técnico Segmentado - Agente Autorizado"),
                 tuple(8, "Vendedor - Operação"),
                 tuple(79, "Vendedor Back Office D2D - Agente Autorizado"),
                 tuple(80, "Vendedor Back Office Televendas  - Agente Autorizado"),
