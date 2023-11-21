@@ -47,7 +47,7 @@ public interface CallClient {
     @GetMapping("api/configuracao-telefonia/todas-discadoras")
     List<ConfiguracaoTelefoniaResponse> getDiscadoras();
 
-    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/desvincular-diacadora-ramais")
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/desvincular-discadora-ramais")
     void desvicularDiscadoraSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);
 
     @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/ativar")

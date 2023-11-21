@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
-
 @Service
 @RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {
@@ -214,13 +212,13 @@ public class  OrganizacaoEmpresaService {
     }
 
     private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
-        if (BACKOFFICE_SUPORTE_VENDAS == organizacaoEmpresa.getNivel().getCodigo()) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
             callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
         }
     }
 
     private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
-        if (BACKOFFICE_SUPORTE_VENDAS == organizacaoEmpresa.getNivel().getCodigo()) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
             callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
         }
     }
