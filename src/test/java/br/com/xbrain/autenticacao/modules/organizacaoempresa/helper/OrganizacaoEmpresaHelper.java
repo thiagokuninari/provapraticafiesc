@@ -13,14 +13,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 
 public class OrganizacaoEmpresaHelper {
 
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Marcos AA")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .nivelId(1)
             .codigo("CODIGO")
             .build();
@@ -30,7 +34,7 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .nome("Marcos AA")
             .id(2)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -48,7 +52,7 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .nome("Teste AA")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .codigo("codigo")
             .build();
     }
@@ -58,7 +62,7 @@ public class OrganizacaoEmpresaHelper {
             .id(2)
             .nome("Teste AA Dois")
             .nivel(umNivel())
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .codigo("codigo2")
             .build();
     }
@@ -66,23 +70,23 @@ public class OrganizacaoEmpresaHelper {
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .build());
     }
 
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponseComNivel() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .nivel(umNivelResponse())
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .nivel(umNivelResponseReceptivo())
                 .build());
     }
@@ -134,4 +138,34 @@ public class OrganizacaoEmpresaHelper {
             .codigo(CodigoNivel.RECEPTIVO.name())
             .build();
     }
+
+    public static Nivel umNivelSuporteVendas() {
+        return Nivel.builder()
+            .id(1)
+            .nome("BACKOFFICE_SUPORTE_VENDAS")
+            .codigo(CodigoNivel.BACKOFFICE_SUPORTE_VENDAS)
+            .build();
+    }
+
+    public static OrganizacaoEmpresaRequest umaOrganizacaoEmpresaSuporteVendasRequest() {
+        return OrganizacaoEmpresaRequest.builder()
+            .nome("Organizacao Suporte Vendas")
+            .codigo("Suporte Vendas")
+            .nivelId(1)
+            .situacao(A)
+            .build();
+    }
+
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresaSuporteVendas(Integer id, String nome, String codigo) {
+        return OrganizacaoEmpresa.builder()
+            .id(id)
+            .nome(nome)
+            .nivel(umNivelSuporteVendas())
+            .situacao(A)
+            .dataCadastro(LocalDateTime.now())
+            .usuarioCadastro(umUsuario())
+            .codigo(codigo)
+            .build();
+    }
+
 }
