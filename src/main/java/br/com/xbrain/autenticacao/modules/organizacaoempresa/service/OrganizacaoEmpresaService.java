@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
-
 @Service
 @RequiredArgsConstructor
 public class  OrganizacaoEmpresaService {

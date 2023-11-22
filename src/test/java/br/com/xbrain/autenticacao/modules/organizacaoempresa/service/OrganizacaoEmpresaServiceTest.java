@@ -404,7 +404,6 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void update_deveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNivelSuporteVendas() {
-        var request = umaOrganizacaoEmpresaRequest();
         var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, "SUPORTE_VENDAS", "codigo");
 
         when(organizacaoEmpresaRepository.findById(1))
@@ -414,7 +413,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
             .thenReturn(false);
 
-        service.update(1, request);
+        service.update(1, umaOrganizacaoEmpresaRequest());
 
         verify(callService).atualizarConfiguracaoSuporteVendas(1, "Organizacao 1");
         verify(organizacaoEmpresaRepository).findById(1);
@@ -425,7 +424,6 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void update_naoDeveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNaoForNiveSuporteVendas() {
-        var request = umaOrganizacaoEmpresaRequest();
         var organizacao = umaOrganizacaoEmpresaBackoffice(1, "organizacao 1", "codigo");
 
         when(organizacaoEmpresaRepository.findById(1))
@@ -435,7 +433,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
             .thenReturn(false);
 
-        service.update(1, request);
+        service.update(1, umaOrganizacaoEmpresaRequest());
 
         verifyZeroInteractions(callService);
         verify(organizacaoEmpresaRepository).findById(1);
