@@ -3,15 +3,14 @@ package br.com.xbrain.autenticacao.modules.call.service;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
