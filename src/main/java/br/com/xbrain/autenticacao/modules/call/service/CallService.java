@@ -2,24 +2,28 @@ package br.com.xbrain.autenticacao.modules.call.service;
 
 import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
+import br.com.xbrain.autenticacao.modules.call.dto.SuporteVendasBkoRequest;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR;
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_SALVAR_CONFIGURACAO_FORNECEDOR;
+
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CallService {
 
-    @Autowired
-    private CallClient callClient;
+    private final CallClient callClient;
 
     public TelefoniaResponse obterNomeTelefoniaPorId(Integer discadoraId) {
         try {
@@ -93,5 +97,21 @@ public class CallService {
 
     public List<ConfiguracaoTelefoniaResponse> getDiscadoras() {
         return callClient.getDiscadoras();
+    }
+
+    public void salvarConfiguracaoSuporteVendas(Integer fornecedorId, String nome) {
+        try {
+            callClient.salvarConfiguracaoSuporteVendas(SuporteVendasBkoRequest.of(fornecedorId, nome));
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex, CallService.class.getName(), ERRO_SALVAR_CONFIGURACAO_FORNECEDOR);
+        }
+    }
+
+    public void atualizarConfiguracaoSuporteVendas(Integer fornecedorId, String nome) {
+        try {
+            callClient.atualizarConfiguracaoSuporteVendas(fornecedorId, SuporteVendasBkoRequest.of(nome));
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex, CallService.class.getName(), ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR);
+        }
     }
 }

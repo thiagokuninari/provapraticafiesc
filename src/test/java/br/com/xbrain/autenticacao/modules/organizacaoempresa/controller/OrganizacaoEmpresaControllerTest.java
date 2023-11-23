@@ -348,5 +348,4 @@ public class OrganizacaoEmpresaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
-
 }

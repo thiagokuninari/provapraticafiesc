@@ -1,11 +1,15 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -16,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +51,7 @@ public class  OrganizacaoEmpresaService {
     private final AutenticacaoService autenticacaoService;
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+    private final CallService callService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -60,8 +66,10 @@ public class  OrganizacaoEmpresaService {
 
         validarNivelOperacao(nivel.getCodigo(), request.getCanal());
         validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
-        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
             autenticacaoService.getUsuarioId(), nivel));
+        salvarConfiguracaoSuporteVendas(organizacaoEmpresa);
+        return organizacaoEmpresa;
     }
 
     @Transactional
@@ -106,7 +114,8 @@ public class  OrganizacaoEmpresaService {
         var organizacaoNomeAtualizado = request.getNome();
         var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
-
+        atualizarConfiguracaoSuporteVendas(organizacaoEmpresaToUpdate.isSuporteVendas(), organizacaoNome,
+            organizacaoNomeAtualizado, id);
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
         return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
     }
@@ -202,5 +211,18 @@ public class  OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    private void salvarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.salvarConfiguracaoSuporteVendas(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        }
+    }
+
+    private void atualizarConfiguracaoSuporteVendas(boolean isSuporteVendas, String nomeAntigo, String nomeNovo,
+                                                    Integer fornecedorId) {
+        if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
+            callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
+        }
     }
 }

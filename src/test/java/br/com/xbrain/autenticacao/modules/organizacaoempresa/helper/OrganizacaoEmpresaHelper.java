@@ -13,7 +13,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 
 public class OrganizacaoEmpresaHelper {
 
@@ -132,6 +136,35 @@ public class OrganizacaoEmpresaHelper {
             .id(2)
             .nome("RECEPTIVO")
             .codigo(CodigoNivel.RECEPTIVO.name())
+            .build();
+    }
+
+    public static Nivel umNivelSuporteVendas() {
+        return Nivel.builder()
+            .id(1)
+            .nome("BACKOFFICE_SUPORTE_VENDAS")
+            .codigo(CodigoNivel.BACKOFFICE_SUPORTE_VENDAS)
+            .build();
+    }
+
+    public static OrganizacaoEmpresaRequest umaOrganizacaoEmpresaSuporteVendasRequest() {
+        return OrganizacaoEmpresaRequest.builder()
+            .nome("Organizacao Suporte Vendas")
+            .codigo("Suporte Vendas")
+            .nivelId(1)
+            .situacao(A)
+            .build();
+    }
+
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresaSuporteVendas(Integer id, String nome, String codigo) {
+        return OrganizacaoEmpresa.builder()
+            .id(id)
+            .nome(nome)
+            .nivel(umNivelSuporteVendas())
+            .situacao(A)
+            .dataCadastro(LocalDateTime.now())
+            .usuarioCadastro(umUsuario())
+            .codigo(codigo)
             .build();
     }
 }

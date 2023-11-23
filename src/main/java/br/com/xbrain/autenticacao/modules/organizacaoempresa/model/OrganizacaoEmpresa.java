@@ -12,6 +12,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
+
 @Data
 @Entity
 @Builder
@@ -86,6 +88,10 @@ public class OrganizacaoEmpresa {
 
     public Boolean isAtivo() {
         return situacao == ESituacaoOrganizacaoEmpresa.A;
+    }
+
+    public boolean isSuporteVendas() {
+        return nivel.getCodigo() == BACKOFFICE_SUPORTE_VENDAS;
     }
 
     public OrganizacaoEmpresa(Integer id) {

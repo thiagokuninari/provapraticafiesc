@@ -48,6 +48,19 @@ public class OrganizacaoEmpresaTest {
             .isAtivo());
     }
 
+    @Test
+    public void isSuporteVendas_deveRetornarTrue_quandoOrganizacaoNivelSuporteVendas() {
+        var organizacao = umaOutraOrganizacaoEmpresa();
+        organizacao.getNivel().setCodigo(CodigoNivel.BACKOFFICE_SUPORTE_VENDAS);
+
+        assertTrue(organizacao.isSuporteVendas());
+    }
+
+    @Test
+    public void isSuporteVendas_deveRetornarFalse_quandoOrganizacaoNivelSuporteVendas() {
+        assertFalse(umaOutraOrganizacaoEmpresa().isSuporteVendas());
+    }
+
     private OrganizacaoEmpresa umaOrganizacaoComStatus(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
         return OrganizacaoEmpresa.builder()
             .id(id)
