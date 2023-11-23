@@ -122,12 +122,12 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private void validarParametroAa(SolicitacaoRamalRequest request) {
-        validaSalvarAa(request.getAgenteAutorizadoId(), request.getQuantidadeRamais());
-
         if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
             && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
         }
+
+        validaSalvarAa(request.getAgenteAutorizadoId(), request.getQuantidadeRamais());
     }
 
     private void validarAutorizacao() {
