@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
@@ -22,11 +23,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -95,19 +100,12 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
             .hasSize(4)
             .extracting("value", "text")
-            .containsExactly(
-                Assertions.tuple(125, "ASSISTENTE OP"),
-                Assertions.tuple(107, "EXECUTIVO 1"),
-                Assertions.tuple(108, "EXECUTIVO 2"),
-                Assertions.tuple(124, "EXECUTIVO OP")
+            .containsExactlyInAnyOrder(
+                tuple(125, "ASSISTENTE OP"),
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"),
+                tuple(124, "EXECUTIVO OP")
             );
-    }
-
-    private UsuarioPredicate getUsuarioPredicate() {
-        return new UsuarioPredicate()
-            .comDepartamento(List.of(3))
-            .comNivel(List.of(1))
-            .comCargo(List.of(2, 5));
     }
 
     @Test
@@ -201,7 +199,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .hasSize(2);
+            .hasSize(6);
     }
 
     @Test
@@ -213,8 +211,8 @@ public class UsuarioRepositoryTest {
     @Test
     public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
         assertThat(repository.obterIdsPorUsuarioCadastroId(100))
-            .hasSize(3)
-            .containsExactly(200, 300, 400);
+            .hasSize(6)
+            .containsExactly(200, 300, 400, 500, 600, 700);
     }
 
     @Test
@@ -271,7 +269,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void getUsuariosOperacaoCanalAa_deveRetornarUsuariosOpNivelAa() {
         assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
-            .hasSize(3);
+            .hasSize(7);
     }
 
     @Test
@@ -307,5 +305,58 @@ public class UsuarioRepositoryTest {
             .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
         assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
+    }
+
+    @Test
+    @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
+    public void getSubCanaisByUsuarioIds_deveRetornarSetDeSubCanais_sePossuirSubCanais() {
+        assertThat(repository.getSubCanaisByUsuarioIds(List.of(126, 127, 128)))
+            .hasSize(4)
+            .extracting("id", "codigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, PAP),
+                tuple(2, PAP_PME),
+                tuple(3, PAP_PREMIUM),
+                tuple(4, INSIDE_SALES_PME)
+            );
+    }
+
+    @Test
+    public void getSubCanaisByUsuarioIds_deveRetornarVazio_seNaoPossuirSubCanais() {
+        assertThat(repository.getSubCanaisByUsuarioIds(List.of(100, 121, 123))).isEmpty();
+    }
+
+    private UsuarioPredicate getUsuarioPredicate() {
+        return new UsuarioPredicate()
+            .comDepartamento(List.of(3))
+            .comNivel(List.of(1))
+            .comCargo(List.of(2, 5));
+    }
+
+    @Test
+    public void findByIdInAndCargoIn_deveRetornarUsuarios_quandoInformarIdsDosUsuariosAndCargos() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoIn(List.of(500, 600, 700), List.of(cargo)))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(600, "USUARIO 600", "USUARIO_600@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
+    }
+
+    @Test
+    public void findByIdInAndCargoInAndSituacaoNot_deveRetornarUsuariosNaoRealocados_quandoInformarIdsAndCargosAndSituacao() {
+        var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
+        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), ESituacao.R))
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
+                Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
+    }
+
+    @Test
+    public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
+        assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
+            .containsExactly(219);
     }
 }

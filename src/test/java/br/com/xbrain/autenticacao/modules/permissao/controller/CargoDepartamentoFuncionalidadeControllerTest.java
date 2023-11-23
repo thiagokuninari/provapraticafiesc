@@ -1,26 +1,34 @@
 package br.com.xbrain.autenticacao.modules.permissao.controller;
 
-import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
+import br.com.xbrain.autenticacao.modules.permissao.service.CargoDepartamentoFuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import helpers.TestsHelper;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.SOCIO_AA;
-import static org.hamcrest.Matchers.*;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,81 +36,138 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = "classpath:/tests_database.sql")
+@WebMvcTest(CargoDepartamentoFuncionalidadeController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+    @MockBean(UsuarioSubCanalObserver.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class CargoDepartamentoFuncionalidadeControllerTest {
 
     private static final String URL = "/api/cargo-departamento-funcionalidade";
+    private static final String USUARIO_SOCIO = "USUARIO SOCIO";
+    private static final String USUARIO_ADMIN = "USUARIO ADMIN";
+    private static final String AUT_VISUALIZAR_USUARIOS_AA = "AUT_VISUALIZAR_USUARIOS_AA";
+    private static final String AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO = "AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO";
 
     @Autowired
     private MockMvc mvc;
+    @MockBean
+    private CargoDepartamentoFuncionalidadeService service;
 
     @Test
-    public void getAll_unauthorized_quandoNaoPassarAToken() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAll_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void getAll_forbidden_quandoNaoTiverPermissaoParaGerenciaDePermissao() throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_SOCIO, roles = { AUT_VISUALIZAR_USUARIOS_AA })
+    public void getAll_deveRetornarForbidden_seUsuarioNaoPossuirPermissaoParaGerenciaDePermissao() {
         mvc.perform(get(URL)
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden());
     }
 
     @Test
-    public void deveSalvar() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.post("/api/cargo-departamento-funcionalidade")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_ADMIN, roles = { AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO })
+    public void getAll_deveRetornarOk_seUsuarioPossuirPermissaoParaGerenciaDePermissao() {
+        mvc.perform(get(URL)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllPages_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(MockMvcRequestBuilders.get(URL + "/pages?page=0&size=10")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllPages_deveRetornarOk_seUsuarioAutenticado() {
+        when(service.getAll(any(PageRequest.class), any(CargoDepartamentoFuncionalidadeFiltros.class)))
+            .thenReturn(new PageImpl<>(umaListaDeCargoDepartamentoFuncionalidadeDeAdministrador()));
+
+        mvc.perform(MockMvcRequestBuilders.get(URL + "/pages?page=0&size=10")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(10)));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void save_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(MockMvcRequestBuilders.post(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
-                .andExpect(status().isOk());
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveBuscarPermissoes() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/api/cargo-departamento-funcionalidade")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is(not(empty()))));
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_SOCIO, roles = { AUT_VISUALIZAR_USUARIOS_AA })
+    public void save_deveRetornarForbidden_seUsuarioNaoPossuirPermissaoParaGerenciaDePermissao() {
+        mvc.perform(MockMvcRequestBuilders.post(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
+            .andExpect(status().isForbidden());
     }
 
     @Test
-    public void devePaginarPermissoes() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/api/cargo-departamento-funcionalidade/pages?page=0&size=10")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.totalElements", is(not(empty()))));
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_ADMIN, roles = { AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO })
+    public void save_deveRetornarOk_seUsuarioPossuirPermissaoParaGerenciaDePermissao() {
+        mvc.perform(MockMvcRequestBuilders.post(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
+            .andExpect(status().isOk());
     }
 
     @Test
-    public void deveRemoverUmaPermissao() throws Exception {
-        mvc.perform(put("/api/cargo-departamento-funcionalidade/remover/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithAnonymousUser
+    public void remover_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(put(URL + "/remover/{id}", 1)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveDeslogarUsuarios() throws Exception {
-        mvc.perform(put("/api/cargo-departamento-funcionalidade/deslogar/50/50")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser
+    public void remover_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(put(URL + "/remover/{id}", 1)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
-    private CargoDepartamentoFuncionalidadeRequest novasPermissoes() {
-        CargoDepartamentoFuncionalidadeRequest res = new CargoDepartamentoFuncionalidadeRequest();
-        res.setCargoId(1);
-        res.setDepartamentoId(1);
-        res.setFuncionalidadesIds(Arrays.asList(1, 2, 3, 4));
-        return res;
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void deslogarUsuarios_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(put(URL + "/deslogar/{cargoId}/{departamentoId}", 50, 50)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void deslogarUsuarios_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(put(URL + "/deslogar/{cargoId}/{departamentoId}", 50, 50)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 }

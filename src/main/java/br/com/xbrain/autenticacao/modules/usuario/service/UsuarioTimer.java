@@ -59,21 +59,29 @@ public class UsuarioTimer {
     @Async
     @Scheduled(cron = EVERY_DAY_AT_MIDNIGHT, zone = TIME_ZONE)
     public void deslogarTodosOsUsuarios() {
+        log.info("Iniciando método deslogarTodosOsUsuarios");
         autenticacaoService.logoutAllUsers();
+        log.info("Finalizando método deslogarTodosOsUsuarios");
     }
 
     @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
     public void reativarUsuariosComFeriasComTerminoFinalizado() {
+        log.info("Iniciando método reativarUsuariosComFeriasComTerminoFinalizado");
         service.reativarUsuariosInativosComFeriasTerminando(LocalDate.now().minusDays(1));
+        log.info("Finalizando método reativarUsuariosComFeriasComTerminoFinalizado");
     }
 
     @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
     public void reativarUsuariosComAfastamentoComTerminoFinalizado() {
+        log.info("Iniciando método reativarUsuariosComAfastamentoComTerminoFinalizado");
         service.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now());
+        log.info("Finalizando método reativarUsuariosComAfastamentoComTerminoFinalizado");
     }
 
     @Scheduled(cron = EVERY_30_MINUTE)
     public void deslogarUsuariosInativadosPorExcessoDeUsoDeApi() {
+        log.info("Iniciando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
         deslogarUsuarioPorExcessoDeUsoService.deslogarUsuariosInativados();
+        log.info("Finalizando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
     }
 }

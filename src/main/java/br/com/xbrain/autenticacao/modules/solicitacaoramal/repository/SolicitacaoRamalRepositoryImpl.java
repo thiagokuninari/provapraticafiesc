@@ -22,79 +22,122 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SolicitacaoRamalRepositoryImpl
-        extends CustomRepository<SolicitacaoRamal>
-        implements SolicitacaoRamalRepositoryCustom {
+    extends CustomRepository<SolicitacaoRamal>
+    implements SolicitacaoRamalRepositoryCustom {
 
     @Override
     public Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate) {
         return super.findAll(
-                Collections.singletonList(JoinDescriptor.innerJoin(solicitacaoRamal.usuario)),
-                predicate,
-                pageable
+            Collections.singletonList(JoinDescriptor.innerJoin(solicitacaoRamal.usuario)),
+            predicate,
+            pageable
         );
     }
 
     @Override
-    public PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate) {
+    public Page<SolicitacaoRamal> findAllGerenciaAa(Pageable pageable, Predicate predicate) {
         final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
         List<SolicitacaoRamal> solicitacoes = new JPAQueryFactory(entityManager)
-                .select(
-                        Projections.constructor(SolicitacaoRamal.class,
-                                solicitacaoRamal.id,
-                                solicitacaoRamal.agenteAutorizadoId,
-                                solicitacaoRamal.agenteAutorizadoNome,
-                                solicitacaoRamal.agenteAutorizadoCnpj,
-                                solicitacaoRamal.situacao,
-                                solicitacaoRamal.quantidadeRamais,
-                                solicitacaoRamal.dataCadastro,
-                                solicitacaoRamal.dataFinalizacao,
-                                new JPAQueryFactory(entityManager)
-                                        .select(usuario)
-                                        .from(usuario)
-                                        .where(usuario.id.eq(solicitacaoRamal.usuario.id)))
-                ).from(solicitacaoRamal)
-                .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
-                        .select(solicitacaoAuxiliar.id.max())
-                        .from(solicitacaoAuxiliar)
-                        .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
-                        .and(predicate))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(solicitacaoRamal.id.desc())
-                .fetch();
+            .select(
+                Projections.constructor(SolicitacaoRamal.class,
+                    solicitacaoRamal.id,
+                    solicitacaoRamal.agenteAutorizadoId,
+                    solicitacaoRamal.agenteAutorizadoNome,
+                    solicitacaoRamal.agenteAutorizadoCnpj,
+                    solicitacaoRamal.canal,
+                    solicitacaoRamal.situacao,
+                    solicitacaoRamal.quantidadeRamais,
+                    solicitacaoRamal.dataCadastro,
+                    solicitacaoRamal.dataFinalizacao,
+                    new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .where(usuario.id.eq(solicitacaoRamal.usuario.id)))
+            ).from(solicitacaoRamal)
+            .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
+                    .select(solicitacaoAuxiliar.id.max())
+                    .from(solicitacaoAuxiliar)
+                    .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
+                .and(predicate))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(solicitacaoRamal.id.desc())
+            .fetch();
+
+        return new PageImpl<>(solicitacoes, pageable, countSolicitacaoRamal(predicate));
+    }
+
+    @Override
+    public Page<SolicitacaoRamal> findAllGerenciaD2d(Pageable pageable, Predicate predicate) {
+        final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
+        List<SolicitacaoRamal> solicitacoes = new JPAQueryFactory(entityManager)
+            .select(
+                Projections.constructor(SolicitacaoRamal.class,
+                    solicitacaoRamal.id,
+                    solicitacaoRamal.canal,
+                    solicitacaoRamal.subCanal,
+                    solicitacaoRamal.situacao,
+                    solicitacaoRamal.quantidadeRamais,
+                    solicitacaoRamal.dataCadastro,
+                    solicitacaoRamal.dataFinalizacao,
+                    new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .where(usuario.id.eq(solicitacaoRamal.usuario.id)))
+            ).from(solicitacaoRamal)
+            .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
+                    .select(solicitacaoAuxiliar.id.max())
+                    .from(solicitacaoAuxiliar)
+                    .where(solicitacaoAuxiliar.subCanal.id.eq(solicitacaoRamal.subCanal.id)))
+                .and(predicate))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(solicitacaoRamal.id.desc())
+            .fetch();
 
         return new PageImpl<>(solicitacoes, pageable, countSolicitacaoRamal(predicate));
     }
 
     private long countSolicitacaoRamal(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .selectDistinct(solicitacaoRamal.agenteAutorizadoId)
-                .from(solicitacaoRamal)
-                .where(predicate)
-                .fetchCount();
+            .selectDistinct(solicitacaoRamal.agenteAutorizadoId)
+            .from(solicitacaoRamal)
+            .where(predicate)
+            .fetchCount();
     }
 
     @Override
     public List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull() {
         return new JPAQueryFactory(entityManager)
-                .select(solicitacaoRamal)
-                .from(solicitacaoRamal)
-                .where(solicitacaoRamal.situacao.eq(PENDENTE)
-                        .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))
-                        .and(solicitacaoRamal.dataEnviadoEmailExpiracao.isNull()))
-                .orderBy(solicitacaoRamal.id.asc())
-                .fetch();
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.situacao.eq(PENDENTE)
+                .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))
+                .and(solicitacaoRamal.dataEnviadoEmailExpiracao.isNull()))
+            .orderBy(solicitacaoRamal.id.asc())
+            .fetch();
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId) {
+    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(Integer aaId) {
         return new JPAQueryFactory(entityManager)
-                .select(solicitacaoRamal)
-                .from(solicitacaoRamal)
-                .where(solicitacaoRamal.agenteAutorizadoId.eq(aaId)
-                        .and(solicitacaoRamal.situacao.eq(PENDENTE)
-                                .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
-                .fetch();
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.agenteAutorizadoId.eq(aaId)
+                .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                    .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
+            .fetch();
+    }
+
+    @Override
+    public List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(Integer subCanalId) {
+        return new JPAQueryFactory(entityManager)
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.subCanal.id.eq(subCanalId)
+                .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                    .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
+            .fetch();
     }
 
     @Override
@@ -110,21 +153,21 @@ public class SolicitacaoRamalRepositoryImpl
     @Override
     public Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(solicitacaoRamal)
-                        .from(solicitacaoRamal)
-                        .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
-                        .innerJoin(usuario.cargo, cargo).fetchJoin()
-                        .where(solicitacaoRamal.id.eq(solicitacaoId))
-                        .fetchOne()
+            new JPAQueryFactory(entityManager)
+                .select(solicitacaoRamal)
+                .from(solicitacaoRamal)
+                .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
+                .innerJoin(usuario.cargo, cargo).fetchJoin()
+                .where(solicitacaoRamal.id.eq(solicitacaoId))
+                .fetchOne()
         );
     }
 
     @Override
     public List<SolicitacaoRamal> findAllByPredicate(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                    .selectFrom(solicitacaoRamal)
-                    .where(predicate)
-                    .fetch();
+            .selectFrom(solicitacaoRamal)
+            .where(predicate)
+            .fetch();
     }
 }

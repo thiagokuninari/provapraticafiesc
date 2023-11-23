@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,11 +40,20 @@ public class SupervisorService {
     @Autowired
     private RegionalService regionalService;
 
-    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
-        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
+    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId,
+                                                                                 Integer equipeId,
+                                                                                 Integer subCanalId) {
+        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId,
+            Objects.nonNull(subCanalId)
+                ? getVendedoresDoSupervisor(supervisorId, subCanalId)
+                : getVendedoresDoSupervisor(supervisorId));
+        var cargosDescendentesDoSupervisor = Objects.nonNull(subCanalId)
+            ? getCargosDescendentesDoSupervisor(supervisorId,
+                getCanalBySupervisorId(supervisorId), subCanalId)
+            : getCargosDescendentesDoSupervisor(supervisorId,
+                getCanalBySupervisorId(supervisorId));
 
-        return Stream.concat(
-            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
+        return Stream.concat(cargosDescendentesDoSupervisor.stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
@@ -66,17 +76,41 @@ public class SupervisorService {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
-    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId, ECanal canal) {
+    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId,
+                                                                    ECanal canal) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
             supervisorId,
             List.of(ASSISTENTE_OPERACAO, OPERACAO_ANALISTA, OPERACAO_CONSULTOR),
             canal);
     }
 
+    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId,
+                                                                    ECanal canal,
+                                                                    Integer subCanalId) {
+        return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
+            supervisorId,
+            List.of(ASSISTENTE_OPERACAO, OPERACAO_ANALISTA, OPERACAO_CONSULTOR),
+            canal,
+            subCanalId);
+    }
+
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
                 .getSubordinadosPorCargo(supervisorId,
                     Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()))
+                .stream()
+                .map(row -> new UsuarioResponse(
+                    ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
+                    (String) row[COLUNA_USUARIO_NOME],
+                    valueOf((String) row[COLUNA_CARGO_CODIGO])))
+                .collect(Collectors.toList());
+    }
+
+    private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId, Integer subCanalId) {
+        return usuarioRepository
+                .getSubordinadosPorCargo(supervisorId,
+                    Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()),
+                    subCanalId)
                 .stream()
                 .map(row -> new UsuarioResponse(
                     ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),

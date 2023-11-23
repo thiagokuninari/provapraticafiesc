@@ -64,7 +64,7 @@ public class EquipeVendasUsuarioServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(1))
-            .withMessage("#042 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#043 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test
@@ -75,7 +75,7 @@ public class EquipeVendasUsuarioServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(1))
-            .withMessage("#042 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#043 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {

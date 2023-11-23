@@ -71,7 +71,6 @@ public class UsuarioUploadFileService {
     protected UsuarioImportacaoPlanilha processarUsuarios(Row row, UsuarioImportacaoRequest request) {
         String senhaDescriptografada = tratarSenha(request.isSenhaPadrao());
         UsuarioImportacaoPlanilha usuario = buildUsuario(row, senhaDescriptografada, request.isResetarSenhaUsuarioSalvo());
-        validarUsuarioExistente(usuario, request.isResetarSenhaUsuarioSalvo());
 
         if (usuario.getMotivoNaoImportacao().isEmpty()) {
             Usuario usuarioSalvo = salvarUsuario(usuario);

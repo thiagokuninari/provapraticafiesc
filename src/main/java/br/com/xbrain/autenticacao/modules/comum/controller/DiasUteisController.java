@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequestCidadeUf;
 import br.com.xbrain.autenticacao.modules.comum.service.DiasUteisService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(value = "api/dias-uteis")
+@RequiredArgsConstructor
 public class DiasUteisController {
 
-    @Autowired
-    private DiasUteisService diasUteisService;
+    private final DiasUteisService diasUteisService;
 
     @GetMapping
     public LocalDateTime getDataComDiasUteisAdicionado(@Validated DiasUteisRequest request) {

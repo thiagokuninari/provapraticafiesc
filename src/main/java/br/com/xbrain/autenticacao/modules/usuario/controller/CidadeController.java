@@ -1,36 +1,35 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Objects.nonNull;
+import java.util.Map;
 
 @RestController
-@RequestMapping(value = "api/cidades")
+@RequestMapping("api/cidades")
 public class CidadeController {
 
     @Autowired
     private CidadeService service;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
-    @GetMapping()
-    public Iterable<Cidade> get(Integer idUf, Integer idRegional, Integer idSubCluster) {
-        if (nonNull(idUf)) {
-            if (nonNull(idRegional)) {
-                return service.getAllCidadeByRegionalAndUf(idRegional, idUf);
-            }
-            return service.getAllCidadeByUf(idUf);
-        }
-        if (nonNull(idSubCluster)) {
-            return service.getAllBySubCluster(idSubCluster);
-        }
-        return Collections.emptyList();
+    @GetMapping("todas")
+    public List<CidadeResponse> getAllCidades(@RequestParam(required = false) Integer regionalId,
+                                              @RequestParam(required = false) Integer ufId) {
+        return service.getAll(regionalId, ufId);
+    }
+
+    @GetMapping
+    public Iterable<Cidade> buscarTodas(Integer idUf, Integer idRegional, Integer idSubCluster) {
+        return service.buscarTodas(idUf, idRegional, idSubCluster);
     }
 
     @GetMapping("uf-cidade/{uf}/{cidade}")
@@ -54,7 +53,7 @@ public class CidadeController {
     }
 
     @GetMapping("regional/{regionalId}/uf/{ufId}")
-    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId,
                                                          @PathVariable Integer ufId) {
         return service.getAllByRegionalIdAndUfId(regionalId, ufId);
     }
@@ -90,8 +89,8 @@ public class CidadeController {
     }
 
     @GetMapping("{cidadeId}")
-    public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
-        return CidadeResponse.of(service.findById(id));
+    public CidadeResponse getCidadeById(@PathVariable Integer cidadeId) {
+        return service.getCidadeById(cidadeId);
     }
 
     @GetMapping("{id}/clusterizacao")
@@ -150,9 +149,26 @@ public class CidadeController {
         return CidadeResponse.of(service.findFirstByUfNomeAndCidadeNome(uf, cidade));
     }
 
+    @PostMapping("por-nome-e-ufs")
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeNomeAndUf(
+        @RequestBody CidadesUfsRequest cidadesUfs) {
+        return service.getCodigoIbgeRegionalByCidadeNomeAndUf(cidadesUfs);
+    }
+
     @GetMapping("codigo-ibge/regional")
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(@RequestParam(name = "cidadesId")
                                                                                List<Integer> cidadesId) {
         return service.getCodigoIbgeRegionalByCidade(cidadesId);
+    }
+
+    @GetMapping("distritos")
+    public Map<Integer, CidadeResponse> getCidadesDistritos(@RequestParam(required = false) Eboolean apenasDistritos) {
+        return service.getCidadesDistritos(apenasDistritos);
+    }
+
+    @DeleteMapping("distritos/limpar-cache")
+    public void limparCacheCidadesDistritos() {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
+        service.flushCacheCidadesDistritos();
     }
 }

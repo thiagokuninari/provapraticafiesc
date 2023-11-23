@@ -10,7 +10,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,18 +19,15 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PermissaoEspecialService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Permissão Especial não encontrada.");
 
-    @Autowired
-    private PermissaoEspecialRepository repository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private FeederService feederService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private final PermissaoEspecialRepository repository;
+    private final AutenticacaoService autenticacaoService;
+    private final FeederService feederService;
+    private final AgenteAutorizadoService agenteAutorizadoService;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
@@ -46,6 +43,10 @@ public class PermissaoEspecialService {
                     .usuarioCadastro(usuario)
                     .build())
                 .collect(Collectors.toList()));
+    }
+
+    public void save(List<PermissaoEspecial> permissoes) {
+        repository.save(permissoes);
     }
 
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
@@ -68,5 +69,25 @@ public class PermissaoEspecialService {
             .collect(Collectors.toList());
 
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
+    }
+
+    public void reprocessarPermissoesEspeciaisSociosSecundarios(List<Integer> aaIds) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        usuarioAutenticado.validarAdministrador();
+        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+                CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))
+            .stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        feederService.salvarPermissoesEspeciaisSociosSecundarios(usuariosIds, usuarioAutenticado.getId());
+    }
+
+    public boolean hasPermissaoEspecialAtiva(Integer usuarioId, Integer funcionalidadeId) {
+        return repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId);
+    }
+
+    public void deletarPermissoesEspeciaisBy(List<Integer> funcionalidadesIds, List<Integer> usuariosIds) {
+        repository.deletarPermissaoEspecialBy(funcionalidadesIds, usuariosIds);
     }
 }

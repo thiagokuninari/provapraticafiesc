@@ -20,6 +20,7 @@ import java.util.List;
 @Data
 public class UsuarioFiltros {
 
+    private Integer id;
     private String nome;
     private String emailUsuario;
     private String cpf;
@@ -34,9 +35,9 @@ public class UsuarioFiltros {
     private Integer departamentoId;
     private Integer cargoId;
     private ECanal canal;
+    private Integer subCanalId;
     private List<ESituacao> situacoes;
     private Integer organizacaoId;
-    private Integer organizacaoEmpresaId;
     private List<Integer> excluiIds;
     private List<CodigoCargo> codigosCargos;
     private List<Integer> novasRegionaisIds;
@@ -48,6 +49,7 @@ public class UsuarioFiltros {
             .comNome(nome)
             .comEmail(emailUsuario)
             .comCanal(canal)
+            .comSubCanal(subCanalId)
             .comSituacoes(situacoes)
             .comGrupo(grupoId)
             .comCluster(clusterId)
@@ -55,8 +57,7 @@ public class UsuarioFiltros {
             .comUf(ufId)
             .comSubCluster(subClusterId)
             .comUnidadeNegocio(unidadeNegocioIds)
-            .comOrganizacaoId(organizacaoId)
-            .comOrganizacaoEmpresaId(organizacaoEmpresaId)
+            .comOrganizacaoEmpresaId(organizacaoId)
             .comNivel(!ObjectUtils.isEmpty(nivelId)
                 ? Collections.singletonList(nivelId) : null)
             .comCargo(!ObjectUtils.isEmpty(cargoId)
@@ -64,6 +65,7 @@ public class UsuarioFiltros {
             .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
                 ? Collections.singletonList(departamentoId) : null)
             .excluiIds(excluiIds)
-            .comCodigosCargos(codigosCargos);
+            .comCodigosCargos(codigosCargos)
+            .comId(id);
     }
 }

@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.agenteautorizadonovo.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umaListaDeAgenteAutorizadoResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -36,7 +37,7 @@ public class AgenteAutorizadoNovoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.buscarTodosUsuariosDosAas(List.of(1), false))
-            .withMessage("#033 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .withMessage("#031 - Desculpe, ocorreu um erro interno. Contate a administrador.");
     }
 
     @Test
@@ -88,6 +89,20 @@ public class AgenteAutorizadoNovoServiceTest {
         assertThat(service.findAgenteAutorizadoByUsuarioId(1))
             .extracting("id", "razaoSocial", "cnpj")
             .containsExactly(tuple("10", "AA TESTE", "78.620.184/0001-80"));
+    }
+
+    @Test
+    public void findAgentesAutorizadosByUsuariosIds_deveRetornarTodosAasDosUsuarios_quandoTudoOk() {
+        when(client.findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true)))
+            .thenReturn(umaListaDeAgenteAutorizadoResponse());
+
+        assertThat(service.findAgentesAutorizadosByUsuariosIds(List.of(1), true))
+            .extracting("id", "cnpj", "razaoSocial", "situacao")
+            .containsExactlyInAnyOrder(
+                tuple("1", "00.000.0000/0001-00", "TESTE AA", "CONTRATO ATIVO"),
+                tuple("3", "00.000.0000/0001-30", "TESTE AA INATIVO", "INATIVO"),
+                tuple("4", "00.000.0000/0001-40", "TESTE AA REJEITADO", "REJEITADO"),
+                tuple("2", "00.000.0000/0001-20", "OUTRO TESTE AA", "CONTRATO ATIVO"));
     }
 
     @Test

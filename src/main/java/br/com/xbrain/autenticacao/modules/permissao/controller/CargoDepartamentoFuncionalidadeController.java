@@ -6,7 +6,7 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncion
 import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.CargoDepartamentoFuncionalidadeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
@@ -17,23 +17,23 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cargo-departamento-funcionalidade")
+@RequiredArgsConstructor
 public class CargoDepartamentoFuncionalidadeController {
 
-    @Autowired
-    private CargoDepartamentoFuncionalidadeService service;
+    private final CargoDepartamentoFuncionalidadeService service;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public void save(@Validated @RequestBody CargoDepartamentoFuncionalidadeRequest request) {
         service.save(request);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public List<CargoDepartamentoFuncionalidadeResponse> getAll(CargoDepartamentoFuncionalidadeFiltros filtro) {
         List<CargoDepartamentoFuncionalidade> lista = service.getCargoDepartamentoFuncionalidadeByFiltro(filtro);
         return CargoDepartamentoFuncionalidadeResponse.convertFrom(lista);
     }
 
-    @RequestMapping(value = "/pages", method = RequestMethod.GET)
+    @GetMapping("pages")
     public PageImpl<CargoDepartamentoFuncionalidadeResponse> getAll(PageRequest pageRequest,
                                                                     CargoDepartamentoFuncionalidadeFiltros filtros) {
         Page<CargoDepartamentoFuncionalidade> page = service.getAll(pageRequest, filtros);
@@ -47,12 +47,12 @@ public class CargoDepartamentoFuncionalidadeController {
                 page.getTotalElements());
     }
 
-    @PutMapping(value = "remover/{id}")
+    @PutMapping("remover/{id}")
     public void remover(@PathVariable("id") int id) {
         service.remover(id);
     }
 
-    @PutMapping(value = "deslogar/{cargoId}/{departamentoId}")
+    @PutMapping("deslogar/{cargoId}/{departamentoId}")
     public void deslogarUsuarios(@PathVariable("cargoId") int cargoId, @PathVariable("departamentoId") int departamentoId) {
         service.deslogar(cargoId, departamentoId);
     }

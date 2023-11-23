@@ -4,6 +4,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -18,7 +19,7 @@ import java.io.InputStreamReader;
 
 public class ReCaptchaFilter extends GenericFilterBean {
 
-    private static final String RECAPTCHA_SECRET = "6Le_61EUAAAAAIPOqay7hFxkcmQliYJeIz-O4XDF";
+    private static final String RECAPTCHA_SECRET = "6Ldzn2AnAAAAABAG5KG1hjos4KllPOo2DLczwPDk";
     private static final String RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify";
     private static final String RECAPTCHA_RESPONSE_PARAM = "g-recaptcha-response";
 
@@ -28,12 +29,17 @@ public class ReCaptchaFilter extends GenericFilterBean {
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null && request.getHeader("X-Real-IP") != null) {
+        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null) {
+
+            var remoteIp = request.getHeader("X-Real-IP");
 
             PostMethod method = new PostMethod(RECAPTCHA_URL);
             method.addParameter("secret", RECAPTCHA_SECRET);
             method.addParameter("response", servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM));
-            method.addParameter("remoteip", request.getHeader("X-Real-IP"));
+
+            if (!ObjectUtils.isEmpty(remoteIp)) {
+                method.addParameter("remoteip", request.getHeader("X-Real-IP"));
+            }
 
             HttpClient client = new HttpClient();
             client.executeMethod(method);

@@ -2,30 +2,39 @@ package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
-import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoReceptivo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoComercial;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelReceptivo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -34,49 +43,57 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class UsuarioUploadFileServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UsuarioUploadFileService usuarioUploadFileService;
-
-    @Autowired
+    @Mock
     private UsuarioRepository usuarioRepository;
-
-    @MockBean
+    @Mock
+    private NivelRepository nivelRepository;
+    @Mock
+    private DepartamentoRepository departamentoRepository;
+    @Mock
+    private CargoRepository cargoRepository;
+    @Mock
     private RestTemplate restTemplate;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private NotificacaoService notificacaoService;
 
     private Sheet sheet;
 
     @Before
-    public void setUp() throws Exception {
-        InputStream excelFile = new FileInputStream("src/test/resources/arquivo_usuario/planilha.xlsx");
-        XSSFWorkbook wb = new XSSFWorkbook(excelFile);
+    @SneakyThrows
+    public void setUp() {
+        var excelFile = new FileInputStream("src/test/resources/arquivo_usuario/planilha.xlsx");
+        var wb = new XSSFWorkbook(excelFile);
         sheet = wb.getSheetAt(0);
     }
 
     @Test
-    public void deveProcessarRowERetornarErroDeCpfInvalido() {
-        Row row = umaLinha(2);
+    public void processarUsuarios_deveProcessarRowERetornarErro_seCpfInvalido() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelAa());
 
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
+        var row = umaLinha(2);
+
+        var usuarioImportacaoRequest = usuarioUploadFileService
                 .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
+
         assertNotNull(usuarioImportacaoRequest);
         assertThat(usuarioImportacaoRequest.getCpf()).isEmpty();
         assertThat(usuarioImportacaoRequest.getMotivoNaoImportacao()).contains("O campo cpf está incorreto.");
     }
 
     @Test
-    public void deveProcessarRowERetornarErroDeNivelInvalido() {
-        Row row = umaLinha(2);
+    public void processarUsuarios_deveProcessarRowERetornarErro_seNivelInvalido() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelAa());
 
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
+        var row = umaLinha(2);
+
+        var usuarioImportacaoRequest = usuarioUploadFileService
                 .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
         assertNotNull(usuarioImportacaoRequest);
         assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(0),
@@ -84,88 +101,92 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveRetornarErroCasoOCpfEstejaInvalido() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .cpf("96124736334")
-                .build();
-        String msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
+    public void validarCpf_deveRetornarErro_seCpfInvalido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .cpf("96124736334")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
         assertEquals("O campo cpf está incorreto.", msgErro);
     }
 
     @Test
-    public void deveRetornarNenhumErroCasoOCpfEstejaValido() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .cpf("38957979875")
-                .build();
+    public void validarCpf_deveRetornarNenhumErro_seCpfValido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .cpf("38957979875")
+            .build();
 
-        String msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
+        var msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
         assertNotEquals("O campo cpf está incorreto.", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoOEmailEstejaInvalido() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .email("ADMINTESTE.XBRAIN.COM.BR")
-                .build();
-        String msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
+    public void validarEmail_deveRetornarErro_seEmailInvalido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .email("ADMINTESTE.XBRAIN.COM.BR")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
         assertEquals("O campo email está inválido.", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoOEmailComQuantidadeDeCaracteresEstejaInvalido() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .email("Beatriz_Laura_Maria_Júlia_Ana_Alice_Sofia_Maria_Eduarda_Larissa"
-                        + "_Mariana_Isabela_Camila_Valentina_Lara_Letícia_Helena_Amanda_"
-                        + "Luana_Yasmin@Mail.com")
-                .build();
-        String msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
+    public void validarEmail_deveRetornarErro_seEmailComQuantidadeDeCaracteresInvalido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .email("Beatriz_Laura_Maria_Júlia_Ana_Alice_Sofia_Maria_Eduarda_Larissa"
+                + "_Mariana_Isabela_Camila_Valentina_Lara_Letícia_Helena_Amanda_"
+                + "Luana_Yasmin@Mail.com")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
         assertEquals("O campo email está inválido.", msgErro);
     }
 
     @Test
-    public void deveRetornarNenhumErroCasoOEmailEstejaValido() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .email("ADMINTESTE@XBRAIN.COM.BR")
-                .build();
-        String msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
+    public void validarEmail_deveRetornarNenhumErro_seEmailValido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .email("ADMINTESTE@XBRAIN.COM.BR")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
         assertNotEquals("O campo email está incorreto.", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoOCpfJaExista() {
-        UsuarioImportacaoPlanilha usuario = UsuarioImportacaoPlanilha
-                .builder()
-                .cpf("38957979875").build();
+    public void validarUsuarioExistente_deveRetornarErro_seCpfJaExistente() {
+        when(usuarioRepository.findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(any(), any(), any()))
+            .thenReturn(List.of(new Usuario()));
 
-        String msgErro = usuarioUploadFileService
+        var usuario = UsuarioImportacaoPlanilha.builder()
+            .cpf("38957979875")
+            .build();
+
+        var msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuario, false);
         assertEquals("Usuário já salvo no banco", msgErro);
     }
 
     @Test
-    public void deveRetornarNenhumErroCasoOCpfNaoExista() {
-        UsuarioImportacaoPlanilha usuario = UsuarioImportacaoPlanilha
-                .builder()
-                .cpf("9612473633").build();
+    public void validarUsuarioExistente_deveRetornarNenhumErro_seCpfNaoExistente() {
+        var usuario = UsuarioImportacaoPlanilha.builder()
+            .cpf("9612473633")
+            .build();
 
-        String msgErro = usuarioUploadFileService
+        var msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuario, false);
         assertNotEquals("Usuário já salvo no banco", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoOEmailJaExistaIndiferenteDoCase() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .email("ADMIN@XBRAIN.COM.BR")
-                .build();
+    public void validarUsuarioExistente_deveRetornarErro_seEmailJaExistaIndiferenteDoCase() {
+        when(usuarioRepository.findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(any(), any(), any()))
+            .thenReturn(List.of(new Usuario()));
 
-        String msgErro = usuarioUploadFileService
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .email("ADMIN@XBRAIN.COM.BR")
+            .build();
+
+        var msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuarioImportacaoRequest, false);
         assertEquals("Usuário já salvo no banco", msgErro);
 
@@ -180,60 +201,64 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveRetornarNenhumErroCasoOEmailNaoExista() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .email("ADMINTeste@XBRAIN.COM.BR")
-                .build();
+    public void validarUsuarioExistente_deveRetornarNenhumErro_seEmailNaoExistente() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .email("ADMINTeste@XBRAIN.COM.BR")
+            .build();
 
-        String msgErro = usuarioUploadFileService
+        var msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuarioImportacaoRequest, false);
         assertNotEquals("Usuário já salvo no banco", msgErro);
     }
 
     @Test
-    public void deveValidarONome() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .nome("Beatriz Laura Maria Júlia Ana Alice Sofia Maria Eduarda Larissa "
-                        + "Mariana Isabela Camila Valentina Lara Letícia Helena Amanda Luana Yasmin")
-                .build();
-        String msgErro = usuarioUploadFileService.validarNome(usuarioImportacaoRequest);
+    public void validarNome_deveRetornarErro_seQuantidadeDeCaracteresAcimaDoPermitido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .nome("Beatriz Laura Maria Júlia Ana Alice Sofia Maria Eduarda Larissa "
+                + "Mariana Isabela Camila Valentina Lara Letícia Helena Amanda Luana Yasmin")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarNome(usuarioImportacaoRequest);
         assertEquals("Usuário está com nome inválido", msgErro);
     }
 
     @Test
-    public void deveRetornarNenhumErroAoValidarONome() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .nome("João")
-                .build();
-        String msgErro = usuarioUploadFileService.validarNome(usuarioImportacaoRequest);
+    public void validarNome_deveRetornarNenhumErro_seQuantidadeDeCaracteresMenorOuIgualAoPermitido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .nome("Beatriz Laura Maria Júlia Ana Alice Sofia Maria Eduarda Larissa "
+                + "Mariana Isabela Camila Valentina Lar")
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarNome(usuarioImportacaoRequest);
         assertNotEquals("Usuário está com nome inválido", msgErro);
     }
 
     @Test
-    public void deveValidarADataDeNascimento() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .nascimento(null)
-                .build();
-        String msgErro = usuarioUploadFileService.validarNascimento(usuarioImportacaoRequest);
+    public void validarNascimento_deveRetornarErro_seDataNascimentoInvalida() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .nascimento(null)
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarNascimento(usuarioImportacaoRequest);
         assertEquals("Usuário está com nascimento inválido", msgErro);
     }
 
     @Test
-    public void deveValidarADataDeNascimentoSemErro() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
-                .builder()
-                .nascimento(LocalDateTime.now().minusYears(20L))
-                .build();
-        String msgErro = usuarioUploadFileService.validarNascimento(usuarioImportacaoRequest);
+    public void validarNascimento_naoDeveRetornarErro_seDataNascimentoValida() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha.builder()
+            .nascimento(LocalDateTime.now().minusYears(20L))
+            .build();
+
+        var msgErro = usuarioUploadFileService.validarNascimento(usuarioImportacaoRequest);
         assertNotEquals("Usuário está com nascimento inválido", msgErro);
     }
 
     @Test
     public void buildUsuario_cargoDeveEstarNulo_quandoNomeDoNivelEstiverIncorreto() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+
         assertThat(usuarioUploadFileService.buildUsuario(umaLinha(3), "102030", false))
             .extracting("nome", "cpf", "email", "telefone", "situacao", "cargo.nome")
             .contains("ADRIANA DE LIMA BEZERRA", "70159931479", "n.adriana.lbezerra@aec.com.br",
@@ -242,57 +267,64 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void buildUsuario_deveTratarCpf_quandoPossuirSimbolos() {
-        UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+
+        var usuario = usuarioUploadFileService
                 .buildUsuario(umaLinha(3), "102030", false);
 
         assertThat(usuario.getCpf()).isEqualTo("70159931479");
     }
 
     @Test
-    public void deveRetornarErroCasoNaoLocalizeOCargo() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
+    public void validarCargo_deveRetornarErro_seCargoInvalido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
                 .cargo(null)
                 .build();
-        String msgErro = usuarioUploadFileService.validarCargo(usuarioImportacaoRequest);
+        var msgErro = usuarioUploadFileService.validarCargo(usuarioImportacaoRequest);
         assertEquals("Usuário está com cargo inválido", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoNaoLocalizeODepartamento() {
-        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
+    public void validarDepartamento_deveRetornarErro_seDepartamentoInvalido() {
+        var usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
                 .departamento(null)
                 .build();
-        String msgErro = usuarioUploadFileService.validarDepartamento(usuarioImportacaoRequest);
+        var msgErro = usuarioUploadFileService.validarDepartamento(usuarioImportacaoRequest);
         assertEquals("Usuário está com departamento inválido", msgErro);
     }
 
     @Test
-    public void deveGerarSenhaRandomicaQuandoPassadoOParametroSenhaPadraoFalse() {
+    public void tratarSenha_deveGerarSenhaRandomica_sePassadoOParametroSenhaPadraoFalse() {
         String senha = usuarioUploadFileService.tratarSenha(false);
         assertNotEquals("102030", senha);
     }
 
     @Test
-    public void deveGerarSenhaRandomicaQuandoPassadoOParametroSenhaPadraoTrue() {
+    public void tratarSenha_deveGerarSenhaRandomica_sePassadoOParametroSenhaPadraoTrue() {
         String senha = usuarioUploadFileService.tratarSenha(true);
         assertEquals("102030", senha);
     }
 
     @Test
-    public void deveEnviarEmailQuandoSenhaPadraoFalse() {
-        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
+    public void processarUsuarios_deveEnviarEmail_quandoSenhaPadraoFalse() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(departamentoRepository.findByCodigoAndNivelId(any(), any()))
+            .thenReturn(Optional.of(umDepartamentoComercial()));
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(umUsuarioSalvo());
 
         usuarioUploadFileService.processarUsuarios(umaLinha(4),
                 new UsuarioImportacaoRequest(false, false));
 
-        verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
+        verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(eq(umUsuarioSalvo()), any());
     }
 
     @Test
-    public void deveEnviarEmailSomenteQuandoSenhaPadraoFalse() {
-        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
+    public void processarUsuarios_naoDeveEnviarEmail_quandoSenhaPadraoTrue() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
 
         usuarioUploadFileService.processarUsuarios(umaLinha(4),
                 new UsuarioImportacaoRequest(true, false));
@@ -300,38 +332,51 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveResetarSenhaQuandoResetarSenhaForTrue() {
-        Usuario usuario = getUsuario(366);
+    public void processarUsuarios_naoDeveResetarSenha_quandoResetarSenhaForFalse() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
 
-        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
-        UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(18),
+        when(usuarioRepository.findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(any(), any(), any()))
+            .thenReturn(List.of(new Usuario()));
+
+        var usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(4),
                 new UsuarioImportacaoRequest(false, false));
         assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco");
-        usuario = getUsuario(366);
-        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
-        assertEquals(usuario.getCpf(), usuarioImportacaoPlanilha.getCpf());
     }
 
     @Test
-    public void deveResetarSenhaSomenteQuandoResetarSenhaForTrue() {
-        Usuario usuario = getUsuario(100);
-        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
+    public void processarUsuarios_deveResetarSenha_quandoResetarSenhaForTrue() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
 
-        UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(48),
+        when(usuarioRepository.findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(any(), any(), any()))
+            .thenReturn(List.of(new Usuario()));
+
+        var usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(4),
                 new UsuarioImportacaoRequest(true, true));
         assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco,"
                 + " sua senha foi resetada para a padrão.");
-        usuario = getUsuario(100);
-        assertEquals(usuario.getAlterarSenha(), Eboolean.V);
-        assertEquals(usuario.getEmail(), usuarioImportacaoPlanilha.getEmail());
-    }
-
-    private Usuario getUsuario(Integer id) {
-        return usuarioRepository.findOne(id);
     }
 
     private Row umaLinha(int index) {
         return PlanilhaService.converterTipoCelulaParaString(sheet.getRow(index));
     }
 
+    private static Usuario umUsuarioSalvo() {
+        return Usuario.builder()
+            .id(1)
+            .nome("ALAN DAVISON BARROS SILVA")
+            .email("n.alan.bsilva@aec.com.br")
+            .telefone("51991301817")
+            .cpf("2917600403")
+            .nascimento(LocalDate.of(1975, 10, 11).atStartOfDay())
+            .unidadesNegocios(List.of(new UnidadeNegocio(1), new UnidadeNegocio(2)))
+            .empresas(List.of(new Empresa(1), new Empresa(2), new Empresa(3)))
+            .cargo(umCargoReceptivo())
+            .departamento(umDepartamentoComercial())
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$z8XJ8Bekzr35Wv0Ra.otKOb/TtC8563jiDzX62VDutAn4rpbyZmkC")
+            .alterarSenha(Eboolean.V)
+            .recuperarSenhaTentativa(0)
+            .situacao(ESituacao.A)
+            .build();
+    }
 }

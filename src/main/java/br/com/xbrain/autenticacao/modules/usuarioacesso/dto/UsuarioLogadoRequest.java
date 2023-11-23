@@ -26,7 +26,7 @@ public class UsuarioLogadoRequest {
     @JsonIgnore
     public BooleanBuilder toUsuarioPredicate() {
         return new UsuarioPredicate()
-            .comOrganizacaoId(organizacaoId)
+            .comOrganizacaoEmpresaId(organizacaoId)
             .comCodigosCargos(cargos)
             .isAtivo(Eboolean.V)
             .build();

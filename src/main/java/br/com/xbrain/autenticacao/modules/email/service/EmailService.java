@@ -48,7 +48,6 @@ public class EmailService {
 
     @Autowired
     private RestTemplate restTemplate;
-
     @Autowired
     private SpringTemplateEngine templateEngine;
 
@@ -107,7 +106,7 @@ public class EmailService {
         if (validaCampos(emailsDestino, empresaAlias)) {
             Email email = obterEmail(getEmails(emailsDestino), assunto, formataCorpo(conteudo), prioridade);
             HttpEntity<String> emailEntity = processaRequisicao(converteEmailJson(email), MediaType.APPLICATION_JSON_UTF8);
-            String url = obterUrl(empresaAlias, false);
+            String url = obterUrl(empresaAlias, false); //AQUI
             restTemplate.postForEntity(url, emailEntity, String.class);
         }
     }

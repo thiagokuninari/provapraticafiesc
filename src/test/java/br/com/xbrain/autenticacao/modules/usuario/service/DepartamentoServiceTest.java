@@ -6,51 +6,60 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepositoryCustom;
 import br.com.xbrain.autenticacao.modules.permissao.service.CargoDepartamentoFuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import helpers.DepartamentoHelper;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.DepartamentoPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAdministrador;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoHelpDesk;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@RunWith(MockitoJUnitRunner.class)
 public class DepartamentoServiceTest {
 
-    @Autowired
+    private static Integer NIVEL_ID = 4;
+
+    @InjectMocks
     private DepartamentoService service;
-    @MockBean
+    @Mock
     private AutenticacaoService autenticacaoService;
     @Mock
-    CargoDepartamentoFuncionalidadeRepositoryCustom cargoDepartamentoFuncionalidadeRepositoryCustom;
-    @MockBean
+    private CargoDepartamentoFuncionalidadeRepositoryCustom cargoDepartamentoFuncionalidadeRepositoryCustom;
+    @Mock
     private CargoDepartamentoFuncionalidadeService cargoDepartamentoFuncionalidadeService;
+    @Mock
+    private DepartamentoRepository departamentoRepository;
 
     @Test
     public void getPermitidosPorNivel_deveRetornarTodosOsNiveis_quandoTiverPermissaoVisualizarGeral() {
+        var usuarioAutenticado = UsuarioAutenticado.builder()
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+            .build();
+
+        var predicate = new DepartamentoPredicate()
+            .doNivel(NIVEL_ID)
+            .filtrarPermitidos(usuarioAutenticado);
 
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado
-                .builder()
-                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                .build());
+            .thenReturn(usuarioAutenticado);
 
-        assertThat(service.getPermitidosPorNivel(4))
+        when(departamentoRepository.findAll(eq(predicate.build())))
+            .thenReturn(List.of(umDepartamentoAdministrador(), umDepartamentoHelpDesk()));
+
+        assertThat(service.getPermitidosPorNivel(NIVEL_ID))
             .extracting("id", "nome")
             .containsExactly(
                 tuple(50, "Administrador"),
@@ -59,12 +68,19 @@ public class DepartamentoServiceTest {
 
     @Test
     public void getPermitidosPorNivel_deveRetornarOProprioCargo_quandoNaoTiverPermissaoVisualizarGeral() {
+        var usuarioAutenticado = UsuarioAutenticado.builder()
+            .departamentoCodigo(CodigoDepartamento.HELP_DESK)
+            .build();
+
+        var predicate = new DepartamentoPredicate()
+            .doNivel(NIVEL_ID)
+            .filtrarPermitidos(usuarioAutenticado);
 
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado
-                .builder()
-                .departamentoCodigo(CodigoDepartamento.HELP_DESK)
-                .build());
+            .thenReturn(usuarioAutenticado);
+
+        when(departamentoRepository.findAll(eq(predicate.build())))
+            .thenReturn(List.of(umDepartamentoHelpDesk()));
 
         assertThat(service.getPermitidosPorNivel(4))
             .extracting("id", "nome")
@@ -91,5 +107,4 @@ public class DepartamentoServiceTest {
         assertThat(service.getPermitidosPorCargo(201))
             .isEmpty();
     }
-
 }

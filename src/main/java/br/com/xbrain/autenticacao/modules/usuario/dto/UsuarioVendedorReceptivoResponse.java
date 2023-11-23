@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -20,8 +20,8 @@ public class UsuarioVendedorReceptivoResponse {
         var response = new UsuarioVendedorReceptivoResponse();
         BeanUtils.copyProperties(usuario, response);
         response.setNivel(usuario.getNivelNome());
-        response.setOrganizacao(Optional.ofNullable(usuario.getOrganizacao())
-            .map(Organizacao::getNome)
+        response.setOrganizacao(Optional.ofNullable(usuario.getOrganizacaoEmpresa())
+            .map(OrganizacaoEmpresa::getNome)
             .orElse(null));
         return response;
     }

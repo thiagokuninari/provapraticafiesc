@@ -2,14 +2,11 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,26 +21,20 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 public class EmailServiceTest {
 
     private static final String ASSUNTO_EMAIL = "Teste de envio de Email";
     private static final String CONTEUDO_EMAIL = "<html><head></head><body><h1>Olá mundo</h1></body></html>";
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
-    @Autowired
+    @InjectMocks
     private EmailService emailService;
-
-    @Before
-    public void setup() {
-        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
-    }
 
     @Test
     public void deveEnviarEmail() {
         ReflectionTestUtils.setField(emailService, "enviarEmail", true);
+        ReflectionTestUtils.setField(emailService, "urlServico", "http://api-hom.conexaoclarobrasil.com.br/email");
 
         emailService.enviarEmail(Collections.singletonList("luisdias@xbrain.com.br"),
                 ASSUNTO_EMAIL,

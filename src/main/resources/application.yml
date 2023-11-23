@@ -5,6 +5,8 @@ server:
     mime-types: text/html,text/css,application/javascript,application/json
 
 spring:
+  application:
+      name: autenticacao-api
   redis:
     #host: 127.0.0.1
     host: 192.168.50.1
@@ -72,8 +74,9 @@ app-config:
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
-  url-estatico: https://estatico.conexaoclarobrasil.com.br
+  url-estatico: https://estatico-hom.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
+  url-origin-cors: http://localhost
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
   upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
 
@@ -137,6 +140,12 @@ app-config:
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
     limpar-cpf-e-alterar-email-feeder: limpar-cpf-e-alterar-email-feeder.queue
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
+    permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
+    permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
+    atualizar-permissao-tecnico-indicador: atualizar-permissao-tecnico-indicador.queue
+    atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
+    organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
+    organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -223,6 +232,12 @@ app-config:
     claro-indico-api:
       client: claro-indico-api
       secret: cl4r0_1nd1c0_4p1
+    lei-nao-perturbe-api:
+      client: lei-nao-perturbe-api
+      secret: l31n4op3rtur8e4p1
+    bloqueio-ligacao-api:
+      client: bloqueio-ligacao-api
+      secret: bl0qu310l1g4c404p1
 
   services:
     autenticacao:
@@ -271,6 +286,18 @@ app-config:
     integracao-vendas:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
+    mailing-importacao:
+#      url: http://localhost:8087
+      url: http://192.168.50.1:6530
+    lei-nao-perturbe:
+      #url: http://localhost:8109
+      url: http://192.168.50.1:8109
+    extrato-comissao:
+      #url: http://localhost:8309
+      url: http://192.168.50.1:8309
+    funil-prospeccao:
+      #url: http://localhost:8100
+      url: http://192.168.50.1:6605
 
 flyway:
   enabled: true
@@ -319,6 +346,18 @@ zuul:
     integracao-vendas:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.integracao-vendas.url}
+    mailing-importacao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.mailing-importacao.url}
+    lei-nao-perturbe:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.lei-nao-perturbe.url}
+    extrato-comissao:
+      sensitive-headers: Cookie,Set-Cookie
+      url: ${app-config.services.extrato-comissao.url}
+    funil-prospeccao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.funil-prospeccao.url}
 
   host:
     connect-timeout-millis: 1800000
@@ -339,6 +378,18 @@ feign:
       agenteAutorizadoNovoClient:
         connectTimeout: 360000
         readTimeout: 360000
+
+management:
+  metrics:
+    export:
+      simple:
+        enabled: false
+
+xbrain:
+  logging:
+    level: INFO
+    appender: CONSOLE
+    appName: ${spring.application.name}
 
 keys:
   public: |

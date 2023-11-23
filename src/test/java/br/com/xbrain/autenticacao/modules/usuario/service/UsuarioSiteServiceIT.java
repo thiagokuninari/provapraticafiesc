@@ -47,28 +47,35 @@ public class UsuarioSiteServiceIT {
     private UsuarioRepositoryImpl usuarioRepository;
 
     @Test
-    public void listarSupervisor_deveRetornarListaVazia_quandoNaoExistirSupervisoresVinculadosAoUsuarioLogadoDisponiveis() {
+    @SuppressWarnings("LineLength")
+    public void buscarUsuariosSitePorCargo_deveRetornarListaVazia_quandoNaoExistirSupervisoresVinculadosAoUsuarioLogadoDisponiveis() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
-        doReturn(List.of(umUsuarioNomeResponse(1)))
+
+        doReturn(Collections.emptyList())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarUsuariosSitePorCargo(CodigoCargo.SUPERVISOR_OPERACAO));
+
+        assertThat(usuarioSiteService.buscarUsuariosSitePorCargo(CodigoCargo.SUPERVISOR_OPERACAO)).isEmpty();
     }
 
     @Test
-    public void listarCoordenador_deveRetornarListaVazia_quandoNaoExistirCoordenadoresVinculadosAoUsuarioLogadoDisponiveis() {
+    @SuppressWarnings("LineLength")
+    public void buscarCoordenadoresDisponiveis_deveRetornarListaVazia_quandoNaoExistirCoordenadoresVinculadosAoUsuarioLogadoDisponiveis() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(1)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
-            .hasSize(0);
+
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis()).isEmpty();
     }
 
     @Test
-    public void retornarParaEditar_deveRetornarSupervisoresVinculadosAoSiteEAoUsuarioLogado_quandoSolicitarComSiteIdParaEditar() {
+    @SuppressWarnings("LineLength")
+    public void buscarSupervisoresDisponiveisEVinculadosAoSite_deveRetornarSupervisoresVinculadosAoSiteEAoUsuarioLogado_quandoSolicitarComSiteIdParaEditar() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(11123)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
 
@@ -78,11 +85,14 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void retornar_deveRetornarSupervisoresDisponiveis_quandoGerenteTiverSupervisoresSemSite() {
+    @SuppressWarnings("LineLength")
+    public void getSupervisoresSemSitePorCoordenadorsId_deveRetornarSupervisoresDisponiveis_quandoGerenteTiverSupervisoresSemSite() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(11123), umUsuarioNomeResponse(11124)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
+
         assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11122)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactlyInAnyOrder(
@@ -91,9 +101,11 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void retornar_deveRetornarCoordenadoresVinculadosAoSiteEAoUsuarioLogado_quandoSolicitarComSiteIdParaEditar() {
+    @SuppressWarnings("LineLength")
+    public void buscarCoordenadoresDisponiveisEVinculadosAoSite_deveRetornarCoordenadoresVinculadosAoSiteEAoUsuarioLogado_quandoSolicitarComSiteIdParaEditar() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(11122))).when(usuarioRepository)
             .findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
 
@@ -103,9 +115,11 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void retornar_deveRetornarCoordenadoresDisponiveisEVinculadosAoSiteEUsuarioLogado_quandoEditarSite() {
+    @SuppressWarnings("LineLength")
+    public void buscarCoordenadoresDisponiveisEVinculadosAoSite_deveRetornarCoordenadoresDisponiveisEVinculadosAoSiteEUsuarioLogado_quandoEditarSite() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(11122), umUsuarioNomeResponse(11125)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
 
@@ -117,8 +131,9 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void retornarTodosCoordenadores_deveRetornarTodosCoordenadoresDisponiveis_quandoUsuarioLogadoForMso() {
+    public void buscarCoordenadoresDisponiveis_deveRetornarTodosCoordenadoresDisponiveis_quandoUsuarioLogadoForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoMSO(1));
+
         assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
@@ -128,8 +143,10 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void retornarAll_deveRetornarTodosSupervisoresDisponiveisDoCoordenador_quandoUsuarioLogadoForMso() {
+    @SuppressWarnings("LineLength")
+    public void getSupervisoresSemSitePorCoordenadorsId_deveRetornarTodosSupervisoresDisponiveisDoCoordenador_quandoUsuarioLogadoForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoMSO(1));
+
         assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11122)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
@@ -138,33 +155,38 @@ public class UsuarioSiteServiceIT {
     }
 
     @Test
-    public void ignorar_deveIgnorarCoordenadoresSemVinculoComUserLogado_quandoCoordenadorNaoFazerParteDaHierarquia() {
+    @SuppressWarnings("LineLength")
+    public void buscarCoordenadoresDisponiveis_deveIgnorarCoordenadoresSemVinculoComUserLogado_quandoCoordenadorNaoFazerParteDaHierarquia() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10220, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
+
         doReturn(List.of(umUsuarioNomeResponse(11155), umUsuarioNomeResponse(11145)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
-            .hasSize(0);
+
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis()).isEmpty();
     }
 
     @Test
-    public void retornarVazio_deveRetornarListaVazia_quandoHieraquiaNaoPossuirCoordenador() {
+    public void buscarCoordenadoresDisponiveis_deveRetornarListaVazia_quandoHieraquiaNaoPossuirCoordenador() {
+
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10219, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
-        doReturn(List.of())
+
+        doReturn(Collections.emptyList())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
-            .hasSize(0);
+
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis()).isEmpty();
     }
 
     @Test
-    public void retornarVazio_deveRetornarListaVazia_quandoHieraquiaNaoPossuirSupervisor() {
+    public void getSupervisoresSemSitePorCoordenadorsId_deveRetornarListaVazia_quandoHieraquiaNaoPossuirSupervisor() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(10219, CodigoCargo.GERENTE_OPERACAO,
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
-        doReturn(List.of())
+
+        doReturn(Collections.emptyList())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(100)))
-            .hasSize(0);
+
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(100))).isEmpty();
     }
 
     private UsuarioNomeResponse umUsuarioNomeResponse(Integer idUsuario) {

@@ -1,68 +1,81 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(CargoController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+    @MockBean(UsuarioSubCanalObserver.class),
+})
 public class CargoControllerTest {
+
     private static final String API_CARGO = "/api/cargos";
 
-    @Autowired
     private MockMvc mvc;
     @MockBean
     private CargoService cargoService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private WebApplicationContext context;
 
-    @Test
-    public void getAll_isUnauthorized_quandoNaoInformarAToken() throws Exception {
-        mvc.perform(get(API_CARGO)
-            .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+    @Before
+    public void setUp() throws Exception {
+        mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
 
     @Test
+    @WithAnonymousUser
+    public void getAll_isUnauthorized_quandoNaoInformarAToken() throws Exception {
+        mvc.perform(get(API_CARGO)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
     public void getAll_deveRetornarOsCargos_conformeNivelECanaisPermitidosFiltrados() throws Exception {
         when(cargoService.getAll(any(), any()))
             .thenReturn(umCargoPage(1, "Administrador", 4));
@@ -80,134 +93,88 @@ public class CargoControllerTest {
                 .param("nivelId", "7")
                 .param("canais", canaisParam)
                 .param("permiteEditarCompleto", "true")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
+            .andDo(print())
             .andExpect(jsonPath("$", not(empty())))
             .andExpect(jsonPath("$[0].codigo", is(CodigoCargo.OPERACAO_TECNICO.name())))
             .andExpect(jsonPath("$[0].nome", is("OPERADOR TECNICO")));
     }
 
     @Test
+    @WithMockUser
     public void getAll_deveRetornarCargos_quandoForFiltradoPorNivel() throws Exception {
         when(cargoService.getAll(any(), any()))
             .thenReturn(umCargoPage(1, "Administrador", 4));
 
         mvc.perform(get(API_CARGO + "/gerencia?nivelId=4")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content", not(empty())))
             .andExpect(jsonPath("$.content[0].nome", is("Administrador")));
     }
 
     @Test
+    @WithMockUser
     public void findCargoById_deveRetornarCargo_quandoForPassadoId() throws Exception {
         when(cargoService.findById(any()))
             .thenReturn(umCargoNivelAdministrador(1, "Administrador"));
 
         mvc.perform(get(API_CARGO + "/1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("Administrador")));
     }
 
     @Test
+    @WithMockUser
     public void save_deveRetornarCargo_quandoForSalvo() throws Exception {
         when(cargoService.save(any()))
             .thenReturn(umCargoNivelAdministrador(2, "Administrador"));
 
         mvc.perform(post(API_CARGO)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umCargoRequest(1, "Administrador"))))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umCargoRequest(1, "Administrador"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("Administrador")));
     }
 
     @Test
+    @WithMockUser
     public void update_deveRetornarCargo_quandoForAtualizado() throws Exception {
         when(cargoService.update(any()))
             .thenReturn(umCargoNivelAdministrador(2, "Vendedor"));
 
         mvc.perform(put(API_CARGO)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umCargoRequest(2, "Vendedor"))))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umCargoRequest(2, "Vendedor"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("Vendedor")));
     }
 
     @Test
+    @WithMockUser
     public void situacao_deveRetornarCargo_quandoSituacaoForAlterado() throws Exception {
         when(cargoService.situacao(any()))
             .thenReturn(umCargoNivelAdministrador(2, "Vendedor"));
 
         mvc.perform(put(API_CARGO + "/altera-situacao")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umCargoRequest(2, "Vendedor"))))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umCargoRequest(2, "Vendedor"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("Vendedor")));
     }
 
-    public Page<Cargo> umCargoPage(Integer id, String nome, Integer nivelId) {
-        return new PageImpl<>(List.of(Cargo
-            .builder()
-            .id(id)
-            .nome(nome)
-            .nivel(Nivel
-                .builder()
-                .id(nivelId)
-                .build())
-            .build()));
-    }
-
-    public Cargo umCargoNivelAdministrador(Integer id, String nome) {
-        return Cargo.builder()
-            .id(id)
-            .nome(nome)
-            .nivel(Nivel
-                .builder()
-                .id(4)
-                .nome("Administrador")
-                .build())
-            .build();
-    }
-
-    public CargoRequest umCargoRequest(Integer id, String nome) {
-        return CargoRequest
-            .builder()
-            .id(id)
-            .nome(nome)
-            .situacao(ESituacao.A)
-            .nivel(Nivel
-                .builder()
-                .id(4)
-                .build())
-            .build();
-    }
-
     @Test
+    @WithMockUser
     public void getAll_deveRetornarOsCargosComNomeNivel_conformeNivelFiltrado() throws Exception {
         when(cargoService.getPermitidosPorNiveis(anyList()))
-            .thenReturn(List.of(umCargo()));
+            .thenReturn(List.of(umCargoVendedor()));
 
-        mvc.perform(get("/api/cargos/com-nivel?niveisId=1,2,3")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", not(empty())))
-                .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
-    }
-
-    private Cargo umCargo() {
-        return Cargo.builder()
-                .nivel(Nivel.builder()
-                        .nome("Xbrain")
-                        .build())
-                .nome("Vendedor")
-                .build();
+        mvc.perform(get(API_CARGO + "/com-nivel?niveisId=1,2,3")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", not(empty())))
+            .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
     }
 }

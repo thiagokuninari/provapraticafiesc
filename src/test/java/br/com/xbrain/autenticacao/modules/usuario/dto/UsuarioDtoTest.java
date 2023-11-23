@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -17,13 +16,100 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VAREJO_VENDEDOR;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.VAREJO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UsuarioDtoTest {
+
+    @Test
+    public void convertFrom_deveRetornarNivelCodigo_quandoCadastrarUsuario() {
+        assertThat(UsuarioDto.convertFrom(umUsuarioOperacaoDto()))
+            .extracting("nome", "nivelCodigo", "subCanaisId")
+            .containsExactly("VENDEDOR OPERACAO D2D", OPERACAO, Set.of(3));
+    }
+
+    @Test
+    public void hasCanalD2dProprio_deveRetornarFalse_quandoUsuarioNaoPossuirCanalD2dProprio() {
+        var usuarioDto = UsuarioDto.builder()
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
+
+        assertFalse(usuarioDto.hasCanalD2dProprio());
+    }
+
+    @Test
+    public void hasCanalD2dProprio_deveRetornarTrue_quandoUsuarioPossuirCanalD2dProprio() {
+        var usuarioDto = UsuarioDto.builder()
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertTrue(usuarioDto.hasCanalD2dProprio());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoIdECargoCodigoForemNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(null)
+            .cargoCodigo(null)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoCargoCodigoForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1)
+            .cargoCodigo(null)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarFalse_quandoIdForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(null)
+            .cargoCodigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .build();
+
+        assertFalse(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasIdAndCargoCodigo_deveRetornarTrue_quandoUsuarioPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1)
+            .cargoCodigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .build();
+
+        assertTrue(usuarioDto.hasIdAndCargoCodigo());
+    }
+
+    @Test
+    public void hasSubCanaisId_deveRetornarFalse_quandoUsuarioNaoPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .subCanaisId(Set.of())
+            .build();
+
+        assertFalse(usuarioDto.hasSubCanaisId());
+    }
+
+    @Test
+    public void hasSubCanaisId_deveRetornarTrue_quandoUsuarioPossuirSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .subCanaisId(Set.of(1, 2, 3, 4))
+            .build();
+
+        assertTrue(usuarioDto.hasSubCanaisId());
+    }
 
     @Test
     public void convertFrom_deveRetornarFeeders_quandoCadastrarUsuarioNivelMso() {
@@ -57,19 +143,20 @@ public class UsuarioDtoTest {
     }
 
     @Test
-    public void convertFrom_deveRetornarOrganizacaoId_quandoPassadoNoDto() {
+    public void convertFrom_deveRetornarOrganizacaoEmpresaId_quandoPassadoNoDto() {
         assertThat(UsuarioDto.convertFrom(umUsuarioDtoMso()))
-            .extracting("nome", "cpf", "tiposFeeder", "organizacao")
-            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), new Organizacao(1));
+            .extracting("nome", "cpf", "tiposFeeder", "organizacaoEmpresa")
+            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL),
+                new OrganizacaoEmpresa(1));
     }
 
     @Test
-    public void convertFrom_naoDeveRetornarOrganizacaoId_quandoNaoPassadoNoDto() {
-        var usuarioSemOrganizacaoId = umUsuarioDtoMso();
-        usuarioSemOrganizacaoId.setOrganizacaoId(null);
+    public void convertFrom_naoDeveRetornarOrganizacaoEmpresaId_quandoNaoPassadoNoDto() {
+        var usuarioSemOrganizacaoEmpresaId = umUsuarioDtoMso();
+        usuarioSemOrganizacaoEmpresaId.setOrganizacaoId(null);
 
-        assertThat(UsuarioDto.convertFrom(usuarioSemOrganizacaoId))
-            .extracting("nome", "cpf", "tiposFeeder", "organizacao")
+        assertThat(UsuarioDto.convertFrom(usuarioSemOrganizacaoEmpresaId))
+            .extracting("nome", "cpf", "tiposFeeder", "organizacaoEmpresa")
             .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), null);
     }
 
@@ -120,19 +207,22 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(ESituacao.I)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .unidadeNegocioId(1)
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
             .hierarquiasId(List.of(65))
             .canais(Set.of(ECanal.VAREJO))
             .recuperarSenhaTentativa(0)
+            .subCanaisId(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -179,18 +269,12 @@ public class UsuarioDtoTest {
                 .build()))
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
                     .codigo(VAREJO)
                     .build())
-                .build())
-            .organizacao(Organizacao
-                .builder()
-                .id(1)
-                .nome("Thiago teste")
-                .codigo("VAREJO")
                 .build())
             .usuarioCadastro(Usuario
                 .builder()
@@ -215,11 +299,14 @@ public class UsuarioDtoTest {
         var esperado = Usuario
             .builder()
             .id(1)
-            .organizacao(Organizacao
-                .builder()
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
                 .nome("Thiago teste")
-                .codigo("VAREJO")
+                .nivel(Nivel
+                    .builder()
+                    .id(5)
+                    .codigo(VAREJO)
+                    .build())
                 .build())
             .cargo(Cargo
                 .builder()
@@ -257,7 +344,7 @@ public class UsuarioDtoTest {
             .organizacaoEmpresa(OrganizacaoEmpresa
                 .builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
@@ -321,6 +408,8 @@ public class UsuarioDtoTest {
             .cidades(Set.of())
             .usuariosHierarquia(Set.of())
             .tiposFeeder(Set.of())
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -339,13 +428,15 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(ESituacao.I)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .unidadeNegocioId(1)
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
@@ -353,6 +444,7 @@ public class UsuarioDtoTest {
             .canais(Set.of(ECanal.VAREJO))
             .recuperarSenhaTentativa(0)
             .permiteEditarCompleto(true)
+            .subCanaisId(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -391,6 +483,8 @@ public class UsuarioDtoTest {
             .cpf("111.111.111-11")
             .situacao(situacao)
             .loginNetSales("login123")
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .cargo(Cargo
                 .builder()
                 .id(idCargo)
@@ -420,7 +514,7 @@ public class UsuarioDtoTest {
                 .build()))
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
@@ -470,7 +564,6 @@ public class UsuarioDtoTest {
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
             .organizacaoId(1)
             .usuarioCadastroId(1)
             .unidadesNegociosId(List.of(1))
@@ -500,7 +593,7 @@ public class UsuarioDtoTest {
         return UsuarioDto
             .builder()
             .id(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .cargoId(1)
             .departamentoId(1)
             .cidadesId(null)
@@ -517,6 +610,8 @@ public class UsuarioDtoTest {
             .departamentoId(1)
             .cidadesId(null)
             .hierarquiasId(null)
+            .nomeEquipeVendaNetSales("EQUIPE NET")
+            .codigoEquipeVendaNetSales("654321")
             .build();
     }
 

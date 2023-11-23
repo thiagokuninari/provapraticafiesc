@@ -8,7 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +18,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "api/cargos")
+@RequestMapping("api/cargos")
+@RequiredArgsConstructor
 public class CargoController {
 
-    @Autowired
-    private CargoService service;
+    private final CargoService service;
 
     @GetMapping
     public List<CargoResponse> getAll(Integer nivelId, @RequestParam(required = false) Set<ECanal> canais,

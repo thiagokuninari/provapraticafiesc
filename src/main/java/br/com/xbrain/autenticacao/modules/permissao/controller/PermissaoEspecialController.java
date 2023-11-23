@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.permissao.controller;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/permissoes-especiais")
+@RequiredArgsConstructor
 public class PermissaoEspecialController {
 
-    @Autowired
-    private PermissaoEspecialService service;
+    private final PermissaoEspecialService service;
 
     @PostMapping
     public void save(@Validated @RequestBody PermissaoEspecialRequest request) {
@@ -30,5 +30,10 @@ public class PermissaoEspecialController {
     @PostMapping("processar-permissoes-gerentes-coordenadores")
     public void processarPermissoesEspeciaisGerentesCoordenadores(@RequestParam(required = false) List<Integer> aaIds) {
         service.processarPermissoesEspeciaisGerentesCoordenadores(aaIds);
+    }
+
+    @PostMapping("reprocessar-permissoes-socios-secundarios")
+    public void reprocessarPermissoesEspeciaisSociosSecundarios(@RequestParam(required = false) List<Integer> aaIds) {
+        service.reprocessarPermissoesEspeciaisSociosSecundarios(aaIds);
     }
 }

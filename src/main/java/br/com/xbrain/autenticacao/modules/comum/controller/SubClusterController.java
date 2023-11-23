@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.service.SubClusterService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,10 +10,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/subclusters")
+@RequiredArgsConstructor
 public class SubClusterController {
 
-    @Autowired
-    private SubClusterService service;
+    private final SubClusterService service;
 
     @GetMapping
     public List<SubClusterDto> getAtivosPorCluster(@RequestParam(required = false) Integer clusterId) {

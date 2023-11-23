@@ -1,40 +1,40 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.service.DepartamentoService;
-import helpers.DepartamentoHelper;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(DepartamentoController.class)
+@MockBeans({
+    @MockBean(UsuarioSubCanalObserver.class),
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class)})
+@Import(OAuth2ResourceConfig.class)
 public class DepartamentoControllerTest {
+
+    private static final String BASE_URL = "/api/departamentos";
 
     @Autowired
     private MockMvc mvc;
@@ -42,44 +42,44 @@ public class DepartamentoControllerTest {
     private DepartamentoService departamentoService;
 
     @Test
-    public void get_isUnauthorized_quandoNaoInformarAToken() throws Exception {
-        mvc.perform(get("/api/departamentos")
+    @SneakyThrows
+    @WithAnonymousUser
+    public void get_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void get_deveRetornarOsDepartamentos_filtrandoPorNivel() throws Exception {
-        when(departamentoService
-                .getPermitidosPorNivel(eq(4)))
-                .thenReturn(Collections.singletonList(
-                        Departamento.builder().id(1).nome("Departamento").build()));
-
-        mvc.perform(get("/api/departamentos?nivelId=4")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithMockUser
+    public void get_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL)
+                .param("nivelId", "1")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].nome", is("Departamento")));
+            .andExpect(status().isOk());
+
+        verify(departamentoService).getPermitidosPorNivel(1);
     }
 
     @Test
-    public void getByCargoId_deveRetornarListaDeDepartamentos_filtrandoPorCargo() throws Exception {
-
-        when(departamentoService
-            .getPermitidosPorCargo(eq(200)))
-            .thenReturn(DepartamentoHelper.umaListaDepartamentos());
-
-        mvc.perform(get("/api/departamentos/cargo-id?cargoId=200")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getByCargoId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/cargo-id")
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[0].id", is(1)))
-            .andExpect(jsonPath("$[0].nome", is("Departamento 1")))
-            .andExpect(jsonPath("$[1].id", is(2)))
-            .andExpect(jsonPath("$[1].nome", is("Departamento 2")));
+            .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getByCargoId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/cargo-id")
+                .param("cargoId", "2")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(departamentoService).getPermitidosPorCargo(2);
+    }
 }

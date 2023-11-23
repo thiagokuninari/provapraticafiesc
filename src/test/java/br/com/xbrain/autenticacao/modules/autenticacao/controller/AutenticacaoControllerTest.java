@@ -80,8 +80,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(100)))
             .andExpect(jsonPath("$.nome", is("ADMIN")))
@@ -100,7 +100,10 @@ public class AutenticacaoControllerTest {
             .andExpect(jsonPath("$.aplicacoes", not(empty())))
             .andExpect(jsonPath("$.cpf", is("38957979875")))
             .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
-            .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())));
+            .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())))
+            .andExpect(jsonPath("$.loginNetSales", is("123456")))
+            .andExpect(jsonPath("$.nomeEquipeVendaNetSales", is("VENDAS NET")))
+            .andExpect(jsonPath("$.codigoEquipeVendaNetSales", is("654321")));
     }
 
     @Test
@@ -168,7 +171,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoNovoService.getEstrutura(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(USUARIO_SOCIO_ID))
             .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);

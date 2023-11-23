@@ -6,11 +6,11 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
@@ -35,7 +35,11 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo, Integer subCanalId);
+
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
+
+    List<UsuarioSubCanalId> getAllSubordinadosComSubCanalId(Integer usuarioId);
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
@@ -84,6 +88,11 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                               List<CodigoCargo> cargos,
                                                               ECanal canal);
+
+    List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
+                                                              List<CodigoCargo> cargos,
+                                                              ECanal canal,
+                                                              Integer subCanalId);
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
@@ -140,6 +149,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
 
+    Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds);
+
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 
     List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate);
@@ -152,7 +163,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
 
-    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId);
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExcetoPorSiteId(Predicate sitePredicate, Integer siteId);
 
     List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> superioresIds,
                                                                                  Set<String> codigoCargo);
@@ -187,4 +198,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findByCpfs(Predicate predicate);
 
     Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
+
+    List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos);
 }

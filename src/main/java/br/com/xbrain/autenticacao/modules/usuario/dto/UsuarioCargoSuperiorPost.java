@@ -14,4 +14,5 @@ import java.util.List;
 public class UsuarioCargoSuperiorPost {
 
     private List<Integer> cidadeIds;
+    private Integer organizacaoId;
 }

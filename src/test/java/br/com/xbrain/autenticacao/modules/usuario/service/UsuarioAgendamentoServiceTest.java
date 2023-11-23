@@ -24,14 +24,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -161,11 +161,16 @@ public class UsuarioAgendamentoServiceTest {
 
     @Test
     public void getUsuariosDisponiveisParaDistribuicao_usuariosDaEquipeVenda_seForSupervisorSemPermissaoDeVenda() {
+        var resultMap = new HashMap<Integer, Integer>();
+        resultMap.put(9991, 999);
+
+        when(usuarioService.getUsuariosAtivosByIds(anyList())).thenReturn(List.of(9991));
         when(usuarioService.findPermissoesByUsuario(any(Usuario.class)))
                 .thenReturn(umaPermissaoResponseVazia());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
         when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(anyList())).thenReturn(resultMap);
 
         var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
 
@@ -173,15 +178,23 @@ public class UsuarioAgendamentoServiceTest {
                 .hasSize(1)
                 .extracting(UsuarioAgendamentoResponse::getId, UsuarioAgendamentoResponse::getNome)
                 .contains(tuple(9991, "USUARIO 1 DO AA 999"));
+
+        verify(equipeVendasService, times(1))
+            .getUsuarioEEquipeByUsuarioIds(List.of(9991));
     }
 
     @Test
     public void getUsuariosDisponiveisParaDistribuicao_usuariosDaEquipeVendaAndSupervisor_seForSupervisorComPermissaoDeVenda() {
+        var resultMap = new HashMap<Integer, Integer>();
+        resultMap.put(9991, 999);
+
+        when(usuarioService.getUsuariosAtivosByIds(anyList())).thenReturn(List.of(9991));
         when(usuarioService.findPermissoesByUsuario(any(Usuario.class)))
                 .thenReturn(umaPermissaoDeVendaResponse());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
         when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(anyList())).thenReturn(resultMap);
 
         var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
 
@@ -189,10 +202,14 @@ public class UsuarioAgendamentoServiceTest {
                 .hasSize(2)
                 .extracting(UsuarioAgendamentoResponse::getId, UsuarioAgendamentoResponse::getNome)
                 .contains(tuple(102, "SUPERVISOR"), tuple(9991, "USUARIO 1 DO AA 999"));
+
+        verify(equipeVendasService, times(1))
+            .getUsuarioEEquipeByUsuarioIds(List.of(9991));
     }
 
     @Test
     public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarTodosUsuariosDoAA_sePossuirVisualizacaoGeral() {
+        when(usuarioService.getUsuariosAtivosByIds(anyList())).thenReturn(List.of(9991, 9992, 9993, 9994, 9995));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoCoordenadorComercial());
         when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
         when(usuarioRepository.findById(eq(9992))).thenReturn(umUsuarioId9992());
@@ -211,6 +228,28 @@ public class UsuarioAgendamentoServiceTest {
                         tuple(9993, "USUARIO 3 DO AA 999"),
                         tuple(9994, "USUARIO 4 DO AA 999"),
                         tuple(9995, "USUARIO 5 DO AA 999"));
+
+        verify(equipeVendasService, times(1))
+            .getUsuarioEEquipeByUsuarioIds(List.of(9991, 9992, 9993, 9994, 9995));
+    }
+
+    @Test
+    public void recuperarUsuariosDisponiveisParaDistribuicao_naoDeveLancarException_quandoNaoEncontrarEquipeVenda() {
+        when(usuarioService.getUsuariosAtivosByIds(anyList())).thenReturn(List.of(9991, 9992, 9993, 9994, 9995));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoCoordenadorComercial());
+        when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
+        when(usuarioRepository.findById(eq(9992))).thenReturn(umUsuarioId9992());
+        when(usuarioRepository.findById(eq(9993))).thenReturn(umUsuarioId9993());
+        when(usuarioRepository.findById(eq(9994))).thenReturn(umUsuarioId9994());
+        when(usuarioRepository.findById(eq(9995))).thenReturn(umUsuarioId9995());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(anyList())).thenReturn(Map.of());
+
+        assertThatCode(() -> usuarioAgendamentoService
+                .recuperarUsuariosDisponiveisParaDistribuicao(999))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendasService, times(1))
+            .getUsuarioEEquipeByUsuarioIds(List.of(9991, 9992, 9993, 9994, 9995));
     }
 
     private EquipeVendasSupervisionadasResponse umaEquipeDeVendas() {

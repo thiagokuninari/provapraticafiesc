@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
@@ -29,6 +31,14 @@ public class NivelService {
                 new NivelPredicate()
                         .isAtivo()
                         .build());
+    }
+
+    public NivelResponse getByCodigo(CodigoNivel codigoNivel) {
+        var nivel = nivelRepository.findByCodigo(codigoNivel);
+
+        return NivelResponse.of(Optional.ofNullable(nivel).orElseThrow(
+            () -> new NotFoundException("Nível não encontrado.")
+        ));
     }
 
     public List<Nivel> getPermitidos(NivelTipoVisualizacao tipoVisualizacao) {
@@ -61,7 +71,8 @@ public class NivelService {
     }
 
     public List<NivelResponse> getPermitidosParaOrganizacao() {
-        return nivelRepository.findByCodigoIn(List.of(CodigoNivel.VAREJO, CodigoNivel.RECEPTIVO))
+        return nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE,
+                CodigoNivel.OPERACAO, CodigoNivel.BACKOFFICE_CENTRALIZADO))
             .stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());

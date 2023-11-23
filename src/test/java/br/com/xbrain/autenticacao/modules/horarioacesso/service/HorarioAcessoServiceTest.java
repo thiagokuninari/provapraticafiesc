@@ -18,8 +18,12 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.types.Predicate;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -35,14 +39,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -111,7 +114,7 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getHistoricos(pageable, 1))
             .isEqualTo(new PageImpl<>(List.of(umHorarioHistoricoResponse())));
-        
+
         verify(historicoRepository, times(1)).findByHorarioAcessoId(eq(1), eq(pageable));
         verify(atuacaoRepository, times(1)).findByHorarioHistoricoId(eq(1));
     }
@@ -145,7 +148,7 @@ public class HorarioAcessoServiceTest {
         assertThatCode(() -> service.criaHorariosAcesso(
                 umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
             .doesNotThrowAnyException();
-        
+
         var request = umHorarioAcessoRequest();
         request.setId(null);
 
@@ -173,7 +176,7 @@ public class HorarioAcessoServiceTest {
         assertThatCode(() -> service.criaHorariosAcesso(
                 umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
             .doesNotThrowAnyException();
-        
+
         var request = umHorarioAcessoRequest();
 
         assertThat(service.save(request))
@@ -217,7 +220,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isTrue();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isTrue();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -239,7 +242,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -260,7 +263,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus()).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -270,7 +273,27 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
+    public void getStatus_deveLancarException_quandoCanalInformadoNaoForAtivoProprio() {
+        assertThatCode(() -> service.getStatus(ECanal.D2D_PROPRIO))
+            .hasMessage("O canal informado não é válido.")
+            .isInstanceOf(ValidacaoException.class);
+    }
+
+    @Test
+    public void getStatus_deveLancarException_quandoUsuarioNaoPossuirCanalAtivoProprio() {
+        var usuarioAutenticado = umOperadorTelevendas();
+        usuarioAutenticado.setCanais(Set.of(ECanal.D2D_PROPRIO));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        assertThatCode(() -> service.getStatus(ECanal.ATIVO_PROPRIO))
+            .hasMessage("Usuário não possui o canal válido.")
+            .isInstanceOf(ValidacaoException.class);
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+    }
+
+    @Test
     public void getStatus_comParametroSiteId_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)
@@ -279,7 +302,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isTrue();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isTrue();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -287,6 +310,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)
@@ -295,7 +319,7 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isFalse();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -303,6 +327,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualNaoSeEncaixarEmNenhumDiaPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .horarioAcesso(umHorarioAcesso())
@@ -310,10 +335,29 @@ public class HorarioAcessoServiceTest {
             .build();
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
 
-        assertThat(service.getStatus(100)).isFalse();
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isFalse();
 
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_comParametroSiteId_deveLancarException_quandoCanalInformadoNaoForAtivoProprio() {
+        assertThatCode(() -> service.getStatus(ECanal.D2D_PROPRIO, 100))
+            .hasMessage("O canal informado não é válido.")
+            .isInstanceOf(ValidacaoException.class);
+    }
+
+    @Test
+    public void getStatus_comParametroSiteId_deveLancarException_quandoUsuarioNaoPossuirCanalAtivoProprio() {
+        var usuarioAutenticado = umOperadorTelevendas();
+        usuarioAutenticado.setCanais(Set.of(ECanal.D2D_PROPRIO));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        assertThatCode(() -> service.getStatus(ECanal.ATIVO_PROPRIO, 100))
+            .hasMessage("Usuário não possui o canal válido.")
+            .isInstanceOf(ValidacaoException.class);
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
     }
 
     @Test
@@ -321,7 +365,7 @@ public class HorarioAcessoServiceTest {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
 
         assertThatCode(() -> service.isDentroHorarioPermitido()).doesNotThrowAnyException();
-    
+
         verify(dataHoraAtual, times(1)).getDataHora();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));

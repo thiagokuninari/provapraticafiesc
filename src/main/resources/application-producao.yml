@@ -33,11 +33,13 @@ spring:
     password: xbrain
 
 app-config:
+  url-origin-cors: conexaoclarobrasil.com.br
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
 
   url: https://autenticacao.conexaoclarobrasil.com.br
+  url-estatico: https://estatico.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
   upload-dir: ${app-config.estatico-dir}/producao/autenticacao
 
@@ -70,14 +72,27 @@ app-config:
       url: http://172.10.10.41:8080
     integracao-vendas:
       url: http://172.10.10.83:8086
+    mailing-importacao:
+      url: http://172.10.10.86:8087
+    lei-nao-perturbe:
+      url: http://lei-nao-perturbe-api:8109
+    extrato-comissao:
+      url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.49:8100
 
   email:
     enviar: true
     empresa-alias: XBRAIN
     emails:
-    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, catia@xbrain.com.br, aneoliveira@xbrain.com.br
+    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, catia@xbrain.com.br, aneoliveira@xbrain.com.br, tiago.buranello@xbrain.com.br
 
 logging:
   level:
     org.springframework: 'ERROR'
     org.hibernate: 'ERROR'
+
+xbrain:
+  logging:
+    level: INFO
+    appender: JSON

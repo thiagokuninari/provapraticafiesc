@@ -25,7 +25,7 @@ public enum CodigoFuncionalidade {
     CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
     CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
     CHM_ABRIR_CHAMADO("Abrir chamado"),
-    CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
+    CHM_ADM_CHAMADOS("Administrador do suporte"),
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
     MLG_5013("Distribuir Agendamentos Proprietários"),
@@ -40,7 +40,12 @@ public enum CodigoFuncionalidade {
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
     AUT_20010("Adicionar novo usuário"),
-    VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo");
+    CTR_20014("Solicitar Ramal AA"),
+    CTR_20015("Solicitar Ramal D2D"),
+    AUT_20024("Visualizar status do Horário de Acesso"),
+    AUT_20025("Editar nova checagem de crédito - Sub-canais"),
+    BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
+    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
 
     @Getter
     private String descricao;

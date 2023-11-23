@@ -22,5 +22,6 @@ public enum CodigoNivel {
     OUVIDORIA,
     INTEGRACAO,
     GERADOR_LEADS,
-    FEEDER
+    FEEDER,
+    COBRANCA
 }

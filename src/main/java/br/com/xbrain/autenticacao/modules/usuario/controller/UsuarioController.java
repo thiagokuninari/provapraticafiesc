@@ -125,6 +125,11 @@ public class UsuarioController {
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
+    @PostMapping("/buscar-todos")
+    public List<UsuarioResponse> getUsuariosById(@RequestBody List<Integer> ids) {
+        return usuarioService.getUsuariosByIdsTodasSituacoes(ids);
+    }
+
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuarioByNivel(@RequestParam CodigoNivel nivel) {
         return usuarioService.getUsuarioByNivel(nivel);
@@ -135,8 +140,8 @@ public class UsuarioController {
         return usuarioService.getUsuariosIdsByNivel(nivel);
     }
 
-    @GetMapping(value = "/{id}/cidades")
-    public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
+    @GetMapping("{id}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable int id) {
         return usuarioService.findCidadesByUsuario(id);
     }
 
@@ -180,6 +185,12 @@ public class UsuarioController {
     @GetMapping("/hierarquia/subordinados/{id}")
     public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/subordinados-aas")
+    public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(
+        @RequestParam(required = false, defaultValue = "false") boolean incluirInativos) {
+        return usuarioService.getSubordinadosAndAasDoUsuario(incluirInativos);
     }
 
     @GetMapping("/hierarquia/subordinados/gerente/{id}")
@@ -340,14 +351,14 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
-    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
+    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) { //AQUI
         usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
     }
 
     @GetMapping(value = "/resetar-senha")
     public void resetarSenha(@RequestParam String token) {
         usuarioServiceEsqueciSenha.resetarSenha(token);
-    }
+    } //AQUI 2
 
     @PutMapping("inativar-colaboradores")
     public void inativarColaboradores(@RequestParam String cnpj) {
@@ -361,6 +372,11 @@ public class UsuarioController {
             .map(item -> SelectResponse.of(item.name(), item.getDescricao()))
             .sorted(Comparator.comparing(SelectResponse::getLabel))
             .collect(Collectors.toList());
+    }
+
+    @GetMapping("canais/organizacao")
+    public List<SelectResponse> getCanaisPermitidosParaOrganizacao() {
+        return usuarioService.getCanaisPermitidosParaOrganizacao();
     }
 
     @GetMapping("tipos-canal")
@@ -481,11 +497,18 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "organizacaoId")
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(
         @RequestParam Integer organizacaoId,
         @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
 
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId, buscarInativos);
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos);
+    }
+
+    @GetMapping("bko-centralizado/{fornecedorId}")
+    public List<UsuarioResponse> findOperadoresBkoCentralizadoByFornecedor(
+        @PathVariable Integer fornecedorId,
+        @RequestParam(required = false, defaultValue = "false") boolean buscarInativos) {
+        return usuarioService.findOperadoresBkoCentralizadoByFornecedor(fornecedorId, buscarInativos);
     }
 
     @GetMapping("permitidos")
@@ -548,5 +571,15 @@ public class UsuarioController {
     @GetMapping("permitidos/select/por-filtros")
     public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
+    }
+
+    @GetMapping("{usuarioId}/subcanal/nivel")
+    public UsuarioSubCanalNivelResponse findByUsuarioId(@PathVariable Integer usuarioId) {
+        return usuarioService.findByUsuarioId(usuarioId);
+    }
+
+    @GetMapping("cpf")
+    public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
+        return usuarioService.findByCpf(cpf);
     }
 }

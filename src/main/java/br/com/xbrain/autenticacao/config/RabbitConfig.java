@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+
     private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
     private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
@@ -129,6 +130,24 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.limpar-cpf-e-alterar-email-feeder-failure}")
     private String usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq;
+
+    @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica}")
+    private String permissaoAgenteAutorizadoEquipeTecnicaMq;
+
+    @Value("${app-config.queue.permissao-agente-autorizado-equipe-tecnica-failure}")
+    private String permissaoAgenteAutorizadoEquipeTecnicaFailureMq;
+
+    @Value("${app-config.queue.atualizar-permissao-tecnico-indicador}")
+    private String atualizarPermissaoTecnicoIndicadorMq;
+
+    @Value("${app-config.queue.atualizar-permissao-tecnico-indicador-failure}")
+    private String atualizarPermissaoTecnicoIndicadorFailureMq;
+
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome}")
+    private String organizacaoEmpresaAtualizacaoNomeMq;
+
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome-failure}")
+    private String organizacaoEmpresaAtualizacaoNomeFailureMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -304,6 +323,15 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue permissaoAgenteAutorizadoEquipeTecnicaMq() {
+        return QueueBuilder
+            .nonDurable(permissaoAgenteAutorizadoEquipeTecnicaMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, permissaoAgenteAutorizadoEquipeTecnicaFailureMq)
+            .build();
+    }
+
+    @Bean
     Queue sucessoCadastroUsuarioFeederMq() {
         return QueueBuilder
             .durable(sucessoCadastroUsuarioFeederMq)
@@ -348,6 +376,30 @@ public class RabbitConfig {
     @Bean
     Queue usuarioInativacaoPorAaMq() {
         return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoTecnicoIndicadorMq() {
+        return QueueBuilder
+            .durable(atualizarPermissaoTecnicoIndicadorMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoTecnicoIndicadorFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoTecnicoIndicadorFailureMq() {
+        return QueueBuilder.durable(atualizarPermissaoTecnicoIndicadorFailureMq).build();
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeMq() {
+        return new Queue(organizacaoEmpresaAtualizacaoNomeMq, false);
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeFailureMq() {
+        return QueueBuilder.durable(organizacaoEmpresaAtualizacaoNomeFailureMq).build();
     }
 
     @Bean
@@ -543,5 +595,19 @@ public class RabbitConfig {
         return BindingBuilder.bind(usuarioInativacaoPorAaMq())
             .to(exchange)
             .with(usuarioInativacaoPorAaMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoTecnicoIndicadorMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorMq())
+            .to(exchange)
+            .with(atualizarPermissaoTecnicoIndicadorMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoTecnicoIndicadorFailureMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorFailureMq())
+            .to(exchange)
+            .with(atualizarPermissaoTecnicoIndicadorFailureMq);
     }
 }

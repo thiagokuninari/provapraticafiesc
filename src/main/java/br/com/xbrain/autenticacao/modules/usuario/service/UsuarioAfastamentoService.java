@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioAfastamento;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioAfastamentoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,10 +15,10 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioAfastamentoService {
 
-    @Autowired
-    private UsuarioAfastamentoRepository repository;
+    private final UsuarioAfastamentoRepository repository;
 
     public Optional<UsuarioAfastamento> save(Usuario usuario, UsuarioInativacaoDto usuarioInativacao) {
         if (usuarioInativacao.isAfastamento()) {

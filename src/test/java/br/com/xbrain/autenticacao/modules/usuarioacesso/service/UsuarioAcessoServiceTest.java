@@ -22,11 +22,10 @@ import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,24 +40,22 @@ import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class UsuarioAcessoServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UsuarioAcessoService usuarioAcessoService;
-    @MockBean
+    @Mock
     private UsuarioAcessoRepository usuarioAcessoRepository;
-    @MockBean
+    @Mock
     private UsuarioRepository usuarioRepository;
-    @MockBean
+    @Mock
     private UsuarioHistoricoService usuarioHistoricoService;
-    @MockBean
+    @Mock
     private InativarColaboradorMqSender inativarColaboradorMqSender;
-    @MockBean
+    @Mock
     private AutenticacaoService autenticacaoService;
-    @MockBean
+    @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     @Before
@@ -86,6 +83,8 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
+        ReflectionTestUtils.setField(usuarioAcessoService, "dataHoraInativarUsuario", "2021-05-30T00:00:00.000");
+
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
         verify(usuarioRepository, times(7)).atualizarParaSituacaoInativo(anyInt());
@@ -199,7 +198,7 @@ public class UsuarioAcessoServiceTest {
             .getUsuariosLogadosAtualPorIds(eq(List.of(101, 201)));
         verify(usuarioRepository, times(1))
             .findAll(eq(new UsuarioPredicate()
-                .comOrganizacaoId(6)
+                .comOrganizacaoEmpresaId(6)
                 .comCodigosCargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
                 .isAtivo(Eboolean.V)
                 .build()));

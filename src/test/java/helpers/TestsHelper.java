@@ -17,7 +17,8 @@ public class TestsHelper {
         return "Bearer " + getAccessTokenObject(mvc, usuario).getAccessToken();
     }
 
-    public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) throws Exception {
+    @SneakyThrows
+    public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) {
         return mvc
             .perform(
                 post("/oauth/token")
@@ -34,11 +35,38 @@ public class TestsHelper {
             var response = getTokenResponse(mvc, usuario);
             return new ObjectMapper()
                 .readValue(response.getContentAsByteArray(), OAuthToken.class);
-
         } catch (Exception exception) {
             exception.printStackTrace();
             return new OAuthToken();
         }
+    }
+
+    public static String getAccessTokenComSenhaInvalida(MockMvc mvc, String usuario) {
+        return "Bearer " + getAccessTokenObjectComSenhaInvalida(mvc, usuario).getAccessToken();
+    }
+
+    public static OAuthToken getAccessTokenObjectComSenhaInvalida(MockMvc mvc, String usuario) {
+        try {
+            var response = getTokenResponseComSenhaInvalida(mvc, usuario);
+            return new ObjectMapper()
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return new OAuthToken();
+        }
+    }
+
+    @SneakyThrows
+    public static MockHttpServletResponse getTokenResponseComSenhaInvalida(MockMvc mvc, String usuario) {
+        return mvc
+            .perform(
+                post("/oauth/token")
+                    .header("Authorization", "Basic "
+                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
+                    .param("username", usuario)
+                    .param("password", "000000")
+                    .param("grant_type", "password"))
+            .andReturn().getResponse();
     }
 
     @SneakyThrows

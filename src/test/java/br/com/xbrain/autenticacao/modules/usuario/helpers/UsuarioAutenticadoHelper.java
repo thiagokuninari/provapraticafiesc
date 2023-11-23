@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -84,6 +85,16 @@ public class UsuarioAutenticadoHelper {
             .organizacaoId(8)
             .cargoId(47)
             .nivelId(3)
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoCanalInternet(CodigoCargo codigoCargo) {
+        return UsuarioAutenticado.builder()
+            .id(12345)
+            .cargoCodigo(codigoCargo)
+            .canais(Collections.singleton(ECanal.INTERNET))
+            .nivelCodigo(CodigoNivel.OPERACAO.name())
+            .usuario(buildUsuario())
             .build();
     }
 }

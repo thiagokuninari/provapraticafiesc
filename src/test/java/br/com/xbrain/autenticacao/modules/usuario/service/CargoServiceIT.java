@@ -74,7 +74,10 @@ public class CargoServiceIT {
                 tuple(41, "Sócio Principal - Agente Autorizado"),
                 tuple(42, "Sócio Secundário - Agente Autorizado"),
                 tuple(9, "Técnico - Operação"),
-                tuple(121, "Técnico Terceiro - Agente Autorizado"),
+                tuple(121, "Técnico Vendedor - Agente Autorizado"),
+                tuple(1253, "Supervisor Técnico - Agente Autorizado"),
+                tuple(1254, "Coordenador Técnico - Agente Autorizado"),
+                tuple(1255, "Gerente da Equipe Técnico - Agente Autorizado"),
                 tuple(8, "Vendedor - Operação"),
                 tuple(79, "Vendedor Back Office D2D - Agente Autorizado"),
                 tuple(80, "Vendedor Back Office Televendas  - Agente Autorizado"),
@@ -85,7 +88,12 @@ public class CargoServiceIT {
                 tuple(83, "Vendedor* - Agente Autorizado"),
                 tuple(98, "Executivo de Vendas - Operação"),
                 tuple(202, "Assistente Relacionamento - Agente Autorizado"),
-                tuple(201, "Cliente Loja Futuro - Agente Autorizado")
+                tuple(201, "Cliente Loja Futuro - Agente Autorizado"),
+                tuple(503, "Backoffice Internet - Operação"),
+                tuple(502, "Coordenador Internet - Operação"),
+                tuple(500, "Gerente Internet - Operação"),
+                tuple(501, "Supervisor Internet - Operação"),
+                tuple(504, "Vendedor Internet - Operação")
             );
     }
 

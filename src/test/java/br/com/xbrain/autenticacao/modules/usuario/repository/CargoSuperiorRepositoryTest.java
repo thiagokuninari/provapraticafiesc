@@ -30,5 +30,6 @@ public class CargoSuperiorRepositoryTest {
 
         assertThat(repository.getCargosHierarquia(VENDEDOR_OPERACAO_ID))
                 .isEmpty();
+
     }
 }

@@ -46,7 +46,7 @@ public class UsuarioPredicate {
     public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
         if (!StringUtils.isEmpty(excluiIds)) {
             builder.and(ExpressionUtils.anyOf(
-                Lists.partition(excluiIds,QTD_MAX_IN_NO_ORACLE)
+                Lists.partition(excluiIds, QTD_MAX_IN_NO_ORACLE)
                     .stream()
                     .map(usuario.id::notIn)
                     .collect(Collectors.toList())
@@ -138,13 +138,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comOrganizacaoId(Integer organizacaoId) {
-        if (nonNull(organizacaoId)) {
-            builder.and(usuario.organizacao.id.eq(organizacaoId));
-        }
-        return this;
-    }
-
     public UsuarioPredicate comOrganizacaoEmpresaId(Integer organizacaoEmpresaId) {
         if (nonNull(organizacaoEmpresaId)) {
             builder.and(usuario.organizacaoEmpresa.id.eq(organizacaoEmpresaId));
@@ -170,6 +163,14 @@ public class UsuarioPredicate {
         if (nonNull(cargo)) {
             builder.and(usuario.cargo.codigo.eq(cargo));
         }
+        return this;
+    }
+
+    public UsuarioPredicate semCargoCodigo(CodigoCargo cargo) {
+        if (cargo != null) {
+            builder.and(usuario.cargo.codigo.ne(cargo));
+        }
+
         return this;
     }
 
@@ -359,6 +360,20 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comSubCanal(Integer subCanalId) {
+        if (nonNull(subCanalId)) {
+            builder.and(usuario.subCanais.any().id.eq(subCanalId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSubCanais(Set<Integer> subCanais) {
+        if (!isEmpty(subCanais)) {
+            builder.and(usuario.subCanais.any().id.in(subCanais));
+        }
+        return this;
+    }
+
     public UsuarioPredicate daHierarquia(List<Integer> ids) {
         builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
         return this;
@@ -372,7 +387,7 @@ public class UsuarioPredicate {
             usuariosIds.add(usuario.getId());
         }
         comIds(usuariosIds);
-        comOrganizacaoId(usuario.getOrganizacaoId());
+        comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
 
         return this;
     }
@@ -452,21 +467,25 @@ public class UsuarioPredicate {
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
-                usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
-                singletonList(usuario.getUsuario().getId()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList()));
+                        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
+                        usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                        singletonList(usuario.getUsuario().getId())
+                    )
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList())
+            );
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             comIds(Stream.of(
-                usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
+                    usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
+                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()));
 
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);
+        } else if (usuario.hasCanal(ECanal.INTERNET)) {
+            usuarioService.filtrarPermitidosCanalInternet(usuario, this);
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }

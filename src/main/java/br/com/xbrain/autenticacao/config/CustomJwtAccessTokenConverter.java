@@ -6,16 +6,17 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
@@ -52,6 +53,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     private EquipeVendaD2dService equipeVendaD2dService;
     @Autowired
     private SiteService siteService;
+    @Autowired
+    private SubCanalService subCanalService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -117,7 +120,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
-        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstrutura(usuario.getId()) : null;
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
     private String getTipoCanal(Usuario usuario) {
@@ -150,11 +153,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
         token.getAdditionalInformation().put("canais", getCanais(usuario));
+        token.getAdditionalInformation().put("subCanais", getSubCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
-        token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
-        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
+        token.getAdditionalInformation().put("organizacao", getOrganizacaoEmpresa(usuario));
         token.getAdditionalInformation().put("tiposFeeder", getTiposFeeder(usuario));
-        token.getAdditionalInformation().put("organizacaoEmpresaId", getOrganizacaoEmpresaId(usuario).orElse(null));
+        token.getAdditionalInformation().put("fotoDiretorio", usuario.getFotoDiretorio());
+        token.getAdditionalInformation().put("fotoNomeOriginal", usuario.getFotoNomeOriginal());
+        token.getAdditionalInformation().put("fotoContentType", usuario.getFotoContentType());
+        token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
+        token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
+        token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
+        token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -188,12 +198,12 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 .orElse(null));
     }
 
-    private String getOrganizacao(Usuario usuario) {
-        return !ObjectUtils.isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getCodigo() : "";
+    private String getOrganizacaoEmpresa(Usuario usuario) {
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getNome() : "";
     }
 
-    private Integer getOrganizacaoId(Usuario usuario) {
-        return Objects.nonNull(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
+    private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {
@@ -203,9 +213,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return Sets.newHashSet();
     }
 
-    private Optional<Integer> getOrganizacaoEmpresaId(Usuario usuario) {
-        return Optional.ofNullable(usuario.getOrganizacaoEmpresa())
-            .map(OrganizacaoEmpresa::getId);
+    private Integer getOrganizacaoEmpresaId(Usuario usuario) {
+        return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getId() : null;
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
@@ -230,11 +239,26 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name(), D2D_PROPRIO.name(), ATIVO_PROPRIO.name());
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name(), D2D_PROPRIO.name(), ATIVO_PROPRIO.name(),
+                    ECanal.INTERNET.name());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanaisString();
             default:
                 return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name());
+        }
+    }
+
+    public Set<SubCanalDto> getSubCanais(Usuario usuario) {
+        switch (usuario.getNivelCodigo()) {
+            case XBRAIN:
+            case MSO:
+                return Sets.newHashSet(subCanalService.getAll());
+            case OPERACAO:
+                return ObjectUtils.isEmpty(usuario.getSubCanais())
+                    ? Sets.newHashSet()
+                    : SubCanalDto.of(usuario.getSubCanais());
+            default:
+                return Sets.newHashSet();
         }
     }
 

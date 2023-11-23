@@ -4,13 +4,11 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioSiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/usuarios/site")
@@ -72,9 +70,6 @@ public class UsuarioSiteController {
 
     @GetMapping("hierarquia-usuario-logado")
     public List<Integer> getUsuariosIdsDaHierarquiaDoUsuarioLogado() {
-        return usuarioSiteService.getUsuariosDaHierarquiaDoUsuarioLogado()
-            .stream()
-            .map(Usuario::getId)
-            .collect(Collectors.toList());
+        return usuarioSiteService.getUsuariosDaHierarquiaDoUsuarioLogado();
     }
 }

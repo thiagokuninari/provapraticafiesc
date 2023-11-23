@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,11 +35,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static org.assertj.core.api.Assertions.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissoesHelper.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,12 +58,12 @@ public class FeederServiceTest {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Mock
     private UsuarioRepository usuarioRepository;
+    @Mock
+    private UsuarioService usuarioService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
     private ArgumentCaptor<UsuarioHistorico> usuarioHistoricoCaptor;
-    @Captor
-    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
     @Mock
     private DataHoraAtual dataHoraAtual;
 
@@ -80,24 +85,34 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(100)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
 
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
+            .thenReturn(List.of(umaPermissaoTratarLead(100)));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
+
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
-        verify(usuarioHistoricoService, times(1)).save(anyList());
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+        var permissoes = Stream.of(
+                List.of(umaPermissaoTratarLead(100)),
+                umaListaPermissoesFuncionalidadesFeederParaAa(102),
+                umaListaPermissoesFuncionalidadesFeederParaAa(10))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
 
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(9)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(100, 3046),
-                tuple(102, 3046),
-                tuple(102, 15000),
-                tuple(102, 15005),
-                tuple(102, 15012),
-                tuple(10, 3046),
-                tuple(10, 15000),
-                tuple(10, 15005),
-                tuple(10, 15012));
+        verify(permissaoEspecialRepository, times(0))
+            .deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(usuarioHistoricoService, times(1))
+            .save(anyList());
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(permissoes);
     }
 
     @Test
@@ -106,13 +121,10 @@ public class FeederServiceTest {
         aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
 
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.of(new PermissaoEspecial()));
-
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
-        verify(permissaoEspecialRepository, times(0)).save(anyList());
+        verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
     }
 
@@ -161,18 +173,14 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(1000)).thenReturn(
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
+
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(usuarioHistoricoService, times(1)).save(anyList());
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(4)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(
-                tuple(5, 3046),
-                tuple(5, 15000),
-                tuple(5, 15005),
-                tuple(5, 15012));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
     }
 
     @Test
@@ -186,7 +194,7 @@ public class FeederServiceTest {
     @Test
     public void alterarSituacaoUsuarioFeeder_deveLancarException_quandoUsuarioNaoFeeder() {
         when(usuarioRepository.findComplete(1111)).thenReturn(
-            umUsuario(CodigoCargo.SUPERVISOR_OPERACAO, ESituacao.A,1111));
+            umUsuario(CodigoCargo.SUPERVISOR_OPERACAO, ESituacao.A, 1111));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto()))
@@ -235,16 +243,16 @@ public class FeederServiceTest {
     public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissaoTratarLead_quandoAgenteAutorizadoForFeeder() {
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 1111));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
+
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(List.of(FUNCIONALIDADE_TRATAR_LEAD_ID))))
+            .thenReturn(List.of(umaPermissaoTratarLead(1111)));
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), umUsuarioMqRequest());
 
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(1)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(1111, 3046));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(List.of(FUNCIONALIDADE_TRATAR_LEAD_ID)));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(eq(List.of(umaPermissaoTratarLead(1111))));
     }
 
     @Test
@@ -254,7 +262,8 @@ public class FeederServiceTest {
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
-        verify(permissaoEspecialRepository, never()).save(anyList());
+        verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
+        verify(usuarioService, never()).salvarPermissoesEspeciais(anyList());
     }
 
     @Test
@@ -264,19 +273,34 @@ public class FeederServiceTest {
 
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
+
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA)))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(4)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(1111, 3046),
-                tuple(1111, 15000),
-                tuple(1111, 15005),
-                tuple(1111, 15012));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(eq(umaListaPermissoesFuncionalidadesFeederParaAa(1111)));
+    }
+
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoesSocioSecundario_quandoUsuarioForSocioSecundario() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, ESituacao.A, 1111));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioService)
+            .getPermissoesEspeciaisDoUsuario(1111, 2222, FUNCIONALIDADES_FEEDER_PARA_AA);
+        verify(usuarioService)
+            .salvarPermissoesEspeciais(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
     }
 
     @Test
@@ -284,26 +308,19 @@ public class FeederServiceTest {
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesEmpresarial_quandoUsuarioMsoComTiposFeederEmpresarial() {
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso(Set.of(EMPRESARIAL))));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
+
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112),
+            eq(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL)))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaMsoEmpresarial(150016));
 
         service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(EMPRESARIAL)));
 
         verify(usuarioRepository, times(1))
             .findById(eq(150016));
-        verify(permissaoEspecialRepository, times(1))
-            .save(permissaoEspecialCaptor.capture());
-        verify(permissaoEspecialRepository, times(3))
-            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
-
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(3)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(
-                tuple(150016, 15000),
-                tuple(150016, 15007),
-                tuple(150016, 15012)
-            );
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(umaListaPermissoesFuncionalidadesFeederParaMsoEmpresarial(150016));
     }
 
     @Test
@@ -311,75 +328,50 @@ public class FeederServiceTest {
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesResidencial_quandoUsuarioMsoComTiposFeederResidencial() {
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso(Set.of(RESIDENCIAL))));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
+
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112),
+            eq(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL)))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaMsoResidencial(150016));
 
         service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(RESIDENCIAL)));
 
         verify(usuarioRepository, times(1))
             .findById(eq(150016));
-        verify(permissaoEspecialRepository, times(1))
-            .save(permissaoEspecialCaptor.capture());
-        verify(permissaoEspecialRepository, times(14))
-            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
-
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(14)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(
-                tuple(150016, 15000),
-                tuple(150016, 15001),
-                tuple(150016, 15002),
-                tuple(150016, 15003),
-                tuple(150016, 15006),
-                tuple(150016, 15007),
-                tuple(150016, 15008),
-                tuple(150016, 15009),
-                tuple(150016, 15010),
-                tuple(150016, 15011),
-                tuple(150016, 15012),
-                tuple(150016, 15013),
-                tuple(150016, 15014),
-                tuple(150016, 20007)
-            );
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(umaListaPermissoesFuncionalidadesFeederParaMsoResidencial(150016));
     }
 
     @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesResidencialEEmpresarial_quandoUsuarioMsoComTiposFeederResidencialEEmpresarial() {
+        var funcionalidades = Stream.of(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL, FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL)
+            .flatMap(List::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
+        var permissoes = Stream.of(
+                umaListaPermissoesFuncionalidadesFeederParaMsoResidencial(150016),
+                umaListaPermissoesFuncionalidadesFeederParaMsoEmpresarial(150016))
+            .flatMap(List::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso(Set.of(RESIDENCIAL, EMPRESARIAL))));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
+
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(funcionalidades)))
+            .thenReturn(permissoes);
 
         service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(RESIDENCIAL, EMPRESARIAL)));
 
         verify(usuarioRepository, times(1))
             .findById(eq(150016));
-        verify(permissaoEspecialRepository, times(1))
-            .save(permissaoEspecialCaptor.capture());
-        verify(permissaoEspecialRepository, times(14))
-            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
-
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(14)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(
-                tuple(150016, 15000),
-                tuple(150016, 15001),
-                tuple(150016, 15002),
-                tuple(150016, 15003),
-                tuple(150016, 15006),
-                tuple(150016, 15007),
-                tuple(150016, 15008),
-                tuple(150016, 15009),
-                tuple(150016, 15010),
-                tuple(150016, 15011),
-                tuple(150016, 15012),
-                tuple(150016, 15013),
-                tuple(150016, 15014),
-                tuple(150016, 20007)
-            );
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(funcionalidades));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(permissoes);
     }
 
     @Test
@@ -387,14 +379,14 @@ public class FeederServiceTest {
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso(Set.of())));
 
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(List.of())))
+            .thenReturn(List.of());
+
         service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of()));
 
-        verify(usuarioRepository, times(1))
-            .findById(eq(150016));
-        verify(permissaoEspecialRepository, never())
-            .save(anyList());
-        verify(permissaoEspecialRepository, never())
-            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt());
+        verify(usuarioRepository, times(1)).findById(eq(150016));
+        verify(usuarioService, times(1)).getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(List.of()));
+        verify(usuarioService, times(1)).salvarPermissoesEspeciais(eq(List.of()));
     }
 
     @Test
@@ -440,7 +432,8 @@ public class FeederServiceTest {
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
         verify(usuarioRepository, never()).findById(anyInt());
-        verify(permissaoEspecialRepository, never()).save(permissaoEspecialCaptor.capture());
+        verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(anyInt(), anyInt(), anyList());
+        verify(usuarioService, never()).salvarPermissoesEspeciais(anyList());
     }
 
     @Test
@@ -506,6 +499,52 @@ public class FeederServiceTest {
         verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
     }
 
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioNaoExistir() {
+        when(usuarioRepository.exists(1)).thenReturn(false);
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verifyZeroInteractions(permissaoEspecialRepository);
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioJaPossuirPermissoes() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000, 15005, 15012, 3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioNaoPossuirPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of());
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciaisSocioSecundario());
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioPossuirUmaPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciais(15000, 15005, 15012));
+    }
+
     private List<PermissaoEspecial> umaListaPermissoesEspeciaisComUmaFuncionalidade(Integer funcionalidadeId) {
         var localDateTime = dataHoraAtual.getDataHora();
         return List.of(PermissaoEspecial.builder()
@@ -533,6 +572,35 @@ public class FeederServiceTest {
                 .build(),
             PermissaoEspecial.builder()
                 .funcionalidade(Funcionalidade.builder().id(visualizar).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build());
+    }
+
+    private List<PermissaoEspecial> umaListaPermissoesEspeciaisSocioSecundario() {
+        var localDateTime = dataHoraAtual.getDataHora();
+        return List.of(
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15000).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15005).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15012).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(3046).build())
                 .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
                 .dataCadastro(localDateTime)
                 .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())

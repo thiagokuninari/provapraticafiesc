@@ -24,6 +24,7 @@ spring:
     password: xbrain
 
 app-config:
+  url-origin-cors: hom.conexaoclarobrasil.com.br,http://localhost
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
@@ -61,6 +62,14 @@ app-config:
       url: http://email-hom:8080
     integracao-vendas:
       url: http://172.10.10.85:8086
+    mailing-importacao:
+      url: http://172.10.10.86:8087
+    lei-nao-perturbe:
+      url: http://lei-nao-perturbe-api:8109
+    extrato-comissao:
+      url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.113:8304
 
   email:
     enviar: true
@@ -72,3 +81,8 @@ logging:
   level:
     org.springframework: 'ERROR'
     org.hibernate: 'ERROR'
+
+xbrain:
+  logging:
+    level: INFO
+    appender: JSON

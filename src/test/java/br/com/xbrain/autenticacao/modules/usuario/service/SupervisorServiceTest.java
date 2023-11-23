@@ -160,29 +160,27 @@ public class SupervisorServiceTest {
     public void getCargosDescendentesEVendedoresD2dDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
         doReturn(singletonList(umVendedorComId(1, VENDEDOR_OPERACAO.name())))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet(), anyInt());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null, 1))
             .extracting("nome", "codigoCargo")
             .containsExactly(
-                tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null, 1))
             .extracting("nome", "codigoCargo")
             .containsExactly(
-                tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
                 tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet(), anyInt());
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null, 1))
             .isEmpty();
     }
 
@@ -191,15 +189,14 @@ public class SupervisorServiceTest {
 
         doReturn(List.of(umVendedorComId(1, VENDEDOR_OPERACAO.name()), umVendedorComId(2, OPERACAO_EXECUTIVO_VENDAS.name()),
             umVendedorComId(3, VENDEDOR_OPERACAO.name())))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet(), anyInt());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null, 1))
             .extracting("id", "nome", "codigoCargo")
             .containsExactly(
-                tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
                 tuple(2, "VENDEDOR2", OPERACAO_EXECUTIVO_VENDAS));
     }
@@ -207,20 +204,20 @@ public class SupervisorServiceTest {
     @Test
     public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet(), anyInt());
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null, 1))
             .isEmpty();
     }
 
     @Test
     public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet(), anyInt());
 
         assertThat(
-            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null, 1))
             .isEmpty();
     }
 

@@ -46,6 +46,7 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
             deslogarUsuarios(usuarios);
             atualizarUsuariosParaDeslogados(usuarios);
             gerarRelatorioDeLogsDeBloqueio(usuarios.size());
+            log.info("Usuarios deslogados: {}", usuarios);
         } else {
             log.info("\nNão foram encontrados usuários bloqueados.");
         }

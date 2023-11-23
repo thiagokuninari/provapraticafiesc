@@ -8,11 +8,17 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.doisSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -78,8 +84,20 @@ public class UsuarioTest {
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
-        assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+        var usuarioAutenticado = umUsuarioAutenticado(2, OPERACAO, COORDENADOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(COORDENADOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertTrue(usuario.permiteEditar(usuarioAutenticado));
+    }
+
+    @Test
+    public void permiteEditar_deveRetornarFalse_quandoUsuarioAutenticadoForSupervisor() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO);
+        usuarioAutenticado.setCargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO);
+        var usuario = umUsuarioComCargo(1, VENDEDOR_OPERACAO);
+
+        assertFalse(usuario.permiteEditar(usuarioAutenticado));
     }
 
     @Test
@@ -201,6 +219,87 @@ public class UsuarioTest {
     }
 
     @Test
+    public void hasSubCanalPapPremium_deveRetornarTrue_seUsuarioPossuirSubCanalPapPremium() {
+        assertTrue(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM).hasSubCanalPapPremium());
+    }
+
+    @Test
+    public void hasSubCanalPapPremium_deveRetornarFalse_seUsuarioNaoPossuirSubCanalPapPremium() {
+        assertFalse(umUsuarioOperacaoComSubCanal(101112, 1, PAP).hasSubCanalPapPremium());
+    }
+
+    @Test
+    public void hasSubCanalInsideSalesPme_deveRetornarTrue_seUsuarioPossuirSubCanalInsideSalesPme() {
+        assertTrue(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME).hasSubCanalInsideSalesPme());
+    }
+
+    @Test
+    public void hasSubCanalInsideSalesPme_deveRetornarFalse_seUsuarioNaoPossuirSubCanalInsideSalesPme() {
+        assertFalse(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM).hasSubCanalInsideSalesPme());
+    }
+
+    @Test
+    public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
+        assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasHierarquia_deveRetornarTrue_seUsuarioPossuirHierarquia() {
+        var usuario = Usuario.builder()
+            .hierarquiasId(List.of(10, 20))
+            .build();
+        assertTrue(usuario.hasHierarquia());
+    }
+
+    @Test
+    public void hasHierarquia_deveRetornarFalse_seUsuarioNaoPossuirHierarquia() {
+        assertFalse(new Usuario().hasHierarquia());
+    }
+
+    @Test
+    public void hasSubCanaisDaHierarquia_deveRetornarTrue_seUsuarioPossuirSubCanaisDaHierarquia() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+        assertTrue(usuario.hasSubCanaisDaHierarquia(Set.of(1, 2, 3, 4)));
+    }
+
+    @Test
+    public void hasSubCanaisDaHierarquia_deveRetornarFalse_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+        assertFalse(usuario.hasSubCanaisDaHierarquia(Set.of(2, 3, 4)));
+    }
+
+    @Test
+    public void hasAllSubCanaisDosSubordinados_deveRetornarTrue_seUsuarioSuperiorPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal(), doisSubCanal()))
+            .build();
+
+        assertTrue(usuario.hasAllSubCanaisDosSubordinados(List.of(
+            umUsuarioSubCanalId(10, "USUARIO 10", PAP.getId()),
+            umUsuarioSubCanalId(20, "USUARIO 20", PAP_PME.getId())
+        )));
+    }
+
+    @Test
+    public void hasAllSubCanaisDosSubordinados_deveRetornarFalse_seUsuarioSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+
+        assertFalse(usuario.hasAllSubCanaisDosSubordinados(List.of(
+            umUsuarioSubCanalId(10, "USUARIO 10", PAP.getId()),
+            umUsuarioSubCanalId(20, "USUARIO 20", PAP_PME.getId()),
+            umUsuarioSubCanalId(30, "USUARIO 30", PAP_PREMIUM.getId()),
+            umUsuarioSubCanalId(40, "USUARIO 40", INSIDE_SALES_PME.getId()),
+            umUsuarioSubCanalId(50, "USUARIO 50", PAP_CONDOMINIO.getId())
+        )));
+    }
+
+    @Test
     public void isGeradorLeadsOuClienteLojaFuturo_deveRetornarBoolean_seUsuarioGeradorLeadsOuLojaFuturo() {
         assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_VENDEDOR_D2D).isGeradorLeadsOuClienteLojaFuturo())
             .isFalse();
@@ -225,7 +324,7 @@ public class UsuarioTest {
     }
 
     @Test
-    public void isNivelReceptivoo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
+    public void isNivelReceptivo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(VENDEDOR_RECEPTIVO, RECEPTIVO).isNivelReceptivo())
             .isTrue();
     }
@@ -234,6 +333,61 @@ public class UsuarioTest {
     public void isNivelReceptivo_deveRetornarFalse_seUsuarioNaoPossuirNivelReceptivo() {
         assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
             .isFalse();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(SUPERVISOR_OPERACAO, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isTrue();
+    }
+
+    @Test
+    public void isSupervisorOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isSupervisorOperacao()).isFalse();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarTrue_seUsuarioForSupervisorOperacao() {
+        assertThat(usuarioAtivo(ASSISTENTE_OPERACAO, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isTrue();
+    }
+
+    @Test
+    public void isAssistenteOperacao_deveRetornarFalse_seUsuarioNaoForSupervisorOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isAssistenteOperacao()).isFalse();
+    }
+
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarTrue_seUsuarioForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void isCargoAgenteAutorizado_deveRetornarFalse_seUsuarioNaoForCargoAgenteAutorizado() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isCargoAgenteAutorizado()).isFalse();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForClienteLojaFuturo() {
+        assertThat(usuarioAtivo(CLIENTE_LOJA_FUTURO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarTrue_seUsuarioForAssistenteRelacionamento() {
+        assertThat(usuarioAtivo(ASSISTENTE_RELACIONAMENTO, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isTrue();
+    }
+
+    @Test
+    public void isCargoLojaFuturo_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO).isCargoLojaFuturo()).isFalse();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarTrue_seUsuarioForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(IMPORTADOR_CARGAS, FEEDER).isCargoImportadorCargas()).isTrue();
+    }
+
+    @Test
+    public void isCargoImportadorCargas_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
+        assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, FEEDER).isCargoImportadorCargas()).isFalse();
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {
@@ -295,10 +449,5 @@ public class UsuarioTest {
             .nivelCodigo(codigoNivel.name())
             .usuario(umUsuarioComCargo(codigoCargo))
             .build();
-    }
-
-    @Test
-    public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
-        assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
     }
 }

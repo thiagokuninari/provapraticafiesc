@@ -45,7 +45,10 @@ public interface AgenteAutorizadoNovoClient {
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura")
-    String getEstrutura(@PathVariable("usuarioId") Integer usuarioId);
+    String getEstruturaByUsuarioIdAndAtivo(@PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura/sem-situacao")
+    String getEstruturaByUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-agente-autorizado/{agenteAutorizadoId}/{buscarInativos}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
@@ -67,4 +70,8 @@ public interface AgenteAutorizadoNovoClient {
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/carteira/{usuarioId}/agentes-autorizados")
     List<AgenteAutorizadoResponse> findAgenteAutorizadoByUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/carteira/usuarios-agentes-autorizados")
+    List<AgenteAutorizadoResponse> findAgentesAutorizadosByUsuariosIds(
+        @RequestParam("usuariosIds") List<Integer> usuarioId, @RequestParam("incluirAasInativos") Boolean incluirAasInativos);
 }

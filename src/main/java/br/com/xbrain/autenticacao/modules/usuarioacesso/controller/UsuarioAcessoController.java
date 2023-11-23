@@ -6,8 +6,8 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoRespons
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -18,13 +18,12 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/usuario-acesso")
 public class UsuarioAcessoController {
 
     private static final String ORIGEM = "Usuário inativado pelo processo manual [endpoint]";
-
-    @Autowired
-    private UsuarioAcessoService usuarioAcessoService;
+    private final UsuarioAcessoService usuarioAcessoService;
 
     @GetMapping("inativar")
     @ResponseStatus(HttpStatus.OK)

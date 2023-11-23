@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
@@ -28,6 +27,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static com.google.common.collect.Lists.partition;
 
 @Slf4j
 @Service
@@ -69,10 +71,7 @@ public class UsuarioAgendamentoService {
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
         var usuariosDoAa = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
-        var usuariosIds = usuariosDoAa
-                .stream()
-                .map(UsuarioAgenteAutorizadoResponse::getId)
-                .collect(Collectors.toList());
+        var usuariosIds = getUsuarioIds(usuariosDoAa);
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
 
@@ -183,33 +182,33 @@ public class UsuarioAgendamentoService {
     private List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosAutenticacao(
         List<UsuarioAgenteAutorizadoResponse> usuarios) {
 
+        var usuariosAut = partition(getUsuarioIds(usuarios), QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(usuarioService::getUsuariosAtivosByIds)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
         return usuarios.stream()
-            .map(usuario -> usuarioRepository.findById(usuario.getId()).orElse(null))
-            .filter(Objects::nonNull)
-            .filter(usuario -> usuario.getSituacao().equals(ESituacao.A))
-            .map(UsuarioAgenteAutorizadoResponse::of)
+            .filter(usuario -> usuariosAut.contains(usuario.getId()))
             .collect(Collectors.toList());
     }
 
-    public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
-        try {
-            usuarios.forEach(usuario -> {
-                var equipeVendasId = equipeVendasService.getByUsuario(usuario.getId()).getId();
-                if (equipeVendasId != null) {
-                    usuario.setEquipeVendaId(equipeVendasId);
-                }
-            });
-        } catch (NullPointerException ex) {
-            log.error("Equipe de vendas não encontrada.");
-        } catch (Exception ex) {
-            log.error("Ocorreu um erro ao encontrar a equipe de vendas.");
-        }
+    private List<Integer> getUsuarioIds(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+        return usuarios.stream().map(UsuarioAgenteAutorizadoResponse::getId)
+            .collect(Collectors.toList());
+    }
+
+    private void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+        var usuarioEquipes = equipeVendasService.getUsuarioEEquipeByUsuarioIds(getUsuarioIds(usuarios));
+
+        usuarios.forEach(usuario -> {
+            usuario.setEquipeVendaId(usuarioEquipes.getOrDefault(usuario.getId(), null));
+        });
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
         var usuariosPol = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
         var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
-
         popularEquipeVendasId(usuarios);
 
         if (isUsuarioAutenticadoSupervisor()) {

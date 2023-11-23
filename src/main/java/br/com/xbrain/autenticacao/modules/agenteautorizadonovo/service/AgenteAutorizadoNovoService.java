@@ -123,9 +123,18 @@ public class AgenteAutorizadoNovoService {
         }
     }
 
-    public String getEstrutura(Integer usuarioId) {
+    public String getEstruturaByUsuarioIdAndAtivo(Integer usuarioId) {
         try {
-            return client.getEstrutura(usuarioId);
+            return client.getEstruturaByUsuarioIdAndAtivo(usuarioId);
+        } catch (Exception ex) {
+            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            return null;
+        }
+    }
+
+    public String getEstruturaByUsuarioId(Integer usuarioId) {
+        try {
+            return client.getEstruturaByUsuarioId(usuarioId);
         } catch (Exception ex) {
             logger.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
@@ -223,6 +232,19 @@ public class AgenteAutorizadoNovoService {
         }
     }
 
+    public List<AgenteAutorizadoResponse> findAgentesAutorizadosByUsuariosIds(List<Integer> usuariosIds,
+                                                                              boolean incluirAasInativos) {
+        try {
+            return client.findAgentesAutorizadosByUsuariosIds(usuariosIds, incluirAasInativos);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoNovoService.class.getName(),
+                EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoSemVendedoresD2D(Integer aaId) {
         try {
             return client.getUsuariosAaAtivoSemVendedoresD2D(aaId);
@@ -234,4 +256,5 @@ public class AgenteAutorizadoNovoService {
             throw new IntegracaoException(ex);
         }
     }
+
 }

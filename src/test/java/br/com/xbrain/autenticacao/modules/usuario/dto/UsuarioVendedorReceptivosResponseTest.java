@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -18,7 +18,7 @@ public class UsuarioVendedorReceptivosResponseTest {
         assertThat(usuariosVendedorReceptivoResponse)
             .extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
             .containsExactly(usuario.getNome(), usuario.getEmail(), usuario.getLoginNetSales(),
-                usuario.getNivelNome(), usuario.getOrganizacao().getNome());
+                usuario.getNivelNome(), usuario.getOrganizacaoEmpresa().getNome());
     }
 
     private Usuario umUsuario() {
@@ -34,7 +34,7 @@ public class UsuarioVendedorReceptivosResponseTest {
                     .nome("Nivel teste")
                     .build())
                 .build())
-            .organizacao(Organizacao.builder().codigo("1").nome("Org teste").build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("1").nome("Org teste").build())
             .build();
     }
 }

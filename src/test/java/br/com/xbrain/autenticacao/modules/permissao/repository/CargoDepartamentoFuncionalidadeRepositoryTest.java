@@ -44,7 +44,8 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
                     "Relatório - Ticket Médio Analítico",
                     "Relatório - Ticket Médio por Vendedor",
                     "Relatório - Gerenciamento Operacional",
-                    "Visualizar Relatório Consulta de Endereço");
+                    "Visualizar Relatório Consulta de Endereço",
+                    "Visualizar Pré Venda Loja Futuro");
 
         assertThat(funcionalidades.get(0).getCanais())
             .extracting("canal")

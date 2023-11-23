@@ -3,12 +3,10 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,6 +59,10 @@ public class UsuarioDto implements Serializable {
     @Size(max = 120)
     @NotBlank
     private String loginNetSales;
+    @Size(max = 120)
+    private String nomeEquipeVendaNetSales;
+    @Size(max = 120)
+    private String codigoEquipeVendaNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
@@ -88,12 +90,11 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
-    private ETipoCanal tipoCanal;
+    private Set<Integer> subCanaisId;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
     private Integer organizacaoId;
-    private Integer organizacaoEmpresaId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
     private String urlLojaBase;
@@ -108,27 +109,29 @@ public class UsuarioDto implements Serializable {
     }
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
-        Usuario usuario = new Usuario();
+        var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
+        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
+        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
+        Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
+            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
+            usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
+        });
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
-            usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
-        }
-        if (!isEmpty(usuarioDto.getOrganizacaoEmpresaId())) {
-            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoEmpresaId()));
+            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoId()));
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         }
-        if (Objects.nonNull(usuarioDto.getNivelId())) {
-            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
-        }
         if (!Objects.equals(ID_NIVEL_MSO, usuarioDto.getNivelId())) {
             usuario.setTiposFeeder(Set.of());
         }
+        usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
+
         return usuario;
     }
 
@@ -148,22 +151,20 @@ public class UsuarioDto implements Serializable {
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
-        usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        usuarioDto.setOrganizacaoId(getOrganizacaoEmpresaId(usuario));
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
-        usuarioDto.setOrganizacaoEmpresaId(getOrganizacaoEmpresaId(usuario));
+        usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
+
         return usuarioDto;
     }
 
     public static UsuarioDto of(Usuario usuario, boolean permiteEditarCompleto) {
         var usuarioDto = UsuarioDto.of(usuario);
         usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
-        return usuarioDto;
-    }
 
-    private static Integer getOrganizacaoId(Usuario usuario) {
-        return !isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
+        return usuarioDto;
     }
 
     private static Integer getOrganizacaoEmpresaId(Usuario usuario) {
@@ -171,14 +172,26 @@ public class UsuarioDto implements Serializable {
     }
 
     public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuarioMqRequest, usuarioDto);
+
         return usuarioDto;
     }
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
-        return !isEmpty(usuario.getUnidadesNegociosId())
-            ? usuario.getUnidadesNegociosId().get(0) : 0;
+        return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
+    }
+
+    public boolean hasCanalD2dProprio() {
+        return canais.contains(ECanal.D2D_PROPRIO);
+    }
+
+    public boolean hasIdAndCargoCodigo() {
+        return id != null && cargoCodigo != null;
+    }
+
+    public boolean hasSubCanaisId() {
+        return !subCanaisId.isEmpty();
     }
 
     public UsuarioDto(Integer id, String email) {

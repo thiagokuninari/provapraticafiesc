@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -77,5 +78,43 @@ public class AutenticacaoServiceTest {
 
         autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuario);
         verify(tokenStore, never()).removeAccessToken(any());
+    }
+
+    @Test
+    public void logoutLoginMultiplo_deveChamarTokenStore_quandoUsuarioClienteLojaFuturo() {
+        when(tokenStore.findTokensByClientIdAndUserName(any(), any()))
+            .thenReturn(List.of(new DefaultOAuth2AccessToken("token")));
+        var umUsuarioClienteLojaFuturo = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(96)
+                .codigo(CodigoCargo.CLIENTE_LOJA_FUTURO)
+                .build())
+            .id(12345)
+            .nome("USUARIO CLIENTE LOJA FUTURO")
+            .email("CLIENTELOJAFUTURO@GMAIL.COM")
+            .build();
+        when(usuarioRepository.findComplete(96)).thenReturn(Optional.of(umUsuarioClienteLojaFuturo));
+
+        autenticacaoService.logoutLoginMultiplo(96);
+        verify(tokenStore, times(1)).removeAccessToken(any());
+        verify(usuarioRepository, times(1)).findComplete(96);
+    }
+
+    @Test
+    public void logoutLoginMultiplo_naoDeveChamarTokenStore_quandoUsuarioNaoClienteLojaFuturo() {
+        var umUsuarioClienteLojaFuturo = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(96)
+                .codigo(CodigoCargo.GERENTE_OPERACAO)
+                .build())
+            .id(12345)
+            .nome("USUARIO CLIENTE LOJA FUTURO")
+            .email("CLIENTELOJAFUTURO@GMAIL.COM")
+            .build();
+        when(usuarioRepository.findComplete(96)).thenReturn(Optional.of(umUsuarioClienteLojaFuturo));
+
+        autenticacaoService.logoutLoginMultiplo(96);
+        verify(tokenStore, never()).removeAccessToken(any());
+        verify(usuarioRepository, times(1)).findComplete(96);
     }
 }

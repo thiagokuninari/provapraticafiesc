@@ -61,6 +61,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findByIdInAndCargoIn(List<Integer> usuarios, List<Cargo> cargos);
 
+    List<Usuario> findByIdInAndCargoInAndSituacaoNot(List<Integer> usuarios, List<Cargo> cargos, ESituacao situacao);
+
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
         + "recuperarSenhaTentativa = 0 where u.id = ?3")
@@ -114,5 +116,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Query("update Usuario u set u.situacao = 'I', u.dataReativacao = null where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
 
-    List<Usuario> findByOrganizacaoIdAndCargo_CodigoIn(Integer organizacaoId, List<CodigoCargo> cargos);
+    List<Usuario> findByOrganizacaoEmpresaIdAndCargo_CodigoIn(Integer organizacaoEmpresaId, List<CodigoCargo> cargos);
 }

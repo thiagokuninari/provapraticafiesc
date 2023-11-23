@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -17,18 +16,16 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping(value = "api/usuarios/gerencia")
+@RequestMapping("api/usuarios/gerencia")
 public class UsuarioGerenciaController {
 
     @Autowired
     private UsuarioService service;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
-        return service.save(UsuarioDto.convertFrom(usuario), foto);
+        return service.save(usuario, foto);
     }
 
     @PostMapping("backoffice")
@@ -42,17 +39,18 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{id}")
-    public UsuarioDto getById(@PathVariable("id") int id) {
-        var usuario = service.findByIdComAa(id);
-        return UsuarioDto.of(
-            usuario,
-            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+    public UsuarioDto getById(@PathVariable int id) {
+        return service.getUsuarioById(id);
     }
 
     @GetMapping
     public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        return service.getAll(pageRequest, filtros)
-            .map(UsuarioConsultaDto::convertFrom);
+        return service.getAll(pageRequest, filtros);
+    }
+
+    @GetMapping("chamados/usuarios-redirecionamento/{idNivel}")
+    public List<UsuarioConsultaDto> getAllXbrainMsoAtivos(@PathVariable Integer idNivel) {
+        return service.getAllXbrainMsoAtivos(idNivel);
     }
 
     @GetMapping("/hierarquia/{nivelId}")
@@ -63,14 +61,15 @@ public class UsuarioGerenciaController {
     @PostMapping(value = "/cargo-superior/{cargoId}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post) {
-        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
+        return service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds());
     }
 
     @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
-                                                                    @PathVariable Set<ECanal> canal) {
-        return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
+                                                                    @PathVariable Set<ECanal> canal,
+                                                                    @RequestParam(required = false) Set<Integer> subCanais) {
+        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post, canal, subCanais);
     }
 
     @GetMapping(params = "email")
@@ -108,9 +107,9 @@ public class UsuarioGerenciaController {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
 
-    @GetMapping("/{idUsuario}/cidades")
-    public List<UsuarioCidadeDto> getCidadesByUsuario(@PathVariable Integer idUsuario) {
-        return service.getCidadeByUsuario(idUsuario);
+    @GetMapping("{idUsuario}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable Integer idUsuario) {
+        return service.getCidadesByUsuarioId(idUsuario);
     }
 
     @PutMapping("/acesso/email")
@@ -135,9 +134,7 @@ public class UsuarioGerenciaController {
 
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
-        service.exportUsuariosToCsv(
-            service.getAllForCsv(filtros),
-            response);
+        service.exportUsuariosToCsv(filtros, response);
     }
 
     @GetMapping("existir/usuario")

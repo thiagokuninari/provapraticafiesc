@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioFerias;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioFeriasRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioFeriasService {
 
-    @Autowired
-    private UsuarioFeriasRepository repository;
+    private final UsuarioFeriasRepository repository;
 
     public Optional<UsuarioFerias> save(Usuario usuario, UsuarioInativacaoDto usuarioInativacao) {
         if (usuarioInativacao.isFerias()) {

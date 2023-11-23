@@ -1,0 +1,2 @@
+-- DELETAR FUNCIONALIDADE CONSULTAR INDICAÇÕES PREMIUM DE NIVEL OPERACAO --
+DELETE FROM cargo_depart_func WHERE fk_cargo IN (8, 2, 10, 4, 7) AND fk_funcionalidade IN (3062);

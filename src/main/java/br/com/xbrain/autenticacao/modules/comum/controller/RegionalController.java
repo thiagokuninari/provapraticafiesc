@@ -4,21 +4,29 @@ import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/regionais")
+@RequiredArgsConstructor
 public class RegionalController {
 
-    @Autowired
-    private RegionalService service;
+    private final RegionalService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Regional> getAtivos() {
         return service.getAll();
+    }
+
+    @GetMapping("ativas")
+    public List<RegionalDto> findAllAtivos() {
+        return service.findAllAtivos();
     }
 
     @GetMapping("comunicados")

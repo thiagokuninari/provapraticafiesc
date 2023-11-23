@@ -1,60 +1,66 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import org.junit.Before;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@WebMvcTest(controllers = UsuarioHistoricoController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(UsuarioSubCanalObserver.class),
+    @MockBean(TokenStore.class),
+})
+@Import(OAuth2ResourceConfig.class)
 public class UsuarioHistoricoControllerTest {
 
     @Autowired
     private MockMvc mvc;
-
     @MockBean
-    private AutenticacaoService autenticacaoService;
+    private UsuarioHistoricoService usuarioHistoricoService;
 
-    @Before
-    public void setup() {
-        Mockito.when(autenticacaoService.getUsuarioId())
-                .thenReturn(100);
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getHistoricoDoUsuario_deveBuscarHistoricoDoUsuario_quandoSolicitado() {
+        mvc.perform(get("/api/usuario-historico/100")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioHistoricoService).getHistoricoDoUsuario(100);
     }
 
     @Test
-    public void deveBuscarHistoricoDoUsuario() throws Exception {
+    @SneakyThrows
+    public void getHistoricoDoUsuario_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(get("/api/usuario-historico/100")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].id", is(100)))
-                .andExpect(jsonPath("$[0].situacao", is("INATIVO / FÉRIAS")))
-                .andExpect(jsonPath("$[0].cadastro", is("2019-01-04T10:50:00")))
-                .andExpect(jsonPath("$[0].usuarioAlteracao", is("HELPDESK")));
-    }
+            .andExpect(status().isUnauthorized());
 
+        verifyNoMoreInteractions(usuarioHistoricoService);
+    }
 }

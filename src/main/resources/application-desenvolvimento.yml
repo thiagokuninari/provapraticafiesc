@@ -1,4 +1,5 @@
 app-config:
+  url-origin-cors: dev.conexaoclarobrasil.com.br,http://localhost
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
@@ -32,6 +33,14 @@ app-config:
       url: http://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       url: http://172.10.10.45:8086
+    mailing-importacao:
+      url: http://172.10.10.32:8087
+    lei-nao-perturbe:
+      url: http://lei-nao-perturbe-api:8109
+    extrato-comissao:
+      url: http://extrato-comissao-api:8309
+    funil-prospeccao:
+      url: http://172.10.10.109:8304
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
@@ -53,3 +62,8 @@ spring:
     port: 5672
     username: xbrain
     password: xbrain
+
+xbrain:
+  logging:
+    level: INFO
+    appender: JSON

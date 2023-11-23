@@ -31,4 +31,5 @@ public class CanalService {
             .orElseThrow(() -> new NotImplementedException("Funcionalidade não disponível para canal selecionado"));
         return context.getBean(service);
     }
+
 }
