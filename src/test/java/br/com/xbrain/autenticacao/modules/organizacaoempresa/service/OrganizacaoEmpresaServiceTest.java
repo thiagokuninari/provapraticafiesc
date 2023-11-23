@@ -236,6 +236,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Test
     public void inativar_deveInativarESalvarHistorico_quandoOrganizacaoEmpresaAtiva() {
         var organizacaoEmpresa = umaOrganizacaoAtiva();
+        organizacaoEmpresa.setNivel(umNivel());
 
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
@@ -256,6 +257,69 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
+    public void inativar_deveDesvincularRamaisEDiscadora_quandoOrganizacaoSuporteVendas() {
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(
+            umaOrganizacaoEmpresaSuporteVendas(1, "suporte vendas", "SUP_VENDAS")));
+
+        service.inativar(1);
+
+        verify(callService).desvincularDiscadoraERamaisSuporteVendas(1);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.INATIVACAO), any());
+    }
+
+    @Test
+    public void inativar_naoDeveDesvincularRamaisEDiscadora_quandoOrganizacaoNaoForSuporteVendas() {
+        var organizacaoEmpresa = umaOrganizacaoEmpresa();
+        organizacaoEmpresa.setNivel(umNivel());
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacaoEmpresa));
+
+        service.inativar(1);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.INATIVACAO), any());
+    }
+
+    @Test
+    public void ativar_deveAtivarConfiguracaoSuporteVendas_quandoOrganizacaoSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, "suporte vendas", "SUP_VENDAS");
+        organizacao.setSituacao(ESituacaoOrganizacaoEmpresa.I);
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacao));
+
+        service.ativar(1);
+
+        verify(callService).ativarConfiguracaoSuporteVendas(1);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.ATIVACAO), any());
+    }
+
+    @Test
+    public void ativar_naoDeveAtivarConfiguracaoSuporteVendas_quandoOrganizacaoNaoForSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresa();
+        organizacao.setSituacao(ESituacaoOrganizacaoEmpresa.I);
+        organizacao.setNivel(umNivel());
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacao));
+
+        service.ativar(1);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.ATIVACAO), any());
+    }
+
+    @Test
     public void ativar_deveLancarValidacaoException_quandoOrganizacaoEmpresaAtiva() {
         var organizacaoEmpresa = umaOrganizacaoAtiva();
 
@@ -271,6 +335,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Test
     public void ativar_deveAtivarESalvarHistorico_quandoOrganizacaoEmpresaInativa() {
         var organizacaoEmpresa = umaOrganizacaoInativa();
+        organizacaoEmpresa.setNivel(umNivel());
 
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 

@@ -20,7 +20,6 @@ public interface CallClient {
     String API_DISCAGEM_TELEFONIA = "api/discagem-telefonia";
     String URL_RAMAL = "api/ramal";
     String API_CACHE_CLEAN_FERIADOS = "/api/public/cache-clean/feriados";
-
     String API_SUPORTE_VENDAS_BKO_CONFIGURACAO = "api/suporte-vendas-bko/configuracoes";
 
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
@@ -55,4 +54,10 @@ public interface CallClient {
     @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/atualizar")
     void atualizarConfiguracaoSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId,
                                             @RequestBody SuporteVendasBkoRequest request);
+
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/desvincular-discadora-ramais")
+    void desvicularDiscadoraSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);
+
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/ativar")
+    void ativarConfiguracaoSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);
 }

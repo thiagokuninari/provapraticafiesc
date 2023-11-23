@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.helper;
 
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -24,7 +23,7 @@ public class OrganizacaoEmpresaHelper {
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Marcos AA")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .nivelId(1)
             .codigo("CODIGO")
             .build();
@@ -34,7 +33,7 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .nome("Marcos AA")
             .id(2)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .build();
     }
 
@@ -52,7 +51,7 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .id(1)
             .nome("Teste AA")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .codigo("codigo")
             .build();
     }
@@ -62,7 +61,7 @@ public class OrganizacaoEmpresaHelper {
             .id(2)
             .nome("Teste AA Dois")
             .nivel(umNivel())
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .situacao(A)
             .codigo("codigo2")
             .build();
     }
@@ -70,23 +69,23 @@ public class OrganizacaoEmpresaHelper {
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .build());
     }
 
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponseComNivel() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .nivel(umNivelResponse())
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
-                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .situacao(A)
                 .nivel(umNivelResponseReceptivo())
                 .build());
     }

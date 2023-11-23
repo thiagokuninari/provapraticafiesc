@@ -83,6 +83,7 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -96,6 +97,7 @@ public class  OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        ativarConfiguracaoSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -223,6 +225,18 @@ public class  OrganizacaoEmpresaService {
                                                     Integer fornecedorId) {
         if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
             callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
+        }
+    }
+
+    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
         }
     }
 }

@@ -18,8 +18,8 @@ import java.util.List;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_SALVAR_CONFIGURACAO_FORNECEDOR;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class CallService {
 
@@ -112,6 +112,22 @@ public class CallService {
             callClient.atualizarConfiguracaoSuporteVendas(fornecedorId, SuporteVendasBkoRequest.of(nome));
         } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex, CallService.class.getName(), ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR);
+        }
+    }
+
+    public void desvincularDiscadoraERamaisSuporteVendas(Integer organizacaoId) {
+        try {
+            callClient.desvicularDiscadoraSuporteVendas(organizacaoId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException("Erro ao tentar desvincular discadora e ramais.");
+        }
+    }
+
+    public void ativarConfiguracaoSuporteVendas(Integer organizacaoId) {
+        try {
+            callClient.ativarConfiguracaoSuporteVendas(organizacaoId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException("Erro ao tentar ativar configuração");
         }
     }
 }
