@@ -36,7 +36,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
 import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
 import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
 import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
+import static br.com.xbrain.autenticacao.config.EScopes.FEEDER;
 import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
@@ -138,10 +138,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String backofficeApiClient;
     @Value("${app-config.oauth-clients.backoffice-api.secret}")
     private String backofficeApiSecret;
-    @Value("${app-config.oauth-clients.gerador-lead-api.client}")
-    private String geradorLeadApiClient;
-    @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
-    private String geradorLeadApiSecret;
+    @Value("${app-config.oauth-clients.feeder-api.client}")
+    private String feederApiClient;
+    @Value("${app-config.oauth-clients.feeder-api.secret}")
+    private String feederApiSecret;
     @Value("${app-config.oauth-clients.agente-autorizado-api.client}")
     private String agenteAutorizadoApiClient;
     @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
@@ -310,9 +310,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .authorizedGrantTypes("client_credentials")
             .authorities(ROLE_APPLICATION)
             .and()
-            .withClient(geradorLeadApiClient)
-            .secret(geradorLeadApiSecret)
-            .scopes(GERADOR_LEAD.getScope())
+            .withClient(feederApiClient)
+            .secret(feederApiSecret)
+            .scopes(FEEDER.getScope())
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION)
             .and()

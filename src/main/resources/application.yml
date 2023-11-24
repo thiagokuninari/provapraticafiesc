@@ -208,9 +208,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
-    gerador-lead-api:
-      client: gerador-lead-api
-      secret: g3r4d0rl34d4p1
+    feeder-api:
+      client: feeder-api
+      secret: f33d3r4p1
     indicacao-api:
       client: indicacao-api
       secret: 1nd1c4c40
