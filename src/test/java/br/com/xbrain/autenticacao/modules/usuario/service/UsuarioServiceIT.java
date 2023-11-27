@@ -17,7 +17,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -57,7 +57,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService.FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
@@ -121,12 +120,10 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
-    @MockBean
-    private PermissaoEspecialRepository permissaoEspecialRepository;
     @Captor
     private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
-    @Captor
-    private ArgumentCaptor<PermissaoEspecial> permissaoCaptor;
+    @MockBean
+    private PermissaoEspecialService permissaoEspecialService;
 
     @Before
     public void setUp() {
@@ -1537,74 +1534,17 @@ public class UsuarioServiceIT {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisComPermissoesEspeciais() {
-        doReturn(umaListaFuncFeederEAcompIndicacoesTecnicoVendedor())
-            .when(permissaoEspecialRepository)
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
-
+    public void saveFromQueue_deveSalvarEnviarParaFilaDeAtualizarSocioPrincipalEAtualizarPermissoesEspeciais_quandoFlagAtualizarSocioPrincipalForTrue() {
         assertThatCode(() -> usuarioService
             .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
             .doesNotThrowAnyException();
 
-        verify(sender)
-            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
-        verify(permissaoEspecialRepository)
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
-        verify(permissaoEspecialRepository, times(5))
-            .save(permissaoCaptor.capture());
+        verify(sender).sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialService).atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioDtoCaptor.getValue());
 
         assertThat(usuarioDtoCaptor.getValue())
             .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
             .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true);
-
-        assertThat(permissaoCaptor.getAllValues())
-            .extracting("funcionalidade.id")
-            .containsExactlyInAnyOrder(3046, 15000, 15005, 15012, 16101);
-    }
-
-    @Test
-    @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisSemPermissoesEspeciais() {
-        doReturn(List.of())
-            .when(permissaoEspecialRepository)
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
-
-        assertThatCode(() -> usuarioService
-            .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
-            .doesNotThrowAnyException();
-
-        verify(sender)
-            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
-        verify(permissaoEspecialRepository)
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, 32);
-        verify(permissaoEspecialRepository, never())
-            .save(any(PermissaoEspecial.class));
-
-        assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
-            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true);
-    }
-
-    @Test
-    @SuppressWarnings("LineLength")
-    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrueEAntigosSociosPrincipaisIdsForNulo() {
-        var umUsuarioMqRequestAntigoSocioIdNulo = umUsuarioMqRequestAtualizarSocioPrincipal();
-        umUsuarioMqRequestAntigoSocioIdNulo.setAntigosSociosPrincipaisIds(null);
-
-        assertThatCode(() -> usuarioService
-            .saveFromQueue(umUsuarioMqRequestAntigoSocioIdNulo))
-            .doesNotThrowAnyException();
-
-        verify(sender)
-            .sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
-        verify(permissaoEspecialRepository, never())
-            .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(anyList(), anyInt());
-        verify(permissaoEspecialRepository, never())
-            .save(any(PermissaoEspecial.class));
-
-        assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
-            .containsExactlyInAnyOrder(List.of(50, 55), null, true);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {

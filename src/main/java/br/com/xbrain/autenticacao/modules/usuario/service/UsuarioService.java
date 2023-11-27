@@ -34,11 +34,11 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -144,8 +144,6 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
-    public static final List<Integer> FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR =
-        List.of(3046, 15000, 15005, 15012, 16101);
 
     @Autowired
     private UsuarioRepository repository;
@@ -225,6 +223,8 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Autowired
+    private PermissaoEspecialService permissaoEspecialService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1022,39 +1022,8 @@ public class UsuarioService {
     private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
         if (socio.isAtualizarSocioPrincipal()) {
             enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
-            atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
+            permissaoEspecialService.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
         }
-    }
-
-    private void atualizarPermissoesEspeciaisNovoSocioPrincipal(UsuarioDto socio) {
-        if (!isEmpty(socio.getAntigosSociosPrincipaisIds())) {
-            getFuncionalidadesIds(FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR, socio.getAntigosSociosPrincipaisIds())
-                .forEach(id -> criarESalvarPermissaoEspecial(socio, socio.getUsuarioCadastroId(), id));
-        }
-    }
-
-    private List<Integer> getFuncionalidadesIds(List<Integer> permissoesIds, List<Integer> usuariosIds) {
-        return usuariosIds.stream()
-            .map(usuarioId -> getFuncionalidadesId(permissoesIds, usuarioId))
-            .flatMap(Collection::stream)
-            .distinct()
-            .collect(toList());
-    }
-
-    private List<Integer> getFuncionalidadesId(List<Integer> permissoesIds, Integer usuarioId) {
-        return getPermissoesEspeciais(permissoesIds, usuarioId).stream()
-            .map(PermissaoEspecial::getFuncionalidade)
-            .map(Funcionalidade::getId)
-            .distinct()
-            .collect(toList());
-    }
-
-    private List<PermissaoEspecial> getPermissoesEspeciais(List<Integer> permissoesIds, Integer usuarioId) {
-        return permissaoEspecialRepository.findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesIds, usuarioId);
-    }
-
-    private void criarESalvarPermissaoEspecial(UsuarioDto usuarioDto, Integer usuarioCadastroId, Integer funcionalidadeId) {
-        permissaoEspecialRepository.save(PermissaoEspecial.of(usuarioDto.getId(), usuarioCadastroId, funcionalidadeId));
     }
 
     @Transactional
@@ -1851,7 +1820,7 @@ public class UsuarioService {
     public void inativarAntigoSocioPrincipal(String email) {
         var antigoSocioPrincipal = findOneByEmail(email);
 
-        if (Objects.equals(antigoSocioPrincipal.getSituacao(), ATIVO)) {
+        if (antigoSocioPrincipal.getSituacao() == ATIVO) {
             antigoSocioPrincipal.setSituacao(INATIVO);
             repository.save(antigoSocioPrincipal);
             autenticacaoService.logout(antigoSocioPrincipal.getId());
