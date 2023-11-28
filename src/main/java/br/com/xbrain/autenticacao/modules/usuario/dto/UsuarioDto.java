@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -145,6 +146,10 @@ public class UsuarioDto implements Serializable {
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        usuarioDto.setUsuarioCadastroId(Optional.ofNullable(usuario.getUsuarioCadastro())
+            .map(Usuario::getId)
+            .orElse(null));
+
         return usuarioDto;
     }
 

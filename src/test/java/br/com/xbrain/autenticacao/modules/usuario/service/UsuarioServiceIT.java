@@ -1543,8 +1543,8 @@ public class UsuarioServiceIT {
         verify(permissaoEspecialService).atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioDtoCaptor.getValue());
 
         assertThat(usuarioDtoCaptor.getValue())
-            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal")
-            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true);
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal", "usuarioCadastroId")
+            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true, 100);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {

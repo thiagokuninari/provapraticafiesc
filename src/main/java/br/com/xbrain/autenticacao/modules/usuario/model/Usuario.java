@@ -249,9 +249,6 @@ public class Usuario {
     private List<Integer> antigosSociosPrincipaisIds;
 
     @Transient
-    private Integer usuarioCadastroId;
-
-    @Transient
     private String senhaDescriptografada;
 
     public Usuario(Integer id) {
@@ -463,7 +460,7 @@ public class Usuario {
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
             && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
-            OPERACAO_TELEVENDAS)
+                OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -533,20 +530,20 @@ public class Usuario {
 
     public static Set<Integer> convertFrom(Set<Usuario> usuarios) {
         return usuarios.stream()
-                .map(Usuario::getId)
-                .collect(Collectors.toSet());
+            .map(Usuario::getId)
+            .collect(Collectors.toSet());
     }
 
     public static Set<Usuario> of(List<Integer> usuarios) {
         return usuarios.stream()
-                .map(Usuario::new)
-                .collect(Collectors.toSet());
+            .map(Usuario::new)
+            .collect(Collectors.toSet());
     }
 
     @JsonIgnore
     public boolean isOperadorTelevendasAtivoLocal() {
         return isCargo(OPERACAO_TELEVENDAS)
-                && hasCanal(ECanal.ATIVO_PROPRIO);
+            && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 
     public boolean isXbrain() {
