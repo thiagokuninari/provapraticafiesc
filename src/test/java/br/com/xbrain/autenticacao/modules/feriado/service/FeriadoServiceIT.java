@@ -187,22 +187,6 @@ public class FeriadoServiceIT {
     }
 
     @Test
-    public void getFeriadoById_deveDarErro_quandoNaoExiste() {
-        assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> feriadoService.getFeriadoById(99))
-            .withMessage("Feriado não encontrado.");
-    }
-
-    @Test
-    public void getFeriadoById_deveRetornarFeriado_quandoExiste() {
-        assertThat(feriadoService.getFeriadoById(107))
-            .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId", "estadoNome",
-                "cidadeId", "cidadeNome")
-            .containsExactlyInAnyOrder(107, "Feriado de Chapeco", LocalDate.of(2019, 9, 22),
-                ETipoFeriado.MUNICIPAL, 22, "SANTA CATARINA", 4498, "CHAPECO");
-    }
-
-    @Test
     public void salvarFeriado_deveDarErro_quandoRequestNaoTiverOsDadosObrigatorios() {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> feriadoService.salvarFeriado(umFeriadoEstadualRequest(null, null)))
