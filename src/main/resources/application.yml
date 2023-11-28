@@ -298,6 +298,9 @@ app-config:
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    localizacao:
+      #url: http://localhost:8039
+      url: https://api-dev.conexaoclarobrasil.com.br/localizacao
 
 flyway:
   enabled: true
