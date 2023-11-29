@@ -106,7 +106,7 @@ public class Usuario {
 
     @Column(name = "CANAL_NETSALES")
     @Enumerated(EnumType.STRING)
-    private CanalNetSales canalNetSales;
+    private ECanalNetSales canalNetSales;
 
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;

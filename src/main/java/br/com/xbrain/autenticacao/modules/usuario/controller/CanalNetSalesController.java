@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CanalNetSales;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanalNetSales;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +16,7 @@ public class CanalNetSalesController {
 
     @GetMapping
     public List<SelectResponse> getAllCanaisNetsales() {
-        return Arrays.stream(CanalNetSales.values())
+        return Arrays.stream(ECanalNetSales.values())
             .map(canalNetSales -> new SelectResponse(canalNetSales, canalNetSales.getDescricao()))
             .collect(Collectors.toList());
     }

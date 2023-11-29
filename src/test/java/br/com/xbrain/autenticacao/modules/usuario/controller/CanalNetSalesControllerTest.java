@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class CanalNetSalesControllerTest {
 
-    static final String API_CANAL_NETSALES = "/api/usuario-canal-netsales";
+    private static final String API_CANAL_NETSALES = "/api/usuario-canal-netsales";
 
     @Autowired
     private MockMvc mvc;

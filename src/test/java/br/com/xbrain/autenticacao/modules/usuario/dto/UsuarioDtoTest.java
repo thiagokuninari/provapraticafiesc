@@ -408,7 +408,7 @@ public class UsuarioDtoTest {
             .tiposFeeder(Set.of())
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales(CanalNetSales.D2D_CLARO_PESSOAL)
+            .canalNetSales(ECanalNetSales.D2D_CLARO_PESSOAL)
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -485,7 +485,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales(CanalNetSales.D2D_CLARO_PESSOAL)
+            .canalNetSales(ECanalNetSales.D2D_CLARO_PESSOAL)
             .cargo(Cargo
                 .builder()
                 .id(idCargo)

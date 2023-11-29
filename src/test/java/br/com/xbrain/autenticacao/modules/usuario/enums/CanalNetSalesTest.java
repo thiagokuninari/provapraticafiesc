@@ -6,10 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 public class CanalNetSalesTest {
+
     @Test
     public void canalNetSales_deveRetornarValorEDescricao_quandoSolicitado() {
-        assertThat(CanalNetSales.values())
-            .extracting(CanalNetSales::name, CanalNetSales::getDescricao)
+        assertThat(ECanalNetSales.values())
+            .extracting(ECanalNetSales::name, ECanalNetSales::getDescricao)
             .containsExactly(
                 tuple("D2D_ACOES_ESPECIAIS", "D2D-ACOES ESPECIAIS"),
                 tuple("D2D_CLARO_PESSOAL", "D2D-CLARO PESSOAL"),

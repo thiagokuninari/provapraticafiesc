@@ -4,10 +4,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CanalNetSales;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanalNetSales;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -184,8 +184,8 @@ public class UsuarioDto implements Serializable {
         return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
 
-    private static CanalNetSales getCanalNetSales(UsuarioDto usuarioDto) {
-        return usuarioDto.getCanalNetSales() != null ? CanalNetSales.valueOf(usuarioDto.getCanalNetSales()) : null;
+    private static ECanalNetSales getCanalNetSales(UsuarioDto usuarioDto) {
+        return usuarioDto.getCanalNetSales() != null ? ECanalNetSales.valueOf(usuarioDto.getCanalNetSales()) : null;
     }
 
     public boolean hasCanalD2dProprio() {

@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum CanalNetSales {
+public enum ECanalNetSales {
 
     D2D_ACOES_ESPECIAIS("D2D-ACOES ESPECIAIS"),
     D2D_CLARO_PESSOAL("D2D-CLARO PESSOAL"),
