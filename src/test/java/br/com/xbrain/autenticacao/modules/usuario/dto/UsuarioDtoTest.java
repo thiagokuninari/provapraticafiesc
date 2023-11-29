@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -209,6 +206,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -410,6 +408,7 @@ public class UsuarioDtoTest {
             .tiposFeeder(Set.of())
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales(CanalNetSales.D2D_CLARO_PESSOAL)
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -430,6 +429,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -485,6 +485,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales(CanalNetSales.D2D_CLARO_PESSOAL)
             .cargo(Cargo
                 .builder()
                 .id(idCargo)
@@ -612,6 +613,7 @@ public class UsuarioDtoTest {
             .hierarquiasId(null)
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .build();
     }
 

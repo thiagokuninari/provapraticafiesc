@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CanalNetSales;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -63,6 +64,7 @@ public class UsuarioDto implements Serializable {
     private String nomeEquipeVendaNetSales;
     @Size(max = 120)
     private String codigoEquipeVendaNetSales;
+    private String canalNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
@@ -131,7 +133,7 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
-
+        usuario.setCanalNetSales(getCanalNetSales(usuarioDto));
         return usuario;
     }
 
@@ -156,7 +158,7 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-
+        usuarioDto.setCanalNetSales(usuario.getCodigoCanalNetSales());
         return usuarioDto;
     }
 
@@ -180,6 +182,10 @@ public class UsuarioDto implements Serializable {
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
         return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
+    }
+
+    private static CanalNetSales getCanalNetSales(UsuarioDto usuarioDto) {
+        return usuarioDto.getCanalNetSales() != null ? CanalNetSales.valueOf(usuarioDto.getCanalNetSales()) : null;
     }
 
     public boolean hasCanalD2dProprio() {

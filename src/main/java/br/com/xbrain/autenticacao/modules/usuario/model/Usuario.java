@@ -104,6 +104,10 @@ public class Usuario {
     @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
     private String codigoEquipeVendaNetSales;
 
+    @Column(name = "CANAL_NETSALES")
+    @Enumerated(EnumType.STRING)
+    private CanalNetSales canalNetSales;
+
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
 
@@ -504,6 +508,10 @@ public class Usuario {
 
     public String getLogin() {
         return id + "-" + email;
+    }
+
+    public String getCodigoCanalNetSales() {
+        return this.canalNetSales != null ? this.canalNetSales.toString() : null;
     }
 
     public boolean isEmpty() {
