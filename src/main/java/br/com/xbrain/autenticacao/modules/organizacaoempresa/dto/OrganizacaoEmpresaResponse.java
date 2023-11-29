@@ -17,12 +17,14 @@ import org.springframework.beans.BeanUtils;
 public class OrganizacaoEmpresaResponse {
 
     private Integer id;
+
     private String nome;
-    private NivelResponse nivel;
-    private ESituacaoOrganizacaoEmpresa situacao;
-    private String codigo;
     private ECanal canal;
+    private String codigo;
+    private String descricao;
+    private NivelResponse nivel;
     private String canalDescricao;
+    private ESituacaoOrganizacaoEmpresa situacao;
 
     public static OrganizacaoEmpresaResponse of(OrganizacaoEmpresa organizacaoEmpresa) {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();

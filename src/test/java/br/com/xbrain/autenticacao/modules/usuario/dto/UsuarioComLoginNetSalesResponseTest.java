@@ -33,7 +33,7 @@ public class UsuarioComLoginNetSalesResponseTest {
         var usuario = umUsuario();
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.RECEPTIVO);
         assertThat(UsuarioComLoginNetSalesResponse.getNivelCodigo(usuario))
-            .isEqualTo("RECEPTIVO_ORGANIZACAO_TESTE");
+            .isEqualTo("RECEPTIVO_Organizacaoteste");
     }
 
     @Test
@@ -61,7 +61,8 @@ public class UsuarioComLoginNetSalesResponseTest {
             .loginNetSales("Login teste")
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .canal(ECanal.INTERNET)
-                .nome("Organizacao teste")
+                .descricao("Organizacao teste")
+                .nome("Organizacaoteste")
                 .codigo("ORGANIZACAO_TESTE")
                 .build())
             .canais(Set.of(ECanal.INTERNET))

@@ -38,7 +38,7 @@ public class OrganizacaoEmpresaController {
     @PostMapping
     @ResponseStatus(CREATED)
     public OrganizacaoEmpresaResponse save(@RequestBody @Validated OrganizacaoEmpresaRequest request) {
-        return OrganizacaoEmpresaResponse.of(service.save(request));
+        return service.save(request);
     }
 
     @PutMapping("{id}/inativar")
@@ -54,7 +54,7 @@ public class OrganizacaoEmpresaController {
     @PutMapping("{id}/editar")
     public OrganizacaoEmpresaResponse update(@PathVariable Integer id,
                                              @Validated @RequestBody OrganizacaoEmpresaRequest request) {
-        return OrganizacaoEmpresaResponse.of(service.update(id, request));
+        return service.update(id, request);
     }
 
     @GetMapping("consultar-ativos")

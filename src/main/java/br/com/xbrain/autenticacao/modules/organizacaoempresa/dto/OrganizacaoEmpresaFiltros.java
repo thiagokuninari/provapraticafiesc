@@ -17,6 +17,7 @@ public class OrganizacaoEmpresaFiltros {
 
     private Integer organizacaoId;
     private String nome;
+    private String descricao;
     private Integer nivelId;
     private ESituacaoOrganizacaoEmpresa situacao;
     private CodigoNivel codigoNivel;
@@ -27,6 +28,7 @@ public class OrganizacaoEmpresaFiltros {
         return new OrganizacaoEmpresaPredicate()
             .comId(organizacaoId)
             .comNome(nome)
+            .comDescricao(descricao)
             .comNivel(nivelId)
             .comSituacao(situacao)
             .comCodigoNivel(codigoNivel)

@@ -1806,7 +1806,7 @@ public class UsuarioServiceTest {
     public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForReceptivo() {
         var umUsuarioComLogin = 1000;
         var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
-        user.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("ATENTO").build());
+        user.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().nome("ATENTO").build());
         user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build());
         when(usuarioRepository.findById(umUsuarioComLogin))
             .thenReturn(Optional.of(user));
@@ -2808,7 +2808,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test
@@ -2824,7 +2824,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test
@@ -2840,7 +2840,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getDescricao()));
     }
 
     @Test

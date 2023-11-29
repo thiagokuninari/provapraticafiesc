@@ -57,16 +57,17 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
+            .descricao("Organizacao1")
             .nome("Organizacao 1")
             .nivelId(1)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
             .canal(ECanal.INTERNET)
             .build();
     }
 
     private OrganizacaoEmpresa umaOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .nome("Organizacao 1")
+            .nome("Organizacao1")
+            .descricao("Organizacao 1")
             .nivel(null)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();

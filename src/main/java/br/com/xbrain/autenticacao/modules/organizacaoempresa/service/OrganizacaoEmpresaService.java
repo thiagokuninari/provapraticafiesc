@@ -16,6 +16,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +29,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class  OrganizacaoEmpresaService {
+public class OrganizacaoEmpresaService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
     private static final ValidacaoException EX_ORGANIZACAO_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada com o mesmo nome ou código nesse nível.");
+        new ValidacaoException("Organização já cadastrada com o mesmo nome ou descrição nesse nível.");
     private static final ValidacaoException EX_ORGANIZACAO_ATIVA =
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException EX_ORGANIZACAO_INATIVA =
@@ -55,13 +57,23 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.findAll(filtros.toPredicate().build(), pageRequest);
     }
 
-    public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
+    public OrganizacaoEmpresaResponse save(OrganizacaoEmpresaRequest request) {
         var nivel = findNivelById(request.getNivelId());
 
         validarNivelOperacao(nivel.getCodigo(), request.getCanal());
-        validarNomeECodigoPorNivelId(request.getNome(), request.getCodigo(), request.getNivelId());
-        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
-            autenticacaoService.getUsuarioId(), nivel));
+        validarNivelBackoffice(nivel.getCodigo(), request.getCodigo());
+        validarNomeEDescricaoPorNivelId(request.getNome(), request.getDescricao(), request.getNivelId());
+        validarCodigoPorNivelId(request.getCodigo(), request.getNivelId());
+        var organizacao = OrganizacaoEmpresa.of(request, autenticacaoService.getUsuarioId(), nivel);
+        organizacaoEmpresaRepository.save(organizacao);
+
+        return OrganizacaoEmpresaResponse.of(organizacao);
+    }
+
+    private void validarCodigoPorNivelId(String codigo, Integer nivelId) {
+        if (StringUtils.isNotBlank(codigo) && organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivelId)) {
+            throw new ValidacaoException("Organização já cadastrada com o código nesse nível.");
+        }
     }
 
     @Transactional
@@ -91,36 +103,38 @@ public class  OrganizacaoEmpresaService {
     }
 
     @Transactional
-    public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
-        var organizacaoEmpresaToUpdate = findById(id);
+    public OrganizacaoEmpresaResponse update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
+        var organizacaoEmpresa = findById(id);
 
-        validarNomeECodigoParaUpdate(request.getNome(), request.getCodigo(), request.getNivelId(), id);
+        validarNomeEDescricaoParaUpdate(request.getNome(), request.getDescricao(), request.getNivelId(), id);
 
-        historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
+        historicoService.salvarHistorico(organizacaoEmpresa,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
 
-        var organizacaoNome = organizacaoEmpresaToUpdate.getNome();
-        organizacaoEmpresaToUpdate.setNome(request.getNome());
-        organizacaoEmpresaToUpdate.setCodigo(request.getCodigo());
+        var organizacaoDescricaoAntiga = organizacaoEmpresa.getDescricao();
+        BeanUtils.copyProperties(request, organizacaoEmpresa);
 
-        var organizacaoNomeAtualizado = request.getNome();
-        var nivelId = organizacaoEmpresaToUpdate.getNivel().getId();
-        var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(organizacaoNome, organizacaoNomeAtualizado, nivelId);
-
+        var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(
+            organizacaoDescricaoAntiga,
+            organizacaoEmpresa.getDescricao(),
+            organizacaoEmpresa.getNivel().getId()
+        );
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
-        return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+        organizacaoEmpresaRepository.save(organizacaoEmpresa);
+
+        return OrganizacaoEmpresaResponse.of(organizacaoEmpresa);
     }
 
-    public void validarNomeECodigoPorNivelId(String nome, String codigo, Integer nivel) {
-        if (organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivel)
-            || organizacaoEmpresaRepository.existsByNomeAndNivelId(nome, nivel)) {
+    public void validarNomeEDescricaoPorNivelId(String nome, String descricao, Integer nivelId) {
+        if (organizacaoEmpresaRepository.existsByDescricaoAndNivelId(descricao, nivelId)
+            || organizacaoEmpresaRepository.existsByNomeAndNivelId(nome, nivelId)) {
             throw EX_ORGANIZACAO_EXISTENTE;
         }
     }
 
-    public void validarNomeECodigoParaUpdate(String nome, String codigo, Integer nivelId, Integer id) {
+    public void validarNomeEDescricaoParaUpdate(String nome, String descricao, Integer nivelId, Integer id) {
         if (organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(nome, nivelId, id)
-            || organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
+            || organizacaoEmpresaRepository.existsByDescricaoAndNivelIdAndIdNot(descricao, nivelId, id)) {
             throw EX_ORGANIZACAO_EXISTENTE;
         }
     }
@@ -128,6 +142,12 @@ public class  OrganizacaoEmpresaService {
     private void validarNivelOperacao(CodigoNivel nivel, ECanal canal) {
         if (CodigoNivel.OPERACAO == nivel && canal == null) {
             throw EX_CANAL_VAZIO;
+        }
+    }
+
+    private void validarNivelBackoffice(CodigoNivel nivel, String codigo) {
+        if (CodigoNivel.BACKOFFICE == nivel && StringUtils.isBlank(codigo)) {
+            throw new ValidacaoException("O campo código é obrigatório para o nível Backoffice.");
         }
     }
 
@@ -159,7 +179,7 @@ public class  OrganizacaoEmpresaService {
     public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
         return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build())
             .stream()
-            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getNome()))
+            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getDescricao()))
             .collect(Collectors.toList());
     }
 
@@ -198,9 +218,9 @@ public class  OrganizacaoEmpresaService {
     }
 
     public boolean isOrganizacaoAtiva(String organizacao) {
-        if (organizacao == null) {
+        if (StringUtils.isBlank(organizacao)) {
             throw EX_NAO_ENCONTRADO;
         }
-        return organizacaoEmpresaRepository.existsByNomeAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
+        return organizacaoEmpresaRepository.existsByDescricaoAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 }
