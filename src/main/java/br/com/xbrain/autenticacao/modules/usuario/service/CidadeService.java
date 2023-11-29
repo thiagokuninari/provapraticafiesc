@@ -350,4 +350,10 @@ public class CidadeService {
     private List<Cidade> getCidadesByPredicate(Predicate predicate) {
         return cidadeRepository.findAllByPredicate(predicate);
     }
+
+    public CidadeResponse getCidadeDistrito(String uf, String cidade, String distrito) {
+        return cidadeRepository.buscarCidadeDistrito(uf, cidade, distrito)
+            .map(CidadeResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }

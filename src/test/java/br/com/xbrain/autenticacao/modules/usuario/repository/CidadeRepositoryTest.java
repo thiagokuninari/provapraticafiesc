@@ -46,6 +46,7 @@ public class CidadeRepositoryTest {
                 tuple(5578, "LONDRINA", "4113700", 1027, "RPS"));
     }
 
+    @Test
     public void findCodigoIbgeRegionalByCidadeNomeAndUf_deveRetornarVazio_quandoInformarListaComValoresInexistentes() {
         var listaCidadesUfs = CidadesUfsRequest.builder()
             .cidades(List.of("LONDRINA", "CARAUBAS"))
@@ -149,5 +150,13 @@ public class CidadeRepositoryTest {
                 "POLVILHO",
                 "ROSALIA"
             );
+    }
+
+    @Test
+    public void buscarCidadeDistrito_deveRetornarCidade_quandoInformarUfAndNomeCidadeAndNomeDistritoCorretos() {
+        assertThat(cidadeRepository
+                .buscarCidadeDistrito("PR", "LONDRINA", "SAO LUIZ").get())
+            .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
+            .containsExactly(30848, "SAO LUIZ", "PARANA", "PR", 5578);
     }
 }

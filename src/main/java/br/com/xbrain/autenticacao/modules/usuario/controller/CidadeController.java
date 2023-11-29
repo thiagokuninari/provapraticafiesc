@@ -171,4 +171,11 @@ public class CidadeController {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         service.flushCacheCidadesDistritos();
     }
+
+    @GetMapping("cidade-distrito")
+    public CidadeResponse buscarCidadeDistrito(@RequestParam String uf,
+                                               @RequestParam String cidade,
+                                               @RequestParam String distrito) {
+        return service.getCidadeDistrito(uf, cidade, distrito);
+    }
 }

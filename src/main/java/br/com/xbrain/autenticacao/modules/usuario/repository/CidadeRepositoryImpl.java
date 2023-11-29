@@ -297,4 +297,19 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .orderBy(cidade.nome.asc())
             .fetch();
     }
+
+    @Override
+    public Optional<Cidade> buscarCidadeDistrito(String uf, String nomeCidade, String nomeDistrito) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(cidade)
+            .from(cidade)
+            .where(cidade.nome.eq(nomeDistrito)
+                .and(cidade.uf.uf.eq(uf))
+                .and(cidade.fkCidade.eq(
+                    select(cidade.id)
+                    .from(cidade)
+                    .where(cidade.nome.eq(nomeCidade))
+                )))
+            .fetchFirst());
+    }
 }

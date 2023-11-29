@@ -31,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -195,17 +196,36 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1027).nome("RS").build()).build(),
+                    .regional(Regional.builder().id(1027).nome("RPS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1027).nome("RS").build()).build()));
+                    .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
         when(regionalService.getNovasRegionaisIds())
             .thenReturn(listaNovasRegionaisIds());
         assertThat(service.getAllByRegionalId(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RS"));
+                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"),
+                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RPS"));
+    }
+
+    @Test
+    public void getCidadeDistrito_deveRetornarCidade_quandoExistir() {
+        var cidadeDistrito = Cidade.builder().id(30848).nome("SAO LUIZ").fkCidade(5578)
+            .uf(Uf.builder().id(1).nome("PARANA").uf("PR").build())
+            .regional(Regional.builder().id(1027).nome("RS").build()).build();
+        when(cidadeRepository.buscarCidadeDistrito(anyString(), anyString(), anyString()))
+            .thenReturn(Optional.of(cidadeDistrito));
+        assertThat(service.getCidadeDistrito("PR", "LONDRINA", "SAO LUIZ"))
+            .extracting("id", "nome", "uf.id", "uf.nome")
+            .containsExactly(30848, "SAO LUIZ", 1, "PARANA");
+    }
+
+    @Test
+    public void getCidadeDistrito_deveLancarException_quandoNaoExistirCidadeDistrito() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.getCidadeDistrito("PR", "LONDRINA", "TESTE"))
+            .withMessage("Cidade não encontrada.");
     }
 
     @Test
