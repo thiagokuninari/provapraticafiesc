@@ -27,8 +27,12 @@ public class ConsultaCepService {
     public CidadeUfResponse consultarCep(String cep) {
         try {
             var cepResponse = consultaCepClient.consultarCep(StringUtil.getOnlyNumbers(cep));
-            return CidadeUfResponse.of(
+            var response =  CidadeUfResponse.of(
                 cidadeService.findByUfNomeAndCidadeNome(cepResponse.getUf(), removerAcentuacao(cepResponse.getCidade())));
+            response.setBairro(cepResponse.getBairro());
+            response.setLogradouro(cepResponse.getNomeCompleto());
+            response.setCepUnicoPorCidade(cepResponse.getCepUnicoPorCidade());
+            return response;
         } catch (Exception exception) {
             throw new IntegracaoException(exception, ConsultaCepService.class.getName(), EErrors.ERRO_OBTER_CEP);
         }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,9 @@ public class CidadeUfResponse {
     private Integer ufId;
     private Integer fkCidade;
     private String cidadePai;
+    private String logradouro;
+    private String bairro;
+    private Eboolean cepUnicoPorCidade;
 
     public static CidadeUfResponse of(Cidade cidade) {
         return CidadeUfResponse.builder()
