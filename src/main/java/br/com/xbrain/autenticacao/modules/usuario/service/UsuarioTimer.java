@@ -43,7 +43,7 @@ public class UsuarioTimer {
     @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
-        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ECodigoObservacao.IFC.getObservacao());
+        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ECodigoObservacao.IFA.getObservacao());
         log.info("Usuários inativados: {}", usuariosInativados);
     }
 

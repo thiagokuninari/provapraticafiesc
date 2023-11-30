@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ECodigoObservacao {
 
-    IFC("Usuário inativado por falta de acesso"),
+    IFA("Usuário inativado por falta de acesso"),
     ITL("Usuário inativo devido ao erro excessivo de senha");
 
     private final String observacao;

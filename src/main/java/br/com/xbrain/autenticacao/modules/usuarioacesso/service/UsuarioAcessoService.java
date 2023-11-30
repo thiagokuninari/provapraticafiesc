@@ -139,7 +139,7 @@ public class UsuarioAcessoService {
 
     private void inativarColaboradorPol(UsuarioDto usuario) {
         if (usuario.getEmail() != null) {
-            var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFC);
+            var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFA);
             inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
