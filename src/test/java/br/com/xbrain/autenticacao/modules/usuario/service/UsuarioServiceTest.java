@@ -28,6 +28,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -87,6 +88,7 @@ import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
@@ -414,6 +416,23 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void ativar_deveAlterarUsuario_quandoOrganizacaoEmpresaAtiva() {
+        var usuario = umUsuarioCompleto(ESituacao.I, BACKOFFICE_GERENTE, 120,
+            BACKOFFICE, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().id(100).situacao(ESituacaoOrganizacaoEmpresa.A).build());
+
+        doReturn(Optional.of(usuario))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        usuarioService.ativar(umUsuarioAtivacaoDto());
+    }
+
+    @Test
     public void ativar_deveRetornarExcecao_quandoSubcanalCoordenadorDiferente() {
         doReturn(Optional.of(umUsuarioD2DComCoordenador(PAP)))
             .when(usuarioRepository)
@@ -457,6 +476,25 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDtoD2d()))
             .withMessage("Não foi encontrado o subcanal do " + umUsuarioD2DSemSubcanal(null).getCargo().getCodigo());
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoOrganizacaoEmpresaInativa() {
+        var usuario = umUsuarioCompleto(ESituacao.I, BACKOFFICE_GERENTE, 120,
+            BACKOFFICE, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().id(100).situacao(ESituacaoOrganizacaoEmpresa.I).build());
+
+        doReturn(Optional.of(usuario))
+            .when(usuarioRepository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
+            .withMessage("O usuário não pode ser ativado pois o fornecedor está inativo.");
     }
 
     @Test
