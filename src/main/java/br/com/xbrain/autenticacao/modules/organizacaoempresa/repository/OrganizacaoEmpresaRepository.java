@@ -18,6 +18,8 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     List<OrganizacaoEmpresa> findAllByNivelId(Integer nivelId);
 
+    List<OrganizacaoEmpresa> findAll();
+
     List<OrganizacaoEmpresa> findAll(Predicate predicate);
 
     boolean existsByNomeAndNivelId(String nome, Integer nivelId);

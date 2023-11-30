@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
@@ -572,6 +573,24 @@ public class OrganizacaoEmpresaServiceTest {
 
         verify(organizacaoEmpresaRepository, never())
             .existsByDescricaoAndSituacao(eq(null), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void findAll_deveRetornarListaOrganizacaoEmpresaResponse_quandoSolicitado() {
+        doReturn(umaListaOrganizacoesEmpresa())
+            .when(organizacaoEmpresaRepository)
+            .findAll();
+
+        assertThat(service.findAll())
+            .extracting(OrganizacaoEmpresaResponse::getId, OrganizacaoEmpresaResponse::getNome,
+                OrganizacaoEmpresaResponse::getDescricao, OrganizacaoEmpresaResponse::getCodigo)
+            .containsExactly(
+                tuple(1, "Organizacao1", "Organizacao 1", "CODIGO"),
+                tuple(2, "Organizacao2", "Organizacao 2", "CODIGO2"),
+                tuple(3, "Organizacao3", "Organizacao 3", "CODIGO3")
+            );
+
+        verify(organizacaoEmpresaRepository).findAll();
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {

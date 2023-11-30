@@ -57,6 +57,13 @@ public class OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.findAll(filtros.toPredicate().build(), pageRequest);
     }
 
+    public List<OrganizacaoEmpresaResponse> findAll() {
+        return organizacaoEmpresaRepository.findAll()
+            .stream()
+            .map(OrganizacaoEmpresaResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public OrganizacaoEmpresaResponse save(OrganizacaoEmpresaRequest request) {
         var nivel = findNivelById(request.getNivelId());
 

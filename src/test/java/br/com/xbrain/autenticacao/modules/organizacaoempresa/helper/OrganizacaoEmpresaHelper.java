@@ -68,10 +68,16 @@ public class OrganizacaoEmpresaHelper {
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
+                .nome("MOTIVA")
+                .codigo("MO1234")
+                .descricao("MOTIVA")
                 .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
+                .nome("BCC")
+                .codigo("BCC")
+                .descricao("BRASIL CENTER")
                 .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build());
     }

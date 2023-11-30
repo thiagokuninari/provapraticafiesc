@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaListaOrganizacaoEmpresaResponse;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -349,4 +350,37 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findAll_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(ORGANIZACOES_API + "/obter-todas"))
+            .andExpect(status().isUnauthorized());
+
+        verify(service, never()).getAll(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void findAll_deveRetornarListaDeOrganizacaoEmpresaResponse_quandoSolicitado() {
+        doReturn(umaListaOrganizacaoEmpresaResponse())
+            .when(service)
+            .findAll();
+
+        mockMvc.perform(get(ORGANIZACOES_API + "/obter-todas")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("MOTIVA")))
+            .andExpect(jsonPath("$[0].codigo", is("MO1234")))
+            .andExpect(jsonPath("$[0].descricao", is("MOTIVA")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("BCC")))
+            .andExpect(jsonPath("$[1].codigo", is("BCC")))
+            .andExpect(jsonPath("$[1].descricao", is("BRASIL CENTER")));
+
+        verify(service).findAll();
+    }
 }

@@ -81,4 +81,9 @@ public class OrganizacaoEmpresaController {
     public boolean verificarOrganizacaoAtiva(@PathVariable String organizacao) {
         return service.isOrganizacaoAtiva(organizacao);
     }
+
+    @GetMapping("obter-todas")
+    public List<OrganizacaoEmpresaResponse> findAll() {
+        return service.findAll();
+    }
 }
