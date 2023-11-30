@@ -5,7 +5,10 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -27,6 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Service
 @RequiredArgsConstructor
 public class OrganizacaoEmpresaService {
@@ -42,6 +47,8 @@ public class OrganizacaoEmpresaService {
         new ValidacaoException("Organização já está inativa.");
     private static final ValidacaoException EX_CANAL_VAZIO =
         new ValidacaoException("Esse nível requer um canal válido.");
+    public static final ValidacaoException EX_ORGANIZACAO_CODIGO_CADASTRADA =
+        new ValidacaoException("Organização já cadastrada com o mesmo código nesse nível.");
 
     private final OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
     private final OrganizacaoEmpresaHistoricoService historicoService;
@@ -78,8 +85,14 @@ public class OrganizacaoEmpresaService {
     }
 
     private void validarCodigoPorNivelId(String codigo, Integer nivelId) {
-        if (StringUtils.isNotBlank(codigo) && organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivelId)) {
-            throw new ValidacaoException("Organização já cadastrada com o código nesse nível.");
+        if (isNotBlank(codigo) && organizacaoEmpresaRepository.existsByCodigoAndNivelId(codigo, nivelId)) {
+            throw EX_ORGANIZACAO_CODIGO_CADASTRADA;
+        }
+    }
+
+    private void validarCodigoPorNivelId(String codigo, Integer nivelId, Integer id) {
+        if (isNotBlank(codigo) && organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(codigo, nivelId, id)) {
+            throw EX_ORGANIZACAO_CODIGO_CADASTRADA;
         }
     }
 
@@ -114,6 +127,7 @@ public class OrganizacaoEmpresaService {
         var organizacaoEmpresa = findById(id);
 
         validarNomeEDescricaoParaUpdate(request.getNome(), request.getDescricao(), request.getNivelId(), id);
+        validarCodigoPorNivelId(request.getCodigo(), request.getNivelId(), id);
 
         historicoService.salvarHistorico(organizacaoEmpresa,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
@@ -153,7 +167,7 @@ public class OrganizacaoEmpresaService {
     }
 
     private void validarNivelBackoffice(CodigoNivel nivel, String codigo) {
-        if (CodigoNivel.BACKOFFICE == nivel && StringUtils.isBlank(codigo)) {
+        if (nivel == CodigoNivel.BACKOFFICE && StringUtils.isBlank(codigo)) {
             throw new ValidacaoException("O campo código é obrigatório para o nível Backoffice.");
         }
     }

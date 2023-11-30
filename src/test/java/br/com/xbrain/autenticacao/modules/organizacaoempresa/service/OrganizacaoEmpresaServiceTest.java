@@ -40,8 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -128,7 +127,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCodigoEMesmoNivel() {
+    public void save_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComAMesmoDescricaoEMesmoNivel() {
         when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(organizacaoEmpresaRepository.existsByDescricaoAndNivelId("Organizacao 1", 1)).thenReturn(true);
 
@@ -196,6 +195,35 @@ public class OrganizacaoEmpresaServiceTest {
             .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
             .withMessage("Esse nível requer um canal válido.");
 
+        verify(nivelRepository).findById(1);
+    }
+
+    @Test
+    public void save_deveLancarValidacaoException_quandoOrganizacaoEmpresaNivelBackofficeNaoTiverCodigo() {
+        when(nivelRepository.findById(1))
+            .thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
+
+        var request = umaOrganizacaoEmpresaRequest();
+        request.setCodigo(null);
+        assertThatThrownBy(() -> service.save(request))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("O campo código é obrigatório para o nível Backoffice.");
+
+        verify(nivelRepository).findById(1);
+    }
+
+    @Test
+    public void save_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComMesmoCodigoEMesmoNivel() {
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelId("MO1234", 1)).thenReturn(true);
+
+        var request = umaOrganizacaoEmpresaRequest();
+        request.setCodigo("MO1234");
+        assertThatThrownBy(() -> service.save(request))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Organização já cadastrada com o mesmo código nesse nível.");
+
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelId("MO1234", 1);
         verify(nivelRepository).findById(1);
     }
 
@@ -361,6 +389,25 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).findById(1);
         verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(organizacaoEmpresaRequest.getNome(), 1, 1);
         verify(organizacaoEmpresaRepository, never()).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_deveLancarValidacaoException_quandoExistirUmaOrganizacaoEmpresaComMesmoCodigoEMesmoNivel() {
+        doReturn(true)
+            .when(organizacaoEmpresaRepository)
+            .existsByCodigoAndNivelIdAndIdNot("MO1234", 1, 1);
+
+        doReturn(Optional.of(umaOrganizacaoEmpresaBackoffice(1, "Organizacao 1", "MO1234")))
+            .when(organizacaoEmpresaRepository).findById(1);
+
+        var request = umaOrganizacaoEmpresaRequest();
+        request.setCodigo("MO1234");
+        assertThatThrownBy(() -> service.update(1, request))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Organização já cadastrada com o mesmo código nesse nível.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot("MO1234", 1, 1);
     }
 
     @Test
