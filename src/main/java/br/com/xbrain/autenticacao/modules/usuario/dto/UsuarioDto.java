@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanalNetSales;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -133,7 +132,6 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
-        usuario.setCanalNetSales(getCanalNetSales(usuarioDto));
         return usuario;
     }
 
@@ -158,7 +156,6 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-        usuarioDto.setCanalNetSales(usuario.getCodigoCanalNetSales());
         return usuarioDto;
     }
 
@@ -182,10 +179,6 @@ public class UsuarioDto implements Serializable {
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
         return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
-    }
-
-    private static ECanalNetSales getCanalNetSales(UsuarioDto usuarioDto) {
-        return usuarioDto.getCanalNetSales() != null ? ECanalNetSales.valueOf(usuarioDto.getCanalNetSales()) : null;
     }
 
     public boolean hasCanalD2dProprio() {

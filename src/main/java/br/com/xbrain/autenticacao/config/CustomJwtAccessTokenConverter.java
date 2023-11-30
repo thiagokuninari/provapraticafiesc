@@ -163,7 +163,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
         token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
         token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
-        token.getAdditionalInformation().put("canalNetSales", getCanalNetSales(usuario));
+        token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSales());
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
 
@@ -261,10 +261,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             default:
                 return Sets.newHashSet();
         }
-    }
-
-    private String getCanalNetSales(Usuario usuario) {
-        return usuario.getCanalNetSales() != null ? usuario.getCanalNetSales().toString() : "";
     }
 
     @Override

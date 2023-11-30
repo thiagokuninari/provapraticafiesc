@@ -80,7 +80,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCodigoCanalNetSales();
+        this.canalNetSales = usuario.getCanalNetSales();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -110,7 +110,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCodigoCanalNetSales();
+        this.canalNetSales = usuario.getCanalNetSales();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
