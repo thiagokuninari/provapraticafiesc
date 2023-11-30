@@ -159,6 +159,8 @@ public class UsuarioService {
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR);
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser ativado pois o fornecedor está inativo.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -1607,6 +1609,9 @@ public class UsuarioService {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         } else if (!isUsuarioAdmin && usuarioInativoPorMuitasSimulacoes) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
+        } else if (!ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa())
+            && !usuario.getOrganizacaoEmpresa().isAtivo()) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
         }
 
         repository.save(usuario);
