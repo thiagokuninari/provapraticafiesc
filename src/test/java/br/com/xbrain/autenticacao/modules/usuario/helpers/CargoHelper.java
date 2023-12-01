@@ -24,6 +24,20 @@ public class CargoHelper {
             .build();
     }
 
+    public static Cargo umCargo(Integer id, String nome, CodigoCargo codigoCargo) {
+        return Cargo.builder()
+            .id(id)
+            .nome(nome)
+            .codigo(codigoCargo)
+            .situacao(ESituacao.A)
+            .nivel(Nivel
+                .builder()
+                .id(1)
+                .build()
+            )
+            .build();
+    }
+
     public static Cargo umCargoVendedor() {
         return Cargo.builder()
             .nivel(Nivel.builder()
@@ -261,19 +275,5 @@ public class CargoHelper {
             umCargo(7, "Executivo Hunter", CodigoCargo.EXECUTIVO_HUNTER),
             umCargo(10, "Gerente", CodigoCargo.GERENTE_OPERACAO)
         );
-    }
-
-    public static Cargo umCargo(Integer id, String nome, CodigoCargo codigoCargo) {
-        return Cargo.builder()
-            .id(id)
-            .nome(nome)
-            .codigo(codigoCargo)
-            .situacao(ESituacao.A)
-            .nivel(Nivel
-                .builder()
-                .id(1)
-                .build()
-            )
-            .build();
     }
 }
