@@ -1014,10 +1014,17 @@ public class UsuarioService {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
         validarCanalD2dProprioESubCanais(usuario);
+        validarOrganizacaoEmpresaReceptivoInternet(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
         validarPadraoEmail(usuario.getEmail());
+    }
+
+    private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
+        if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
+            validarOrganizacaoEmpresaInativa(usuario);
+        }
     }
 
     private void validarPadraoEmail(String email) {
