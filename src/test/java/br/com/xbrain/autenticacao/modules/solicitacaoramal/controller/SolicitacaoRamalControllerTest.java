@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @Import(OAuth2ResourceConfig.class)
 @WebMvcTest(controllers = SolicitacaoRamalController.class)
-public class SolicitacaoRamalControllerTest {
+public class    SolicitacaoRamalControllerTest {
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";

@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,11 +105,52 @@ public class AgenteAutorizadoNovoServiceTest {
                 tuple("2", "00.000.0000/0001-20", "OUTRO TESTE AA", "CONTRATO ATIVO"));
     }
 
+    @Test
+    public void getUsuariosAaAtivoSemVendedoresD2D_integracaoException_seApiIndisponivel() {
+        when(client.getUsuariosAaAtivoSemVendedoresD2D(eq(1)))
+            .thenThrow(new RetryableException("Connection refused (Connection refused) executing "
+                + "GET http://localhost:8300/api/agente-autorizado/api/usuarios-sem-d2d/{1}", new Date()));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosAaAtivoSemVendedoresD2D(1))
+            .withMessage("#012 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void getUsuariosAaAtivoSemVendedoresD2D_integracaoException_seIdNaoInformado() {
+        when(client.getUsuariosAaAtivoSemVendedoresD2D(eq(null)))
+            .thenThrow(new FeignBadResponseWrapper(400, null,
+                "[{\"message\":\"O campo usuarioId é obrigatório.\",\"field\":usuarioId]"));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosAaAtivoSemVendedoresD2D(null));
+    }
+
+    @Test
+    public void getUsuariosAaAtivoSemVendedoresD2D_retornaListaDeUsuarios_quandoSolicitado() {
+        when(client.getUsuariosAaAtivoSemVendedoresD2D(eq(1)))
+            .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse()));
+
+        assertThat(service.getUsuariosAaAtivoSemVendedoresD2D(1))
+            .extracting("id", "nome", "agenteAutorizadoId", "email", "equipeVendaId")
+            .containsExactly(tuple(1, "TESTE", 1, "TESTE@XBRAIN.COM.BR", 1));
+    }
+
     private AgenteAutorizadoResponse umAgenteAutorizadoResponse() {
         return AgenteAutorizadoResponse.builder()
             .id("10")
             .razaoSocial("AA TESTE")
             .cnpj("78.620.184/0001-80")
+            .build();
+    }
+
+    private UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse() {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(1)
+            .nome("TESTE")
+            .agenteAutorizadoId(1)
+            .email("TESTE@XBRAIN.COM.BR")
+            .equipeVendaId(1)
             .build();
     }
 }

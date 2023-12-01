@@ -244,4 +244,17 @@ public class AgenteAutorizadoNovoService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoSemVendedoresD2D(Integer aaId) {
+        try {
+            return client.getUsuariosAaAtivoSemVendedoresD2D(aaId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
 }

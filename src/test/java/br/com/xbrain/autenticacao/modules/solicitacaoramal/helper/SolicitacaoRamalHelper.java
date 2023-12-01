@@ -100,4 +100,18 @@ public class SolicitacaoRamalHelper {
             .situacao(ESituacaoSolicitacao.ENVIADO)
             .build();
     }
+
+    public static List<UsuarioAgenteAutorizadoResponse> umaListaUsuarioAgenteAutorizadoResponse() {
+        return List.of(umUsuarioAgenteAutorizadoResponse(1), umUsuarioAgenteAutorizadoResponse(2));
+    }
+
+    public static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(1)
+            .nome("TESTE")
+            .agenteAutorizadoId(11111)
+            .email("TESTE@XBRAIN.COM.BR")
+            .equipeVendaId(1)
+            .build();
+    }
 }

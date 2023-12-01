@@ -77,4 +77,13 @@ public class SolicitacaoRamalRepositoryTest {
         return filtros;
     }
 
+    @Test
+    public void findAllByAaId_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(3334).size());
+    }
+
+    @Test
+    public void findAllByAaId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(2).size());
+    }
 }
