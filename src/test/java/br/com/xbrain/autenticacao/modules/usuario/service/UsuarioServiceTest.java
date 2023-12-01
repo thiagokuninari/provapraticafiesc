@@ -30,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
@@ -53,7 +54,6 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -197,6 +197,8 @@ public class UsuarioServiceTest {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Mock
     private CidadeService cidadeService;
+    @Mock
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1104,6 +1106,13 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
 
         usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice());
 
@@ -1115,18 +1124,25 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
-        var usaurio = umUsuarioBackoffice();
+        var usuario = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
-        Assertions.assertThat(usaurio)
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        assertThat(usuario)
             .extracting("cpf")
             .containsExactly("097.238.645-92");
 
-        usuarioService.salvarUsuarioBackoffice(usaurio);
+        usuarioService.salvarUsuarioBackoffice(usuario);
 
         verify(usuarioRepository, times(1)).save(usuarioCaptor.capture());
-        Assertions.assertThat(usuarioCaptor.getValue())
+        assertThat(usuarioCaptor.getValue())
             .extracting("cpf")
             .containsExactly("09723864592");
     }
@@ -1138,7 +1154,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("CPF já cadastrado.");
 
@@ -1155,7 +1171,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("Email já cadastrado.");
 
@@ -1182,6 +1198,23 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(usuario))
             .withMessage("Usuário sem permissão para o cargo com os canais.");
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_validacaoException_quandoFornecedorInativo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -2515,7 +2548,7 @@ public class UsuarioServiceTest {
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuarioCadastro.setSubCanais(Set.of(new SubCanal(1)));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuarioCadastro))
             .withMessage("Usuário já está cadastrado em outra equipe");
     }
@@ -2732,7 +2765,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
+        assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
             .doesNotThrowAnyException();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticadoId();
@@ -2748,7 +2781,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> usuarioService.save(umUsuarioMso()))
+        assertThatCode(() -> usuarioService.save(umUsuarioMso()))
             .doesNotThrowAnyException();
 
         verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));

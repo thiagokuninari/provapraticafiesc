@@ -29,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -161,6 +162,8 @@ public class UsuarioService {
         INTERNET_VENDEDOR);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser ativado pois o fornecedor está inativo.";
+    private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser salvo pois o fornecedor está inativo.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -255,6 +258,9 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Lazy
+    @Autowired
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -747,12 +753,22 @@ public class UsuarioService {
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
+        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
+    }
+
+    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+        if (usuario.getOrganizacaoEmpresa() != null) {
+            var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
+            if (!organizacaoEmpresa.isAtivo()) {
+                throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+            }
+        }
     }
 
     private void configurarCadastro(Usuario usuario) {
