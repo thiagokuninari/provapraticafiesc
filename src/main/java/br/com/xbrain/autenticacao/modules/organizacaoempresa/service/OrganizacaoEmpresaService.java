@@ -39,6 +39,8 @@ public class OrganizacaoEmpresaService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
     private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
+    public static final NotFoundException EX_ORGANIZACAO_NAO_ENCONTRADA =
+        new NotFoundException("Organização não encontrada.");
     private static final ValidacaoException EX_ORGANIZACAO_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo nome ou descrição nesse nível.");
     private static final ValidacaoException EX_ORGANIZACAO_ATIVA =
@@ -175,6 +177,13 @@ public class OrganizacaoEmpresaService {
     public Nivel findNivelById(Integer id) {
         return nivelRepository.findById(id)
             .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
+    }
+
+    public OrganizacaoEmpresaResponse findByNome(String nome) {
+        var organiazcao = organizacaoEmpresaRepository.findByNome(nome)
+            .orElseThrow(() -> EX_ORGANIZACAO_NAO_ENCONTRADA);
+
+        return OrganizacaoEmpresaResponse.of(organiazcao);
     }
 
     public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
