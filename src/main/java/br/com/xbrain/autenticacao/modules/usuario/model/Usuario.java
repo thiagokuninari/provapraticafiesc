@@ -104,6 +104,9 @@ public class Usuario {
     @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
     private String codigoEquipeVendaNetSales;
 
+    @Column(name = "CANAL_NETSALES")
+    private String canalNetSales;
+
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
 

@@ -63,6 +63,7 @@ public class UsuarioDto implements Serializable {
     private String nomeEquipeVendaNetSales;
     @Size(max = 120)
     private String codigoEquipeVendaNetSales;
+    private String canalNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
@@ -131,7 +132,6 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
-
         return usuario;
     }
 
@@ -156,7 +156,6 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-
         return usuarioDto;
     }
 

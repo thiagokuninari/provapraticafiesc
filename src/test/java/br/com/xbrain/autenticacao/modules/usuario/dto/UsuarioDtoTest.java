@@ -209,6 +209,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -410,6 +411,7 @@ public class UsuarioDtoTest {
             .tiposFeeder(Set.of())
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -430,6 +432,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -485,6 +488,7 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .cargo(Cargo
                 .builder()
                 .id(idCargo)
@@ -612,6 +616,7 @@ public class UsuarioDtoTest {
             .hierarquiasId(null)
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
+            .canalNetSales("D2D_CLARO_PESSOAL")
             .build();
     }
 
