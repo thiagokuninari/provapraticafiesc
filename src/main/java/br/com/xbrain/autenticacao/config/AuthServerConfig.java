@@ -42,6 +42,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
+import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 
 @Configuration
 @EnableAuthorizationServer
@@ -170,6 +171,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String bloqueioLigacaoApiClient;
     @Value("${app-config.oauth-clients.bloqueio-ligacao-api.secret}")
     private String bloqueioLigacaoApiSecret;
+    @Value("${app-config.oauth-clients.quality-call-api.client}")
+    private String qualityCallApiClient;
+    @Value("${app-config.oauth-clients.quality-call-api.secret}")
+    private String qualityCallApiSecret;
+
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -356,6 +362,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(bloqueioLigacaoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(BLOQUEIO_LIGACAO_API.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(qualityCallApiClient)
+            .secret(qualityCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(QUALITY_CALL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

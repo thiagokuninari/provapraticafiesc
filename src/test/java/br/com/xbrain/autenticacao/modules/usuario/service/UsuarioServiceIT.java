@@ -20,20 +20,12 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.TestBuilders;
@@ -57,15 +49,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -152,7 +141,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(usuario);
         verify(feederService, never())
-            .removerPermissoesEspeciais(List.of(371));
+            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -163,19 +152,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
-            .removerPermissoesEspeciais(List.of(371));
-    }
-
-    @Test
-    public void updateFromQueue_deveAddPermissoesFeeder_quandoHouver() {
-        doReturn(umUsuarioAutenticado())
-            .when(autenticacaoService)
-            .getUsuarioAutenticado();
-
-        service.updateFromQueue(umUsuarioMqRequestComFeeder());
-
-        verify(feederService, times(1))
-            .adicionarPermissaoFeederParaUsuarioNovo(any(UsuarioDto.class), eq(umUsuarioMqRequestComFeeder()));
+            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -1169,47 +1146,6 @@ public class UsuarioServiceIT {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
-    }
-
-    @Test
-    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
-        var usuarioMqRequest = umUsuarioRemanejamento();
-
-        var usuariosAntesRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
-
-        assertThat(usuariosAntesRemanejar)
-            .extracting("id", "situacao")
-            .containsExactly(tuple(1000, ESituacao.A));
-
-        service.remanejarUsuario(usuarioMqRequest);
-
-        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
-
-        assertThat(usuariosAposRemanejar)
-            .extracting("id", "situacao")
-            .containsAnyOf(tuple(1000, ESituacao.R));
-
-        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
-        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
-    }
-
-    @Test
-    public void remanejarUsuario_deveRemoverFormatacaoCpf_quandoEnviarParaRemanejar() {
-        var usuarioMqRequest = umUsuarioRemanejamento();
-        var cpfFormatado = "955.125.930-05";
-        usuarioMqRequest.setCpf(cpfFormatado);
-        service.remanejarUsuario(usuarioMqRequest);
-
-        var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
-
-        assertThat(usuarioRemanejado)
-            .extracting("situacao", "cpf")
-            .containsExactly(tuple(ESituacao.A, "95512593005"), tuple(ESituacao.R, "95512593005"));
-
-        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
-        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test

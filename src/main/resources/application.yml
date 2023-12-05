@@ -238,6 +238,9 @@ app-config:
     bloqueio-ligacao-api:
       client: bloqueio-ligacao-api
       secret: bl0qu310l1g4c404p1
+    quality-call-api:
+      client: quality-call-api
+      secret: qu4l1tyc4ll4p1
 
   services:
     autenticacao:

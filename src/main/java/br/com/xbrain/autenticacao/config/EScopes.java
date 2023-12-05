@@ -28,7 +28,8 @@ public enum EScopes {
     CHATBOT("chatbot-api"),
     SOLICITACAO_PAP("solicitacao-pap"),
     CLARO_INDICO("claro-indico-api"),
-    BLOQUEIO_LIGACAO_API("bloqueio-ligacao-api");
+    BLOQUEIO_LIGACAO_API("bloqueio-ligacao-api"),
+    QUALITY_CALL("quality-call-api");
 
     @Getter
     private String scope;

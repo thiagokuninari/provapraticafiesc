@@ -15,10 +15,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.doisSubCanal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -388,6 +385,16 @@ public class UsuarioTest {
     @Test
     public void isCargoImportadorCargas_deveRetornarFalse_seUsuarioNaoForCargoLojaFuturo() {
         assertThat(usuarioAtivo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, FEEDER).isCargoImportadorCargas()).isFalse();
+    }
+
+    @Test
+    public void removerCaracteresDoCpf_deveRemoverFormatacao_quandoChamado() {
+        var usuario = umUsuarioConvertFrom();
+        usuario.setCpf("123.123.123-12");
+
+        usuario.removerCaracteresDoCpf();
+
+        assertThat(usuario.getCpf()).isEqualTo("12312312312");
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {
