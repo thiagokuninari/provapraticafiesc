@@ -18,8 +18,8 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
@@ -37,6 +37,7 @@ import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FeriadoService {
 
     private static final int MAX_RESULTADO = 1000;
@@ -50,22 +51,17 @@ public class FeriadoService {
     private static final ValidacaoException EX_FERIADO_JA_CADASTRADO =
         new ValidacaoException("Já existe feriado com os mesmos dados.");
 
+
+    private final CallService callService;
+    private final CidadeService cidadeService;
+    private final DataHoraAtual dataHoraAtual;
+    private final FeriadoRepository repository;
+    private final MailingService mailingService;
+    private final FeriadoHistoricoService historicoService;
+    private final AutenticacaoService autenticacaoService;
+
     @Value("${app-config.upload-async}")
     private boolean uploadAsync;
-    @Autowired
-    private FeriadoRepository repository;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
-    @Autowired
-    private CidadeService cidadeService;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private FeriadoHistoricoService historicoService;
-    @Autowired
-    private CallService callService;
-    @Autowired
-    private MailingService mailingService;
 
     public boolean consulta() {
         return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(),
@@ -183,6 +179,27 @@ public class FeriadoService {
         return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    @CacheEvict(
+        cacheManager = "concurrentCacheManager",
+        cacheNames = FERIADOS_DATA_CACHE_NAME,
+        allEntries = true)
+    public void flushCacheFeriados() {
+        loadFeriados();
+        log.info("Flush Cache Feriados");
+    }
+
+    public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
+        return repository.buscarTotalDeFeriadosPorMesAno();
+    }
+
+    public void flushCacheFeriadoTelefonia() {
+        callService.cleanCacheFeriadosTelefonia();
+    }
+
+    public void flushCacheFeriadoMailing() {
+        mailingService.flushCacheFeriadosMailing();
+    }
+
     private void salvarFeriadoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
             var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
@@ -199,7 +216,7 @@ public class FeriadoService {
                     .runAsync(() -> salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai))
                     .exceptionally(ex -> {
                         log.error("Erro ao salvar o feriado estadual para as cidades do estado, feriadoPaiId: "
-                            + feriadoPai.getId(),
+                                + feriadoPai.getId(),
                             ex);
                         return null;
                     });
@@ -261,38 +278,17 @@ public class FeriadoService {
 
     private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
         repository.findByPredicate(
-            new FeriadoPredicate()
-                .comNome(request.getNome())
-                .comTipoFeriado(request.getTipoFeriado())
-                .comEstado(request.getEstadoId())
-                .comCidade(request.getCidadeId(), request.getEstadoId())
-                .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
-                .excetoExcluidos()
-                .excetoFeriadosFilhos()
-                .build())
+                new FeriadoPredicate()
+                    .comNome(request.getNome())
+                    .comTipoFeriado(request.getTipoFeriado())
+                    .comEstado(request.getEstadoId())
+                    .comCidade(request.getCidadeId(), request.getEstadoId())
+                    .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
+                    .excetoExcluidos()
+                    .excetoFeriadosFilhos()
+                    .build())
             .ifPresent(feriado -> {
                 throw EX_FERIADO_JA_CADASTRADO;
             });
-    }
-
-    @CacheEvict(
-        cacheManager = "concurrentCacheManager",
-        cacheNames = FERIADOS_DATA_CACHE_NAME,
-        allEntries = true)
-    public void flushCacheFeriados() {
-        loadFeriados();
-        log.info("Flush Cache Feriados");
-    }
-
-    public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
-        return repository.buscarTotalDeFeriadosPorMesAno();
-    }
-
-    public void flushCacheFeriadoTelefonia() {
-        callService.cleanCacheFeriadosTelefonia();
-    }
-
-    public void flushCacheFeriadoMailing() {
-        mailingService.flushCacheFeriadosMailing();
     }
 }

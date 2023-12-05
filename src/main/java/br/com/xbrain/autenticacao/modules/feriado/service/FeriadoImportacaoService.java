@@ -14,8 +14,8 @@ import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,18 +28,15 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.feriado.util.FeriadoPlanilhaLayoutUtil.*;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class FeriadoImportacaoService {
 
-    @Autowired
-    private UfRepository ufRepository;
-    @Autowired
-    private CidadeService cidadeService;
-    @Autowired
-    private FeriadoRepository feriadoRepository;
-    @Autowired
-    private FeriadoService feriadoService;
+    private final UfRepository ufRepository;
+    private final CidadeService cidadeService;
+    private final FeriadoService feriadoService;
+    private final FeriadoRepository feriadoRepository;
 
     private static final ValidacaoException EX_ARQUIVO_VAZIO = new ValidacaoException("O arquivo não pode ser vazio.");
     private static final ValidacaoException EX_CABECALHO_DIFERENTE =
@@ -64,6 +61,18 @@ public class FeriadoImportacaoService {
         feriadoService.flushCacheFeriadoTelefonia();
         feriadoService.flushCacheFeriadoMailing();
         return linhasProcessados;
+    }
+
+    public FeriadoImportacaoResponse importarFeriado(String[] linha, Integer anoReferencia) {
+        var feriadoParaImportar = gerarFeriadoImportacao(linha);
+        validarFeriado(feriadoParaImportar, anoReferencia);
+
+        if (feriadoParaImportar.getMotivoNaoImportacao().isEmpty()) {
+            var feriadoImportado = feriadoService.salvarFeriadoImportado(feriadoParaImportar);
+            return FeriadoImportacaoResponse.of(feriadoImportado);
+        } else {
+            return FeriadoImportacaoResponse.of(feriadoParaImportar);
+        }
     }
 
     private void validarCabecalho(String cabecalho) {
@@ -107,18 +116,6 @@ public class FeriadoImportacaoService {
             .collect(Collectors.toList());
     }
 
-    public FeriadoImportacaoResponse importarFeriado(String[] linha, Integer anoReferencia) {
-        var feriadoParaImportar = gerarFeriadoImportacao(linha);
-        validarFeriado(feriadoParaImportar, anoReferencia);
-
-        if (feriadoParaImportar.getMotivoNaoImportacao().isEmpty()) {
-            var feriadoImportado = feriadoService.salvarFeriadoImportado(feriadoParaImportar);
-            return FeriadoImportacaoResponse.of(feriadoImportado);
-        } else {
-            return FeriadoImportacaoResponse.of(feriadoParaImportar);
-        }
-    }
-
     private FeriadoImportacao gerarFeriadoImportacao(String[] linha) {
         var feriadoParaImportar = FeriadoImportacao.builder()
             .nome(linha[ORDEM_COL_NOME].trim())
@@ -133,12 +130,12 @@ public class FeriadoImportacaoService {
     private FeriadoImportacao validarFeriado(FeriadoImportacao feriadoParaImportar, Integer anoReferencia) {
         feriadoParaImportar.setMotivoNaoImportacao(
             Stream.of(
-                validarTipoFeriado(feriadoParaImportar),
-                validarUf(feriadoParaImportar),
-                validarCidade(feriadoParaImportar),
-                validarDataFeriado(feriadoParaImportar, anoReferencia),
-                validarNome(feriadoParaImportar),
-                validarFeriadoExistente(feriadoParaImportar))
+                    validarTipoFeriado(feriadoParaImportar),
+                    validarUf(feriadoParaImportar),
+                    validarCidade(feriadoParaImportar),
+                    validarDataFeriado(feriadoParaImportar, anoReferencia),
+                    validarNome(feriadoParaImportar),
+                    validarFeriadoExistente(feriadoParaImportar))
                 .filter(validacao -> !validacao.isEmpty())
                 .collect(Collectors.toList()));
         return feriadoParaImportar;
@@ -231,16 +228,16 @@ public class FeriadoImportacaoService {
 
     private String validarFeriadoExistente(FeriadoImportacao feriado) {
         return feriadoRepository.findByPredicate(
-            new FeriadoPredicate()
-                .comNome(feriado.getNome())
-                .comTipoFeriado(feriado.getTipoFeriado())
-                .comEstado(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
-                .comCidade(!isEmpty(feriado.getCidade()) ? feriado.getCidade().getId() : null,
-                    !isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
-                .comDataFeriado(feriado.getDataFeriado())
-                .excetoExcluidos()
-                .excetoFeriadosFilhos()
-                .build())
+                new FeriadoPredicate()
+                    .comNome(feriado.getNome())
+                    .comTipoFeriado(feriado.getTipoFeriado())
+                    .comEstado(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
+                    .comCidade(!isEmpty(feriado.getCidade()) ? feriado.getCidade().getId() : null,
+                        !isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
+                    .comDataFeriado(feriado.getDataFeriado())
+                    .excetoExcluidos()
+                    .excetoFeriadosFilhos()
+                    .build())
             .map(feriadoNoBanco -> ERRO_FERIADO_EXISTENTE).orElse(MENSAGEM_VAZIA);
     }
 }

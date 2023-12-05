@@ -23,7 +23,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,24 +43,18 @@ import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicit
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
 @Component
+@RequiredArgsConstructor
 public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
-    @Autowired
-    private SubCanalService subCanalService;
-    @Autowired
-    private SolicitacaoRamalService solicitacaoRamalService;
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private CallService callService;
-    @Autowired
-    private SolicitacaoRamalRepository solicitacaoRamalRepository;
-    @Autowired
-    private SolicitacaoRamalHistoricoService historicoService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
+    private final CallService callService;
+    private final EmailService emailService;
+    private final DataHoraAtual dataHoraAtual;
+    private final SubCanalService subCanalService;
+    private final AutenticacaoService autenticacaoService;
+    private final SolicitacaoRamalService solicitacaoRamalService;
+    private final SolicitacaoRamalHistoricoService historicoService;
+    private final SolicitacaoRamalRepository solicitacaoRamalRepository;
+
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 

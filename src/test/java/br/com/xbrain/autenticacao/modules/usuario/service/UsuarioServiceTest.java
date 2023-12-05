@@ -7,13 +7,9 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -29,7 +25,6 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -91,18 +86,19 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umUsuarioD2DSemSubcanal;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioAgenteAutorizadoResponse;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -195,15 +191,6 @@ public class UsuarioServiceTest {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Mock
     private CidadeService cidadeService;
-
-    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
-        return UsuarioAgenteAutorizadoResponse.builder()
-            .id(id)
-            .nome("FULANO DE TESTE")
-            .email("TESTE@TESTE.COM")
-            .agenteAutorizadoId(aaId)
-            .build();
-    }
 
     @Test
     public void findCidadesByUsuario_deveLancarValidacaoException_quandoNaoEncontrarUsuario() {
@@ -2096,8 +2083,8 @@ public class UsuarioServiceTest {
     @Test
     public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarSelectResponse_quandoSolicitado() {
         when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(
-                BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
-                BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
+            BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+            BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
         assertThat(usuarioService.findOperadoresBkoCentralizadoByFornecedor(5, true))
@@ -2906,10 +2893,10 @@ public class UsuarioServiceTest {
 
         doReturn(usuario)
             .when(autenticacaoService)
-                .getUsuarioAutenticado();
+            .getUsuarioAutenticado();
         doReturn(List.of(umUsuarioVendedorInternet()))
             .when(usuarioRepository)
-                .findAll(predicate, sort);
+            .findAll(predicate, sort);
 
         assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
             .extracting("label", "value")

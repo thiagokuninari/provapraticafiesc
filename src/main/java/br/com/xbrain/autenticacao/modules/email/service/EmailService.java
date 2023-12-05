@@ -95,9 +95,9 @@ public class EmailService {
 
     private boolean validaCampos(List<String> emailsDestino, String empresaAlias) {
         return emailsDestino != null
-                && !emailsDestino.isEmpty()
-                && empresaAlias != null
-                && enviarEmail;
+            && !emailsDestino.isEmpty()
+            && empresaAlias != null
+            && enviarEmail;
     }
 
     @Async

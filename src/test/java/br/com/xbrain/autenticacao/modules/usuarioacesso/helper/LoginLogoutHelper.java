@@ -1,8 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.helper;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import com.google.common.collect.Lists;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +41,36 @@ public class LoginLogoutHelper {
                 LocalDateTime.of(2021, 8, 5, 11, 18, 0),
                 null)
         );
+    }
+
+    public static List<LoginLogoutResponse> umaListaLoginLogoutResponse2() {
+
+        return List.of(
+            umLoginLogoutResponse(
+                1,
+                LocalDateTime.of(2021, 8, 5, 11, 18, 0),
+                LocalDateTime.of(2021, 8, 5, 12, 18, 0)),
+            umLoginLogoutResponse(
+                1,
+                LocalDateTime.of(2021, 7, 5, 11, 18, 0),
+                LocalDateTime.of(2021, 7, 8, 10, 18, 0)),
+            umLoginLogoutResponse(
+                2,
+                LocalDateTime.of(2021, 8, 5, 11, 18, 0),
+                null)
+        );
+    }
+
+    public static Page<LoginLogoutResponse> umaPaginaLoginLogoutResponse() {
+        var listaLoginLogout = umaListaLoginLogoutResponse();
+
+        return new PageImpl<>(listaLoginLogout, new PageRequest(), listaLoginLogout.size());
+    }
+
+    public static MongoosePage<LoginLogoutResponse> umMongoosePageLoginLogoutResponse() {
+        var listaLoginLogout = umaListaLoginLogoutResponse();
+
+        return new MongoosePage<>(listaLoginLogout, (long) listaLoginLogout.size());
     }
 
     public static RelatorioLoginLogoutRequest umRelatorio() {
