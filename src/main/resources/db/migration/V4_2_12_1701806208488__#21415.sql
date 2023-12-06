@@ -16,6 +16,9 @@ BEGIN
         INSERT INTO CARGO (ID, CODIGO, NOME, SITUACAO, FK_NIVEL) VALUES (507, 'APROVADOR_PROJETOS_3', 'Aprovador de Projetos 3', 'A', 2);
         INSERT INTO CARGO (ID, CODIGO, NOME, SITUACAO, FK_NIVEL) VALUES (508, 'APROVADOR_PROJETOS_4', 'Aprovador de Projetos 4', 'A', 2);
 
+        -- Inserir Departamento Briefing para Solicitação de Projetos
+        INSERT INTO DEPARTAMENTO (ID, CODIGO, NOME, SITUACAO, FK_NIVEL) VALUES (72, 'BRIEFING', 'Briefing', 'A', 2);
+
         -- Inserir funcionalidades Cadastrar/Tratar Solicitação de Projetos para Cargo/Departamento/Nivel: MSO
         FOR CD IN (SELECT C.ID AS CARGO_ID, D.ID AS DEPT_ID
                   FROM CARGO C
