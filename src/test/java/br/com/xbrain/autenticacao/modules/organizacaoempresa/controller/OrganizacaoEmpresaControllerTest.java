@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
@@ -382,5 +383,24 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(jsonPath("$[1].descricao", is("BRASIL CENTER")));
 
         verify(service).findAll();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void findByNome_deveRetornarOrganizcaoEmpresaResponse_quandoUsuarioOk() {
+        doReturn(umaOrganizacaoEmpresaResponse())
+            .when(service).findByNome("nomeOrganizacao");
+
+        mockMvc.perform(get(ORGANIZACOES_API + "/por-nome")
+                .param("nome", "nomeOrganizacao")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("Teste AA")))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.codigo", is("codigo")));
+
+        verify(service).findByNome("nomeOrganizacao");
     }
 }
