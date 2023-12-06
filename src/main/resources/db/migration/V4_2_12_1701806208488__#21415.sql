@@ -6,7 +6,7 @@ BEGIN
     IF QTD = 0 THEN
 
         -- Inserir nivel Briefing para Solicitação de Projetos
-        INSERT INTO NIVEL(ID, CODIGO, EXIBIR_CAD_USUARIO, NOME, SITUACAO) VALUES(20, 'BRIEFING', 'V', 'Briefing', 'A');
+        INSERT INTO NIVEL (ID, CODIGO, EXIBIR_CAD_USUARIO, NOME, SITUACAO) VALUES (20, 'BRIEFING', 'V', 'Briefing', 'A');
 
         -- Inserir funcionalidade para Cadastrar Solicitação de Projetos
         INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (10011, 'Cadastrar Solicitação de Projetos', 'BRF_10011', 19);
