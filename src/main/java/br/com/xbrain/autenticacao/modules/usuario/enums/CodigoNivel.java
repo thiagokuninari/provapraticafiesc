@@ -23,5 +23,6 @@ public enum CodigoNivel {
     INTEGRACAO,
     GERADOR_LEADS,
     FEEDER,
-    COBRANCA
+    COBRANCA,
+    BRIEFING
 }
