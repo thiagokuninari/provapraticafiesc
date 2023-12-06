@@ -68,7 +68,7 @@ public class OrganizacaoEmpresaController {
     }
 
     @GetMapping("por-nome")
-    public OrganizacaoEmpresaResponse findByNome(@NotNull @RequestParam String nome) {
+    public OrganizacaoEmpresaResponse findByNome(@RequestParam String nome) {
         return service.findByNome(nome);
     }
 

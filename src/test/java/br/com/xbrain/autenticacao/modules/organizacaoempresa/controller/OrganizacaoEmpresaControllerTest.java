@@ -386,7 +386,7 @@ public class OrganizacaoEmpresaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
-    public void findByNome_deveRetornarOrganizcaoEmpresaResponse_quandoUsuarioOk() {
+    public void findByNome_deveRetornarOrganizacaoEmpresaResponse_quandoUsuarioOk() {
         doReturn(umaOrganizacaoEmpresaResponse())
             .when(service).findByNome("nomeOrganizacao");
 
