@@ -2955,7 +2955,7 @@ public class UsuarioService {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
     }
 
-    public List<SelectResponse> findOperadoresBkoSuporteVendasByOrganizacao(Integer organizacaoId) {
+    public List<SelectResponse> findOperadoresSuporteVendasByOrganizacao(Integer organizacaoId) {
         return repository.findByCodigoCargoAndOrganizacaoId(OPERADOR_SUPORTE_VENDAS, organizacaoId);
     }
 }
