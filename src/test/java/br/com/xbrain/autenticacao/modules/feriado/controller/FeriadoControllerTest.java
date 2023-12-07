@@ -282,4 +282,25 @@ public class FeriadoControllerTest {
 
         verify(service).buscarTotalDeFeriadosPorMesAno();
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void isFeriadoComCidadeId_deveRetornarUnauthorized_quandoTokenInvalido() {
+        mvc.perform(get(URL_BASE + "/1520")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(service);
+    }
+
+    @Test
+    @SneakyThrows
+    public  void isFeriadoComCidadeId_deveRetornarOk_quandoDadosOk() {
+        mvc.perform(get(URL_BASE + "/1520")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).isFeriadoComCidadeId(1520);
+    }
 }

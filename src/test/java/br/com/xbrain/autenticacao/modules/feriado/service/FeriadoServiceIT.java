@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
@@ -55,6 +56,8 @@ public class FeriadoServiceIT {
     private EntityManager entityManager;
     @MockBean
     private MailingService mailingService;
+    @MockBean
+    private DataHoraAtual dataHoraAtual;
 
     @Test
     public void obterFeriadosByFiltros_deveRetornarTodosFeriadosExcetoExcluidosEFeriadoFilhos_quandoNaoTemFiltro() {
@@ -569,6 +572,38 @@ public class FeriadoServiceIT {
                     22, 4498, Eboolean.F, 104, ESituacaoFeriado.EXCLUIDO));
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EXCLUIDO"), any());
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarTrue_quandoHouverFeriadoNacionalNoDia() {
+        when(dataHoraAtual.getData()).thenReturn( LocalDate.of(2019, 7, 30));
+        assertThat(feriadoService.isFeriadoComCidadeId(1520)).isTrue();
+
+        verify(dataHoraAtual).getData();
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarTrue_quandoHouverFeriadoEstadualNoDia() {
+        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2019, 9, 23));
+        assertThat(feriadoService.isFeriadoComCidadeId(4505)).isTrue();
+
+        verify(dataHoraAtual).getData();
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarTrue_quandoHouverFeriadoMunicipalNoDia() {
+        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2019, 7, 29));
+        assertThat(feriadoService.isFeriadoComCidadeId(3426)).isTrue();
+
+        verify(dataHoraAtual).getData();
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarFalse_quandoNaoHouverFeriadoNoDia() {
+        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2023, 10, 27));
+        assertThat(feriadoService.isFeriadoComCidadeId(1520)).isFalse();
+
+        verify(dataHoraAtual).getData();
     }
 
     private PageRequest umPageRequest(int pageNumber) {
