@@ -2124,4 +2124,37 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = "BKO_21420")
+    public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarOk_quandoPossuirPermissao() {
+        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findOperadoresBkoSuporteVendasByOrganizacao(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarForbidden_quandoNaoPossuirPermissao() {
+        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
 }

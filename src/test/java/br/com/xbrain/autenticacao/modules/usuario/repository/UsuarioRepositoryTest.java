@@ -359,4 +359,14 @@ public class UsuarioRepositoryTest {
         assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
             .containsExactly(219);
     }
+
+    @Test
+    public void findByCodigoCargoAndOrganizacaoId_deveRetornarUsuariosSelectConformeCargoEOrganizacao_quandoSolicitado() {
+        assertThat(repository.findByCodigoCargoAndOrganizacaoId(VENDEDOR_RECEPTIVO, 5))
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(121, "VR 1"),
+                tuple(122, "VR 2"),
+                tuple(123, "VR 3"));
+    }
 }
