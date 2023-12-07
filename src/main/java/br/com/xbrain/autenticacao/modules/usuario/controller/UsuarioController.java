@@ -504,6 +504,11 @@ public class UsuarioController {
         return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos);
     }
 
+    @GetMapping("suporte_vendas/operadores/{organizacaoId}")
+    public List<SelectResponse> findOperadoresBkoSuporteVendasByOrganizacao(@PathVariable Integer organizacaoId) {
+        return usuarioService.findOperadoresBkoSuporteVendasByOrganizacao(organizacaoId);
+    }
+
     @GetMapping("bko-centralizado/{fornecedorId}")
     public List<UsuarioResponse> findOperadoresBkoCentralizadoByFornecedor(
         @PathVariable Integer fornecedorId,
