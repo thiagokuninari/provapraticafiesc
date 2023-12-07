@@ -2129,7 +2129,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser(roles = "BKO_21420")
     public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarOk_quandoPossuirPermissao() {
-        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+        mvc.perform(get(BASE_URL.concat("/suporte-vendas/operadores/1"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
@@ -2140,7 +2140,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser
     public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarForbidden_quandoNaoPossuirPermissao() {
-        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+        mvc.perform(get(BASE_URL.concat("/suporte-vendas/operadores/1"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 
@@ -2151,7 +2151,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void findOperadoresBkoSuporteVendasByOrganizacao_deveRetornarUnauthorized_quandoNaoAutenticado() {
-        mvc.perform(get(BASE_URL.concat("/suporte_vendas/operadores/1"))
+        mvc.perform(get(BASE_URL.concat("/suporte-vendas/operadores/1"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
