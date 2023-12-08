@@ -29,8 +29,13 @@ public class UsuarioGerenciaController {
     }
 
     @PostMapping("backoffice")
-    public Usuario save(@RequestBody @Validated UsuarioBackofficeDto usuario) {
+    public Usuario saveBackoffice(@RequestBody @Validated UsuarioBackofficeDto usuario) {
         return service.salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+    }
+
+    @PostMapping("briefing")
+    public Usuario saveBriefing(@RequestBody @Validated UsuarioBriefingDto usuario) {
+        return service.salvarUsuarioBriefing(UsuarioBriefingDto.of(usuario));
     }
 
     @PutMapping

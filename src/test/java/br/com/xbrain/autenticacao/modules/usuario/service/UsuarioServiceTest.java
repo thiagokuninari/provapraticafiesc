@@ -7,13 +7,9 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -91,18 +87,18 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umUsuarioD2DSemSubcanal;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -1146,6 +1142,66 @@ public class UsuarioServiceTest {
             .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
+    @Test
+    public void salvarUsuarioBriefing_deveSalvar() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        usuarioService.salvarUsuarioBriefing(umUsuarioBriefing());
+        verify(notificacaoService, atLeastOnce())
+            .enviarEmailDadosDeAcesso(argThat(arg -> arg.getNome().equals("Briefing")), anyString());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveRemoverCaracteresEspeciais() {
+        var usaurio = umUsuarioBriefing();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        Assertions.assertThat(usaurio)
+            .extracting("cpf")
+            .containsExactly("097.238.645-92");
+
+        usuarioService.salvarUsuarioBriefing(usaurio);
+
+        verify(usuarioRepository, times(1)).save(usuarioCaptor.capture());
+        Assertions.assertThat(usuarioCaptor.getValue())
+            .extracting("cpf")
+            .containsExactly("09723864592");
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoCpfExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("CPF já cadastrado.");
+
+        verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(usuarioRepository, never()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(usuarioRepository, never()).save(anyIterable());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoEmailExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("Email já cadastrado.");
+
+        verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(usuarioRepository, never()).save(anyIterable());
+    }
+
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             Usuario.builder()
@@ -1533,6 +1589,20 @@ public class UsuarioServiceTest {
             .telefone("43995565661")
             .hierarquiasId(List.of())
             .usuariosHierarquia(new HashSet<>())
+            .build();
+    }
+
+    private Usuario umUsuarioBriefing() {
+        return Usuario.builder()
+            .nome("Briefing")
+            .cpf("097.238.645-92")
+            .email("briefing@teste.com")
+            .telefone("14999999999")
+            .hierarquiasId(List.of())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(new Cargo(1234))
+            .departamento(new Departamento(12345))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(1))
             .build();
     }
 
@@ -2096,8 +2166,8 @@ public class UsuarioServiceTest {
     @Test
     public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarSelectResponse_quandoSolicitado() {
         when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(
-                BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
-                BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
+            BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+            BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
         assertThat(usuarioService.findOperadoresBkoCentralizadoByFornecedor(5, true))
@@ -2906,10 +2976,10 @@ public class UsuarioServiceTest {
 
         doReturn(usuario)
             .when(autenticacaoService)
-                .getUsuarioAutenticado();
+            .getUsuarioAutenticado();
         doReturn(List.of(umUsuarioVendedorInternet()))
             .when(usuarioRepository)
-                .findAll(predicate, sort);
+            .findAll(predicate, sort);
 
         assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltroInternet()))
             .extracting("label", "value")
@@ -3568,16 +3638,6 @@ public class UsuarioServiceTest {
         ReflectionTestUtils.setField(usuarioService, "applicationEventPublisher", applicationEventPublisher);
     }
 
-    @TestConfiguration
-    static class MockitoPublisherConfiguration {
-
-        @Bean
-        @Primary
-        static ApplicationEventPublisher publisher() {
-            return mock(ApplicationEventPublisher.class);
-        }
-    }
-
     @Test
     public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
         assertThat(usuarioService.getCanaisPermitidosParaOrganizacao())
@@ -4192,5 +4252,15 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
     }
 }

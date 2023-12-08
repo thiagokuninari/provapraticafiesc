@@ -750,6 +750,16 @@ public class UsuarioService {
         return usuario;
     }
 
+    public Usuario salvarUsuarioBriefing(Usuario usuario) {
+        validar(usuario);
+        tratarCadastroUsuario(usuario);
+        var enviarEmail = usuario.isNovoCadastro();
+        repository.save(usuario);
+
+        enviarEmailDadosAcesso(usuario, enviarEmail);
+        return usuario;
+    }
+
     private void configurarCadastro(Usuario usuario) {
         tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
         tratarCidadesUsuario(usuario);
