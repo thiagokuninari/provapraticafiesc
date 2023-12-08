@@ -739,7 +739,7 @@ public class UsuarioService {
             .collect(Collectors.joining(", "));
     }
 
-    public Usuario salvarUsuarioBackoffice(Usuario usuario) {
+    public UsuarioResponse salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
@@ -747,17 +747,17 @@ public class UsuarioService {
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
-        return usuario;
+        return UsuarioResponse.of(usuario);
     }
 
-    public Usuario salvarUsuarioBriefing(Usuario usuario) {
+    public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
         validar(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
-        return usuario;
+        return UsuarioResponse.of(usuario);
     }
 
     private void configurarCadastro(Usuario usuario) {

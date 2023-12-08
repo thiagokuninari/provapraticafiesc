@@ -329,7 +329,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
     }
 
     @Test
@@ -337,7 +337,7 @@ public class UsuarioGerenciaControllerTest {
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveBackoffice_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
         mvc.perform(post(API_URI_BACKOFFICE)
-                .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
+                .content(convertObjectToJsonBytes(new UsuarioBackofficeRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(6)))
@@ -482,7 +482,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).salvarUsuarioBriefing(UsuarioBriefingDto.of(usuario));
+        verify(usuarioService).salvarUsuarioBriefing(UsuarioBriefingRequest.of(usuario));
     }
 
     @Test
@@ -490,7 +490,7 @@ public class UsuarioGerenciaControllerTest {
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveBriefing_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
         mvc.perform(post(API_URI + "/briefing")
-                .content(convertObjectToJsonBytes(new UsuarioBriefingDto()))
+                .content(convertObjectToJsonBytes(new UsuarioBriefingRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(8)))
@@ -1616,8 +1616,8 @@ public class UsuarioGerenciaControllerTest {
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
 
-    private UsuarioBackofficeDto umUsuarioDtoBackoffice() {
-        var usuario = new UsuarioBackofficeDto();
+    private UsuarioBackofficeRequest umUsuarioDtoBackoffice() {
+        var usuario = new UsuarioBackofficeRequest();
         usuario.setNome("USUARIO BACKOFFICE");
         usuario.setCargoId(110);
         usuario.setEmail("usuarioBackoffice@gmail.com");
@@ -1627,8 +1627,8 @@ public class UsuarioGerenciaControllerTest {
         return usuario;
     }
 
-    private UsuarioBriefingDto umUsuarioBriefingDto() {
-        var usuario = new UsuarioBriefingDto();
+    private UsuarioBriefingRequest umUsuarioBriefingDto() {
+        var usuario = new UsuarioBriefingRequest();
         usuario.setNome("USUARIO BRIEFING");
         usuario.setCpf("870.371.018-18");
         usuario.setEmail("briefing@gmail.com");
