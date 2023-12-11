@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -105,7 +106,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticado() {
+    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticadoENaoPassarFiltroAtivo() {
         var filtro = UsuarioPorIdFiltro.builder()
             .usuariosIds(List.of(1))
             .build();
@@ -115,7 +116,24 @@ public class UsuarioControllerTest {
                 .content(TestsHelper.convertObjectToJsonBytes(filtro))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        verify(usuarioService).findAllResponsePorIds(any());
+        verify(usuarioService).findAllResponsePorIds(filtro);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticado() {
+        var filtro = UsuarioPorIdFiltro.builder()
+            .apenasAtivos(Eboolean.V)
+            .usuariosIds(List.of(1))
+            .build();
+
+        mvc.perform(post(BASE_URL.concat("/por-ids"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(filtro))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(usuarioService).findAllResponsePorIds(filtro);
     }
 
     @Test
