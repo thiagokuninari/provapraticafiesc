@@ -49,6 +49,6 @@ public class FileServiceTest {
 
         assertThatThrownBy(() -> service.salvarArquivo(umUsuario(), umDocumentoPng()))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#051 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .hasMessage("#047 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 }

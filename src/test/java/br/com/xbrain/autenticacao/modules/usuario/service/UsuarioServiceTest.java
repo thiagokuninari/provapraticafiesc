@@ -3585,12 +3585,12 @@ public class UsuarioServiceTest {
     public void moverAvatarMinio_deveFazerUpdate_seUsuarioAdmin() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin(1));
 
-        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
+        when(repository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
 
-        usuarioService.moverAvatarMinio();
+        service.moverAvatarMinio();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository).findByFotoDiretorioIsNotNull();
+        verify(repository).findByFotoDiretorioIsNotNull();
     }
 
     @Test
@@ -3599,11 +3599,11 @@ public class UsuarioServiceTest {
             CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL));
 
         assertThatExceptionOfType(PermissaoException.class)
-            .isThrownBy(() -> usuarioService.moverAvatarMinio())
+            .isThrownBy(() -> service.moverAvatarMinio())
             .withMessage("Usuário não autorizado!");
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(usuarioRepository, never()).findByFotoDiretorioIsNotNull();
+        verify(repository, never()).findByFotoDiretorioIsNotNull();
     }
 
     @Test

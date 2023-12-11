@@ -55,7 +55,7 @@ public class MinioFileServiceTest {
 
         assertThatThrownBy(() -> service.salvarArquivo(file, "arquivo-teste"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#051 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .hasMessage("#047 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test
@@ -77,7 +77,7 @@ public class MinioFileServiceTest {
 
         assertThatThrownBy(() -> service.salvarArquivo(file, "arquivo-teste"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#051 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .hasMessage("#047 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test
