@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -17,6 +18,8 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
+import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -50,6 +53,7 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
+import io.minio.MinioClient;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,6 +71,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
@@ -191,6 +196,14 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private TokenStore tokenStore;
+    @Mock
+    private MinioFileService minioFileService;
+    @Mock
+    private MinioClient minioClient;
+    @Mock
+    private FileService fileService;
     @Mock
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Mock
@@ -3566,6 +3579,31 @@ public class UsuarioServiceTest {
 
         assertThat(service.getIdDosUsuariosSubordinados(1, true))
             .isEqualTo(List.of(2, 1));
+    }
+
+    @Test
+    public void moverAvatarMinio_deveFazerUpdate_seUsuarioAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin(1));
+
+        when(usuarioRepository.findByFotoDiretorioIsNotNull()).thenReturn(umaUsuariosList());
+
+        usuarioService.moverAvatarMinio();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository).findByFotoDiretorioIsNotNull();
+    }
+
+    @Test
+    public void moverAvatarMinio_deveNaoFazerUpdate_seUsuarioNaoAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(1, "OPERACAO",
+            CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL));
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> usuarioService.moverAvatarMinio())
+            .withMessage("Usuário não autorizado!");
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioRepository, never()).findByFotoDiretorioIsNotNull();
     }
 
     @Test

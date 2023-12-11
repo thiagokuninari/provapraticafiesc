@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -77,6 +78,8 @@ public class UsuarioControllerTest {
     private FeederService feederService;
     @MockBean
     private SubCanalService subCanalService;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     @SneakyThrows
@@ -2081,6 +2084,27 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).getSubordinadosAndAasDoUsuario(false);
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverAvatarMinio_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).moverAvatarMinio();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void moverAvatarMinio_deveRetornarOk_quandoAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).moverAvatarMinio();
     }
 
     @Test

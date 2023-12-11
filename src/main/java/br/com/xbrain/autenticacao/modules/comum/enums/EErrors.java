@@ -139,7 +139,19 @@ public enum EErrors {
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
     ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
         "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo.");
+        "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
+    ERRO_CONEXAO_MINIO(
+        "#046 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#046 - Ocorreu um erro ao tentar acessar o MinIO Client."),
+    ERRO_SALVAR_ARQUIVO(
+        "#047 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#047 - Ocorreu um erro ao tentar salvar o arquivo."),
+    ERRO_ACESSO_SERVIDOR(
+        "#048 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#048 - Ocorreu um erro ao acessar o minio server."),
+    ARQUIVO_NAO_ENCONTRADO(
+        "#049 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#049 - Arquivo não encontrado.");
 
 
     @Getter

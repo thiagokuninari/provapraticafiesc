@@ -74,15 +74,18 @@ app-config:
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
-  url-estatico: https://estatico-hom.conexaoclarobrasil.com.br
-  url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   url-origin-cors: http://localhost
-  estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
-  upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
+  upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
+  url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
 
-  usuario-foto:
-    dir: ${app-config.upload-dir}/usuario/foto
-    url: ${app-config.url-estatico-upload}/usuario/foto
+  minio:
+    url: http://192.168.50.6:9000
+    access:
+      name: ${MINIO_TOKEN}
+      secret: ${MINIO_SECRET}
+    bucket:
+      name: conexao-claro-brasil
+    public: https://files-dev.conexaoclarobrasil.com.br/public
 
   email:
     enviar: true

@@ -57,6 +57,7 @@ import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -66,7 +67,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -90,14 +90,17 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
-import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
+import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.util.ObjectUtils.isEmpty;
+import static org.thymeleaf.util.StringUtils.concat;
 
 @Service
 @Slf4j
@@ -246,6 +249,8 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Value("${app-config.url-foto-usuario}")
+    private String urlDir;
     @Autowired
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
@@ -383,8 +388,7 @@ public class UsuarioService {
         validarCargoUsuarioAutenticado(predicate);
 
         var pages = repository.findAll(predicate.build(), pageRequest);
-
-        if (!ObjectUtils.isEmpty(pages.getContent())) {
+        if (!isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
 
@@ -564,10 +568,9 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
         var request = UsuarioDto.convertFrom(usuario);
-        if (!ObjectUtils.isEmpty(foto)) {
-            fileService.uploadFotoUsuario(request, foto);
+        if (!isEmpty(foto)) {
+            fileService.salvarArquivo(request, foto);
         }
-
         return save(request);
     }
 
@@ -762,7 +765,7 @@ public class UsuarioService {
                 || usuarioAutenticado.isAssistenteOperacao();
             var isUsuarioAssistenteOuSupervisor = usuario.isSupervisorOperacao() || usuario.isAssistenteOperacao();
 
-            if (ObjectUtils.isEmpty(usuario.getHierarquiasId())
+            if (isEmpty(usuario.getHierarquiasId())
                 && isSupervisorOuAssistente
                 && !isUsuarioAssistenteOuSupervisor) {
                 usuario.setHierarquiasId(List.of(usuarioAutenticado.getId()));
@@ -851,7 +854,7 @@ public class UsuarioService {
     }
 
     private void salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
-        if (ObjectUtils.isEmpty(usuario.getUsuarioCadastro())) {
+        if (isEmpty(usuario.getUsuarioCadastro())) {
             usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
             repository.save(usuario);
         }
@@ -905,10 +908,10 @@ public class UsuarioService {
                 var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                     superiorRequest.getSuperiorAntigo());
 
-                if (!ObjectUtils.isEmpty(usuarioHierarquia) && !ObjectUtils.isEmpty(usuarioAutenticado)) {
+                if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.delete(usuarioHierarquia);
                 }
-                if (!ObjectUtils.isEmpty(usuarioAutenticado)) {
+                if (!isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.save(
                         criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
                 }
@@ -971,7 +974,7 @@ public class UsuarioService {
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
-                if (ObjectUtils.isEmpty(usuarioId)
+                if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -981,7 +984,7 @@ public class UsuarioService {
     private void validarEmailCadastrado(String email, Integer usuarioId) {
         repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
             .ifPresent(usuario -> {
-                if (ObjectUtils.isEmpty(usuarioId)
+                if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw EMAIL_CADASTRADO_EXCEPTION;
                 }
@@ -1098,7 +1101,7 @@ public class UsuarioService {
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
-        if (!ObjectUtils.isEmpty(usuario)
+        if (!isEmpty(usuario)
             && !CollectionUtils.isEmpty(usuario.getUsuariosHierarquia())) {
 
             usuario.getUsuariosHierarquia()
@@ -1139,10 +1142,10 @@ public class UsuarioService {
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
-        return !ObjectUtils.isEmpty(usuarioParaAchar)
+        return !isEmpty(usuarioParaAchar)
             && !CollectionUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-            && !ObjectUtils.isEmpty(usuario)
-            && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
+            && !isEmpty(usuario)
+            && !isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -1154,7 +1157,7 @@ public class UsuarioService {
         return usuario.getUsuariosHierarquia()
             .stream()
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
-            .filter(item -> !ObjectUtils.isEmpty(item))
+            .filter(item -> !isEmpty(item))
             .collect(toList());
     }
 
@@ -1363,7 +1366,7 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
 
-        return !ObjectUtils.isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
+        return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
     public void saveUsuarioAlteracaoCpf(Usuario usuario) {
@@ -1522,7 +1525,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
             .ifPresent(u -> {
-                if (ObjectUtils.isEmpty(usuario.getId())
+                if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -1533,7 +1536,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
             .ifPresent(u -> {
-                if (ObjectUtils.isEmpty(usuario.getId())
+                if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw EMAIL_CADASTRADO_EXCEPTION;
                 }
@@ -1576,7 +1579,7 @@ public class UsuarioService {
         var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
         var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
 
-        if (ObjectUtils.isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
+        if (isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         } else if (isClienteLojaFuturo && !isAaEstruturaLojaFuturo) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO);
@@ -1930,12 +1933,12 @@ public class UsuarioService {
     @Transactional
     public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario;
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+        if (isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
             usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+        if (isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
             || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
@@ -2727,7 +2730,7 @@ public class UsuarioService {
     }
 
     public void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
-        if (!permissoesEspeciais.isEmpty()) {
+        if (!isEmpty(permissoesEspeciais)) {
             permissaoEspecialRepository.save(permissoesEspeciais);
         }
     }
@@ -2929,6 +2932,37 @@ public class UsuarioService {
                     ESituacao.A)
             );
         }
+    }
+
+    @Transactional
+    public void moverAvatarMinio() {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
+        log.info("Inicia alteração caminho do banco das fotos do MinIO.");
+        var fotoCaminho = repository.findByFotoDiretorioIsNotNull();
+        alteraColunaFotoDiretorio(fotoCaminho);
+        log.info("Finaliza alteração caminho do banco das fotos do MinIO.");
+    }
+
+    private void alteraColunaFotoDiretorio(List<Usuario> fotoCaminho) {
+        if (!isEmpty(fotoCaminho)) {
+            log.info("Inicia update coluna FotoDiretório");
+            fotoCaminho.forEach(user -> {
+                var fileName = gerarNovoCaminhoBanco(user.getFotoDiretorio());
+                log.info("Update usuario Id: {}", user.getId());
+                repository.updateFotoDiretorio(fileName, user.getId());
+            });
+        }
+    }
+
+    private String gerarNovoCaminhoBanco(String path) {
+        if (isNotBlank(path) && path.length() > 1) {
+            var pattern = Pattern.compile(".*/([^/]+)$");
+            var matcher = pattern.matcher(path);
+            if (matcher.find()) {
+                return path.replace(path, concat(urlDir, matcher.group(1)));
+            }
+        }
+        return path;
     }
 
     public void filtrarPermitidosCanalInternet(UsuarioAutenticado usuario, UsuarioPredicate predicate) {

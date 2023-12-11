@@ -72,10 +72,11 @@ else
 			--name=$CONTAINER \
             --restart=unless-stopped \
 			--mount type=bind,source=$VARPATHDESTINY/app.jar,target=/app.jar \
-			-v /opt/servidor_estatico:/opt/servidor_estatico \
 			-p $HOST_PORT:$APP_PORT \
 			-d \
 			-e JAVA_OPTS="'$JAVA_OPTS'" \
+      -e MINIO_TOKEN="'$MINIO_TOKEN'" \
+      -e MINIO_SECRET="'$MINIO_SECRET'" \
 			--net network_xbrain \
 			--ip $CONTAINER_IP \
 			$IMAGE_NAME

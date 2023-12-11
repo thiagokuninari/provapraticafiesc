@@ -287,6 +287,13 @@
             <scope>import</scope>
             <type>pom</type>
         </dependency>
+
+        <!-- minIO -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>7.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>

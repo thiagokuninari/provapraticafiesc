@@ -582,4 +582,9 @@ public class UsuarioController {
     public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
         return usuarioService.findByCpf(cpf);
     }
+
+    @PostMapping("mover-avatar-minio")
+    public void moverAvatarMinio() {
+        usuarioService.moverAvatarMinio();
+    }
 }
