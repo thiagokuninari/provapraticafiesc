@@ -67,6 +67,11 @@ public class OrganizacaoEmpresaController {
         return service.findAllByNivelId(nivelId);
     }
 
+    @GetMapping("por-nome")
+    public OrganizacaoEmpresaResponse findByNome(@RequestParam String nome) {
+        return service.findByNome(nome);
+    }
+
     @GetMapping("select")
     public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
         return service.getAllSelect(filtros);

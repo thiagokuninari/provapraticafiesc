@@ -640,6 +640,29 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).findAll();
     }
 
+    @Test
+    public void findByNome_deveRetornarOrganizacaoEmpresaResponse_quandoEncontrarEmpresaPorNome() {
+        var organizacaoEmpresa = umaOrganizacaoEmpresaCadastradaId();
+        organizacaoEmpresa.setNome("nomeOrganizacao");
+
+        doReturn(Optional.of(organizacaoEmpresa))
+            .when(organizacaoEmpresaRepository).findByNome("nomeOrganizacao");
+
+        assertThat(service.findByNome("nomeOrganizacao"))
+            .extracting("id", "nome")
+            .containsExactly(1, "nomeOrganizacao");
+
+        verify(organizacaoEmpresaRepository).findByNome("nomeOrganizacao");
+    }
+
+    @Test
+    public void findByNome_deveLancaoException_quandoNaoEncontrarEmpresaPorNome() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findByNome("nomeOrganizacao"));
+
+        verify(organizacaoEmpresaRepository).findByNome("nomeOrganizacao");
+    }
+
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {
         return OrganizacaoEmpresaHistorico.builder()
             .organizacaoEmpresa(umaOrganizacaoEmpresaBackoffice(1, "Organizacao 1",

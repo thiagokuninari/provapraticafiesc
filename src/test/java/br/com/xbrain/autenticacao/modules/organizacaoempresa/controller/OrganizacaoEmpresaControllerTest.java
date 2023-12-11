@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaListaOrganizacaoEmpresaResponse;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -382,5 +381,24 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(jsonPath("$[1].descricao", is("BRASIL CENTER")));
 
         verify(service).findAll();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = "usuario-admin", roles = "VAR_GERENCIAR_ORGANIZACOES")
+    public void findByNome_deveRetornarOrganizacaoEmpresaResponse_quandoUsuarioOk() {
+        doReturn(umaOrganizacaoEmpresaResponse())
+            .when(service).findByNome("nomeOrganizacao");
+
+        mockMvc.perform(get(ORGANIZACOES_API + "/por-nome")
+                .param("nome", "nomeOrganizacao")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("Teste AA")))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.codigo", is("codigo")));
+
+        verify(service).findByNome("nomeOrganizacao");
     }
 }

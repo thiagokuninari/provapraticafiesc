@@ -16,6 +16,8 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     Optional<OrganizacaoEmpresa> findById(Integer id);
 
+    Optional<OrganizacaoEmpresa> findByNome(String nome);
+
     List<OrganizacaoEmpresa> findAllByNivelId(Integer nivelId);
 
     List<OrganizacaoEmpresa> findAll();

@@ -65,6 +65,10 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
+    public static OrganizacaoEmpresaResponse umaOrganizacaoEmpresaResponse() {
+        return OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa());
+    }
+
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
