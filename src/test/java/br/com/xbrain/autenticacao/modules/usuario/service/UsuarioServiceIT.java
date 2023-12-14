@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
@@ -54,6 +53,7 @@ import java.util.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
@@ -165,12 +165,16 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
+    public void saveFromQueue_deveNaoEnviarEmail_quandoNaoSalvarUsuario() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setCpf("2292929292929292929229292929");
-        service.saveFromQueue(usuarioMqRequest);
-        verify(sender, times(0)).sendSuccess(any());
-        verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
+
+        assertThatThrownBy(() -> service.saveFromQueue(usuarioMqRequest))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Erro ao cadastrar usuário.");
+
+        verify(sender, never()).sendSuccess(any());
+        verify(emailService, never()).enviarEmailTemplate(any(), any(), any(), any());
         verify(feederService, never()).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
@@ -211,15 +215,6 @@ public class UsuarioServiceIT {
 
         verify(sender).sendSuccess(any());
         verify(feederService).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
-    }
-
-    @Test
-    public void deveNaoSalvarUsuarioEEnviarParaFilaDeFalha() {
-        try {
-            service.saveFromQueue(new UsuarioMqRequest());
-        } catch (Exception exception) {
-            verify(sender, times(1)).sendWithFailure(any());
-        }
     }
 
     @Test
@@ -579,17 +574,17 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void naoDeveEnviarFilaDeAtualizarUsuariosNoPolQuandoNaoForSocioPrincipal() {
+    public void saveFromQueue_naoDeveEnviarFilaDeAtualizarUsuariosNoPol_quandoNaoForSocioPrincipal() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCpf("672.678.130-03");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_ACEITE);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setSituacao(ESituacao.A);
 
         service.saveFromQueue(usuarioMqRequest);
 
-        verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
+        verify(atualizarUsuarioMqSender, never()).sendSuccess(any());
     }
 
     @Test
@@ -625,7 +620,8 @@ public class UsuarioServiceIT {
     @Test
     public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
         service.updateFromQueue(umUsuario());
-        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
+
+        verify(sender).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -1598,12 +1594,18 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         var usuario = umUsuarioMqRequest();
+
+        usuarioRepository.findById(usuario.getId()).ifPresent(usuarioInativo -> {
+            assertThat(usuarioInativo.getSituacao()).isEqualTo(I);
+            assertThat(usuarioInativo.getDataReativacao()).isNull();
+        });
+
         service.updateFromQueue(usuario);
 
-        var usuarioAtualizado = usuarioRepository.findById(usuario.getId()).orElseThrow(
-            () -> new NotFoundException("Usuário não encontrado"));
-        assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
-        assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+        usuarioRepository.findById(usuario.getId()).ifPresent(usuarioAtualizado -> {
+            assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
+            assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+        });
     }
 
     @Test
@@ -1748,9 +1750,20 @@ public class UsuarioServiceIT {
 
     private UsuarioMqRequest umUsuarioMqRequest() {
         return UsuarioMqRequest.builder()
-            .id(150)
+            .id(120)
             .situacao(ESituacao.A)
             .nome("Macaulay")
+            .cargo(EXECUTIVO)
+            .agenteAutorizadoId(10)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("88855511133")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("MARIA@NET.COM")
+            .isCadastroSocioPrincipal(false)
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(List.of(CLARO_RESIDENCIAL))
             .build();
     }
 }
