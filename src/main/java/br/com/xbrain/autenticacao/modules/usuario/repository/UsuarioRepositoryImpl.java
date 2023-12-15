@@ -54,8 +54,7 @@ import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
@@ -1427,6 +1426,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .select(usuario.id)
             .from(usuario)
             .where(usuario.cargo.codigo.in(codigoCargos))
+            .fetch();
+    }
+
+    @Override
+    public List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SelectResponse.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .where(usuario.situacao.eq(A)
+                .and(usuario.cargo.codigo.eq(codigoCargo)
+                .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
             .fetch();
     }
 
