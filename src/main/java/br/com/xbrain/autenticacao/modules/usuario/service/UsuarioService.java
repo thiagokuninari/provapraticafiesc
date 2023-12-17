@@ -154,6 +154,7 @@ public class UsuarioService {
     private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
         List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
+    private static final List<Integer> FUNCIONALIDADES_REDE_SOCIAL_CONEXAO = List.of(30000);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
@@ -255,6 +256,8 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Value("#{'${app-config.dominios-rede-social-conexao}'.split(',')}")
+    private Set<String> dominiosPermitidos;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -587,6 +590,7 @@ public class UsuarioService {
             removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
+            adicionarPermissaoRedeSocialConexaoParaNovoUsuario(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
@@ -2855,6 +2859,24 @@ public class UsuarioService {
         gerarHistoricoPermissaoEquipeTecnica(sociosIds, dto.hasEquipeTecnica());
     }
 
+    public void adicionarPermissaoRedeSocialConexaoParaNovoUsuario(Usuario usuario) {
+        var email = usuario.getEmail();
+        var dominio = extractDominio(email);
+
+        if (dominiosPermitidos.contains(dominio)) {
+            permissaoEspecialService.save(criarPermissaoEspecialRedeSocial(usuario.getId(), usuario.getUsuarioCadastro().getId()));
+        }
+//        gerarHistoricoPermissaoEquipeTecnica(usuario, dto.hasEquipeTecnica());
+    }
+
+    private String extractDominio(String email) {
+        int atIndex = email.lastIndexOf("@");
+        if (atIndex != -1) {
+            return email.substring(atIndex);
+        }
+        return "";
+    }
+
     @Transactional
     public void gerarHistoricoTentativasLoginSenhaIncorreta(String email) {
         var usuarioOptional = this.repository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(email);
@@ -2892,6 +2914,10 @@ public class UsuarioService {
             .filter(canal -> canal == ECanal.INTERNET)
             .map(canal -> SelectResponse.of(canal.name(), canal.getDescricao()))
             .collect(toList());
+    }
+
+    private List<PermissaoEspecial> criarPermissaoEspecialRedeSocial(Integer usuarioId, Integer usuarioCadastroId) {
+        return criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, FUNCIONALIDADES_REDE_SOCIAL_CONEXAO);
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
