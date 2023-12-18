@@ -1,6 +1,5 @@
 app-config:
   url-origin-cors: dev.conexaoclarobrasil.com.br,http://localhost
-  dominios-rede-social-conexao: @XBRAIN.COM.BR,@CLARO.COM.BR,@NET.COM.BR,@EMBRATEL.COM.BR,@CLARONXT.COM.BR,@GLOBALHITSS.COM.BR,@USTORE.COM.BR
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
