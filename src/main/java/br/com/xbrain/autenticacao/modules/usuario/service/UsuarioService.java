@@ -587,7 +587,6 @@ public class UsuarioService {
             removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
-            adicionarPermissaoSocialHubParaNovoUsuario(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
