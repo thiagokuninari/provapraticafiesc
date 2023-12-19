@@ -3887,7 +3887,7 @@ public class UsuarioServiceTest {
             .when(repository)
             .findById(1);
 
-        doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -3919,7 +3919,7 @@ public class UsuarioServiceTest {
             .when(repository)
             .findById(1);
 
-        doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 

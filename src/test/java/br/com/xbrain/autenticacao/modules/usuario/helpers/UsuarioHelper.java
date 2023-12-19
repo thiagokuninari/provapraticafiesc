@@ -781,6 +781,8 @@ public class UsuarioHelper {
             .situacao(ESituacao.A)
             .usuariosHierarquia(new HashSet<>())
             .usuarioCadastro(new Usuario(1))
+            .hierarquiasId(List.of(2))
+            .canais(Set.of(ECanal.INTERNET))
             .departamento(Departamento.builder().id(1).nome("teste").build())
             .cargo(Cargo.builder()
                 .id(1)
