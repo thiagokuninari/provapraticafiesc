@@ -3881,12 +3881,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveAdicionarPermissaoSocialHub_quandoDominioEmailValido() {
-        var usuario = umUsuario();
-        usuario.setSituacao(ESituacao.A);
-        usuario.setUsuariosHierarquia(new HashSet<>());
-        usuario.setEmail("teste@emailpermitido.com.br");
-        usuario.setCargo(umCargo(1, VENDEDOR_OPERACAO));
-        usuario.setUsuarioCadastro(new Usuario(1));
+        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
 
         doReturn(Optional.of(usuario))
             .when(repository)
@@ -3918,12 +3913,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveAdicionarPermissaoSocialHub_quandoDominioEmailInvalido() {
-        var usuario = umUsuario();
-        usuario.setSituacao(ESituacao.A);
-        usuario.setUsuariosHierarquia(new HashSet<>());
-        usuario.setEmail("teste@dominionaopermitido.com");
-        usuario.setCargo(umCargo(1, VENDEDOR_OPERACAO));
-        usuario.setUsuarioCadastro(new Usuario(1));
+        var usuario = umUsuarioSocialHub("teste@emailnaopermitido.com.br");
 
         doReturn(Optional.of(usuario))
             .when(repository)
