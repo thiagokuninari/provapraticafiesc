@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.helper;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 
 public class UsuarioDtoVendasHelper {
 

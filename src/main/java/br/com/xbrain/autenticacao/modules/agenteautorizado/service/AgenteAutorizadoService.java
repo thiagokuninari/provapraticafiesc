@@ -1,8 +1,8 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.AgenteAutorizadoFiltros;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoFiltros;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -10,8 +10,8 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
@@ -19,10 +19,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,22 +29,20 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 
-@Service
 @Slf4j
-public class AgenteAutorizadoNovoService {
-    private final Logger logger = LoggerFactory.getLogger(AgenteAutorizadoService.class);
+@Service
+@RequiredArgsConstructor
+public class AgenteAutorizadoService {
 
-    @Autowired
-    private AgenteAutorizadoNovoClient client;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
+    private final AgenteAutorizadoClient client;
+    private final AutenticacaoService autenticacaoService;
 
     public List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(List<Integer> aasIds, Boolean buscarInativos) {
         try {
             return client.buscarTodosUsuariosDosAas(aasIds, buscarInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                AgenteAutorizadoNovoService.class.getName(),
+                AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
@@ -118,7 +114,7 @@ public class AgenteAutorizadoNovoService {
                 .collect(Collectors.toList());
 
         } catch (Exception ex) {
-            logger.warn("Erro ao consultar empresas do usuário", ex);
+            log.warn("Erro ao consultar empresas do usuário", ex);
             return Collections.emptyList();
         }
     }
@@ -127,7 +123,7 @@ public class AgenteAutorizadoNovoService {
         try {
             return client.getEstruturaByUsuarioIdAndAtivo(usuarioId);
         } catch (Exception ex) {
-            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            log.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
         }
     }
@@ -136,7 +132,7 @@ public class AgenteAutorizadoNovoService {
         try {
             return client.getEstruturaByUsuarioId(usuarioId);
         } catch (Exception ex) {
-            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            log.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
         }
     }
@@ -163,7 +159,7 @@ public class AgenteAutorizadoNovoService {
         try {
             return client.getAasPermitidos(usuarioId);
         } catch (Exception ex) {
-            logger.warn("Erro ao consultar agentes autorizados do usuário", ex);
+            log.warn("Erro ao consultar agentes autorizados do usuário", ex);
             return Collections.emptyList();
         }
     }
@@ -225,7 +221,7 @@ public class AgenteAutorizadoNovoService {
             return client.findAgenteAutorizadoByUsuarioId(usuarioId);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                AgenteAutorizadoNovoService.class.getName(),
+                AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
@@ -238,8 +234,56 @@ public class AgenteAutorizadoNovoService {
             return client.findAgentesAutorizadosByUsuariosIds(usuariosIds, incluirAasInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                AgenteAutorizadoNovoService.class.getName(),
+                AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
+        try {
+            return client.getUsuariosAaAtivoComVendedoresD2D(aaId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<String> recuperarColaboradoresDoAgenteAutorizado(String cnpj) {
+        try {
+            return client.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(Integer aaId, Integer usuarioId) {
+        try {
+            return client.getUsuariosByAaIdCanalDoUsuario(aaId, usuarioId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<Integer> getUsuariosIdsSuperioresPol() {
+        try {
+            return client.getUsuariosIdsSuperioresPol();
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

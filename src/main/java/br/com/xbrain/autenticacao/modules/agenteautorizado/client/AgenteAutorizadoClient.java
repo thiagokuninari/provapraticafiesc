@@ -1,9 +1,10 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
@@ -14,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@FeignClient(name = "agenteAutorizadoNovoClient",
+@FeignClient(name = "agenteAutorizadoClient",
     url = "${app-config.services.agente-autorizado.url}",
     configuration = FeignSkipBadRequestsConfiguration.class)
-public interface AgenteAutorizadoNovoClient {
+public interface AgenteAutorizadoClient {
 
     String URL_AGENTE_AUTORIZADO = "api";
 
@@ -70,4 +71,20 @@ public interface AgenteAutorizadoNovoClient {
     @GetMapping(URL_AGENTE_AUTORIZADO + "/carteira/usuarios-agentes-autorizados")
     List<AgenteAutorizadoResponse> findAgentesAutorizadosByUsuariosIds(
         @RequestParam("usuariosIds") List<Integer> usuarioId, @RequestParam("incluirAasInativos") Boolean incluirAasInativos);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-com-d2d/{agenteAutorizadoId}")
+    List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/recupera-emails")
+    List<String> recuperarColaboradoresDoAgenteAutorizado(@RequestParam(name = "cnpj") String cnpj);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}/canal/usuario/{usuarioId}")
+    List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
+        @PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/superiores/usuario-autenticado")
+    List<Integer> getUsuariosIdsSuperioresPol();
+
 }

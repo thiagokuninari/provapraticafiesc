@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -33,8 +33,6 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -156,8 +154,6 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repository;
     @Autowired
-    private AgenteAutorizadoClient agenteAutorizadoClient;
-    @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -199,8 +195,6 @@ public class UsuarioService {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
-    @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
@@ -414,7 +408,7 @@ public class UsuarioService {
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
-        var lista = agenteAutorizadoNovoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
+        var lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -456,7 +450,7 @@ public class UsuarioService {
         }
 
         return Stream.of(
-                agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
+                agenteAutorizadoService.getIdsUsuariosSubordinados(false),
                 repository.getUsuariosSubordinados(usuario.getId()))
             .flatMap(Collection::stream)
             .distinct()
@@ -468,7 +462,7 @@ public class UsuarioService {
             return List.of();
         }
         var usuariosPol = CollectionUtils.isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
-            ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
+            ? getIdDosUsuariosParceiros(filtros)
             : filtros.getUsuariosFiltradosPorCidadePol();
         var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuario.getId()));
         usuariosSubordinados.addAll(usuariosPol);
@@ -477,7 +471,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
-        return agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(filtros);
+        return agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(filtros);
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
@@ -514,7 +508,7 @@ public class UsuarioService {
 
         subordinados.addAll(UsuarioHierarquiaDto
             .ofAgenteAutorizadoResponseList(
-                agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(usuariosIds, true)));
+                agenteAutorizadoService.findAgentesAutorizadosByUsuariosIds(usuariosIds, true)));
 
         return subordinados;
     }
@@ -633,7 +627,7 @@ public class UsuarioService {
 
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
         if (usuarioOriginal.isNivelOperacao() && usuarioOriginal.isCanalAgenteAutorizadoRemovido(usuarioAlterado.getCanais())) {
-            var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
+            var aas = agenteAutorizadoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
             if (!CollectionUtils.isEmpty(aas)) {
                 throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
             }
@@ -1564,7 +1558,7 @@ public class UsuarioService {
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
         var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
-        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
+        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoService.getEstruturaByUsuarioId(usuario.getId()));
 
         if (ObjectUtils.isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
@@ -1584,11 +1578,11 @@ public class UsuarioService {
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
-        return agenteAutorizadoNovoService.existeAaAtivoByUsuarioId(usuarioId);
+        return agenteAutorizadoService.existeAaAtivoByUsuarioId(usuarioId);
     }
 
     private boolean encontrouAgenteAutorizadoBySocioEmail(String usuarioEmail) {
-        return agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(usuarioEmail);
+        return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
     public void limparCpfUsuario(Integer id) {
@@ -2071,7 +2065,7 @@ public class UsuarioService {
     }
 
     public void inativarColaboradores(String cnpj) {
-        var emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        var emailColaboradores = agenteAutorizadoService.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             var usuario = repository.findByEmail(colaborador)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2149,7 +2143,7 @@ public class UsuarioService {
         ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
 
         if (!usuarioRequest.getUsuarioIds().isEmpty()) {
-            var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
+            var agenteAutorizadosUsuarioDtos = agenteAutorizadoService
                 .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
 
             usuarioCsvResponses.parallelStream().forEach(usuarioCsvResponse -> {
@@ -2311,7 +2305,7 @@ public class UsuarioService {
 
     private List<Integer> getIdUsuariosAa(Integer aaId) {
         try {
-            return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, true)
+            return agenteAutorizadoService.getUsuariosByAaId(aaId, true)
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
@@ -2485,7 +2479,7 @@ public class UsuarioService {
     }
 
     private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
-        return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, false)
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());
@@ -2510,7 +2504,7 @@ public class UsuarioService {
     }
 
     private List<Integer> buscarUsuariosIdsPorAasIds(List<Integer> aasIds, Boolean buscarInativos) {
-        return agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
+        return agenteAutorizadoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
             .stream()
             .map(UsuarioDtoVendas::getId)
             .distinct()

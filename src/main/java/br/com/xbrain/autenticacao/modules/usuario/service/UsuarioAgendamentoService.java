@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVenda
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
@@ -61,7 +60,6 @@ public class UsuarioAgendamentoService {
 
     private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
-    private final AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     private final EquipeVendasService equipeVendasService;
     private final EquipeVendasUsuarioService equipeVendasUsuarioService;
     private final UsuarioService usuarioService;
@@ -70,7 +68,7 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
-        var usuariosDoAa = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
         var usuariosIds = getUsuarioIds(usuariosDoAa);
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
@@ -205,7 +203,7 @@ public class UsuarioAgendamentoService {
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
-        var usuariosPol = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
+        var usuariosPol = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, true);
         var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
         popularEquipeVendasId(usuarios);
 

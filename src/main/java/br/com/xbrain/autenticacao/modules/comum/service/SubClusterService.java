@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class SubClusterService {
     private AutenticacaoService autenticacaoService;
 
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
 
     public List<SubClusterDto> getAllByClusterId(Integer clusterId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -87,7 +87,7 @@ public class SubClusterService {
     public List<SubClusterDto> getAtivosParaComunicados(Integer clusterId) {
         return Stream.concat(
             getAllByClusterId(clusterId).stream(),
-            agenteAutorizadoService.getSubclusters(clusterId).stream())
+            parceirosOnlineService.getSubclusters(clusterId).stream())
             .filter(distinctByKey(SubClusterDto::getId))
             .collect(Collectors.toList());
     }

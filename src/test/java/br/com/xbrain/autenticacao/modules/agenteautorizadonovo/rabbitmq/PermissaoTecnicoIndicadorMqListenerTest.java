@@ -1,7 +1,8 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.rabbitmq;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.PermissaoTecnicoIndicadorDto;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.PermissaoTecnicoIndicadorDto;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.rabbitmq.PermissaoTecnicoIndicadorMqListener;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.CustomTokenEndpointAuthenticationFilter;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
@@ -59,9 +59,9 @@ public class AutenticacaoControllerTest {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -134,7 +134,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirOsAAsPermitidos_quandoForNivelAgenteAutorizado() throws Exception {
-        when(agenteAutorizadoNovoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
@@ -149,7 +149,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirAsEmpresasDoAa_quandoForNivelAgenteAutorizado() throws Exception {
-        when(agenteAutorizadoNovoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
             .thenReturn(Arrays.asList(
                 new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
                 new Empresa(2, "NET", CodigoEmpresa.NET)
@@ -169,7 +169,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoService.getEstruturaByUsuarioIdAndAtivo(USUARIO_SOCIO_ID))
             .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);

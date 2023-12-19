@@ -1,6 +1,6 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.PermissaoTecnicoIndicadorDto;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.PermissaoTecnicoIndicadorDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -91,7 +91,7 @@ public class PermissaoTecnicoIndicadorService {
             .stream()
             .filter(usuario -> validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
             .collect(toList());
-        
+
         removerPermissaoDosUsuarios(usuarios.stream().map(Usuario::getId).collect(toList()));
     }
 

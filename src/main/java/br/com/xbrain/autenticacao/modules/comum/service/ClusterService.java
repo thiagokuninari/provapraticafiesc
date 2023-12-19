@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class ClusterService {
     private AutenticacaoService autenticacaoService;
 
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
 
     public List<ClusterDto> getAllByGrupoId(Integer grupoId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -65,7 +65,7 @@ public class ClusterService {
     public List<ClusterDto> getAtivosParaComunicados(Integer grupoId) {
         return Stream.concat(
             getAllByGrupoId(grupoId).stream(),
-            agenteAutorizadoService.getClusters(grupoId).stream())
+            parceirosOnlineService.getClusters(grupoId).stream())
             .filter(distinctByKey(ClusterDto::getId))
             .collect(Collectors.toList());
     }

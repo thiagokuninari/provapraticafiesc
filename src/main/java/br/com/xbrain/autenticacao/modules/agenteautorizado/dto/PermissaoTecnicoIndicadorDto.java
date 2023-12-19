@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.AllArgsConstructor;

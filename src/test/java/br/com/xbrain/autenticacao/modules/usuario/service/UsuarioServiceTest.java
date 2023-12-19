@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -24,7 +24,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
@@ -136,9 +136,9 @@ public class UsuarioServiceTest {
     @Mock
     private EquipeVendaD2dService equipeVendaD2dService;
     @Mock
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @Mock
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private SiteService siteService;
     @Mock
@@ -228,7 +228,7 @@ public class UsuarioServiceTest {
             .findComplete(anyInt());
 
         doReturn(true)
-            .when(agenteAutorizadoNovoService)
+            .when(agenteAutorizadoService)
             .existeAaAtivoBySocioEmail(anyString());
 
         usuarioService.ativar(umUsuarioAtivacaoDto());
@@ -304,7 +304,7 @@ public class UsuarioServiceTest {
             .getUsuarioAutenticado();
 
         doReturn("AGENTE_AUTORIZADO")
-            .when(agenteAutorizadoNovoService)
+            .when(agenteAutorizadoService)
             .getEstruturaByUsuarioId(anyInt());
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -1730,7 +1730,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosIdPorUmAaId() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
@@ -1738,7 +1738,7 @@ public class UsuarioServiceTest {
                 umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
                 umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
 
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
 
         assertThat(usuarioService.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
             .extracting("id", "nome", "email", "agenteAutorizadoId")
@@ -1749,13 +1749,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosPorUmAaId() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
             .thenReturn(Collections.emptyList());
 
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(200, 200),
             umUsuarioAgenteAutorizadoResponse(201, 200)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
@@ -1772,7 +1772,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarUsuarioAgenteAutorizadoResponse_seEncontradoPorTodosAaId() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
@@ -1780,7 +1780,7 @@ public class UsuarioServiceTest {
                 umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
                 umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
 
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(200, 200),
             umUsuarioAgenteAutorizadoResponse(201, 200)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
@@ -1799,13 +1799,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuariosId() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
         assertThat(usuarioService.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuarios() {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(usuarioRepository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
@@ -1816,7 +1816,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaVazia_quandoNaoHouverUsuariosDosAgentesAutorizados() {
-        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
+        when(agenteAutorizadoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
             .thenReturn(List.of());
 
         assertThat(usuarioService.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), null, false)))
@@ -1827,7 +1827,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosNull() {
-        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
+        when(agenteAutorizadoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(usuarioRepository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));
@@ -1840,7 +1840,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosFalse() {
-        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
+        when(agenteAutorizadoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(usuarioRepository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));
@@ -1853,7 +1853,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosTrue() {
-        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
+        when(agenteAutorizadoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(usuarioRepository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));
@@ -2070,7 +2070,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void preencheUsuarioCsvsDeAa_devePreencherColunasDeAa_seUsuarioForAa() {
-        when(agenteAutorizadoNovoService.getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest.of(List.of(2))))
+        when(agenteAutorizadoService.getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest.of(List.of(2))))
             .thenReturn(Collections.singletonList(umAgenteAutorizadoUsuarioDto()));
 
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
@@ -2110,7 +2110,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)));
-        when(agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(eq(1)))
+        when(agenteAutorizadoService.findAgenteAutorizadoByUsuarioId(eq(1)))
             .thenReturn(List.of(umAgenteAutorizadoAtivoResponse()));
 
         doReturn(umUsuarioAutenticadoNivelAa())
@@ -2139,7 +2139,7 @@ public class UsuarioServiceTest {
 
         assertThatCode(() -> usuarioService.save(usuarioCompleto)).doesNotThrowAnyException();
 
-        verifyNoMoreInteractions(agenteAutorizadoNovoService);
+        verifyNoMoreInteractions(agenteAutorizadoService);
     }
 
     @Test
@@ -3028,14 +3028,14 @@ public class UsuarioServiceTest {
         verify(autenticacaoService, times(1)).getUsuarioId();
         verify(usuarioRepository, times(1)).findById(eq(1));
         verify(usuarioRepository, never()).getUsuariosCompletoSubordinados(any());
-        verify(agenteAutorizadoNovoService, never()).findAgentesAutorizadosByUsuariosIds(anyList(), anyBoolean());
+        verify(agenteAutorizadoService, never()).findAgentesAutorizadosByUsuariosIds(anyList(), anyBoolean());
     }
 
     @Test
     public void getSubordinadosAndAasDoUsuario_deveRetornarIntegracaoException_quandoNaoPuderRecuperarAas() {
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuarioTopHierarquia()));
-        when(agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(List.of(1), true))
+        when(agenteAutorizadoService.findAgentesAutorizadosByUsuariosIds(List.of(1), true))
             .thenThrow(new IntegracaoException(ERRO_BUSCAR_TODOS_AAS_DO_USUARIO.getDescricao()));
 
         assertThatExceptionOfType(IntegracaoException.class)
@@ -3045,7 +3045,7 @@ public class UsuarioServiceTest {
         verify(autenticacaoService, times(1)).getUsuarioId();
         verify(usuarioRepository, times(1)).findById(eq(1));
         verify(usuarioRepository, times(1)).getUsuariosCompletoSubordinados(eq(1));
-        verify(agenteAutorizadoNovoService, times(1))
+        verify(agenteAutorizadoService, times(1))
             .findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true));
     }
 
@@ -3057,7 +3057,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.getUsuariosCompletoSubordinados(1))
             .thenReturn(List.of(usuarioSubordinadoDtoDtoResponse(22),
                 umOutroUsuarioSubordinadoDtoDtoResponse(33)));
-        when(agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(List.of(22, 33, 1), true))
+        when(agenteAutorizadoService.findAgentesAutorizadosByUsuariosIds(List.of(22, 33, 1), true))
             .thenReturn(umaListaDeAgenteAutorizadoResponse());
 
         assertThat(usuarioService.getSubordinadosAndAasDoUsuario(true))
@@ -3076,7 +3076,7 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findById(eq(1));
         verify(usuarioRepository, times(1))
             .getUsuariosCompletoSubordinados(eq(1));
-        verify(agenteAutorizadoNovoService, times(1))
+        verify(agenteAutorizadoService, times(1))
             .findAgentesAutorizadosByUsuariosIds(eq(List.of(22, 33, 1)), eq(true));
     }
 
@@ -3088,7 +3088,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.getUsuariosCompletoSubordinados(1))
             .thenReturn(List.of(usuarioSubordinadoDtoDtoResponse(22),
                 umOutroUsuarioSubordinadoDtoDtoResponse(33)));
-        when(agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(List.of(22, 33, 1), true))
+        when(agenteAutorizadoService.findAgentesAutorizadosByUsuariosIds(List.of(22, 33, 1), true))
             .thenReturn(umaListaDeAgenteAutorizadoResponse());
 
         assertThat(usuarioService.getSubordinadosAndAasDoUsuario(false))
@@ -3104,38 +3104,38 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findById(eq(1));
         verify(usuarioRepository, times(1))
             .getUsuariosCompletoSubordinados(eq(1));
-        verify(agenteAutorizadoNovoService, times(1))
+        verify(agenteAutorizadoService, times(1))
             .findAgentesAutorizadosByUsuariosIds(eq(List.of(22, 33, 1)), eq(true));
     }
 
     @Test
     public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaRegionalIdInformada() {
-        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(1, 2));
         var filtros = PublicoAlvoComunicadoFiltros.builder().regionalId(1027).build();
         assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
 
-        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+        verify(agenteAutorizadoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
     }
 
     @Test
     public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaUfIdInformada() {
-        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(1, 2));
         var filtros = PublicoAlvoComunicadoFiltros.builder().ufId(1).build();
         assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
 
-        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+        verify(agenteAutorizadoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
     }
 
     @Test
     public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaCidadeIdsInformada() {
-        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(1, 2));
         var filtros = PublicoAlvoComunicadoFiltros.builder().cidadesIds(List.of(5578)).build();
         assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
 
-        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+        verify(agenteAutorizadoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
     }
 
     @Test

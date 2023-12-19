@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.dto;
 
 import java.util.List;
 

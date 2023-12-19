@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
+@Getter
+@AllArgsConstructor
 public enum EErrors {
 
     ERRO_CONVERTER_EXCEPTION(
@@ -141,17 +143,12 @@ public enum EErrors {
         "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
     ERRO_AO_LIMPAR_CPF_COLABORADOR("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#046 - Ocorreu um erro ao tentar limpar o CPF do colaborador.");
+        "#046 - Ocorreu um erro ao tentar limpar o CPF do colaborador."),
+    ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA(
+        "#047 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#047 - Erro ao obter os emails dos colaboradores do agente autorizado.");
 
+    private final String descricao;
+    private final String descricaoTecnica;
 
-    @Getter
-    @Setter
-    private String descricao;
-    @Getter
-    private String descricaoTecnica;
-
-    EErrors(String descricao, String descricaoTecnica) {
-        this.descricao = descricao;
-        this.descricaoTecnica = descricaoTecnica;
-    }
 }

@@ -1,7 +1,8 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import feign.RetryableException;
@@ -21,12 +22,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AgenteAutorizadoNovoServiceTest {
+public class AgenteAutorizadoServiceTest {
 
     @InjectMocks
-    private AgenteAutorizadoNovoService service;
+    private AgenteAutorizadoService service;
     @Mock
-    private AgenteAutorizadoNovoClient client;
+    private AgenteAutorizadoClient client;
 
     @Test
     public void buscarTodosUsuariosDosAas_integracaoException_seApiIndisponivel() {

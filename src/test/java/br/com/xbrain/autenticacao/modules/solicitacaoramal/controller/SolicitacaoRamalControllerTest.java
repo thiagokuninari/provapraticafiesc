@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
@@ -9,7 +9,7 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeV
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
@@ -71,9 +71,9 @@ public class SolicitacaoRamalControllerTest {
     @MockBean
     private SolicitacaoRamalHistoricoService historicoService;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private EquipeVendasService equipeVendasService;
     @MockBean
@@ -85,9 +85,9 @@ public class SolicitacaoRamalControllerTest {
 
     @Before
     public void setUp() {
-        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
-        when(agenteAutorizadoNovoService.getAaById(anyInt())).thenReturn(criaAa());
+        when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getDadosAdicionais_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
+        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
         when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1)).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());

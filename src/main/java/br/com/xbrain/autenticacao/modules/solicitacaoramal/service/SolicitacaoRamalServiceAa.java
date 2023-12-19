@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
@@ -48,11 +47,9 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
     @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -90,7 +87,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         validarParametroAa(request);
 
         var usuarioId = autenticacaoService.getUsuarioId();
-        var agenteAutorizado = agenteAutorizadoNovoService.getAaById(request.getAgenteAutorizadoId());
+        var agenteAutorizado = agenteAutorizadoService.getAaById(request.getAgenteAutorizadoId());
         var solicitacaoRamal = SolicitacaoRamal
             .convertFrom(request, usuarioId, dataHoraAtual.getDataHora(), agenteAutorizado);
         solicitacaoRamal.retirarMascara();
@@ -134,7 +131,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
         var usuario = usuarioService.findComplete(autenticacaoService.getUsuarioId());
-        return agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(usuario);
+        return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
     private void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
@@ -185,7 +182,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
-        var agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(filtros.getAgenteAutorizadoId());
+        var agenteAutorizadoResponse = agenteAutorizadoService.getAaById(filtros.getAgenteAutorizadoId());
 
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
@@ -221,7 +218,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
         solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
-            agenteAutorizadoNovoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId()));
+            agenteAutorizadoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId()));
         solicitacaoEncontrada.retirarMascara();
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));

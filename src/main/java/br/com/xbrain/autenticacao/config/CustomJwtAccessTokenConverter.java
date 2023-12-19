@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
@@ -47,7 +47,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private EquipeVendasService equipeVendasService;
     @Autowired
@@ -90,13 +90,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-            ? agenteAutorizadoNovoService.getAasPermitidos(usuario.getId())
+            ? agenteAutorizadoService.getAasPermitidos(usuario.getId())
             : Collections.emptyList();
     }
 
     private List<Empresa> getEmpresasDoUsuario(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-            ? agenteAutorizadoNovoService.getEmpresasPermitidas(usuario.getId())
+            ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
             : usuario.getEmpresas();
     }
 
@@ -121,7 +121,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
-        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
     private String getTipoCanal(Usuario usuario) {
