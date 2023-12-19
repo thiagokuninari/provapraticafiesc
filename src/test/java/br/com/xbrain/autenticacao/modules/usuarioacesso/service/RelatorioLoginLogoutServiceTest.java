@@ -188,21 +188,21 @@ public class RelatorioLoginLogoutServiceTest {
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
+
+        mockAutenticacao(usuarioAutenticado);
+        mockBuscarUsuariosPermitidosIds(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(usuarioRepository.findAllIds(predicateBuscaIds)).thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
         var predicate = new UsuarioPredicate()
             .comIds(List.of(100, 2002, 1))
             .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
             .build();
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16))))
+            .thenReturn(List.of(100, 2002, 1));
         var lista = List.of(
             UsuarioNomeResponse.of(100, "Hwasa Maria", ESituacao.A),
             UsuarioNomeResponse.of(2002, "Ary da Disney", ESituacao.A),
             UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
         );
-
-        mockAutenticacao(usuarioAutenticado);
-        mockBuscarUsuariosPermitidosIds(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
-        when(usuarioRepository.findAllIds(predicateBuscaIds)).thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
-        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16))))
-            .thenReturn(List.of(100, 2002, 1));
         when(usuarioRepository.findAllUsuariosNomeComSituacao(predicate, QUsuario.usuario.nome.upper().asc()))
             .thenReturn(lista);
 
@@ -216,12 +216,12 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getColaboradores_deveAplicarPredicateNaoRetornarNenhumUsuario_quandoNaoHouverRegistroParaOsUsuariosPermitidos() {
-        var predicateArgCaptor = ArgumentCaptor.forClass(Predicate.class);
-
         mockAutenticacao(umUsuarioXBrain());
 
         assertThat(service.getColaboradores(ECanal.D2D_PROPRIO, null, null))
             .isEqualTo(List.of());
+
+        var predicateArgCaptor = ArgumentCaptor.forClass(Predicate.class);
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioRepository).findAllUsuariosNomeComSituacao(predicateArgCaptor.capture(), any());

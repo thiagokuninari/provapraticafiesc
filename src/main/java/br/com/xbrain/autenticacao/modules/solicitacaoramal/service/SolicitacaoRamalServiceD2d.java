@@ -53,13 +53,13 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     private final AutenticacaoService autenticacaoService;
     private final SolicitacaoRamalService solicitacaoRamalService;
     private final SolicitacaoRamalHistoricoService historicoService;
-    private final SolicitacaoRamalRepository solicitacaoRamalRepository;
+    private final SolicitacaoRamalRepository repository;
 
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
     public Page<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        var solicitacoes = solicitacaoRamalRepository
+        var solicitacoes = repository
             .findAllGerenciaD2d(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
@@ -68,10 +68,6 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
             .collect(Collectors.toList()),
             pageable,
             solicitacoes.getTotalElements());
-    }
-
-    private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
-        return filtros.toPredicate().build();
     }
 
     @Override
@@ -83,11 +79,33 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         var solicitacaoRamal = SolicitacaoRamal.convertFrom(request, usuarioId, dataHoraAtual.getDataHora());
         solicitacaoRamal.retirarMascara();
 
-        var solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
+        var solicitacaoRamalPersistida = repository.save(solicitacaoRamal);
         enviarEmailAposCadastro(solicitacaoRamalPersistida);
 
         gerarHistorico(solicitacaoRamalPersistida, null);
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+    }
+
+    @Override
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        var subCanalDto = subCanalService.getSubCanalById(filtros.getSubCanalId());
+
+        return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
+            getTelefoniaPelaDiscadoraId(subCanalDto),
+            getQuantidadeRamaisPeloSubCanal(ECanal.D2D_PROPRIO, filtros.getSubCanalId()));
+    }
+
+    @Override
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+        var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
+        solicitacaoEncontrada.editar(request);
+        solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
+        solicitacaoEncontrada.retirarMascara();
+        return SolicitacaoRamalResponse.convertFrom(repository.save(solicitacaoEncontrada));
+    }
+
+    private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
+        return filtros.toPredicate().build();
     }
 
     private void validarSolicitacaoAberta(SolicitacaoRamalRequest request) {
@@ -121,7 +139,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
             .and(solicitacaoRamal.situacao.eq(PENDENTE)
                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO)));
 
-        return !solicitacaoRamalRepository.findAllByPredicate(predicate).isEmpty();
+        return !repository.findAllByPredicate(predicate).isEmpty();
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
@@ -173,15 +191,6 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
             .collect(Collectors.toList());
     }
 
-    @Override
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
-        var subCanalDto = subCanalService.getSubCanalById(filtros.getSubCanalId());
-
-        return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
-            getTelefoniaPelaDiscadoraId(subCanalDto),
-            getQuantidadeRamaisPeloSubCanal(ECanal.D2D_PROPRIO, filtros.getSubCanalId()));
-    }
-
     private Integer getQuantidadeRamaisPeloSubCanal(ECanal canal, Integer subCanalId) {
         return callService.obterRamaisParaCanal(canal, subCanalId).size();
     }
@@ -192,14 +201,5 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         }
 
         return "";
-    }
-
-    @Override
-    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
-        solicitacaoEncontrada.editar(request);
-        solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
-        solicitacaoEncontrada.retirarMascara();
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
     }
 }

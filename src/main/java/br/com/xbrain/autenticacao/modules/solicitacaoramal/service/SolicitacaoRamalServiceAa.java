@@ -144,8 +144,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
-        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(aaId)
-            .size() > 0;
+        return !solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(aaId).isEmpty();
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {

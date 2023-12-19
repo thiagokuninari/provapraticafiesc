@@ -10,9 +10,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalF
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.groups.Tuple;
@@ -28,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHelper.umUsuarioGerenteOperacao;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SolicitacaoRamalHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -287,13 +286,5 @@ public class SolicitacaoRamalServiceTest {
 
         verify(historicoRepository, never()).deleteAll(1);
         verify(repository, never()).delete(solicitacaoRamalEmAndamento);
-    }
-
-    private UsuarioAutenticado umUsuarioGerenteOperacao() {
-        return UsuarioAutenticado.builder()
-            .id(1)
-            .usuario(Usuario.builder().id(1).build())
-            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
-            .build();
     }
 }

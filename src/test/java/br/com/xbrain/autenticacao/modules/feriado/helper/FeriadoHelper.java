@@ -204,4 +204,14 @@ public class FeriadoHelper {
             .tipoFeriado(ETipoFeriado.NACIONAL)
             .build();
     }
+
+    public static Feriado umFeriadoNacional() {
+        return Feriado.builder()
+            .id(1234)
+            .nome("FERIADO NACIONAL")
+            .dataFeriado(LocalDate.of(2019, 9, 23))
+            .dataCadastro(LocalDateTime.of(2018, 11, 11, 11, 11, 11))
+            .tipoFeriado(ETipoFeriado.NACIONAL)
+            .build();
+    }
 }
