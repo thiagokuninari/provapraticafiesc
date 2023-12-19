@@ -1537,17 +1537,6 @@ public class UsuarioServiceTest {
             .build();
     }
 
-    private Usuario umUsuarioAtivoComEmail(String email) {
-        return Usuario.builder()
-            .id(10)
-            .cpf("98471883007")
-            .nome("Usuario Ativo")
-            .situacao(A)
-            .email(email)
-            .usuarioCadastro(new Usuario(1))
-            .build();
-    }
-
     private Usuario umUsuarioInativo() {
         return Usuario.builder()
             .id(11)
