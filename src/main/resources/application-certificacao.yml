@@ -32,6 +32,7 @@ app-config:
   url: https://autenticacao-crt.conexaoclarobrasil.com.br
   upload-foto-usuario: public/certificacao/autenticacao/usuario/foto/
   url-foto-usuario: ${app-config.minio.public}/certificacao/autenticacao/usuario/foto/
+  dominios-social-hub: XBRAIN.COM.BR,@CLARO.COM.BR,NET.COM.BR,EMBRATEL.COM.BR,CLARONXT.COM.BR,GLOBALHITSS.COM.BR,USTORE.COM.BR
 
   services:
     autenticacao:

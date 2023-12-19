@@ -55,6 +55,7 @@ import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -100,6 +101,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umN
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
@@ -212,6 +214,12 @@ public class UsuarioServiceTest {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Mock
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
+
+    @Before
+    public void setUp() {
+        ReflectionTestUtils.setField(service, "dominiosPermitidos",
+            new HashSet<>(Arrays.asList("EMAILPERMITIDO.COM.BR")));
+    }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1526,6 +1534,17 @@ public class UsuarioServiceTest {
             .nome("Usuario Ativo")
             .situacao(A)
             .email("usuarioativo@email.com")
+            .build();
+    }
+
+    private Usuario umUsuarioAtivoComEmail(String email) {
+        return Usuario.builder()
+            .id(10)
+            .cpf("98471883007")
+            .nome("Usuario Ativo")
+            .situacao(A)
+            .email(email)
+            .usuarioCadastro(new Usuario(1))
             .build();
     }
 
@@ -3869,6 +3888,66 @@ public class UsuarioServiceTest {
         verify(autenticacaoService).getUsuarioAutenticadoId();
         verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
         verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void save_deveAdicionarPermissaoSocialHub_quandoDominioEmailValido() {
+        var usuario = umUsuario();
+        usuario.setSituacao(ESituacao.A);
+        usuario.setUsuariosHierarquia(new HashSet<>());
+        usuario.setEmail("teste@emailpermitido.com.br");
+        usuario.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+        usuario.setUsuarioCadastro(new Usuario(1));
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(1)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(30000)
+                    .build(),
+                Usuario.builder()
+                    .id(1)
+                    .build()
+            );
+    }
+
+    @Test
+    public void save_naoDeveAdicionarPermissaoSocialHub_quandoDominioEmailInvalido() {
+        var usuario = umUsuario();
+        usuario.setSituacao(ESituacao.A);
+        usuario.setUsuariosHierarquia(new HashSet<>());
+        usuario.setEmail("teste@dominionaopermitido.com");
+        usuario.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+        usuario.setUsuarioCadastro(new Usuario(1));
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService, never()).save(anyList());
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
