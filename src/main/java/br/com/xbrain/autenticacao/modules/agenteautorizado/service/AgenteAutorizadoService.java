@@ -244,48 +244,40 @@ public class AgenteAutorizadoService {
     public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
         try {
             return client.getUsuariosAaAtivoComVendedoresD2D(aaId);
-        } catch (RetryableException ex) {
+        } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
     public List<String> recuperarColaboradoresDoAgenteAutorizado(String cnpj) {
         try {
             return client.recuperarColaboradoresDoAgenteAutorizado(cnpj);
-        } catch (RetryableException ex) {
+        } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(Integer aaId, Integer usuarioId) {
         try {
             return client.getUsuariosByAaIdCanalDoUsuario(aaId, usuarioId);
-        } catch (RetryableException ex) {
+        } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
     public List<Integer> getUsuariosIdsSuperioresPol() {
         try {
             return client.getUsuariosIdsSuperioresPol();
-        } catch (RetryableException ex) {
+        } catch (HystrixBadRequestException | RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 }
