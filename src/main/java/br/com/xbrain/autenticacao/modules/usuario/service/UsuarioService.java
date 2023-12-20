@@ -160,6 +160,7 @@ public class UsuarioService {
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR);
+    private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
 
     @Autowired
     private UsuarioRepository repository;
@@ -255,6 +256,8 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
+    private Set<String> dominiosPermitidos;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -587,6 +590,7 @@ public class UsuarioService {
             removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
+            adicionarPermissaoSocialHubParaNovoUsuario(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
@@ -2993,5 +2997,27 @@ public class UsuarioService {
 
     private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
+    }
+
+    private void adicionarPermissaoSocialHubParaNovoUsuario(Usuario usuario) {
+        var email = usuario.getEmail();
+        var dominio = extractDominio(email);
+
+        if (dominiosPermitidos.contains(dominio)) {
+            permissaoEspecialService.save(criarPermissaoEspecialSocialHub(usuario.getId(),
+                usuario.getUsuarioCadastro().getId()));
+        }
+    }
+
+    private String extractDominio(String email) {
+        int atIndex = email.lastIndexOf("@");
+        if (atIndex != -1) {
+            return email.substring(atIndex + 1);
+        }
+        return "";
+    }
+
+    private List<PermissaoEspecial> criarPermissaoEspecialSocialHub(Integer usuarioId, Integer usuarioCadastroId) {
+        return criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, FUNCIONALIDADES_SOCIAL_HUB);
     }
 }
