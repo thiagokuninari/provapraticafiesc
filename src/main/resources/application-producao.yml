@@ -80,6 +80,8 @@ app-config:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
       url: http://172.10.10.49:8100
+    checagem-credito:
+      url: http://checagem-credito-api:8037
 
   email:
     enviar: true

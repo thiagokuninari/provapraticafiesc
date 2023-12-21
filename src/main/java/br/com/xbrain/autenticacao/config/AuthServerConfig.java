@@ -42,6 +42,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
+import static br.com.xbrain.autenticacao.config.EScopes.CHECAGEM_CREDITO_API;
 
 @Configuration
 @EnableAuthorizationServer
@@ -170,6 +171,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String bloqueioLigacaoApiClient;
     @Value("${app-config.oauth-clients.bloqueio-ligacao-api.secret}")
     private String bloqueioLigacaoApiSecret;
+    @Value("${app-config.oauth-clients.checagem-credito-api.client}")
+    private String checagemCreditoApiClient;
+    @Value("${app-config.oauth-clients.checagem-credito-api.secret}")
+    private String checagemCreditoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -356,7 +361,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(bloqueioLigacaoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(BLOQUEIO_LIGACAO_API.getScope())
-            .authorities(ROLE_APPLICATION);
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(checagemCreditoApiClient)
+            .secret(checagemCreditoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CHECAGEM_CREDITO_API.getScope());
     }
 
     @Override

@@ -238,6 +238,9 @@ app-config:
     bloqueio-ligacao-api:
       client: bloqueio-ligacao-api
       secret: bl0qu310l1g4c404p1
+    checagem-credito-api:
+      client: checagem-credito-api
+      secret: ch3c4g3mcr3d1t04p1
 
   services:
     autenticacao:
@@ -298,6 +301,9 @@ app-config:
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    checagem-credito:
+      #url: http://localhost:8037
+      url: http://192.168.50.1:8037
 
 flyway:
   enabled: true
