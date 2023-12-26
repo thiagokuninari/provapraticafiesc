@@ -288,7 +288,7 @@ app-config:
       url: http://192.168.50.1:6595
     emails:
       #url: http://localhost:8080
-      url: http://api-hom.conexaoclarobrasil.com.br/email
+      url: https://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545

@@ -95,7 +95,8 @@ public class UsuarioServiceEsqueciSenha {
     public void resetarSenha(String hash) {
         try {
             Claims deserializedHash = jsonWebTokenService.validateTokenPasswordReset(hash).getBody();
-            Usuario usuario = repository.findUsuarioByEmail(deserializedHash.get("email").toString())
+            Usuario usuario = repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(
+                deserializedHash.get("email").toString(), R)
                     .orElseThrow(() -> EX_NAO_ENCONTRADO);
             if (usuario.getRecuperarSenhaHash() != null && usuario.getRecuperarSenhaHash().contentEquals(hash)) {
 
