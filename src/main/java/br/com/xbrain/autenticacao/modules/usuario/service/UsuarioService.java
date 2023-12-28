@@ -285,11 +285,10 @@ public class UsuarioService {
     }
 
     public Usuario findByIdComAa(int id) {
-        return repository.findOne(
-                new UsuarioPredicate()
-                    .comId(id)
-                    .build())
-            .forceLoad();
+        return
+            repository.findById(id)
+                .map(Usuario::forceLoad)
+                .orElseThrow(() -> new ValidacaoException("Usuario não encontrado."));
     }
 
     public UsuarioDto getUsuarioById(int id) {
