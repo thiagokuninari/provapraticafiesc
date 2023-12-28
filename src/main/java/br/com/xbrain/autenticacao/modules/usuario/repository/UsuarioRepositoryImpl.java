@@ -1417,7 +1417,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .selectFrom(usuario)
             .leftJoin(usuario.historicosSenhaIncorretas, usuarioSenhaIncorretaHistorico).fetchJoin()
-            .where(usuario.email.eq(email))
+            .where(usuario.email.eq(email)
+                .and(usuario.situacao.eq(A)))
             .fetchOne());
     }
 

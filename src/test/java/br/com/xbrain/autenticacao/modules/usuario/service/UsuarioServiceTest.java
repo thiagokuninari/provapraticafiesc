@@ -3412,6 +3412,17 @@ public class UsuarioServiceTest {
         verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
     }
 
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_naoDeveGerarHistorico_quandoUsuarioInativo() {
+        var usuarioInativo = umUsuarioInativo();
+        when(repository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(usuarioInativo.getEmail()))
+            .thenReturn(Optional.empty());
+
+        service.gerarHistoricoTentativasLoginSenhaIncorreta(usuarioInativo.getEmail());
+
+        verify(repository, never()).save(usuarioInativo);
+    }
+
     private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {
         return MotivoInativacao.builder()
             .id(1)
