@@ -3420,6 +3420,7 @@ public class UsuarioServiceTest {
 
         service.gerarHistoricoTentativasLoginSenhaIncorreta(usuarioInativo.getEmail());
 
+        verify(repository).findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(usuarioInativo.getEmail());
         verify(repository, never()).save(usuarioInativo);
     }
 
