@@ -244,6 +244,9 @@ app-config:
     quality-call-api:
       client: quality-call-api
       secret: qu4l1tyc4ll4p1
+    integracao-claro-net-api:
+      client: integracao-claro-net-api
+      secret: 1nt3gr4c40cl4r0n3t
 
   services:
     autenticacao:

@@ -43,6 +43,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
+import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_CLARO_NET;
 
 @Configuration
 @EnableAuthorizationServer
@@ -175,6 +176,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String qualityCallApiClient;
     @Value("${app-config.oauth-clients.quality-call-api.secret}")
     private String qualityCallApiSecret;
+    @Value("${app-config.oauth-clients.integracao-claro-net-api.client}")
+    private String integracaoClaroNetApiClient;
+    @Value("${app-config.oauth-clients.integracao-claro-net-api.secret}")
+    private String integracaoClaroNetApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -368,6 +373,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(qualityCallApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(QUALITY_CALL.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(integracaoClaroNetApiClient)
+            .secret(integracaoClaroNetApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(INTEGRACAO_CLARO_NET.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
