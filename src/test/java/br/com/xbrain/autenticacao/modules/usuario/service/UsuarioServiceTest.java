@@ -3878,10 +3878,12 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.findByIdComAa(1))
             .withMessage("Usuario não encontrado.");
+
+        verify(repository).findById(1);
     }
 
     @Test
-    public void findByIdComAa_deveRetornarUmUsuario_quandoUsuarioNao() {
+    public void findByIdComAa_deveRetornarUmUsuario_quandoUsuarioEncontrado() {
         var usuario = umUsuarioCompleto();
         when(repository.findById(1)).thenReturn(Optional.of(usuario));
 

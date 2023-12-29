@@ -121,7 +121,7 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.of(
-            usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
+            usuarioService.findCompleteById(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
