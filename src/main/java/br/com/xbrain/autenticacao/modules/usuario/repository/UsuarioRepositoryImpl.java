@@ -699,7 +699,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email) {
+    public Optional<Usuario> findByEmailIgnoreCase(String email) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
                 .select(usuario)
