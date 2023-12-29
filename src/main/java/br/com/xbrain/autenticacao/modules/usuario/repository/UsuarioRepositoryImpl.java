@@ -93,11 +93,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R))
-                )
-                .fetchOne());
+                .where(usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R)))
+                .orderBy(usuario.dataCadastro.desc())
+                .fetchFirst());
     }
 
     public Optional<Usuario> findUsuarioByEmail(String email) {
@@ -700,7 +699,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao) {
+    public Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
                 .select(usuario)
@@ -709,11 +708,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R))
-                )
-                .fetchOne());
+                .where(usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R)))
+                .orderBy(usuario.dataCadastro.desc())
+                .fetchFirst());
     }
 
     @Override

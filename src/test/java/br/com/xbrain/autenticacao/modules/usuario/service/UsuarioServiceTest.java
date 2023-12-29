@@ -3883,6 +3883,26 @@ public class UsuarioServiceTest {
         verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
+    @Test
+    public void findByEmail_deveRetornarUmUsuario_quandoUsuarioAtivo() {
+        var usuario = umUsuarioCompleto();
+        when(repository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+
+        assertThat(service.findByEmail(usuario.getEmail())).isNotNull();
+        verify(repository).findByEmail(usuario.getEmail());
+    }
+
+    @Test
+    public void findByEmail_deveLancarException_quandoUsuarioNaoEncontrado() {
+        var usuarioInativo = umUsuarioInativo();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findByEmail(usuarioInativo.getEmail()))
+            .withMessage("Usuário não encontrado.");
+
+        verify(repository).findByEmail(usuarioInativo.getEmail());
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
@@ -4171,6 +4191,7 @@ public class UsuarioServiceTest {
                 .build())
             .unidadesNegocios(List.of(UnidadeNegocio
                 .builder()
+                .id(1)
                 .nome("UNIDADE NEGÓCIO UM")
                 .build()))
             .empresas(List.of(Empresa
