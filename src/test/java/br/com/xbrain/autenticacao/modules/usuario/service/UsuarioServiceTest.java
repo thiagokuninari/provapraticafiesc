@@ -3273,7 +3273,7 @@ public class UsuarioServiceTest {
         verify(feederService, times(1))
             .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
         verify(permissaoTecnicoIndicadorService, times(1))
-            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest), eq(false));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 
@@ -3313,7 +3313,7 @@ public class UsuarioServiceTest {
         verify(feederService, times(1))
             .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
         verify(permissaoTecnicoIndicadorService, times(1))
-            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest), eq(false));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 

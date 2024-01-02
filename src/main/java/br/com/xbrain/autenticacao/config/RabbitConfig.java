@@ -92,12 +92,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-remanejar-pol}")
     private String usuarioRemanejarPol;
 
-    @Value("${app-config.queue.usuario-remanejado-aut}")
-    private String usuarioRemanejadoAut;
-
-    @Value("${app-config.queue.usuario-remanejado-aut-failure}")
-    private String usuarioRemanejadoAutFailure;
-
     @Value("${app-config.queue.atualizar-permissao-feeder}")
     private String atualizarPermissaoFeederMq;
 
@@ -294,16 +288,6 @@ public class RabbitConfig {
     @Bean
     Queue usuarioRemanejarPol() {
         return new Queue(usuarioRemanejarPol, false);
-    }
-
-    @Bean
-    Queue usuarioRemanejadoAut() {
-        return new Queue(usuarioRemanejadoAut, false);
-    }
-
-    @Bean
-    Queue usuarioRemanejadoAutFailure() {
-        return new Queue(usuarioRemanejadoAutFailure, false);
     }
 
     @Bean
@@ -523,16 +507,6 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioRemanejarPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioRemanejarPol()).to(exchange).with(usuarioRemanejarPol);
-    }
-
-    @Bean
-    public Binding usuarioRemanejadoAutBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioRemanejadoAut()).to(exchange).with(usuarioRemanejadoAut);
-    }
-
-    @Bean
-    public Binding usuarioRemanejadoAutFailureBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioRemanejadoAutFailure()).to(exchange).with(usuarioRemanejadoAutFailure);
     }
 
     @Bean

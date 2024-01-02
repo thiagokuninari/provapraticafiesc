@@ -1219,7 +1219,7 @@ public class UsuarioService {
 
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             permissaoTecnicoIndicadorService
-                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest, false  );
             criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -1239,7 +1239,7 @@ public class UsuarioService {
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 permissaoTecnicoIndicadorService
-                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest, false);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1287,47 +1287,54 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+            var usuarioNovo = duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+            gerarHistoricoAtivoAposRemanejamento(usuarioNovo);
+            adicionarPermissoesEspeciais(usuarioNovo, usuarioMqRequest);
         } catch (Exception ex) {
-            enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
-            log.error("Erro ao processar usuário da fila: ", ex);
+            log.error("Falha ao remanejar usuário {}: \n", usuarioMqRequest.getId(), ex);
+            throw new ValidacaoException("Ocorreu um erro ao remanejar o usuário.");
         }
     }
 
-    @Transactional
-    private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+    private Usuario duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+        log.info("Inicia processo de remanejamento para usuário {}.", usuarioMqRequest.getId());
         usuario.removerCaracteresDoCpf();
         var usuarioAntigoId = usuario.getId();
         salvarUsuarioRemanejado(usuario);
-        permissaoTecnicoIndicadorService
-            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
-        var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
-        gerarHistoricoAtivoAposRemanejamento(usuario);
-        repository.save(usuarioNovo);
-        enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId));
-        feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
-        permissaoTecnicoIndicadorService
-            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService.removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+        var usuarioNovo = repository.save(criaNovoUsuarioAPartirDoRemanejado(usuario));
+        var remanejamentoRequest = UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId);
+        colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        log.info("Usuário remanejado com sucesso. Usuário Antigo {} | Usuário Novo {} | Agente Autorizado: {}",
+            usuarioMqRequest.getId(), usuarioNovo.getId(), usuarioMqRequest.getAgenteAutorizadoId());
+
+        return usuarioNovo;
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
+        log.info("Remanejando usuário {}.", usuarioRemanejado.getId());
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
+        log.info("Usuário remanejado com sucesso.");
     }
 
     private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
+        log.info("Criando novo usuário a partir do usuário {} remanejado.", usuario.getId());
         validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         usuario.setId(null);
+        log.info("Novo usuário criado com sucesso.");
+
         return usuario;
     }
 
@@ -1339,8 +1346,19 @@ public class UsuarioService {
     }
 
     private void gerarHistoricoAtivoAposRemanejamento(Usuario usuario) {
-        usuario.getHistoricos().clear();
+        log.info("Adicionando histórico de remanejamento para usuário {}.", usuario.getId());
+        Optional.ofNullable(usuario.getHistoricos()).ifPresent(List::clear);
         usuario.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuario, REMANEJAMENTO));
+        repository.save(usuario);
+        log.info("Histórico de remanejamento adicionado com sucesso.");
+    }
+
+    private void adicionarPermissoesEspeciais(Usuario usuarioNovo, UsuarioMqRequest usuarioMqRequest) {
+        log.info("Adicionando permissões especiais para usuário {}.", usuarioNovo.getId());
+        feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest, true);
+        log.info("Permissões especiais adicionadas com sucesso.");
     }
 
     public boolean isAlteracaoCpf(Usuario usuario) {
@@ -1436,14 +1454,6 @@ public class UsuarioService {
 
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
-    }
-
-    private void enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
-        atualizarUsuarioMqSender.sendUsuarioRemanejadoAut(request);
-    }
-
-    private void enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
-        atualizarUsuarioMqSender.sendErrorUsuarioRemanejadoAut(request);
     }
 
     private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {

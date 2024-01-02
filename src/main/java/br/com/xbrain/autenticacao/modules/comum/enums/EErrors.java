@@ -146,7 +146,10 @@ public enum EErrors {
         "#046 - Ocorreu um erro ao tentar limpar o CPF do colaborador."),
     ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA(
         "#047 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#047 - Erro ao obter os emails dos colaboradores do agente autorizado.");
+        "#047 - Erro ao obter os emails dos colaboradores do agente autorizado."),
+    ERRO_REMANEJAR_COLABORADOR_POL(
+        "#048 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#048 - Ocorreu um erro ao remanejar um colaborador do Parceiros Online.");
 
     private final String descricao;
     private final String descricaoTecnica;

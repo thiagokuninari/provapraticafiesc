@@ -140,7 +140,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .build();
         var usuario = new UsuarioDto(4);
 
-        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
         verify(permissaoEspecialService, times(1)).save(anyList());
     }
@@ -153,7 +153,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .build();
         var usuario = new UsuarioDto(4);
 
-        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
         verify(permissaoEspecialService, never()).save(anyList());
     }
@@ -167,7 +167,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .build();
         var usuario = new UsuarioDto(4);
 
-        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
         verify(permissaoEspecialService, never()).save(anyList());
     }
@@ -183,7 +183,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .build();
         var usuario = new UsuarioDto(4);
 
-        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request);
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
         verify(permissaoEspecialService, never()).save(anyList());
     }

@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
-import com.netflix.hystrix.exception.HystrixTimeoutException;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -205,7 +204,8 @@ public class AgenteAutorizadoServiceTest {
 
         assertThat(service.getUsuariosByAaIdCanalDoUsuario(1, 2))
             .extracting(UsuarioAgenteAutorizadoAgendamentoResponse::getId, UsuarioAgenteAutorizadoAgendamentoResponse::getNome,
-                UsuarioAgenteAutorizadoAgendamentoResponse::getEquipeVendasNome, UsuarioAgenteAutorizadoAgendamentoResponse::getEquipeVendasId,
+                UsuarioAgenteAutorizadoAgendamentoResponse::getEquipeVendasNome,
+                UsuarioAgenteAutorizadoAgendamentoResponse::getEquipeVendasId,
                 UsuarioAgenteAutorizadoAgendamentoResponse::getSupervisorNome)
             .containsExactlyInAnyOrder(
                 tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS", null, null, null),

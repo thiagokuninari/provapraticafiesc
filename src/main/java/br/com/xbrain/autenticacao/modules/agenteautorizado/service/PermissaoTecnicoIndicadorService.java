@@ -49,13 +49,18 @@ public class PermissaoTecnicoIndicadorService {
         }
     }
 
-    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto usuarioDto, UsuarioMqRequest usuarioMqRequest) {
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto usuarioDto,
+                                                                  UsuarioMqRequest usuarioMqRequest,
+                                                                  boolean isRemanejamento) {
         if (usuarioMqRequest.isTecnicoIndicador()
             && LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioMqRequest.getCargo())
-            && (usuarioMqRequest.isNovoCadastro() || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
+            && (isRemanejamento || usuarioMqRequest.isNovoCadastro()
+            || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
+            log.info("Adicionando permissão de Técnico Indicador para usuário novo com id {}.", usuarioDto.getId());
             var permissoes = List.of(PermissaoEspecial.of(
                 usuarioDto.getId(), PERMISSAO_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId()));
             salvarPermissoesEspeciais(permissoes);
+            log.info("Permissões adicionadas com sucesso.");
         }
     }
 
@@ -64,7 +69,8 @@ public class PermissaoTecnicoIndicadorService {
         if (usuarioDto.getId() != null
             && validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId())
             && (usuarioDto.getSituacao() == ESituacao.R
-                || !LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioDto.getCargoCodigo()))) {
+            || !LISTA_CARGOS_TECNICO_INDICADOR.contains(usuarioDto.getCargoCodigo()))) {
+            log.info("Removendo permissão de Técnico Indicador do usuário.");
             removerPermissaoDosUsuarios(List.of(usuarioDto.getId()));
         }
     }

@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPR
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 
+@Slf4j
 @Service
 public class FeederService {
 
@@ -94,11 +96,13 @@ public class FeederService {
         if (CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuarioMqRequest.getCargo()
             && (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
+            log.info("Adicionando permissões Feeder para usuário novo com id: {}.", usuario.getId());
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
                     usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
                 .orElse(List.of());
             usuarioService.salvarPermissoesEspeciais(permissoesFeeder);
+            log.info("Permissões Feeder adicionadas com sucesso.");
         }
     }
 

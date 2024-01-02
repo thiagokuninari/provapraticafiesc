@@ -141,4 +141,9 @@ public class UsuarioGerenciaController {
     public Boolean validarSeUsuarioNovoCadastro(UsuarioExistenteValidacaoRequest usuarioParaValidar) {
         return service.validarSeUsuarioCpfEmailNaoCadastrados(usuarioParaValidar);
     }
+
+    @PutMapping("remanejar-usuario")
+    public void remanejarUsuario(@RequestBody UsuarioMqRequest request) {
+        service.remanejarUsuario(request);
+    }
 }

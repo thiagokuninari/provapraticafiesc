@@ -1348,6 +1348,42 @@ public class UsuarioGerenciaControllerTest {
         verifyNoMoreInteractions(usuarioService);
     }
 
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"POL_GERENCIAR_EQUIPE_VENDA", "APPLICATION"})
+    public void remanejarUsuario_deveRetornarOk_quandoPossuirPermissao() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).remanejarUsuario(any(UsuarioMqRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = "BKO_PRIORIZAR_INDICACOES")
+    public void remanejarUsuario_deveRetornarForbidden_quandoNaoPossuirPermissao() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void remanejarUsuario_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         var dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
