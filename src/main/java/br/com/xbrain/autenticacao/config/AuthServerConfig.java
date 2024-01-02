@@ -366,7 +366,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .withClient(checagemCreditoApiClient)
             .secret(checagemCreditoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
-            .scopes(CHECAGEM_CREDITO_API.getScope());
+            .scopes(CHECAGEM_CREDITO_API.getScope())
+            .authorities(ROLE_APPLICATION);
     }
 
     @Override
