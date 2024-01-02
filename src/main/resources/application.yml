@@ -310,7 +310,9 @@ app-config:
     localizacao:
 #      url: http://localhost:8039
       url: https://api-dev.conexaoclarobrasil.com.br/localizacao
-
+    integracao-claro-net:
+      #url: http://localhost:8505
+      url: http://192.168.50.1:8505
 
 flyway:
   enabled: true
@@ -371,6 +373,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    integracao-claro-net:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.integracao-claro-net.url}
 
   host:
     connect-timeout-millis: 1800000
