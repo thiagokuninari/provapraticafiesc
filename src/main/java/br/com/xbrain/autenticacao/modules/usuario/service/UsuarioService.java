@@ -109,7 +109,7 @@ public class UsuarioService {
 
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
-    private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    private static final String USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String CONTRATO_ATIVO = "CONTRATO ATIVO";
@@ -257,7 +257,7 @@ public class UsuarioService {
     private CidadeService cidadeService;
 
     public Usuario findComplete(Integer id) {
-        var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
         usuario.forceLoad();
 
         return usuario;
@@ -305,7 +305,7 @@ public class UsuarioService {
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         var cidades = repository
             .findComCidade(usuarioId)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
 
         if (!cidades.isEmpty()) {
             var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
@@ -321,7 +321,7 @@ public class UsuarioService {
     }
 
     public Usuario findCompleteById(int id) {
-        return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return repository.findComplete(id).orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
     }
 
     public Usuario findCompleteByIdComLoginNetSales(int id) {
@@ -332,7 +332,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto findByEmail(String email) {
-        return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO)));
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
@@ -865,7 +865,8 @@ public class UsuarioService {
     }
 
     public void salvarUsuarioRealocado(Usuario usuario) {
-        var usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var usuarioARealocar = repository.findById(usuario.getId())
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
         usuarioARealocar.setSituacao(ESituacao.R);
         repository.save(usuarioARealocar);
     }
@@ -885,7 +886,7 @@ public class UsuarioService {
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
         var usuarioSuperior = repository.findById(idUsuarioSuperior)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
 
         idUsuarioNovo.stream()
             .map(id -> {
@@ -1335,7 +1336,7 @@ public class UsuarioService {
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO)).getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
     }
@@ -1362,7 +1363,7 @@ public class UsuarioService {
 
     public boolean isAlteracaoCpf(Usuario usuario) {
         var usuarioCpfAntigo = repository.findById(usuario.getId())
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
         usuario.removerCaracteresDoCpf();
 
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
@@ -2121,7 +2122,7 @@ public class UsuarioService {
         var emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             var usuario = repository.findByEmail(colaborador)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+                .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
             usuario.setSituacao(ESituacao.I);
             usuario.removerCaracteresDoCpf();
             repository.save(usuario);
@@ -2391,7 +2392,7 @@ public class UsuarioService {
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
         var cidades = usuarioCidadeRepository
             .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
-                .orElseThrow(() -> EX_NAO_ENCONTRADO));
+                .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO)));
 
         if (cidades.isEmpty()) {
             return List.of();
@@ -2432,7 +2433,7 @@ public class UsuarioService {
     public UsuarioResponse findById(Integer id) {
         return repository.findById(id)
             .map(UsuarioResponse::of)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
     }
 
     public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
@@ -2447,7 +2448,7 @@ public class UsuarioService {
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return Optional.of(Optional.of(repository.findById(usuarioId)
-                    .orElseThrow(() -> EX_NAO_ENCONTRADO))
+                    .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO)))
                 .filter(Usuario::isAtivo)
                 .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
             .map(UsuarioComLoginNetSalesResponse::of)
@@ -2545,7 +2546,7 @@ public class UsuarioService {
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
         return repository.findById(id)
             .map(UrlLojaOnlineResponse::of)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> new ValidacaoException(USUARIO_NAO_ENCONTRADO));
     }
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
