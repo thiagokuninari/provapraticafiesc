@@ -65,6 +65,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
+    public static final String CPF_JA_CADASTRADO = "CPF já cadastrado.";
+    public static final String EMAIL_JA_CADASTRADO = "Email já cadastrado.";
+    public static final String SOCIO_NAO_INATIVADO_NO_POL = "Não foi possível inativar o sócio no Parceiros Online.";
+    public static final String EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
+        "Não foi possível atualizar o e-mail do sócio no Parceiros Online.";
+    public static final String USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
     private static final String API_URI = "/api/usuarios/gerencia";
     private static final String API_URI_BACKOFFICE = "/api/usuarios/gerencia/backoffice";
 
@@ -1408,6 +1414,61 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void validarCpfEmailSocio_deveRetornarOk_quandoCpfNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).validarSeUsuarioCpfEmailNaoCadastrados("42675562700", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void validarCpfEmailSocio_deveRetornarOk_quandoEmailNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).validarSeUsuarioCpfEmailNaoCadastrados("42675562700", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).inativarAntigoSocioPrincipal("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).limparCpfAntigoSocioPrincipal(300);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).atualizarEmailSocioInativo(300);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

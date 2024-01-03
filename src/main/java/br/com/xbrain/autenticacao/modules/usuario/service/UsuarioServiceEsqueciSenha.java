@@ -98,8 +98,7 @@ public class UsuarioServiceEsqueciSenha {
             Usuario usuario = repository.findUsuarioByEmail(deserializedHash.get("email").toString())
                     .orElseThrow(() -> EX_NAO_ENCONTRADO);
             if (usuario.getRecuperarSenhaHash() != null && usuario.getRecuperarSenhaHash().contentEquals(hash)) {
-
-                String senhaDescriptografada = StringUtil.getSenhaRandomica(MAX_CARACTERES_SENHA);
+                var senhaDescriptografada = StringUtil.getRandomPassword(MAX_CARACTERES_SENHA);
                 repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
                 notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
 

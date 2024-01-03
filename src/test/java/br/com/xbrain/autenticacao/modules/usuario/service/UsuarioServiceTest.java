@@ -29,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -84,9 +85,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
+import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGerenciaControllerTest.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
@@ -174,6 +177,8 @@ public class UsuarioServiceTest {
     private UsuarioClientService usuarioClientService;
     @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Mock
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Mock
     private CargoService cargoService;
     @Mock
@@ -3869,6 +3874,295 @@ public class UsuarioServiceTest {
         verify(autenticacaoService).getUsuarioAutenticadoId();
         verify(usuarioCidadeRepository).findUsuarioCidadesByUsuarioId(101112);
         verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void validarSeUsuarioCpfEmailNaoCadastrados_deveRetornarValidacaoException_quandoCpfJaCadastrado() {
+        doThrow(new ValidacaoException(CPF_JA_CADASTRADO))
+            .when(repository)
+            .findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R));
+
+        assertThatCode(() -> service
+            .validarSeUsuarioCpfEmailNaoCadastrados("07981056233", "NOVOSOCIO@EMPRESA.COM.BR"))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(CPF_JA_CADASTRADO);
+
+        verify(repository, times(1))
+            .findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R));
+        verify(repository, never())
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq(ESituacao.R));
+    }
+
+    @Test
+    public void validarSeUsuarioCpfEmailNaoCadastrados_deveRetornarValidacaoException_quandoEmailJaCadastrado() {
+        when(repository.findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R)))
+            .thenReturn(Optional.empty());
+
+        doThrow(new ValidacaoException(EMAIL_JA_CADASTRADO))
+            .when(repository)
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq(ESituacao.R));
+
+        assertThatCode(() -> service
+            .validarSeUsuarioCpfEmailNaoCadastrados("07981056233", "NOVOSOCIO@EMPRESA.COM.BR"))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(EMAIL_JA_CADASTRADO);
+
+        verify(repository, times(1))
+            .findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R));
+        verify(repository, times(1))
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq(ESituacao.R));
+    }
+
+    @Test
+    public void validarSeUsuarioCpfEmailNaoCadastrados_naoDeveRetornarValidacaoException_quandoCpfEEmailNaoCadastrados() {
+        when(repository.findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R)))
+            .thenReturn(Optional.empty());
+
+        when(repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq(ESituacao.R)))
+            .thenReturn(Optional.empty());
+
+        assertThatCode(() -> service
+            .validarSeUsuarioCpfEmailNaoCadastrados("07981056233", "NOVOSOCIO@EMPRESA.COM.BR"))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(1))
+            .findTop1UsuarioByCpfAndSituacaoNot(eq("07981056233"), eq(ESituacao.R));
+        verify(repository, times(1))
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq(ESituacao.R));
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveLancarException_quandoUsuarioNaoLocalizado() {
+        doReturn(Optional.empty())
+            .when(repository)
+            .findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+
+        assertThatCode(() -> service
+            .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR"))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Usuário não encontrado.");
+
+        verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(repository, never()).save(any(Usuario.class));
+        verify(autenticacaoService, never()).logout(anyInt());
+        verify(agenteAutorizadoService, never()).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_naoDeveInativarAntigoSocioPrincipal_seSituacaoDoUsuarioForAtivo() {
+        doReturn(Optional.of(umAntigoSocioPrincipal(ESituacao.I)))
+            .when(repository)
+            .findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+
+        assertThatCode(() -> service
+            .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR"))
+            .doesNotThrowAnyException();
+
+        verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(repository, never()).save(any(Usuario.class));
+        verify(autenticacaoService, never()).logout(anyInt());
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveLancarException_quandoSocioNaoInativadoNoPol() {
+        doReturn(Optional.of(umAntigoSocioPrincipal(ESituacao.A)))
+            .when(repository)
+            .findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+
+        doThrow(new IntegracaoException(EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL.getDescricao()))
+            .when(agenteAutorizadoService)
+            .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+
+        assertThatCode(() -> service
+            .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR"))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage(EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL.getDescricao());
+
+        verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(repository).save(umAntigoSocioPrincipal(ESituacao.I));
+        verify(autenticacaoService).logout(22);
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveInativarSocioPrincipal_quandoLocalizadoESituacaoAtivo() {
+        doReturn(Optional.of(umAntigoSocioPrincipal(ESituacao.A)))
+            .when(repository)
+            .findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+
+        assertThatCode(() -> service
+            .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR"))
+            .doesNotThrowAnyException();
+
+        verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(repository).save(umAntigoSocioPrincipal(ESituacao.I));
+        verify(autenticacaoService).logout(22);
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+    }
+
+    @Test
+    public void limparCpfAntigoSocioPrincipal_deveRetornarValidacaoException_quandoUsuarioNaoCadastrado() {
+        doThrow(new ValidacaoException(USUARIO_NAO_ENCONTRADO)).when(repository).findById(eq(21));
+
+        assertThatCode(() -> service.limparCpfAntigoSocioPrincipal(21))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(USUARIO_NAO_ENCONTRADO);
+
+        verify(repository, times(1)).findById(eq(21));
+        verify(repository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+        var umSocioPrincipalCpfLimpo = umSocioPrincipal();
+        umSocioPrincipalCpfLimpo.setCpf(null);
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipal()));
+        when(repository.save(umSocioPrincipalCpfLimpo)).thenReturn(umSocioPrincipalCpfLimpo);
+
+        service.limparCpfAntigoSocioPrincipal(23);
+
+        verify(repository, times(1)).findById(eq(23));
+        verify(repository, times(1)).save(umSocioPrincipalCpfLimpo);
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoUsuarioNaoCadastrado() {
+        doThrow(new ValidacaoException(USUARIO_NAO_ENCONTRADO)).when(repository).findById(eq(21));
+
+        assertThatCode(() -> service.atualizarEmailSocioInativo(21))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(USUARIO_NAO_ENCONTRADO);
+
+        verify(repository, times(1)).findById(eq(21));
+        verify(repository, never()).save(any(Usuario.class));
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmailDoUsuarioForVazio() {
+        var umSocioPrincipalComEmailVazio = umSocioPrincipal();
+        umSocioPrincipalComEmailVazio.setEmail("");
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipalComEmailVazio));
+
+        assertThatCode(() -> service.atualizarEmailSocioInativo(23))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+
+        verify(repository, times(1)).findById(eq(23));
+        verify(repository, never()).save(any(Usuario.class));
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmailDoUsuarioForNulo() {
+        var umSocioPrincipalComEmailNulo = umSocioPrincipal();
+        umSocioPrincipalComEmailNulo.setEmail(null);
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipalComEmailNulo));
+
+        assertThatCode(() -> service.atualizarEmailSocioInativo(23))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+
+        verify(repository, times(1)).findById(eq(23));
+        verify(repository, never()).save(any(Usuario.class));
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmailDoUsuarioForSemDominio() {
+        var umSocioPrincipalComEmailSemDominio = umSocioPrincipal();
+        umSocioPrincipalComEmailSemDominio.setEmail("NOVOSOCIO@EMPRESA");
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipalComEmailSemDominio));
+
+        assertThatCode(() -> service.atualizarEmailSocioInativo(23))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+
+        verify(repository, times(1)).findById(eq(23));
+        verify(repository, never()).save(any(Usuario.class));
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmailDoUsuarioForComMaisDeUmArroba() {
+        var umSocioPrincipalComEmailComMaisDeUmArroba = umSocioPrincipal();
+        umSocioPrincipalComEmailComMaisDeUmArroba.setEmail("NOVO@SOCIO@EMPRESA.COM.BR");
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipalComEmailComMaisDeUmArroba));
+
+        assertThatCode(() -> service.atualizarEmailSocioInativo(23))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+
+        verify(repository, times(1)).findById(eq(23));
+        verify(repository, never()).save(any(Usuario.class));
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarIntegracaoException_quandoEmailSocioPrincipalNaoAtualizadoNoPol() {
+        var umSocioPrincipalComEmailAtualizado = umSocioPrincipal();
+        umSocioPrincipalComEmailAtualizado.setEmail("NOVOSOCIO.INATIVO@EMPRESA.COM.BR");
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipal()));
+        when(repository.save(eq(umSocioPrincipalComEmailAtualizado))).thenReturn(umSocioPrincipalComEmailAtualizado);
+
+        doThrow(new IntegracaoException(EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL.getDescricao()))
+            .when(agenteAutorizadoService)
+            .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
+
+        assertThatCode(() -> service
+            .atualizarEmailSocioInativo(23))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage(EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL.getDescricao());
+
+        verify(repository, times(1))
+            .findById(eq(23));
+        verify(repository, times(1))
+            .save(eq(umSocioPrincipalComEmailAtualizado));
+        verify(agenteAutorizadoService, times(1))
+            .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
+    }
+
+    @Test
+    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+        var umSocioPrincipalComEmailAtualizado = umSocioPrincipal();
+        umSocioPrincipalComEmailAtualizado.setEmail("NOVOSOCIO.INATIVO@EMPRESA.COM.BR");
+
+        when(repository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipal()));
+        when(repository.save(eq(umSocioPrincipalComEmailAtualizado))).thenReturn(umSocioPrincipalComEmailAtualizado);
+
+        service.atualizarEmailSocioInativo(23);
+
+        verify(repository, times(1))
+            .findById(eq(23));
+        verify(repository, times(1))
+            .save(eq(umSocioPrincipalComEmailAtualizado));
+        verify(agenteAutorizadoService, times(1))
+            .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
+    }
+
+    private Usuario umSocioPrincipal() {
+        return Usuario.builder()
+            .id(23)
+            .email("NOVOSOCIO@EMPRESA.COM.BR")
+            .cpf("183.381.665-02")
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private Usuario umAntigoSocioPrincipal(ESituacao situacao) {
+        return Usuario.builder()
+            .id(22)
+            .email("ANTIGOSOCIO@EMPRESA.COM.BR")
+            .cpf("93275298631")
+            .situacao(situacao)
+            .build();
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

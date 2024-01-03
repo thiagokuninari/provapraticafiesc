@@ -107,6 +107,8 @@ app-config:
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
+    usuario-atualizar-socio-principal-success: usuario-atualizar-socio-principal-success.queue
+    usuario-atualizar-socio-principal-failure: usuario-atualizar-socio-principal-failure.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue

@@ -257,6 +257,15 @@ public class Usuario {
     private Integer agenteAutorizadoId;
 
     @Transient
+    private boolean isAtualizarSocioPrincipal;
+
+    @Transient
+    private List<Integer> agentesAutorizadosIds;
+
+    @Transient
+    private List<Integer> antigosSociosPrincipaisIds;
+
+    @Transient
     private String senhaDescriptografada;
 
     @Column(name = "DATA_REATIVACAO")
