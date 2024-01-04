@@ -90,6 +90,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
@@ -948,6 +949,55 @@ public class UsuarioServiceTest {
                 assertThatThrownBy(() -> usuarioService.save(usuario)).hasMessage("Email inválido.");
             }
         );
+    }
+
+    @Test
+    public void save_deveLancarExcecao_quandoUsuarioReceptivoPossuirOrganizacaoEmpresaInativa() {
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var usuario = umUsuarioCompleto(SUPERVISOR_RECEPTIVO,
+            5, RECEPTIVO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.INTERNET);
+        usuario.setCanais(null);
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(1)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        usuario.setOrganizacaoEmpresa(organizacao);
+
+        doReturn(organizacao)
+            .when(organizacaoEmpresaService)
+            .findById(anyInt());
+        
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
+    }
+
+    @Test
+    public void save_deveLancarExcecao_quandoUsuarioOperacaoCanalInternetPossuirOrganizacaoEmpresaInativa() {
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5, OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.INTERNET);
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(1)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        usuario.setOrganizacaoEmpresa(organizacao);
+
+        doReturn(organizacao)
+            .when(organizacaoEmpresaService)
+            .findById(anyInt());
+        
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
     }
 
     @Test
