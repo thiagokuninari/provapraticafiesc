@@ -89,7 +89,9 @@ app-config:
     funil-prospeccao:
       url: http://172.10.10.49:8100
     localizacao:
-       url: http://localizacao-api:8039
+      url: http://localizacao-api:8039
+    pgaa:
+      url: http://pgaa-api:8354
 
   email:
     enviar: true

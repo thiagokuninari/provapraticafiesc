@@ -244,6 +244,9 @@ app-config:
     quality-call-api:
       client: quality-call-api
       secret: qu4l1tyc4ll4p1
+    pgaa-api:
+      client: pgaa-api
+      secret: pg44
 
   services:
     autenticacao:
@@ -307,7 +310,9 @@ app-config:
     localizacao:
 #      url: http://localhost:8039
       url: https://api-dev.conexaoclarobrasil.com.br/localizacao
-
+    pgaa:
+      #url: http://localhost:8354
+      url: http://192.168.50.1:8354
 
 flyway:
   enabled: true
@@ -368,6 +373,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    pgaa:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.pgaa.url}
 
   host:
     connect-timeout-millis: 1800000

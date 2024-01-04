@@ -72,6 +72,8 @@ app-config:
       url: http://172.10.10.113:8304
     localizacao:
       url: http://localizacao-api:8039
+    pgaa:
+      url: http://pgaa-api:8354
 
   email:
     enviar: true
