@@ -18,7 +18,6 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
-import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -86,6 +85,8 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -261,6 +262,10 @@ public class UsuarioService {
         usuario.forceLoad();
 
         return usuario;
+    }
+
+    private Usuario findOneById(Integer id) {
+        return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     @Transactional
@@ -971,6 +976,11 @@ public class UsuarioService {
         return true;
     }
 
+    public void validarSeUsuarioCpfEmailNaoCadastrados(String cpf, String email) {
+        validarCpfCadastrado(cpf, null);
+        validarEmailCadastrado(email, null);
+    }
+
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
@@ -1222,6 +1232,8 @@ public class UsuarioService {
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
+            enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
+
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
             } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
@@ -1238,6 +1250,13 @@ public class UsuarioService {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
             log.error("Erro ao salvar usuário da fila.", ex);
+        }
+    }
+
+    private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
+        if (socio.isAtualizarSocioPrincipal()) {
+            enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
+            permissaoEspecialService.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
         }
     }
 
@@ -1452,6 +1471,10 @@ public class UsuarioService {
         usuarioMqSender.sendSuccessLojaFuturo(usuarioDto);
     }
 
+    private void enviarParaFilaDeAtualizarSocioPrincipalSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessAtualizarSocioPrincipal(usuarioDto);
+    }
+
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -1513,7 +1536,7 @@ public class UsuarioService {
     }
 
     private String getSenhaRandomica(int size) {
-        return StringUtil.getSenhaRandomica(size);
+        return getRandomPassword(size);
     }
 
     private void validarCpfExistente(Usuario usuario) {
@@ -1637,6 +1660,12 @@ public class UsuarioService {
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
         agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+    }
+
+    public void limparCpfAntigoSocioPrincipal(Integer id) {
+        var socio = findOneById(id);
+        socio.setCpf(null);
+        repository.save(socio);
     }
 
     @Transactional
@@ -1913,6 +1942,17 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
+    public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
+        var socio = findOneById(idSocioPrincipal);
+        var emailAtual = socio.getEmail();
+        var emailInativo = atualizarEmailInativo(emailAtual);
+
+        socio.setEmail(emailInativo);
+        repository.save(socio);
+
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+    }
+
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
         var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
@@ -2116,6 +2156,23 @@ public class UsuarioService {
                 repository.save(user);
             });
         });
+    }
+
+    public void inativarAntigoSocioPrincipal(String email) {
+        var antigoSocioPrincipal = findOneByEmail(email);
+
+        if (antigoSocioPrincipal.getSituacao() == ATIVO) {
+            antigoSocioPrincipal.setSituacao(INATIVO);
+            repository.save(antigoSocioPrincipal);
+            autenticacaoService.logout(antigoSocioPrincipal.getId());
+        }
+
+        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
+    }
+
+    private Usuario findOneByEmail(String email) {
+        return repository.findByEmail(email)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public void inativarColaboradores(String cnpj) {

@@ -151,7 +151,16 @@ public enum EErrors {
         "#048 - Ocorreu um erro ao acessar o minio server."),
     ARQUIVO_NAO_ENCONTRADO(
         "#049 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#049 - Arquivo não encontrado.");
+        "#049 - Arquivo não encontrado."),
+    ERRO_VALIDAR_EMAIL_CADASTRADO(
+        "#050 - O e-mail cadastrado para o usuário está inválido.",
+        "#050 - O e-mail cadastrado para o usuário está inválido ou vazio."),
+    ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL(
+        "#051 - Não foi possível atualizar o e-mail do sócio no POL.",
+        "#051 - Não foi possível atualizar o e-mail do sócio no POL."),
+    ERRO_SOCIO_NAO_INATIVADO_NO_POL(
+        "#052 - Não foi possível inativar o sócio no Parceiros Online.",
+        "#052 - Não foi possível inativar o sócio no Parceiros Online.");
 
 
     @Getter

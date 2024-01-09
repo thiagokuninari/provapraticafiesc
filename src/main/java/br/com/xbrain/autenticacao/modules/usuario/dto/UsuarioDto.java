@@ -98,6 +98,9 @@ public class UsuarioDto implements Serializable {
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private boolean isAtualizarSocioPrincipal;
+    private List<Integer> agentesAutorizadosIds;
+    private List<Integer> antigosSociosPrincipaisIds;
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
@@ -115,7 +118,6 @@ public class UsuarioDto implements Serializable {
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
-        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
         usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
         Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
             usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
@@ -156,6 +158,7 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
+
         return usuarioDto;
     }
 
