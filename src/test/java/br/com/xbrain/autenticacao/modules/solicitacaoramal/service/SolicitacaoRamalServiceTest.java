@@ -10,7 +10,9 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalF
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.groups.Tuple;
@@ -20,8 +22,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageImpl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SolicitacaoRamalHelper.*;
@@ -99,7 +103,8 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void getAll_deveListarSolicitacoes_seTodosOsParametrosPreenchidos() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class)))
+            .thenReturn((umaPageSolicitacaoRamal()));
 
         var filtros = new SolicitacaoRamalFiltros();
         filtros.setAgenteAutorizadoId(1);
@@ -132,6 +137,27 @@ public class SolicitacaoRamalServiceTest {
 
         verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));
         verify(usuarioService, never()).findComplete(1);
+    }
+
+    @Test
+    public void getAll_deveLancarException_seParametroEquipeIdNaoInformado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioGerenteOperacao());
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setCanal(ECanal.D2D_PROPRIO);
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
+                service.getAll(new PageRequest(), filtro))
+            .withMessage("Campo equipe é obrigatório");
+
+        verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));
+    }
+
+    @Test
+    public void getAll_deveRetornarListaVazia_seNaoExistirSolicitacaoDeRamalDaEquipe() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn(new PageImpl<>(List.of()));
+
+        assertThat(service.getAll(new PageRequest(), umaSolicitacaoFiltros())).isEmpty();
     }
 
     @Test
@@ -261,5 +287,13 @@ public class SolicitacaoRamalServiceTest {
 
         verify(historicoRepository, never()).deleteAll(1);
         verify(repository, never()).delete(solicitacaoRamalEmAndamento);
+    }
+
+    private UsuarioAutenticado umUsuarioGerenteOperacao() {
+        return UsuarioAutenticado.builder()
+            .id(1)
+            .usuario(Usuario.builder().id(1).build())
+            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .build();
     }
 }

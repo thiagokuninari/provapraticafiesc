@@ -288,4 +288,28 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .innerJoin(grupo.regional, regional)
             .fetch();
     }
+
+    @Override
+    public List<Cidade> findAllByPredicate(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .where(predicate)
+            .orderBy(cidade.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public Optional<Cidade> buscarCidadeDistrito(String uf, String nomeCidade, String nomeDistrito) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(cidade)
+            .from(cidade)
+            .where(cidade.nome.eq(nomeDistrito)
+                .and(cidade.uf.uf.eq(uf))
+                .and(cidade.fkCidade.eq(
+                    select(cidade.id)
+                    .from(cidade)
+                    .where(cidade.nome.eq(nomeCidade))
+                )))
+            .fetchFirst());
+    }
 }

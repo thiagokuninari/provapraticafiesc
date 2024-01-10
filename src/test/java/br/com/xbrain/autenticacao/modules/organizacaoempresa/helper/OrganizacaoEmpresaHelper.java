@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.helper;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
@@ -15,24 +14,23 @@ import org.springframework.data.domain.PageImpl;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OrganizacaoEmpresaHelper {
 
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
-        return OrganizacaoEmpresaRequest.builder()
-            .razaoSocial("Marcos AA")
-            .cnpj("66.845.365/0001-25")
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
-            .modalidadesEmpresaIds(List.of(1))
+        return OrganizacaoEmpresaRequest
+            .builder()
+            .descricao("Marcos AA")
+            .nome("MARCOS_AA")
             .nivelId(1)
+            .codigo("CODIGO")
             .build();
     }
 
     public static OrganizacaoEmpresa organizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Marcos AA")
-            .cnpj("66.845.365/0001-25")
+            .descricao("Marcos AA")
+            .nome("MARCOS_AA")
             .id(2)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -51,53 +49,101 @@ public class OrganizacaoEmpresaHelper {
     public static OrganizacaoEmpresa umaOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .id(1)
-            .razaoSocial("Teste AA")
-            .cnpj("54.238.644/0001-41")
+            .nome("Teste AA")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .codigo("codigo")
             .build();
     }
 
     public static OrganizacaoEmpresa umaOutraOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .id(2)
-            .razaoSocial("Teste AA Dois")
+            .nome("Teste AA Dois")
             .nivel(umNivel())
-            .cnpj("79.742.597/0001-08")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .codigo("codigo2")
             .build();
+    }
+
+    public static OrganizacaoEmpresaResponse umaOrganizacaoEmpresaResponse() {
+        return OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa());
     }
 
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
+                .nome("MOTIVA")
+                .codigo("MO1234")
+                .descricao("MOTIVA")
                 .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
+                .nome("BCC")
+                .codigo("BCC")
+                .descricao("BRASIL CENTER")
                 .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build());
     }
 
-    public static List<SelectResponse> duasOrganizacoesEmpresaSelectResponse() {
-        return duasOrganizacoesEmpresaSelectResponse().stream()
-            .map(organizacaoEmpresa ->
-                new SelectResponse(organizacaoEmpresa().getId(), organizacaoEmpresa().getNivel().getNome()))
-            .collect(Collectors.toList());
+    public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponseComNivel() {
+        return List.of(OrganizacaoEmpresaResponse.builder()
+                .id(1)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponse())
+                .build(),
+            OrganizacaoEmpresaResponse.builder()
+                .id(2)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponseReceptivo())
+                .build());
     }
 
     public static Nivel umNivel() {
         return Nivel.builder()
             .id(1)
-            .nome("VAREJO")
-            .codigo(CodigoNivel.VAREJO)
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE)
+            .build();
+    }
+
+    public static Nivel umNivelOperacao() {
+        return Nivel.builder()
+            .id(10)
+            .nome("OPERACAO")
+            .codigo(CodigoNivel.OPERACAO)
+            .build();
+    }
+
+    public static Nivel umNivelBackoffice() {
+        return Nivel.builder()
+            .id(2)
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE)
+            .build();
+    }
+
+    public static Nivel umNivelReceptivo() {
+        return Nivel.builder()
+            .id(3)
+            .nome("RECEPTIVO")
+            .codigo(CodigoNivel.RECEPTIVO)
             .build();
     }
 
     public static NivelResponse umNivelResponse() {
         return NivelResponse.builder()
             .id(1)
-            .nome("VAREJO")
-            .codigo(CodigoNivel.VAREJO.name())
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE.name())
+            .build();
+    }
+
+    public static NivelResponse umNivelResponseReceptivo() {
+        return NivelResponse.builder()
+            .id(2)
+            .nome("RECEPTIVO")
+            .codigo(CodigoNivel.RECEPTIVO.name())
             .build();
     }
 }

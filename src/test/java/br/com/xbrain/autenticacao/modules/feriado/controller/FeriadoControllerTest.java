@@ -1,28 +1,24 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.NestedServletException;
 
-import java.time.LocalDate;
-
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -31,146 +27,280 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@Import(OAuth2ResourceConfig.class)
+@WebMvcTest(controllers = FeriadoController.class)
 public class FeriadoControllerTest {
 
     private static final String URL_BASE = "/api/feriado";
-    private static final String URL_GERENCIAR = "/api/feriado/gerenciar";
 
-    @SpyBean
-    private FeriadoService service;
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private DataHoraAtual dataHoraAtual;
+    private TokenStore tokenStore;
+    @MockBean
+    private FeriadoService service;
+    @MockBean
+    private EquipeVendaD2dService equipeVendaD2dService;
+    @MockBean
+    private UsuarioSubCanalObserver usuarioSubCanalObserver;
 
     @Test
-    public void deveConsultarEncontrarFeriadoPelaData() throws Exception {
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultarFeriadoNacional_consulta_deveRetornarUnauthorized_quandoNaoPassarToken() {
         mvc.perform(get(URL_BASE + "/consulta?data=07/09/2018")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(Boolean.TRUE)));
-    }
-
-    @Test
-    public void deveConsultarNaoEncontrarFeriadoPelaData() throws Exception {
-        mvc.perform(get(URL_BASE + "/consulta?data=13/02/2018")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(Boolean.FALSE)));
-    }
-
-    @Test
-    public void deveConsultarEncontrarFeriadoLocalPelaData() throws Exception {
-        mvc.perform(get(URL_BASE + "/consulta/5578?data=10/12/2018")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(Boolean.TRUE)));
-    }
-
-    @Test
-    public void deveConsultarNaoEncontrarFeriadoLocalPelaData() throws Exception {
-        mvc.perform(get(URL_BASE + "/consulta/?data=10/12/2018")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", is(Boolean.FALSE)));
-    }
-
-    @Test
-    public void deveRetornarTodosFeriadosAnoAtual() throws Exception {
-        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2018, 06, 06));
-        mvc.perform(get(URL_BASE)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(10)));
-    }
-
-    @Test
-    public void consultarFeriadoComCidadeUf_deveLancarExcecao_seUltimoParametroContiverPonto() {
-        assertThatExceptionOfType(NestedServletException.class)
-            .isThrownBy(() ->
-                mvc.perform(get(URL_BASE + "/cidade/Arapongas/P.R")
-                    .header("Authorization", getAccessToken(mvc, ADMIN))
-                    .contentType(MediaType.APPLICATION_JSON))
-                    .andReturn()
-            )
-            .withMessage("Handler dispatch failed; "
-                + "nested exception is java.lang.NoClassDefFoundError: com/sun/activation/registries/LogSupport");
-    }
-
-    @Test
-    public void consultarFeriadoComCidadeUf_deveRetornarOk_seParametrosValidos() throws Exception {
-        doReturn(true).when(service).isFeriadoHojeNaCidadeUf(anyString(), anyString());
-        mvc.perform(get(URL_BASE + "/cidade/Arapongas/PR")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn();
-    }
-
-    @Test
-    public void cacheClearFeriados_deveChamarMetodo_seUsuarioAutenticado() throws Exception {
-        doNothing().when(service).flushCacheFeriados();
-
-        mvc.perform(delete(URL_BASE + "/cache/clear")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        verify(service, times(1)).flushCacheFeriados();
-    }
-
-    @Test
-    public void cacheClearFeriados_naoDeveChamarMetodo_seNaoEstiverAutenticado() throws Exception {
-        mvc.perform(delete(URL_BASE + "/cache/clear")
-            .contentType(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
-            .andReturn();
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).consulta(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadoNacional_consulta_deveRetornarBadRequest_quandoDataNaoInformada() {
+        mvc.perform(get(URL_BASE + "/consulta")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(service, never()).consulta(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadoNacional_consulta_deveRetornarOK_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/consulta")
+                .param("data", "07/09/2018")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).consulta(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultarFeriadoNacional_feriadoNacional_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/feriado-nacional")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).consulta(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadoNacional_feriadoNacional_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/feriado-nacional")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).consulta();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultarFeriadoEstadualPorDataAtual_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/feriados-estaduais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).buscarUfsFeriadosEstaduaisPorData();
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadoEstadualPorDataAtual_deveRetornarOK_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/feriados-estaduais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).buscarUfsFeriadosEstaduaisPorData();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultarFeriadosMunicipais_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/feriados-municipais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).buscarFeriadosMunicipaisPorDataAtualUfs();
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadosMunicipais_deveRetornarOK_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/feriados-municipais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).buscarFeriadosMunicipaisPorDataAtualUfs();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultaFeriadoComCidade_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).consulta(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultaFeriadoComCidade_deveRetornarBadRequest_quandoDataNull() {
+        mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(service, never()).consulta(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultaFeriadoComCidade_deveRetornarOk_quandoDataStringBlank() {
+        mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
+                .param("data", "  ")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).consulta("  ", 1);
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultaFeriadoComCidade_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/consulta/{cidadeId}", 1)
+                .param("data", "07/09/2018")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).consulta("07/09/2018", 1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findAllByAnoAtual_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).findAllByAnoAtual();
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllByAnoAtual_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).findAllByAnoAtual();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void consultarFeriadoComCidadeUf_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/cidade/Arapongas/PR")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).isFeriadoHojeNaCidadeUf(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void consultarFeriadoComCidadeUf_deveRetornarOk_quandoParametrosValidos() {
+        doReturn(true).when(service).isFeriadoHojeNaCidadeUf(anyString(), anyString());
+
+        mvc.perform(get(URL_BASE + "/cidade/Arapongas/PR")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).isFeriadoHojeNaCidadeUf("Arapongas", "PR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void cacheClearFeriados_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(delete(URL_BASE + "/cache/clear")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
 
         verify(service, never()).flushCacheFeriados();
     }
 
     @Test
-    public void buscarTotalDeFeriadosPorMesAno_deveRetornarTotalFeriadosAgrupadoPorAnoMes_quandoSolicitado()
-        throws Exception {
-        mvc.perform(get(URL_BASE + "/mes-ano/total-feriados")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON))
+    @SneakyThrows
+    public void cacheClearFeriados_deveRetornarOk_quandoDadosValidos() {
+        doNothing().when(service).flushCacheFeriados();
+
+        mvc.perform(delete(URL_BASE + "/cache/clear")
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].ano", is(2018)))
-            .andExpect(jsonPath("$[0].mes", is(1)))
-            .andExpect(jsonPath("$[0].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[1].ano", is(2018)))
-            .andExpect(jsonPath("$[1].mes", is(3)))
-            .andExpect(jsonPath("$[1].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[2].ano", is(2018)))
-            .andExpect(jsonPath("$[2].mes", is(4)))
-            .andExpect(jsonPath("$[2].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[3].ano", is(2018)))
-            .andExpect(jsonPath("$[3].mes", is(5)))
-            .andExpect(jsonPath("$[3].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[4].ano", is(2018)))
-            .andExpect(jsonPath("$[4].mes", is(9)))
-            .andExpect(jsonPath("$[4].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[5].ano", is(2018)))
-            .andExpect(jsonPath("$[5].mes", is(10)))
-            .andExpect(jsonPath("$[5].qtdFeriadosNacionais", is(1)))
-            .andExpect(jsonPath("$[6].ano", is(2018)))
-            .andExpect(jsonPath("$[6].mes", is(11)))
-            .andExpect(jsonPath("$[6].qtdFeriadosNacionais", is(2)))
-            .andExpect(jsonPath("$[7].ano", is(2018)))
-            .andExpect(jsonPath("$[7].mes", is(12)))
-            .andExpect(jsonPath("$[7].qtdFeriadosNacionais", is(1)));
+            .andReturn();
+
+        verify(service).flushCacheFeriados();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void buscarTotalDeFeriadosPorMesAno_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/mes-ano/total-feriados")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).buscarTotalDeFeriadosPorMesAno();
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarTotalDeFeriadosPorMesAno_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/mes-ano/total-feriados")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).buscarTotalDeFeriadosPorMesAno();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void isFeriadoComCidadeId_deveRetornarUnauthorized_quandoTokenInvalido() {
+        mvc.perform(get(URL_BASE + "/1520")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(service);
+    }
+
+    @Test
+    @SneakyThrows
+    public  void isFeriadoComCidadeId_deveRetornarOk_quandoDadosOk() {
+        mvc.perform(get(URL_BASE + "/1520")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).isFeriadoComCidadeId(1520);
     }
 }

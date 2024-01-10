@@ -1,15 +1,13 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.model;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,11 +18,10 @@ public class OrganizacaoEmpresaTest {
 
     @Test
     public void of_deveRetornarObjetoCorreto_quandoRecebeOrganizacaoEmpresa() {
-        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build(),
-            List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas())))
-            .extracting("razaoSocial", "cnpj", "nivel", "modalidadesEmpresa", "situacao")
-            .containsExactly("Organizacao 1", "08112392000192", OrganizacaoEmpresaHelper.umNivel(),
-                List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()), ESituacaoOrganizacaoEmpresa.A);
+        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build()))
+            .extracting("nome", "nivel", "situacao", "canal")
+            .containsExactly("Organizacao 1", OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A,
+                ECanal.INTERNET);
     }
 
     @Test
@@ -37,19 +34,6 @@ public class OrganizacaoEmpresaTest {
         assertThat(umaOutraOrganizacaoEmpresa().getNivelIdNome())
             .isPresent()
             .isEqualTo(Optional.of(OrganizacaoEmpresaHelper.umNivelResponse()));
-    }
-
-    @Test
-    public void getModalidadesEmpresaIdNome_deveRetornarEmpty_quandoModalidadesEmpresaIsEmpty() {
-        assertThat(umaOrganizacaoEmpresa().getModalidadesEmpresaIdNome()).isEmpty();
-    }
-
-    @Test
-    public void getModalidadesEmpresaIdNome_deveRetornarModalidadesEmpresa_quandoModalidadesEmpresaIsNotEmpty() {
-        assertThat(umaOutraOrganizacaoEmpresa().getModalidadesEmpresaIdNome())
-            .isNotEmpty()
-            .isEqualTo(List.of(SelectResponse.of(1, EModalidadeEmpresa.PAP.name()),
-                SelectResponse.of(2, EModalidadeEmpresa.TELEVENDAS.name())));
     }
 
     @Test
@@ -73,19 +57,17 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
-            .razaoSocial("Organizacao 1")
-            .cnpj("08112392000192")
+            .descricao("Organizacao1")
+            .nome("Organizacao 1")
             .nivelId(1)
-            .modalidadesEmpresaIds(List.of(1, 2))
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .canal(ECanal.INTERNET)
             .build();
     }
 
     private OrganizacaoEmpresa umaOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Organizacao 1")
-            .cnpj("08112392000192")
-            .modalidadesEmpresa(null)
+            .nome("Organizacao1")
+            .descricao("Organizacao 1")
             .nivel(null)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -93,29 +75,13 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresa umaOutraOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Organizacao 1")
-            .cnpj("08112392000192")
+            .nome("Organizacao 1")
             .nivel(Nivel.builder()
                 .id(1)
-                .nome("VAREJO")
-                .codigo(CodigoNivel.VAREJO)
+                .nome("BACKOFFICE")
+                .codigo(CodigoNivel.BACKOFFICE)
                 .build())
-            .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
-    }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaPap() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(1);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.PAP);
-        return modalidadeEmpresa;
-    }
-
-    public static ModalidadeEmpresa umaModalidadeEmpresaTelevendas() {
-        var modalidadeEmpresa = new ModalidadeEmpresa();
-        modalidadeEmpresa.setId(2);
-        modalidadeEmpresa.setModalidadeEmpresa(EModalidadeEmpresa.TELEVENDAS);
-        return modalidadeEmpresa;
     }
 }

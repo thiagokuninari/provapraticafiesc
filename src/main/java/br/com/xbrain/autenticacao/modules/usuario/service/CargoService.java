@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,13 +50,19 @@ public class CargoService {
 
     public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
                                                               boolean permiteEditarCompleto) {
-        return filtrarPorNivelOuCargoProprio(nivelId, permiteEditarCompleto).stream()
+        return filtrarPorNivelCanalOuCargoProprio(nivelId, canais, permiteEditarCompleto).stream()
             .filter(cargo -> ObjectUtils.isEmpty(canais) || canais.stream().anyMatch(cargo::hasPermissaoSobreOCanal))
             .collect(Collectors.toList());
     }
 
-    public List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
-        var predicate = new CargoPredicate().comNivel(nivelId);
+    private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
+                                                          boolean permiteEditarCompleto) {
+        var predicate = new CargoPredicate();
+        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
+            predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
+        } else {
+            predicate.comNivel(nivelId);
+        }
         return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
     }
 

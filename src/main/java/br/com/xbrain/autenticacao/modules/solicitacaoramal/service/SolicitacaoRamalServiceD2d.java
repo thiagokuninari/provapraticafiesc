@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalR
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate.SolicitacaoRamalPredicate;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
@@ -36,6 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.EM_ANDAMENTO;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
 @Component
@@ -92,18 +96,21 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void validaSalvarD2d(Integer subCanalId) {
-        if (hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(subCanalId)) {
+    private void validarSolicitacaoAberta(SolicitacaoRamalRequest request) {
+        if (hasSolicitacaoPendenteOuEmAndamentoByEquipeDoUsuario(request)) {
             throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
         }
     }
 
     private void validarParametroD2d(SolicitacaoRamalRequest request) {
-        validaSalvarD2d(request.getSubCanalId());
-        if (request.getCanal() == ECanal.D2D_PROPRIO
-            && request.getSubCanalId() == null) {
-            throw ERRO_SEM_TIPO_CANAL_D2D;
+        if (request.getCanal() == ECanal.D2D_PROPRIO) {
+            if (request.getSubCanalId() == null) {
+                throw ERRO_SEM_TIPO_CANAL_D2D;
+            } else if (request.getEquipeId() == null) {
+                throw ERRO_SEM_EQUIPE_D2D;
+            }
         }
+        validarSolicitacaoAberta(request);
     }
 
     private void validarAutorizacao() {
@@ -113,9 +120,14 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         }
     }
 
-    private boolean hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(Integer subCanalId) {
-        return solicitacaoRamalRepository.findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(subCanalId)
-            .size() > 0;
+    private boolean hasSolicitacaoPendenteOuEmAndamentoByEquipeDoUsuario(SolicitacaoRamalRequest request) {
+        var predicate = new SolicitacaoRamalPredicate()
+            .comSubCanalId(request.getSubCanalId())
+            .comEquipeId(request.getEquipeId()).build()
+            .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO)));
+
+        return !solicitacaoRamalRepository.findAllByPredicate(predicate).isEmpty();
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {

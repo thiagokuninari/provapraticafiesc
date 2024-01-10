@@ -17,7 +17,8 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.Colabor
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineClient;
-import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -36,6 +37,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -56,6 +59,7 @@ import java.util.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -127,10 +131,12 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
-    @Autowired
+    @MockBean
     private PermissaoEspecialService permissaoEspecialService;
     @MockBean
     private SubCanalService subCanalService;
+    @Captor
+    private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
     @Autowired
     private EntityManager entityManager;
 
@@ -147,7 +153,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(usuario);
         verify(feederService, never())
-            .removerPermissoesEspeciais(List.of(371));
+            .removerPermissoesEspeciais(List.of(371), FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -158,19 +164,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
-            .removerPermissoesEspeciais(List.of(371));
-    }
-
-    @Test
-    public void updateFromQueue_deveAddPermissoesFeeder_quandoHouver() {
-        doReturn(umUsuarioAutenticado())
-            .when(autenticacaoService)
-            .getUsuarioAutenticado();
-
-        service.updateFromQueue(umUsuarioMqRequestComFeeder());
-
-        verify(feederService, times(1))
-            .adicionarPermissaoFeederParaUsuarioNovo(any(UsuarioDto.class), eq(umUsuarioMqRequestComFeeder()));
+            .removerPermissoesEspeciais(List.of(371), FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -217,16 +211,19 @@ public class UsuarioServiceIT {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
+        doReturn(true)
+            .when(permissaoEspecialService)
+            .hasPermissaoEspecialAtiva(3, 16101);
+
         service.saveFromQueue(usuarioMqRequest);
         var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
 
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
-        assertThat(permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioDto.getId(), 16101))
-            .isTrue();
         assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioDto.getId()))
             .flatExtracting("situacao", "observacao")
             .contains("ATIVO", "Agente Autorizado com permissão de Equipe Técnica.");
 
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, 16101);
         verify(sender).sendSuccess(any());
         verify(feederService).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
@@ -1206,7 +1203,7 @@ public class UsuarioServiceIT {
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(
                 tuple(1000, ESituacao.R),
-                tuple(6, ESituacao.A));
+                tuple(7, ESituacao.A));
 
         verify(colaboradorVendasService).atualizarUsuarioRemanejado(any());
     }
@@ -1706,51 +1703,56 @@ public class UsuarioServiceIT {
 
     @Test
     public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
-        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+        doReturn(false)
+            .when(permissaoEspecialService)
+            .hasPermissaoEspecialAtiva(100, 16101);
 
-        var permissoes = service.findPermissoesByUsuario(100);
+        service.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
         var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
-
-        assertThat(permissoes.getPermissoesEspeciais())
-            .hasSize(1)
-            .flatExtracting("funcionalidadeId", "nome", "role", "aplicacao")
-            .containsExactly(16101, "Acompanhamento de Indicações do Técnico Vendedor", "BKO_16101", "BACKOFFICE");
 
         assertThat(historicos)
             .flatExtracting("situacao", "observacao")
             .containsExactly(
                 "ATIVO", "Agente Autorizado com permissão de Equipe Técnica.",
-                "ATIVO / ÚLTIMO ACESSO DO USUÁRIO", null
-            );
+                "ATIVO / ÚLTIMO ACESSO DO USUÁRIO", null);
+
         assertThat(historicos.get(0).getCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(100, 16101);
+        verify(permissaoEspecialService).save(anyList());
     }
 
     @Test
-    @Sql("classpath:/tests_database.sql")
     public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
-        var dto = permissaoEquipeTecnicaDto(false, null);
-        usuarioService.atualizarPermissaoEquipeTecnica(dto);
+        service.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, null));
 
-        var permissoes = service.findPermissoesByUsuario(100);
         var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
-
-        assertThat(permissoes.getPermissoesEspeciais())
-            .hasSize(2)
-            .doesNotContain(
-                FuncionalidadeResponse.builder()
-                    .funcionalidadeId(16101)
-                    .nome("Acompanhamento de Indicações do Técnico Vendedor")
-                    .role("BKO_16101")
-                    .aplicacao("BACKOFFICE")
-                    .build()
-            );
 
         assertThat(historicos.get(0))
             .extracting("situacao", "observacao")
             .containsExactly("ATIVO", "Agente Autorizado sem permissão de Equipe Técnica.");
+
         assertThat(historicos.get(0).getCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void saveFromQueue_deveSalvarEnviarParaFilaDeAtualizarSocioPrincipalEAtualizarPermissoesEspeciais_quandoFlagAtualizarSocioPrincipalForTrue() {
+        assertThatCode(() -> usuarioService
+            .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
+            .doesNotThrowAnyException();
+
+        verify(sender).sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialService).atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioDtoCaptor.getValue());
+
+        assertThat(usuarioDtoCaptor.getValue())
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal", "usuarioCadastroId")
+            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true, 100);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
@@ -1814,6 +1816,45 @@ public class UsuarioServiceIT {
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestAtualizarSocioPrincipal() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("JOSÉ")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("333.333.333-11")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("renato@hotmail.com")
+            .isCadastroSocioPrincipal(false)
+            .isAtualizarSocioPrincipal(true)
+            .agentesAutorizadosIds(List.of(50, 55))
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .antigosSociosPrincipaisIds(List.of(32))
+            .build();
+    }
+
+    private PermissaoEspecial umaPermissaoEspecial(Integer funcionalidadeId) {
+        return PermissaoEspecial.builder()
+            .funcionalidade(Funcionalidade
+                .builder()
+                .id(funcionalidadeId)
+                .build())
+            .build();
+    }
+
+    private List<PermissaoEspecial> umaListaFuncFeederEAcompIndicacoesTecnicoVendedor() {
+        return List.of(
+            umaPermissaoEspecial(3046),
+            umaPermissaoEspecial(15000),
+            umaPermissaoEspecial(15005),
+            umaPermissaoEspecial(15012),
+            umaPermissaoEspecial(16101));
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {

@@ -29,7 +29,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -84,18 +84,38 @@ public class NivelControllerTest {
     @WithMockUser
     public void getNivelParaOrganizacao_deveRetornarOsNiveis_filtrandoPorPermitidosParaOrganizacao() throws Exception {
         when(nivelService.getPermitidosParaOrganizacao()).thenReturn(List.of(
-            NivelResponse.builder().id(5).nome("VAREJO").codigo(CodigoNivel.VAREJO.name()).build(),
-            NivelResponse.builder().id(8).nome("RECEPTIVO").codigo(CodigoNivel.RECEPTIVO.name()).build()));
+            NivelResponse.builder().id(8).nome("RECEPTIVO").codigo(CodigoNivel.RECEPTIVO.name()).build(),
+            NivelResponse.builder().id(18).nome("BACKOFFICE").codigo(CodigoNivel.BACKOFFICE.name()).build()));
 
         mvc.perform(get("/api/niveis/organizacao")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[0].id", is(5)))
-            .andExpect(jsonPath("$[0].nome", is("VAREJO")))
-            .andExpect(jsonPath("$[0].codigo", is("VAREJO")))
-            .andExpect(jsonPath("$[1].id", is(8)))
-            .andExpect(jsonPath("$[1].nome", is("RECEPTIVO")))
-            .andExpect(jsonPath("$[1].codigo", is("RECEPTIVO")));
+            .andExpect(jsonPath("$[0].id", is(8)))
+            .andExpect(jsonPath("$[0].nome", is("RECEPTIVO")))
+            .andExpect(jsonPath("$[0].codigo", is("RECEPTIVO")))
+            .andExpect(jsonPath("$[1].id", is(18)))
+            .andExpect(jsonPath("$[1].nome", is("BACKOFFICE")))
+            .andExpect(jsonPath("$[1].codigo", is("BACKOFFICE")));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getByCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() throws Exception {
+        mvc.perform(get("/api/niveis/codigo/BACKOFFICE_CENTRALIZADO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(nivelService, never()).getByCodigo(any(CodigoNivel.class));
+    }
+
+    @Test
+    @WithMockUser
+    public void getByCodigo_deveRetornarOk_quandoUsuarioAutenticado() throws Exception {
+        mvc.perform(get("/api/niveis/codigo/BACKOFFICE_CENTRALIZADO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(nivelService).getByCodigo(CodigoNivel.BACKOFFICE_CENTRALIZADO);
     }
 }

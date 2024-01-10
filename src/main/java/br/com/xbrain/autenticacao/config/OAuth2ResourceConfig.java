@@ -46,7 +46,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/cep/**",
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/sites/{id}/supervisores",
-            "/api/sites/permitidos"
+            "/api/sites/permitidos",
+            "/api/organizacao-empresa-historico/**",
+            "/api/nivel-empresa/**"
         };
 
         http
@@ -71,6 +73,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .antMatchers("/api/usuarios/bko-centralizado/**").hasRole(
+                CodigoFuncionalidade.BKO_PRIORIZAR_INDICACOES.name())
             .antMatchers("/api/emular**").hasRole(
                 CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(
@@ -114,11 +118,12 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.AUT_20024.name())
             .antMatchers("/api/horarios-acesso/status", "/api/horarios-acesso/status/{siteId}").hasAnyRole(
                 CodigoFuncionalidade.AUT_20024.name())
-            .antMatchers("/api/organizacao-empresa/**",
-                "/api/organizacao-empresa-historico/**",
-                "/api/nivel-empresa/**",
-                "/api/modalidade-empresa/**")
-            .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
+            .antMatchers(HttpMethod.POST, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
+            .antMatchers(HttpMethod.PUT, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
+            .antMatchers(HttpMethod.POST, "/api/sub-canais/editar")
+                .hasRole(CodigoFuncionalidade.AUT_20025.name())
             .anyRequest().authenticated();
     }
 

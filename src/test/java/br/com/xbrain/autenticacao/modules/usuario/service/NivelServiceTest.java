@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -21,8 +22,7 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.assertj.core.api.Java6Assertions.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -206,14 +206,29 @@ public class NivelServiceTest {
 
     @Test
     public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
-        when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.VAREJO, CodigoNivel.RECEPTIVO)))
-            .thenReturn(umaListaComNiveisVarejoEReceptivo());
+        when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE, CodigoNivel.OPERACAO,
+            CodigoNivel.BACKOFFICE_CENTRALIZADO)))
+            .thenReturn(umaListaComNiveisReceptivoBkoEOperacao());
 
         assertThat(service.getPermitidosParaOrganizacao())
             .extracting("codigo")
-            .contains(
-                CodigoNivel.VAREJO.name(),
-                CodigoNivel.RECEPTIVO.name());
+            .contains(CodigoNivel.RECEPTIVO.name(), CodigoNivel.BACKOFFICE.name());
+    }
+
+    @Test
+    public void getByCodigo_deveRetornarNivelResponse_quandoSolicitado() {
+        when(nivelRepository.findByCodigo(CodigoNivel.MSO)).thenReturn(umNivelMso());
+
+        assertThat(service.getByCodigo(CodigoNivel.MSO))
+            .extracting("id", "nome", "codigo")
+            .containsExactly(2, "MSO", CodigoNivel.MSO.name());
+    }
+
+    @Test
+    public void getByCodigo_deveLancarExcecao_quandoNaoEncontrar() {
+        assertThatThrownBy(() -> service.getByCodigo(CodigoNivel.MSO))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Nível não encontrado.");
     }
 
     private NivelPredicate getPredicate(UsuarioAutenticado usuarioAutenticado) {

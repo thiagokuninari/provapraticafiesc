@@ -100,4 +100,28 @@ public class ParceirosOnlineService {
     public boolean isUsuarioComCanalAa() {
         return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
     }
+
+    public void atualizarEmailSocioPrincipalInativo(String emailAtual, String emailInativo, Integer idSocioPrincipal) {
+        try {
+            client.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                ParceirosOnlineService.class.getName(),
+                EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public void inativarAntigoSocioPrincipal(String email) {
+        try {
+            client.inativarAntigoSocioPrincipal(email);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                ParceirosOnlineService.class.getName(),
+                EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 }

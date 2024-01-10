@@ -36,9 +36,11 @@ public class RegionalServiceTest {
             .thenReturn(List.of(Regional.builder().id(1027).nome("RPS").build()));
 
         assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1027, "RPS"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1027, "RPS")
+            );
     }
 
     @Test
@@ -47,9 +49,9 @@ public class RegionalServiceTest {
             .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
 
         assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
-                .isNotNull()
-                .extracting("value", "label")
-                .containsExactly(tuple(1025, "RNE"));
+            .isNotNull()
+            .extracting("value", "label")
+            .containsExactly(tuple(1025, "RNE"));
     }
 
     @Test

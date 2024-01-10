@@ -11,6 +11,8 @@ public interface NivelRepository extends PagingAndSortingRepository<Nivel, Integ
 
     Nivel findByCodigo(CodigoNivel codigo);
 
+    boolean existsByCodigo(CodigoNivel codigo);
+
     Optional<Nivel> findById(Integer id);
 
     List<Nivel> findByCodigoIn(List<CodigoNivel> niveis);

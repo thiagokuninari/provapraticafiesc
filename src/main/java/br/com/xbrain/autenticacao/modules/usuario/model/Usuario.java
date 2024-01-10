@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
@@ -96,6 +95,17 @@ public class Usuario {
     @Size(max = 120)
     @Column(name = "LOGIN_NET_SALES", length = 120)
     private String loginNetSales;
+
+    @Size(max = 120)
+    @Column(name = "NOME_EQUIPE_VENDA_NET_SALES", length = 120)
+    private String nomeEquipeVendaNetSales;
+
+    @Size(max = 120)
+    @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
+    private String codigoEquipeVendaNetSales;
+
+    @Column(name = "CANAL_NETSALES")
+    private String canalNetSales;
 
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
@@ -220,11 +230,6 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private ETipoCanal tipoCanal;
 
-    @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Organizacao organizacao;
-
     @JoinColumn(name = "FK_ORGANIZACAO_EMPRESA", referencedColumnName = "ID",
         foreignKey = @ForeignKey(name = "FK_USUARIO_ORG_EMPRESA"))
     @ManyToOne(fetch = FetchType.LAZY)
@@ -250,6 +255,15 @@ public class Usuario {
 
     @Transient
     private Integer agenteAutorizadoId;
+
+    @Transient
+    private boolean isAtualizarSocioPrincipal;
+
+    @Transient
+    private List<Integer> agentesAutorizadosIds;
+
+    @Transient
+    private List<Integer> antigosSociosPrincipaisIds;
 
     @Transient
     private String senhaDescriptografada;

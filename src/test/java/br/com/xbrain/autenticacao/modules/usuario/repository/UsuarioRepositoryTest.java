@@ -23,8 +23,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
@@ -197,7 +199,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .hasSize(2);
+            .hasSize(6);
     }
 
     @Test
@@ -267,7 +269,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void getUsuariosOperacaoCanalAa_deveRetornarUsuariosOpNivelAa() {
         assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
-            .hasSize(3);
+            .hasSize(7);
     }
 
     @Test
@@ -330,7 +332,7 @@ public class UsuarioRepositoryTest {
             .comNivel(List.of(1))
             .comCargo(List.of(2, 5));
     }
-    
+
     @Test
     public void findByIdInAndCargoIn_deveRetornarUsuarios_quandoInformarIdsDosUsuariosAndCargos() {
         var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
@@ -350,5 +352,11 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
                 Assertions.tuple(700, "USUARIO 700", "USUARIO_700@TESTE.COM"));
+    }
+
+    @Test
+    public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
+        assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
+            .containsExactly(219);
     }
 }

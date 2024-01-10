@@ -24,7 +24,19 @@ public class SolicitacaoRamalRepositoryTest {
     @Autowired
     private SolicitacaoRamalRepository repository;
 
-    private SolicitacaoRamalFiltros filtros;
+    @Test
+    public void findAll_deveRetornarApenasSolicitacoesDaEquipe_quandoHouverSolicitacao() {
+        var predicate = new SolicitacaoRamalFiltros().toPredicate()
+            .comEquipeId(1).build();
+        assertEquals(1, repository.findAll(new PageRequest(), predicate).getTotalElements());
+    }
+
+    @Test
+    public void findAll_deveRetornarListaVazia_quandoNaoHouverSolicitacaoDaEquipe() {
+        var predicate = new SolicitacaoRamalFiltros().toPredicate()
+            .comEquipeId(2).build();
+        assertEquals(0, repository.findAll(new PageRequest(), predicate).getTotalElements());
+    }
 
     @Test
     public void findAllByAaId_deveRetornarlistaVazia_quandoNaoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
@@ -33,7 +45,7 @@ public class SolicitacaoRamalRepositoryTest {
 
     @Test
     public void findAllByAaId_deveRetornarlistaComDoisRegistros_quandoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
-        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(1).size());
+        assertEquals(3, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(1).size());
     }
 
     @Test
@@ -65,4 +77,13 @@ public class SolicitacaoRamalRepositoryTest {
         return filtros;
     }
 
+    @Test
+    public void findAllByAaId_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(3334).size());
+    }
+
+    @Test
+    public void findAllByAaId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusEnviadoOuConcluido() {
+        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(2).size());
+    }
 }

@@ -208,10 +208,11 @@ public class NivelHelper {
         );
     }
 
-    public static List<Nivel> umaListaComNiveisVarejoEReceptivo() {
+    public static List<Nivel> umaListaComNiveisReceptivoBkoEOperacao() {
         return List.of(
-            umNivelVarejo(),
-            umNivelReceptivo()
+            umNivelReceptivo(),
+            umNivelBko(),
+            umNivelOperacao()
             );
     }
 }

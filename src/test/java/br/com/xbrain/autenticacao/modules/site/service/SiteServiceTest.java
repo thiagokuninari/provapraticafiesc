@@ -6,9 +6,11 @@ import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.helper.UfHelper;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
@@ -24,13 +26,17 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
+import helpers.TestBuilders;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +54,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
@@ -77,6 +84,8 @@ public class SiteServiceTest {
     private UsuarioService usuarioService;
     @Mock
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Mock
+    private CidadeService cidadeService;
 
     private void setupSite(Integer idUsuario, Integer idSite, CodigoCargo codigoCargo, String nomeSite, Integer vinculoIndireto) {
         var sitePredicate = umSitePredicateComSupervidorOuCoordenador(idUsuario);
@@ -84,10 +93,10 @@ public class SiteServiceTest {
         var idVinculo = vinculoIndireto != null ? vinculoIndireto : idUsuario;
 
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo, CodigoDepartamento.COMERCIAL));
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo, CodigoDepartamento.COMERCIAL));
         when(siteRepository.findAll(sitePredicate, pageRequest))
-                .thenReturn(new PageImpl<>(umaListaDeSitesVinculadoAUsuarioComCargo(idSite, nomeSite,
-                        umUsuario(idUsuario, codigoCargo))));
+            .thenReturn(new PageImpl<>(umaListaDeSitesVinculadoAUsuarioComCargo(idSite, nomeSite,
+                umUsuario(idUsuario, codigoCargo))));
 
     }
 
@@ -155,7 +164,7 @@ public class SiteServiceTest {
         when(siteRepository.findAll()).thenReturn(umaListaSites());
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.save(umSiteRequest()))
+            .isThrownBy(() -> service.save(TestBuilders.umSiteRequest()))
             .withMessage("Site já cadastrado anteriormente com esse nome.");
 
         verify(siteRepository, atLeastOnce()).findAll();
@@ -167,7 +176,7 @@ public class SiteServiceTest {
         when(siteRepository.findAll(umSitePredicate())).thenReturn(List.of(umSite(1, "Brandin", BRT)));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.save(umSiteRequest()))
+            .isThrownBy(() -> service.save(TestBuilders.umSiteRequest()))
             .withMessage("Existem cidades vinculadas à outro site.");
 
         verify(siteRepository, atLeastOnce()).findAll(umSitePredicate());
@@ -179,7 +188,7 @@ public class SiteServiceTest {
         when(siteRepository.findById(anyInt()))
             .thenReturn(Optional.of(umSiteComSupervisores()));
 
-        var request = umSiteRequest();
+        var request = TestBuilders.umSiteRequest();
         request.setId(1);
         request.setSupervisoresIds(List.of(100, 110, 112));
 
@@ -243,38 +252,96 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarAsCidades_quandoBuscadoEmTodosOsSites() {
-        when(cidadeRepository.buscarCidadesVinculadasAoUsuarioSemSite(any(), anyList()))
-            .thenReturn(umListaCidades());
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+    @SuppressWarnings("LineLength")
+    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarListaVazia_quandoNaoExistirCidadesDisponiveisAoBuscarEmTodosOsSites() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(cidadeRepository.buscarCidadesVinculadasAoUsuarioSemSite(any(), any()))
+            .thenReturn(List.of());
 
-        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1, 2), null))
-            .extracting("value", "label")
-            .containsExactlyInAnyOrder(
-                tuple(1, "CIDADE 1 - PR"),
-                tuple(2, "CIDADE 2 - SP")
-            );
+        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(), null))
+            .isEmpty();
 
+        verify(cidadeRepository).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), anyList());
         verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
-        verify(cidadeRepository, atLeastOnce()).buscarCidadesVinculadasAoUsuarioSemSite(any(),
-            argThat(arg -> arg.size() == 2 && arg.containsAll(List.of(1, 2))));
+        verifyZeroInteractions(cidadeService);
     }
 
     @Test
-    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveReotnarAsCidades_quandoBuscarOsSitesIgnorandoOAtual() {
+    @SuppressWarnings("LineLength")
+    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarListaVazia_quandoNaoExistirCidadesDisponiveisAoBuscarSitesIgnorandoAtual() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
         when(cidadeRepository.buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any()))
-            .thenReturn(umListaCidades());
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1, 2), 1))
+            .thenReturn(List.of());
+
+        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(), 1))
+            .isEmpty();
+
+        verify(cidadeRepository).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
+        verify(cidadeRepository, never()).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), anyList());
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarCidades_quandoBuscadoEmTodosOsSites() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(cidadeRepository.buscarCidadesVinculadasAoUsuarioSemSite(any(), eq(List.of(2))))
+            .thenReturn(listaCidadesDeSaoPaulo());
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(2), null))
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple(1, "CIDADE 1 - PR"),
-                tuple(2, "CIDADE 2 - SP")
+                tuple(33618, "ALDEIA - BARUERI - SP"),
+                tuple(4864, "BARUERI - SP"),
+                tuple(4870, "BERNARDINO DE CAMPOS - SP"),
+                tuple(4903, "CAJAMAR - SP"),
+                tuple(4943, "COSMOPOLIS - SP"),
+                tuple(4944, "COSMORAMA - SP"),
+                tuple(33252, "JARDIM BELVAL - BARUERI - SP"),
+                tuple(33255, "JARDIM SILVEIRA - BARUERI - SP"),
+                tuple(33269, "JORDANESIA - CAJAMAR - SP"),
+                tuple(5107, "LINS - SP"),
+                tuple(5128, "MARILIA - SP"),
+                tuple(33302, "POLVILHO - CAJAMAR - SP")
             );
 
-        verify(cidadeRepository, atLeastOnce()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(),
-            argThat(arg -> arg.size() == 2 && arg.containsAll(List.of(1, 2))), eq(1));
+        verify(cidadeRepository).buscarCidadesVinculadasAoUsuarioSemSite(any(Predicate.class), eq(List.of(2)));
+        verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarCidades_quandoBuscarOsSitesIgnorandoOAtual() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(cidadeRepository.buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), eq(List.of(1)), any()))
+            .thenReturn(listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa());
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1), 1))
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(30650, "BELA VISTA DO PIQUIRI - CAMPINA DA LAGOA - PR"),
+                tuple(3272, "CAMPINA DA LAGOA - PR"),
+                tuple(30858, "GUARAVERA - LONDRINA - PR"),
+                tuple(30574, "HERVEIRA - CAMPINA DA LAGOA - PR"),
+                tuple(30813, "IRERE - LONDRINA - PR"),
+                tuple(30732, "LERROVILLE - LONDRINA - PR"),
+                tuple(30757, "MARAVILHA - LONDRINA - PR"),
+                tuple(30676, "PAIQUERE - LONDRINA - PR"),
+                tuple(30780, "SALLES DE OLIVEIRA - CAMPINA DA LAGOA - PR"),
+                tuple(30848, "SAO LUIZ - LONDRINA - PR"),
+                tuple(30910, "WARTA - LONDRINA - PR")
+            );
+
+        verify(cidadeRepository).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(Predicate.class), eq((List.of(1))), eq(1));
         verify(cidadeRepository, never()).buscarCidadesVinculadasAoUsuarioSemSite(any(), any());
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
     }
 
     @Test
@@ -488,7 +555,7 @@ public class SiteServiceTest {
     @Test
     public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_usuarioResponse_seSolicitado() {
         when(usuarioService
-                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+            .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
                 umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
                 umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
@@ -510,7 +577,7 @@ public class SiteServiceTest {
             doisUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
 
         when(usuarioService.buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
-                eq(List.of(1)), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
+            eq(List.of(1)), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
             .thenReturn(umaListaUsuarioResponse);
         when(equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(eq(umaListaUsuarioResponse), eq(null)))
             .thenReturn(umaListaUsuarioResponse);
@@ -692,6 +759,103 @@ public class SiteServiceTest {
             .isEqualTo(List.of(esperado));
     }
 
+    @Test
+    public void getSiteDetalheResponseById_deveLancarNotFoundException_quandoNaoEncontrarPorSiteId() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.getSiteDetalheResponseById(200))
+            .withMessage("Site não encontrado.");
+
+        verify(siteRepository).findById(200);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getSiteDetalheResponseById_deveRetornarSiteDetalheResponseSemCidades_quandoSiteNaoPossuirCidadesAtreladas() {
+        var site = umSiteCompletoComCidadesSemDistritos();
+        site.setCidades(Set.of());
+
+        when(siteRepository.findById(201)).thenReturn(Optional.of(site));
+
+        assertThat(service.getSiteDetalheResponseById(201))
+            .extracting("id", "nome", "timeZone", "situacao", "coordenadoresNomes", "supervisoresNomes", "estados", "cidades")
+            .containsExactly(
+                201,
+                "SITE COMPLETO 201",
+                ETimeZone.BRT,
+                ESituacao.A,
+                Set.of("NOME USUARIO SITE COORDENADOR"),
+                Set.of("NOME USUARIO SITE SUPERVISOR"),
+                Set.of(UfHelper.ufResponseSaoPaulo(), UfHelper.ufResponseParana()),
+                null
+            );
+
+        verify(siteRepository).findById(201);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getSiteDetalheResponseById_deveRetornarSiteDetalheResponseComCidadesSemDistritos_quandoEncontrarPorSiteId() {
+        when(siteRepository.findById(201)).thenReturn(Optional.of(umSiteCompletoComCidadesSemDistritos()));
+
+        assertThat(service.getSiteDetalheResponseById(201))
+            .extracting("id", "nome", "timeZone", "situacao", "coordenadoresNomes", "supervisoresNomes", "estados", "cidades")
+            .containsExactly(
+                201,
+                "SITE COMPLETO 201",
+                ETimeZone.BRT,
+                ESituacao.A,
+                Set.of("NOME USUARIO SITE COORDENADOR"),
+                Set.of("NOME USUARIO SITE SUPERVISOR"),
+                Set.of(UfHelper.ufResponseSaoPaulo(), UfHelper.ufResponseParana()),
+                Set.of(
+                    CidadeHelper.cidadeResponseLins(),
+                    CidadeHelper.cidadeResponseLondrina(),
+                    CidadeHelper.cidadeResponseMaringa()
+                )
+            );
+
+        verify(siteRepository).findById(201);
+        verifyZeroInteractions(cidadeService);
+    }
+
+    @Test
+    public void getSiteDetalheResponseById_deveRetornarSiteDetalheResponseComDistritosENomeCidadePai_quandoEncontrarPorSiteId() {
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.of(umSiteCompleto()));
+        when(cidadeService.getCidadesDistritos(Eboolean.V))
+            .thenReturn(umMapApenasDistritosComCidadePai());
+
+        var siteDetalheResponse = service.getSiteDetalheResponseById(200);
+
+        assertThat(siteDetalheResponse)
+            .extracting("id", "nome", "timeZone", "situacao", "coordenadoresNomes", "supervisoresNomes", "estados")
+            .containsExactly(
+                200,
+                "SITE COMPLETO 200",
+                ETimeZone.BRT,
+                ESituacao.A,
+                Set.of("NOME USUARIO SITE COORDENADOR"),
+                Set.of("NOME USUARIO SITE SUPERVISOR"),
+                Set.of(UfHelper.ufResponseSaoPaulo())
+            );
+
+        assertThat(siteDetalheResponse.getCidades())
+            .containsExactlyInAnyOrderElementsOf(
+                Set.of(
+                    cidadeResponseLins(),
+                    cidadeResponseAldeia(),
+                    cidadeResponseBarueri(),
+                    cidadeResponseJardimBelval(),
+                    cidadeResponseJardimSilveira(),
+                    cidadeResponsePolvilhoComCidadePai(),
+                    cidadeResponseJordanesiaComCidadePai()
+                )
+            );
+
+        verify(siteRepository).findById(200);
+        verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
     private Site umReagendamentoConfiguracaoResponse(Integer id) {
         return Site.builder()
             .id(id)
@@ -739,9 +903,9 @@ public class SiteServiceTest {
 
     public List<EquipeVendaDto> umaListEquipeResponse() {
         return List.of(EquipeVendaDto.builder()
-        .id(10)
-        .descricao("Equipe ativo")
-        .build());
+            .id(10)
+            .descricao("Equipe ativo")
+            .build());
     }
 
     private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {
@@ -772,6 +936,46 @@ public class SiteServiceTest {
                         .nome("CARLOS")
                         .situacao(ESituacao.I)
                         .build()))
+            .build();
+    }
+
+    private Site umSiteCompletoComCidadesSemDistritos() {
+        return Site
+            .builder()
+            .id(201)
+            .nome("SITE COMPLETO 201")
+            .timeZone(BRT)
+            .estados(Set.of(UfHelper.ufParana(), UfHelper.ufSaoPaulo()))
+            .cidades(Set.of(CidadeHelper.cidadeLins(), CidadeHelper.cidadeLondrina(), CidadeHelper.cidadeMaringa()))
+            .supervisores(Set.of(UsuarioHelper.umUsuarioSiteSupervisor()))
+            .coordenadores(Set.of(UsuarioHelper.umUsuarioSiteCoordenador()))
+            .situacao(ESituacao.A)
+            .discadoraId(null)
+            .siteNacional(Eboolean.F)
+            .build();
+    }
+
+    public static Site umSiteCompleto() {
+        return Site
+            .builder()
+            .id(200)
+            .nome("SITE COMPLETO 200")
+            .timeZone(BRT)
+            .estados(Set.of(UfHelper.ufSaoPaulo()))
+            .cidades(
+                Set.of(
+                    CidadeHelper.cidadeLins(),
+                    CidadeHelper.cidadeBarueri(),
+                    CidadeHelper.distritoAldeia(),
+                    CidadeHelper.distritoPolvilho(),
+                    CidadeHelper.distritoJordanesia(),
+                    CidadeHelper.distritoJardimBelval(),
+                    CidadeHelper.distritoJardimSilveira()))
+            .supervisores(Set.of(UsuarioHelper.umUsuarioSiteSupervisor()))
+            .coordenadores(Set.of(UsuarioHelper.umUsuarioSiteCoordenador()))
+            .situacao(ESituacao.A)
+            .discadoraId(null)
+            .siteNacional(Eboolean.F)
             .build();
     }
 

@@ -14,13 +14,15 @@ public class SolicitacaoRamalFiltros {
     private Integer agenteAutorizadoId;
     private ECanal canal;
     private Integer subCanalId;
+    private Integer equipeId;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()
-                .comDataCadastro(this.dataInicialSolicitacao, this.dataFinalSolicitacao)
-                .comSituacaoSolicitacao(this.situacao)
-                .comAgenteAutorizadoId(this.agenteAutorizadoId)
-                .comCanal(this.canal)
-                .comSubCanalId(this.subCanalId);
+            .comDataCadastro(this.dataInicialSolicitacao, this.dataFinalSolicitacao)
+            .comSituacaoSolicitacao(this.situacao)
+            .comAgenteAutorizadoId(this.agenteAutorizadoId)
+            .comCanal(this.canal)
+            .comSubCanalId(this.subCanalId)
+            .comEquipeId(equipeId);
     }
 }

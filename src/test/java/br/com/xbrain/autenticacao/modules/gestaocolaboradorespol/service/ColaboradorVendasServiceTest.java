@@ -42,7 +42,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.limparCpfColaboradorVendas("usuarioteste@gmail.com"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).limparCpfColaboradorVendas("usuarioteste@gmail.com");
     }
@@ -55,7 +55,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.limparCpfColaboradorVendas("usuarioteste@gmail.com"))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .hasMessage("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.");
 
         verify(client).limparCpfColaboradorVendas("usuarioteste@gmail.com");
     }
@@ -114,7 +114,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.atualizarUsuarioRemanejado(new UsuarioRemanejamentoRequest()))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#048 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .hasMessage("#055 - Desculpe, ocorreu um erro interno. Contate o administrador.");
     }
 
     @Test

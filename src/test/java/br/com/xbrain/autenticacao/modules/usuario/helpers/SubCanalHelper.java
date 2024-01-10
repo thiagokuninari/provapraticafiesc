@@ -1,5 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -23,6 +26,7 @@ public class SubCanalHelper {
             .codigo(ETipoCanal.PAP)
             .nome("PAP")
             .situacao(A)
+            .novaChecagemCredito(Eboolean.F)
             .build();
     }
 
@@ -32,6 +36,7 @@ public class SubCanalHelper {
             .codigo(ETipoCanal.PAP_PME)
             .nome("PAP PME")
             .situacao(A)
+            .novaChecagemCredito(Eboolean.V)
             .build();
     }
 
@@ -41,6 +46,16 @@ public class SubCanalHelper {
             .codigo(codigo)
             .nome(nome)
             .situacao(A)
+            .build();
+    }
+
+    public static SubCanalCompletDto umSubCanalInativoCompletDto(Integer id, ETipoCanal codigo, String nome) {
+        return SubCanalCompletDto.builder()
+            .id(id)
+            .codigo(codigo)
+            .nome(nome)
+            .situacao(ESituacao.I)
+            .novaChecagemCredito(Eboolean.F)
             .build();
     }
 
@@ -56,5 +71,13 @@ public class SubCanalHelper {
 
     public static UsuarioSubCanalId umUsuarioSubCanalId(Integer id, String nome, Integer subCanalId) {
         return new UsuarioSubCanalId(id, nome, subCanalId);
+    }
+
+    public static Set<SubCanal> umaListaSubcanal() {
+        return Set.of(umSubcanal(PAP_PME), umSubcanal(INSIDE_SALES_PME), umSubcanal(PAP_PREMIUM));
+    }
+
+    private static SubCanal umSubcanal(ETipoCanal tipoCanal) {
+        return SubCanal.builder().codigo(tipoCanal).build();
     }
 }

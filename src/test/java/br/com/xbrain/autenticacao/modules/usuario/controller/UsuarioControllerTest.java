@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -38,6 +41,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMIN
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
 import static helpers.TestBuilders.umUsuario;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -75,6 +81,8 @@ public class UsuarioControllerTest {
     private FeederService feederService;
     @MockBean
     private SubCanalService subCanalService;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     @SneakyThrows
@@ -103,7 +111,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticado() {
+    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticadoENaoPassarFiltroAtivo() {
         var filtro = UsuarioPorIdFiltro.builder()
             .usuariosIds(List.of(1))
             .build();
@@ -113,7 +121,24 @@ public class UsuarioControllerTest {
                 .content(TestsHelper.convertObjectToJsonBytes(filtro))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        verify(usuarioService).findAllResponsePorIds(any());
+        verify(usuarioService).findAllResponsePorIds(filtro);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllPorIds_deveRetornarOk_quandoUsuarioNaoAutenticado() {
+        var filtro = UsuarioPorIdFiltro.builder()
+            .apenasAtivos(Eboolean.V)
+            .usuariosIds(List.of(1))
+            .build();
+
+        mvc.perform(post(BASE_URL.concat("/por-ids"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(filtro))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(usuarioService).findAllResponsePorIds(filtro);
     }
 
     @Test
@@ -1715,7 +1740,7 @@ public class UsuarioControllerTest {
                 .param("buscarInativos", "false"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, false);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false);
     }
 
     @Test
@@ -1726,7 +1751,7 @@ public class UsuarioControllerTest {
                 .param("organizacaoId", "1"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacao(1, true);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true);
     }
 
     @Test
@@ -1975,6 +2000,21 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
+        when(usuarioService.getCanaisPermitidosParaOrganizacao())
+            .thenReturn(List.of(SelectResponse.of(ECanal.INTERNET.name(), ECanal.INTERNET.getDescricao())));
+
+        mvc.perform(get(BASE_URL.concat("/canais/organizacao")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(ECanal.INTERNET.name())))
+            .andExpect(jsonPath("$[0].label", is(ECanal.INTERNET.getDescricao())));
+
+        verify(usuarioService).getCanaisPermitidosParaOrganizacao();
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/permitidos/select/por-filtros")))
@@ -2141,5 +2181,68 @@ public class UsuarioControllerTest {
             .nome("Usuario Ativo")
             .email("usuarioativo@email.com")
             .build();
+    }
+
+    @Test
+    @SneakyThrows
+    public void moverAvatarMinio_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).moverAvatarMinio();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void moverAvatarMinio_deveRetornarOk_quandoAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).moverAvatarMinio();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8")))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8")))
+            .andExpect(status().isForbidden());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"BKO_PRIORIZAR_INDICACOES"})
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarBadRequest_quandoNaoPassarParametro() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(usuarioService, never()).findOperadoresBkoCentralizadoByFornecedor(anyInt(), anyBoolean());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {"BKO_PRIORIZAR_INDICACOES"})
+    public void findOperadoresBkoCentralizadoByFornecedor_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/bko-centralizado/8"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
     }
 }

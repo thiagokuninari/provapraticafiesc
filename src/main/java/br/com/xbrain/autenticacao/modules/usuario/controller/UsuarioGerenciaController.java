@@ -69,7 +69,7 @@ public class UsuarioGerenciaController {
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
                                                                     @PathVariable Set<ECanal> canal,
                                                                     @RequestParam(required = false) Set<Integer> subCanais) {
-        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post.getCidadeIds(), canal, subCanais);
+        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post, canal, subCanais);
     }
 
     @GetMapping(params = "email")
@@ -107,9 +107,9 @@ public class UsuarioGerenciaController {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
 
-    @GetMapping("/{idUsuario}/cidades")
-    public List<UsuarioCidadeDto> getCidadesByUsuario(@PathVariable Integer idUsuario) {
-        return service.getCidadeByUsuario(idUsuario);
+    @GetMapping("{idUsuario}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable Integer idUsuario) {
+        return service.getCidadesByUsuarioId(idUsuario);
     }
 
     @PutMapping("/acesso/email")
@@ -145,5 +145,25 @@ public class UsuarioGerenciaController {
     @PutMapping("remanejar-usuario")
     public void remanejarUsuario(@RequestBody UsuarioMqRequest request) {
         service.remanejarUsuario(request);
+    }
+
+    @GetMapping("existir/usuario/cpf-email")
+    public void validarCpfEmailSocio(@RequestParam String cpf, @RequestParam String email) {
+        service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
+    }
+
+    @PutMapping("inativar/socio-principal")
+    public void inativarAntigoSocioPrincipal(@RequestParam String email) {
+        service.inativarAntigoSocioPrincipal(email);
+    }
+
+    @PutMapping("limpar-cpf/socio-principal/{id}")
+    public void limparCpfAntigoSocioPrincipal(@PathVariable Integer id) {
+        service.limparCpfAntigoSocioPrincipal(id);
+    }
+
+    @PutMapping("inativar-email/{idSocioPrincipal}")
+    public void atualizarEmailSocioInativo(@PathVariable Integer idSocioPrincipal) {
+        service.atualizarEmailSocioInativo(idSocioPrincipal);
     }
 }

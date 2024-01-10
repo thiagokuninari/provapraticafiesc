@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -8,13 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping(value = "api/cidades")
+@RequestMapping("api/cidades")
 public class CidadeController {
 
     @Autowired
     private CidadeService service;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+
+    @GetMapping("todas")
+    public List<CidadeResponse> getAllCidades(@RequestParam(required = false) Integer regionalId,
+                                              @RequestParam(required = false) Integer ufId) {
+        return service.getAll(regionalId, ufId);
+    }
 
     @GetMapping
     public Iterable<Cidade> buscarTodas(Integer idUf, Integer idRegional, Integer idSubCluster) {
@@ -78,8 +89,8 @@ public class CidadeController {
     }
 
     @GetMapping("{cidadeId}")
-    public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
-        return CidadeResponse.of(service.findById(id));
+    public CidadeResponse getCidadeById(@PathVariable Integer cidadeId) {
+        return service.getCidadeById(cidadeId);
     }
 
     @GetMapping("{id}/clusterizacao")
@@ -148,5 +159,23 @@ public class CidadeController {
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(@RequestParam(name = "cidadesId")
                                                                                List<Integer> cidadesId) {
         return service.getCodigoIbgeRegionalByCidade(cidadesId);
+    }
+
+    @GetMapping("distritos")
+    public Map<Integer, CidadeResponse> getCidadesDistritos(@RequestParam(required = false) Eboolean apenasDistritos) {
+        return service.getCidadesDistritos(apenasDistritos);
+    }
+
+    @DeleteMapping("distritos/limpar-cache")
+    public void limparCacheCidadesDistritos() {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
+        service.flushCacheCidadesDistritos();
+    }
+
+    @GetMapping("cidade-distrito")
+    public CidadeResponse buscarCidadeDistrito(@RequestParam String uf,
+                                               @RequestParam String cidade,
+                                               @RequestParam String distrito) {
+        return service.getCidadeDistrito(uf, cidade, distrito);
     }
 }

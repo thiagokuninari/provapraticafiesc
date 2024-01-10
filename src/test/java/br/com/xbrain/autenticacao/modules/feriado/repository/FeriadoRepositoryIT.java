@@ -133,4 +133,28 @@ public class FeriadoRepositoryIT {
             .contains(LocalDate.of(2019, 7, 29), LocalDate.of(2019, 9, 23))
             .doesNotContain(LocalDate.of(2019, 9, 30));
     }
+
+    @Test
+    public void findByCidadeIdAndDataAtual_deveRetornarTrue_quandoHouverFeriadoNacionalNoDia() {
+        assertThat(feriadoRepository.hasFeriadoByCidadeIdAndDataAtual(1520, LocalDate.of(2019, 7, 30)))
+            .isTrue();
+    }
+
+    @Test
+    public void findByCidadeIdAndDataAtual_deveRetornarTrue_quandoHouverFeriadoEstadualNoDia() {
+        assertThat(feriadoRepository.hasFeriadoByCidadeIdAndDataAtual(4498, LocalDate.of(2019, 9, 23)))
+            .isTrue();
+    }
+
+    @Test
+    public void findByCidadeIdAndDataAtual_deveRetornarTrue_quandoHouverFeriadoMunicipalNoDia() {
+        assertThat(feriadoRepository.hasFeriadoByCidadeIdAndDataAtual(4498, LocalDate.of(2019, 9, 22)))
+            .isTrue();
+    }
+
+    @Test
+    public void findByCidadeIdAndDataAtual_deveRetornarFalse_quandoNaoHouverFeriadoNoDia() {
+        assertThat(feriadoRepository.hasFeriadoByCidadeIdAndDataAtual(3564, LocalDate.of(2023, 10, 27)))
+            .isFalse();
+    }
 }

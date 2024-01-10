@@ -142,14 +142,35 @@ public enum EErrors {
     ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
         "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#045 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
-    ERRO_AO_LIMPAR_CPF_COLABORADOR("#046 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#046 - Ocorreu um erro ao tentar limpar o CPF do colaborador."),
-    ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA(
+    ERRO_CONEXAO_MINIO(
+        "#046 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#046 - Ocorreu um erro ao tentar acessar o MinIO Client."),
+    ERRO_SALVAR_ARQUIVO(
         "#047 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#047 - Erro ao obter os emails dos colaboradores do agente autorizado."),
-    ERRO_REMANEJAR_COLABORADOR_POL(
+        "#047 - Ocorreu um erro ao tentar salvar o arquivo."),
+    ERRO_ACESSO_SERVIDOR(
         "#048 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#048 - Ocorreu um erro ao remanejar um colaborador do Parceiros Online.");
+        "#048 - Ocorreu um erro ao acessar o minio server."),
+    ARQUIVO_NAO_ENCONTRADO(
+        "#049 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#049 - Arquivo não encontrado."),
+    ERRO_VALIDAR_EMAIL_CADASTRADO(
+        "#050 - O e-mail cadastrado para o usuário está inválido.",
+        "#050 - O e-mail cadastrado para o usuário está inválido ou vazio."),
+    ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL(
+        "#051 - Não foi possível atualizar o e-mail do sócio no POL.",
+        "#051 - Não foi possível atualizar o e-mail do sócio no POL."),
+    ERRO_SOCIO_NAO_INATIVADO_NO_POL(
+        "#052 - Não foi possível inativar o sócio no Parceiros Online.",
+        "#052 - Não foi possível inativar o sócio no Parceiros Online."),
+    ERRO_AO_LIMPAR_CPF_COLABORADOR("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#053 - Ocorreu um erro ao tentar limpar o CPF do colaborador."),
+    ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA(
+        "#054 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#054 - Erro ao obter os emails dos colaboradores do agente autorizado."),
+    ERRO_REMANEJAR_COLABORADOR_POL(
+        "#055 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#055 - Ocorreu um erro ao remanejar um colaborador do Parceiros Online.");
 
     private final String descricao;
     private final String descricaoTecnica;

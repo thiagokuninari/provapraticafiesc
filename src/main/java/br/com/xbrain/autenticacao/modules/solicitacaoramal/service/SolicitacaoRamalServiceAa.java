@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
@@ -99,18 +100,31 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void validaSalvarAa(Integer aaId) {
+    private void validaSalvarAa(Integer aaId, Integer quantidadeRamais) {
         if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
             throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
+        } else if (validarQuantidade(aaId, quantidadeRamais)) {
+            throw new ValidacaoException("Não é possível salvar a solicitação de ramal, pois excedeu o limite.");
         }
     }
 
+    private boolean validarQuantidade(Integer aaId, Integer quantidadeRamais) {
+        var ramais = solicitacaoRamalRepository
+            .findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(aaId)
+            .stream()
+            .mapToInt(SolicitacaoRamal::getQuantidadeRamais)
+            .sum();
+
+        return quantidadeRamais + ramais > agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(aaId).size();
+    }
+
     private void validarParametroAa(SolicitacaoRamalRequest request) {
-        validaSalvarAa(request.getAgenteAutorizadoId());
         if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
             && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
         }
+
+        validaSalvarAa(request.getAgenteAutorizadoId(), request.getQuantidadeRamais());
     }
 
     private void validarAutorizacao() {
@@ -121,8 +135,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
-        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(aaId)
-            .size() > 0;
+        return !solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(aaId).isEmpty();
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {

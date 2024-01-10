@@ -119,12 +119,28 @@ public class FeriadoService {
     }
 
     public Page<FeriadoResponse> obterFeriadosByFiltros(PageRequest pageRequest, FeriadoFiltros filtros) {
-        return repository.findAll(filtros.toPredicate().build(), pageRequest)
+        var feriadosResponse = repository.findAll(filtros.toPredicate().build(), pageRequest)
             .map(FeriadoResponse::of);
+
+        if (feriadosResponse.hasContent()) {
+            var distritos = cidadeService.getCidadesDistritos(Eboolean.V);
+
+            feriadosResponse
+                .forEach(feriadoResponse -> FeriadoResponse.definirNomeCidadePaiPorDistritos(feriadoResponse, distritos));
+        }
+
+        return feriadosResponse;
     }
 
     public FeriadoResponse getFeriadoById(Integer id) {
-        return FeriadoResponse.of(findById(id));
+        var feriadoResponse = FeriadoResponse.of(findById(id));
+
+        if (feriadoResponse.getFkCidade() != null) {
+            var cidadeResponse = cidadeService.getCidadeById(feriadoResponse.getFkCidade());
+            feriadoResponse.setCidadePai(cidadeResponse.getNome());
+        }
+
+        return feriadoResponse;
     }
 
     @Transactional
@@ -286,6 +302,10 @@ public class FeriadoService {
 
     public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
         return repository.buscarTotalDeFeriadosPorMesAno();
+    }
+
+    public boolean isFeriadoComCidadeId(Integer cidadeId) {
+        return repository.hasFeriadoByCidadeIdAndDataAtual(cidadeId, dataHoraAtual.getData());
     }
 
     public void flushCacheFeriadoTelefonia() {

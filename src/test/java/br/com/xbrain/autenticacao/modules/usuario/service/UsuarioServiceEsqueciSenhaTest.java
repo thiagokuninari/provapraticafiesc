@@ -94,7 +94,8 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setRecuperarSenhaHash(hash);
 
         when(jsonWebTokenService.validateTokenPasswordReset(hash)).thenReturn(getJwsClaims(hash));
-        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(anyString(), any()))
+            .thenReturn(Optional.of(usuario));
 
         service.notificarCliente(usuario, false, null);
         service.resetarSenha(hash);
@@ -149,7 +150,8 @@ public class UsuarioServiceEsqueciSenhaTest {
 
         when(jsonWebTokenService.validateTokenPasswordReset(hashDiferenteDoUsuario))
             .thenReturn(getJwsClaims(hashDiferenteDoUsuario));
-        when(usuarioRepository.findUsuarioByEmail(anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(anyString(), any()))
+            .thenReturn(Optional.of(usuario));
 
         service.resetarSenha(hashDiferenteDoUsuario);
 

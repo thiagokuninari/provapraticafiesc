@@ -141,6 +141,7 @@ public class SolicitacaoRamalHelper {
 
     public static SolicitacaoRamalFiltros umaSolicitacaoFiltros() {
         var filtros = new SolicitacaoRamalFiltros();
+        filtros.setAgenteAutorizadoId(1);
         return filtros;
     }
 

@@ -24,10 +24,12 @@ public enum EScopes {
     ASTERISK_URA("asterisk-ura-api"),
     CLICK_TO_CALL("click-to-call-api"),
     INDICACAO("indicacao-api"),
-    GERADOR_LEAD("gerador-lead-api"),
+    FEEDER("feeder-api"),
     CHATBOT("chatbot-api"),
     SOLICITACAO_PAP("solicitacao-pap"),
     CLARO_INDICO("claro-indico-api"),
+    BLOQUEIO_LIGACAO_API("bloqueio-ligacao-api"),
+    QUALITY_CALL("quality-call-api"),
     GESTAO_COLABORADORES_POL("gestao-colaborador-pol-api");
 
     @Getter

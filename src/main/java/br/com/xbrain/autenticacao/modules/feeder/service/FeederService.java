@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.AGENTE_AUTORIZADO;
 
 @Slf4j
 @Service
@@ -60,17 +62,34 @@ public class FeederService {
             var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoPermissaoFeederDto);
             usuarioService.salvarPermissoesEspeciais(permissoes);
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
-        } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
-            var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
-                .filter(usuarioId -> usuarioRepository.exists(usuarioId))
-                .collect(Collectors.toList());
-            if (!agenteAutorizadoPermissaoFeederDto.isSocioDeOutroAaComPermissaoFeeder()) {
-                usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
-            }
 
-            removerPermissoesEspeciais(usuariosIds);
-            gerarUsuarioHistorico(usuariosIds, false);
+            if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
+                removerPermissoes(agenteAutorizadoPermissaoFeederDto, true);
+            }
+        } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
+            removerPermissoes(agenteAutorizadoPermissaoFeederDto, false);
         }
+    }
+
+    private void removerPermissoes(AgenteAutorizadoPermissaoFeederDto agenteAutorizadoPermissaoFeederDto,
+                                   boolean permissaoFeeder) {
+        var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
+            .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+            .collect(Collectors.toList());
+
+        if (!agenteAutorizadoPermissaoFeederDto.isSocioDeOutroAaComPermissaoFeeder()) {
+            usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
+        }
+
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+
+        if (!permissaoFeeder) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+        }
+
+        removerPermissoesEspeciais(usuariosIds, funcionalidades);
+        gerarUsuarioHistorico(usuariosIds, permissaoFeeder);
     }
 
     @Transactional
@@ -98,8 +117,9 @@ public class FeederService {
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             log.info("Adicionando permissões Feeder para usuário novo com id: {}.", usuario.getId());
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
-                .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
-                    usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
+                .map(usuarioNovo -> getPermissoesEspeciaisDoColaboradorConformeCargo(usuarioNovo.getId(),
+                    usuarioMqRequest.getAgenteAutorizadoFeeder(), usuarioMqRequest.getUsuarioCadastroId(),
+                    usuarioMqRequest.getCargo(), usuarioMqRequest.getDepartamento()))
                 .orElse(List.of());
             usuarioService.salvarPermissoesEspeciais(permissoesFeeder);
             log.info("Permissões Feeder adicionadas com sucesso.");
@@ -195,72 +215,124 @@ public class FeederService {
             .collect(Collectors.toList());
     }
 
-    public void removerPermissoesEspeciais(List<Integer> usuarios) {
-        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_AA, usuarios);
+    public void removerPermissoesEspeciais(List<Integer> usuarios, List<Integer> funcionalidades) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidades, usuarios);
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoPermissaoFeederDto aaPermissaoFeederDto) {
         var permissoesEspeciais = getPermissoesEspeciaisDosColaboradores(aaPermissaoFeederDto.getColaboradoresVendasIds(),
-            aaPermissaoFeederDto.getUsuarioCadastroId());
+            aaPermissaoFeederDto.getUsuarioCadastroId(), aaPermissaoFeederDto.getFeeder());
 
         permissoesEspeciais.addAll(getPermissaoEspecialSocioPrincipal(
             aaPermissaoFeederDto.getUsuarioProprietarioId(),
-            aaPermissaoFeederDto.getUsuarioCadastroId()));
+            aaPermissaoFeederDto.getUsuarioCadastroId(), aaPermissaoFeederDto.getFeeder()));
 
         return permissoesEspeciais;
     }
 
     private List<PermissaoEspecial> getPermissoesEspeciaisDosColaboradores(List<Integer> vendedoresIds,
-                                                                           Integer usuarioCadastroId) {
+                                                                           Integer usuarioCadastroId, ETipoFeeder tipoFeeder) {
         return vendedoresIds.stream()
             .map(colaboradorId -> usuarioRepository.findComplete(colaboradorId).orElse(null))
             .filter(Objects::nonNull)
             .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
             .filter(usuario -> CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuario.getCargoCodigo())
-            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador,
-                usuarioCadastroId, colaborador.getCargoCodigo()).stream())
+            .flatMap(colaborador -> getPermissoesEspeciaisDoColaboradorConformeCargo(colaborador.getId(), tipoFeeder,
+                usuarioCadastroId, colaborador.getCargoCodigo(), colaborador.getDepartamentoCodigo()).stream())
             .collect(Collectors.toList());
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
-                                                                                      Integer usuarioCadastroId,
-                                                                                      CodigoCargo cargoCodigo) {
-        if (isBackOffice(cargoCodigo)) {
-            return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-                FUNCIONALIDADES_FEEDER_PARA_AA);
+    private List<PermissaoEspecial> getPermissoesEspeciaisDoColaboradorConformeCargo(Integer colaboradorId,
+                                                                                     ETipoFeeder tipoFeeder,
+                                                                                     Integer usuarioCadastroId,
+                                                                                     CodigoCargo cargoCodigo,
+                                                                                     CodigoDepartamento departamento) {
+        var funcionalidades = new ArrayList<Integer>();
+
+        if (isColaboradoresAaFeederResidencial(cargoCodigo, tipoFeeder)) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         }
-        return usuarioService.getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId,
-            List.of(FUNCIONALIDADE_TRATAR_LEAD_ID));
+        if (isAaFeederResidencial(tipoFeeder, departamento)) {
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+        }
+        if (isBackOffice(cargoCodigo)) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+        } else {
+            funcionalidades.add(FUNCIONALIDADE_TRATAR_LEAD_ID);
+        }
+
+        return usuarioService.getPermissoesEspeciaisDoUsuario(colaboradorId, usuarioCadastroId, funcionalidades);
+    }
+
+    private boolean isAaFeederResidencial(ETipoFeeder tipoFeeder, CodigoDepartamento departamento) {
+        return tipoFeeder == ETipoFeeder.RESIDENCIAL && departamento == AGENTE_AUTORIZADO;
     }
 
     private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId,
-                                                                       Integer usuarioCadastroId) {
+                                                                       Integer usuarioCadastroId,
+                                                                       ETipoFeeder tipoFeeder) {
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_AA);
+
+        if (ETipoFeeder.RESIDENCIAL == tipoFeeder) {
+            funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+            funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+        }
+
         return usuarioService.getPermissoesEspeciaisDoUsuario(socioPrincipalId, usuarioCadastroId,
-            FUNCIONALIDADES_FEEDER_PARA_AA);
+            funcionalidades);
     }
 
     private boolean isBackOffice(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
     }
 
+    private boolean isColaboradoresAaFeederResidencial(CodigoCargo usuarioCargoCodigo, ETipoFeeder tipoFeeder) {
+        return tipoFeeder == ETipoFeeder.RESIDENCIAL && Objects.nonNull(usuarioCargoCodigo)
+            && CODIGOS_CARGOS_COLABORADORES_FEEDER_RESIDENCIAL.contains(usuarioCargoCodigo);
+    }
+
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
         var localDateTime = dataHoraAtual.getDataHora();
         usuariosIds.forEach(usuarioId -> {
-            var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
-            if (usuarioRepository.exists(usuarioId)) {
-                permissaoEspecialRepository.save(
-                    FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
-                        .stream()
-                        .filter(func -> !listaFunc.contains(func))
-                        .map(id -> PermissaoEspecial
-                            .builder()
-                            .funcionalidade(Funcionalidade.builder().id(id).build())
-                            .usuario(new Usuario(usuarioId))
-                            .dataCadastro(localDateTime)
-                            .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
-                            .build())
-                        .collect(Collectors.toList()));
+                var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
+                if (usuarioRepository.exists(usuarioId)) {
+                    permissaoEspecialRepository.save(
+                        FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
+                            .stream()
+                            .filter(func -> !listaFunc.contains(func))
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .usuario(new Usuario(usuarioId))
+                                .dataCadastro(localDateTime)
+                                .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
+                                .build())
+                            .collect(Collectors.toList()));
+                }
             }
+        );
+    }
+
+    public void salvarPermissoesEspeciaisSociosSecundarios(List<Integer> usuariosIds, int usuarioAutenticadoId) {
+        usuariosIds.forEach(usuarioId -> {
+                if (usuarioRepository.exists(usuarioId)) {
+                    var permissoes = permissaoEspecialRepository.findByUsuario(usuarioId);
+                    log.info("Atualizando Usuario: {}", usuarioId);
+                    log.info("Permissoes do usuario: {}", permissoes);
+                    permissaoEspecialRepository.save(
+                        FUNCIONALIDADES_FEEDER_PARA_AA
+                            .stream()
+                            .filter(funcionalidade -> !permissoes.contains(funcionalidade))
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(new Funcionalidade(id))
+                                .usuario(new Usuario(usuarioId))
+                                .dataCadastro(dataHoraAtual.getDataHora())
+                                .usuarioCadastro(new Usuario(usuarioAutenticadoId))
+                                .build())
+                            .collect(Collectors.toList()));
+                    log.info("Permissões do usuario {} atualizadas", usuarioId);
+                }
             }
         );
     }

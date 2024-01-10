@@ -26,6 +26,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-loja-futuro-success}")
     private String usuarioCadastroLojaFuturoSuccessMq;
 
+    @Value("${app-config.queue.usuario-atualizar-socio-principal-success}")
+    private String usuarioAtualizarSocioPrincipalSuccessMq;
+
+    @Value("${app-config.queue.usuario-atualizar-socio-principal-failure}")
+    private String usuarioAtualizarSocioPrincipalFailureMq;
+
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessMq;
 
@@ -137,6 +143,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.atualizar-permissao-tecnico-indicador-failure}")
     private String atualizarPermissaoTecnicoIndicadorFailureMq;
 
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome}")
+    private String organizacaoEmpresaAtualizacaoNomeMq;
+
+    @Value("${app-config.queue.organizacao-empresa-atualizacao-nome-failure}")
+    private String organizacaoEmpresaAtualizacaoNomeFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -188,6 +200,19 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroLojaFuturoSuccessMq() {
         return new Queue(usuarioCadastroLojaFuturoSuccessMq, false);
+    }
+
+    @Bean
+    Queue usuarioAtualizarSocioPrincipalSuccessMq() {
+        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalSuccessMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioAtualizarSocioPrincipalFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue usuarioAtualizarSocioPrincipalFailureMq() {
+        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalFailureMq).build();
     }
 
     @Bean
@@ -368,6 +393,16 @@ public class RabbitConfig {
     @Bean
     Queue atualizarPermissaoTecnicoIndicadorFailureMq() {
         return QueueBuilder.durable(atualizarPermissaoTecnicoIndicadorFailureMq).build();
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeMq() {
+        return new Queue(organizacaoEmpresaAtualizacaoNomeMq, false);
+    }
+
+    @Bean
+    Queue organizacaoEmpresaAtualizacaoNomeFailureMq() {
+        return QueueBuilder.durable(organizacaoEmpresaAtualizacaoNomeFailureMq).build();
     }
 
     @Bean

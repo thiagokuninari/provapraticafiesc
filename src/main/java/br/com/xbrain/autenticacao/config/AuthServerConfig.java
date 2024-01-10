@@ -36,11 +36,13 @@ import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
 import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
 import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
 import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
+import static br.com.xbrain.autenticacao.config.EScopes.FEEDER;
 import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
+import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
+import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL;
 
 @Configuration
@@ -138,10 +140,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String backofficeApiClient;
     @Value("${app-config.oauth-clients.backoffice-api.secret}")
     private String backofficeApiSecret;
-    @Value("${app-config.oauth-clients.gerador-lead-api.client}")
-    private String geradorLeadApiClient;
-    @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
-    private String geradorLeadApiSecret;
+    @Value("${app-config.oauth-clients.feeder-api.client}")
+    private String feederApiClient;
+    @Value("${app-config.oauth-clients.feeder-api.secret}")
+    private String feederApiSecret;
     @Value("${app-config.oauth-clients.agente-autorizado-api.client}")
     private String agenteAutorizadoApiClient;
     @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
@@ -166,6 +168,14 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String claroIndicoApiClient;
     @Value("${app-config.oauth-clients.claro-indico-api.secret}")
     private String claroIndicoApiSecret;
+    @Value("${app-config.oauth-clients.bloqueio-ligacao-api.client}")
+    private String bloqueioLigacaoApiClient;
+    @Value("${app-config.oauth-clients.bloqueio-ligacao-api.secret}")
+    private String bloqueioLigacaoApiSecret;
+    @Value("${app-config.oauth-clients.quality-call-api.client}")
+    private String qualityCallApiClient;
+    @Value("${app-config.oauth-clients.quality-call-api.secret}")
+    private String qualityCallApiSecret;
     @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.client}")
     private String gestaoColaboradoresPolApiClient;
     @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.secret}")
@@ -311,9 +321,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION)
             .and()
-            .withClient(geradorLeadApiClient)
-            .secret(geradorLeadApiSecret)
-            .scopes(GERADOR_LEAD.getScope())
+            .withClient(feederApiClient)
+            .secret(feederApiSecret)
+            .scopes(FEEDER.getScope())
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION)
             .and()
@@ -351,6 +361,18 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(claroIndicoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CLARO_INDICO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(bloqueioLigacaoApiClient)
+            .secret(bloqueioLigacaoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(BLOQUEIO_LIGACAO_API.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(qualityCallApiClient)
+            .secret(qualityCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(QUALITY_CALL.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(gestaoColaboradoresPolApiClient)

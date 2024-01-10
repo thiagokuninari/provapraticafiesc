@@ -66,7 +66,7 @@ public class FeriadoRequest {
     }
 
     public boolean isFeriadoNacional() {
-        return tipoFeriado.equals(NACIONAL);
+        return tipoFeriado != null && tipoFeriado == NACIONAL;
     }
 
     public boolean isTipoFeriado(ETipoFeriado tipoFeriado) {

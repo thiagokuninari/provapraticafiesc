@@ -13,6 +13,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -174,5 +176,9 @@ public class HorarioHelper {
             .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
             .cargoCodigo(CodigoCargo.ADMINISTRADOR)
             .build();
+    }
+
+    public static Page<HorarioAcessoResponse> umaListaHorarioHistoricoResponse() {
+        return new PageImpl<>(List.of(umHorarioHistoricoResponse()));
     }
 }

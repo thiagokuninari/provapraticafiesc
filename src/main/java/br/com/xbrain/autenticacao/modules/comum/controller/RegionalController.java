@@ -24,6 +24,11 @@ public class RegionalController {
         return service.getAll();
     }
 
+    @GetMapping("ativas")
+    public List<RegionalDto> findAllAtivos() {
+        return service.findAllAtivos();
+    }
+
     @GetMapping("comunicados")
     public List<RegionalDto> getAtivosParaComunicados() {
         return service.getAtivosParaComunicados();

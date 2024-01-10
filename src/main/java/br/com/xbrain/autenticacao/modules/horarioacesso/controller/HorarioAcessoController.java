@@ -7,14 +7,13 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRespons
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/horarios-acesso")
 @RequiredArgsConstructor
+@RequestMapping("/api/horarios-acesso")
 public class HorarioAcessoController {
 
     private final HorarioAcessoService service;

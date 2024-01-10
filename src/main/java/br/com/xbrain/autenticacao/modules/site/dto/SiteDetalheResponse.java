@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UfResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,34 +36,23 @@ public class SiteDetalheResponse {
             .nome(site.getNome())
             .timeZone(site.getTimeZone())
             .situacao(site.getSituacao())
-            .coordenadoresNomes(getCoordenadoresNomes(site.getCoordenadores()))
-            .supervisoresNomes(getSupervisoresNomes(site.getSupervisores()))
+            .coordenadoresNomes(getNomes(site.getCoordenadores()))
+            .supervisoresNomes(getNomes(site.getSupervisores()))
             .estados(getEstados(site.getEstados()))
-            .cidades(getCidades(site.getCidades()))
             .build();
     }
 
-    private static Set<String> getCoordenadoresNomes(Set<Usuario> coordenadores) {
-        return coordenadores.stream()
+    private static Set<String> getNomes(Set<Usuario> usuarios) {
+        return usuarios
+            .stream()
             .map(Usuario::getNome)
             .collect(Collectors.toSet());
     }
 
-    private static Set<String> getSupervisoresNomes(Set<Usuario> supervisores) {
-        return supervisores.stream()
-            .map(Usuario::getNome)
-            .collect(Collectors.toSet());
-    }
-
-    private static Set<UfResponse> getEstados(Set<Uf> coordenadores) {
-        return coordenadores.stream()
+    private static Set<UfResponse> getEstados(Set<Uf> estados) {
+        return estados
+            .stream()
             .map(UfResponse::parse)
-            .collect(Collectors.toSet());
-    }
-
-    private static Set<CidadeResponse> getCidades(Set<Cidade> coordenadores) {
-        return coordenadores.stream()
-            .map(CidadeResponse::of)
             .collect(Collectors.toSet());
     }
 }

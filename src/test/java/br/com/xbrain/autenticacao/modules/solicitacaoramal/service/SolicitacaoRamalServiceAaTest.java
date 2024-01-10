@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHelper.umaListaUsuarioAgenteAutorizadoResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,6 +81,8 @@ public class SolicitacaoRamalServiceAaTest {
             .getUsuario()))).thenReturn(Arrays.asList(1, 2));
         when(agenteAutorizadoService.getAaById(eq(7129))).thenReturn(criaAa());
         when(repository.save(any(SolicitacaoRamal.class))).thenReturn(umaSolicitacaoRamal(1));
+        when(agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(7129))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
 
         service.save(criaSolicitacaoRamal(null, 7129));
 
@@ -265,7 +268,7 @@ public class SolicitacaoRamalServiceAaTest {
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
             .id(id)
-            .quantidadeRamais(38)
+            .quantidadeRamais(2)
             .canal(ECanal.AGENTE_AUTORIZADO)
             .agenteAutorizadoId(aaId)
             .melhorHorarioImplantacao(LocalTime.of(10, 00))
@@ -297,6 +300,7 @@ public class SolicitacaoRamalServiceAaTest {
         solicitacaoRamal.setSituacao(ESituacaoSolicitacao.PENDENTE);
         solicitacaoRamal.setUsuario(Usuario.builder().id(1).nome("teste").build());
         solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.ESCRITORIO);
+        solicitacaoRamal.setQuantidadeRamais(1);
 
         return solicitacaoRamal;
     }

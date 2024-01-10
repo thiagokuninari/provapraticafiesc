@@ -15,7 +15,6 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
@@ -54,7 +53,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = UsuarioGerenciaController.class)
@@ -67,6 +65,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
+    public static final String CPF_JA_CADASTRADO = "CPF já cadastrado.";
+    public static final String EMAIL_JA_CADASTRADO = "Email já cadastrado.";
+    public static final String SOCIO_NAO_INATIVADO_NO_POL = "Não foi possível inativar o sócio no Parceiros Online.";
+    public static final String EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
+        "Não foi possível atualizar o e-mail do sócio no Parceiros Online.";
+    public static final String USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
     private static final String API_URI = "/api/usuarios/gerencia";
     private static final String API_URI_BACKOFFICE = "/api/usuarios/gerencia/backoffice";
 
@@ -108,7 +112,7 @@ public class UsuarioGerenciaControllerTest {
                 "O campo empresasId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty")));
+                "O campo loginNetSales é obrigatório.")));
     }
 
     @Test
@@ -258,6 +262,44 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo loginNetSales precisa ter entre 0 e 120 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarBadRequest_seCampoNomeEquipeVendaNetSalesEstiverComSizeMaiorQue120() {
+        var usuario = umUsuario("teste");
+        usuario.setNomeEquipeVendaNetSales("Exemplo de um nome grande demais".repeat(10));
+
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nomeEquipeVendaNetSales precisa ter entre 0 e 120 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void save_deveRetornarBadRequest_seCampoCodigoEquipeVendaNetSalesEstiverComSizeMaiorQue120() {
+        var usuario = umUsuario("teste");
+        usuario.setCodigoEquipeVendaNetSales("Exemplo de um codigo grande demais".repeat(10));
+
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo codigoEquipeVendaNetSales precisa ter entre 0 e 120 caracteres.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -605,7 +647,7 @@ public class UsuarioGerenciaControllerTest {
                 "O campo email é obrigatório.",
                 "O campo nome é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales may not be empty",
+                "O campo loginNetSales é obrigatório.",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo empresasId é obrigatório.")));
@@ -688,6 +730,35 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).getUsuariosCargoSuperior(4, List.of(1, 5578));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getUsuariosCargoSuperiorByCanal_deveRetornarTodos_porCargoSuperiorEFiltroOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(43)
+                        .build())))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void getUsuariosCargoSuperiorByCanal_naoDeveRetornar_quandoNaoLocalizarAtravesDeOrganizacaoId() {
+        mvc.perform(post(API_URI + "/cargo-superior/501/INTERNET")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                    UsuarioCargoSuperiorPost
+                        .builder()
+                        .organizacaoId(12399)
+                        .build())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
@@ -872,18 +943,15 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveConfiguracao_deveRetornarBadRequest_quandoDadosObrigatoriosNaoPreenchidos() {
-        mvc.perform(MockMvcRequestBuilders
-                .fileUpload(API_URI)
-                .file(umUsuario(umUsuarioParaEditar()))
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(5)))
+        var dto = new UsuarioConfiguracaoSaveDto();
+
+        mvc.perform(post(API_URI + "/configuracao")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo email é obrigatório.",
-                "O campo departamentoId é obrigatório.",
-                "O campo unidadesNegociosId é obrigatório.",
-                "O campo cargoId é obrigatório.",
-                "O campo empresasId é obrigatório.")));
+                "O campo usuarioId é obrigatório.",
+                "O campo ramal é obrigatório.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -1094,7 +1162,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getCidadeByUsuario(anyInt());
+        verify(usuarioService).getCidadesByUsuarioId(anyInt());
     }
 
     @Test
@@ -1384,6 +1452,61 @@ public class UsuarioGerenciaControllerTest {
         verifyZeroInteractions(usuarioService);
     }
 
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void validarCpfEmailSocio_deveRetornarOk_quandoCpfNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).validarSeUsuarioCpfEmailNaoCadastrados("42675562700", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void validarCpfEmailSocio_deveRetornarOk_quandoEmailNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).validarSeUsuarioCpfEmailNaoCadastrados("42675562700", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).inativarAntigoSocioPrincipal("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).limparCpfAntigoSocioPrincipal(300);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).atualizarEmailSocioInativo(300);
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         var dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
@@ -1439,6 +1562,8 @@ public class UsuarioGerenciaControllerTest {
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
         usuario.setSubCanaisId(Sets.newHashSet(1));
+        usuario.setNomeEquipeVendaNetSales("EQUIPE NET");
+        usuario.setCodigoEquipeVendaNetSales("654321");
         return usuario;
     }
 
@@ -1475,6 +1600,8 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
         usuario.setSituacao(ESituacao.A);
         usuario.setSubCanaisId(Sets.newHashSet(1));
+        usuario.setNomeEquipeVendaNetSales("EQUIPE NET");
+        usuario.setCodigoEquipeVendaNetSales("654321");
         return usuario;
     }
 

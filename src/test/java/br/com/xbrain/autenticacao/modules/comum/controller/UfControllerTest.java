@@ -109,4 +109,24 @@ public class UfControllerTest {
 
         verify(ufService, times(1)).findAllByRegionalId(1);
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllByRegionalComUf_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_UF + "/por-regional-com-uf?regionalId=1022")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(ufService, times(1)).findAllByRegionalIdComUf(1022);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllByRegionalComUf_deveRetornarUnauthorized_quandoNaoTemAutorizacao() throws Exception {
+        mvc.perform(get(API_UF + "/por-regional-com-uf")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
 }

@@ -136,8 +136,8 @@ public class UsuarioController {
         return usuarioService.getUsuariosIdsByNivel(nivel);
     }
 
-    @GetMapping(value = "/{id}/cidades")
-    public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
+    @GetMapping("{id}/cidades")
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable int id) {
         return usuarioService.findCidadesByUsuario(id);
     }
 
@@ -379,6 +379,11 @@ public class UsuarioController {
             .collect(Collectors.toList());
     }
 
+    @GetMapping("canais/organizacao")
+    public List<SelectResponse> getCanaisPermitidosParaOrganizacao() {
+        return usuarioService.getCanaisPermitidosParaOrganizacao();
+    }
+
     @GetMapping("tipos-canal")
     public List<SelectResponse> getTiposCanal() {
         return usuarioService.getTiposCanalOptions();
@@ -497,11 +502,18 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "organizacaoId")
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(
         @RequestParam Integer organizacaoId,
         @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
 
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId, buscarInativos);
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos);
+    }
+
+    @GetMapping("bko-centralizado/{fornecedorId}")
+    public List<UsuarioResponse> findOperadoresBkoCentralizadoByFornecedor(
+        @PathVariable Integer fornecedorId,
+        @RequestParam(required = false, defaultValue = "false") boolean buscarInativos) {
+        return usuarioService.findOperadoresBkoCentralizadoByFornecedor(fornecedorId, buscarInativos);
     }
 
     @GetMapping("permitidos")
@@ -574,5 +586,10 @@ public class UsuarioController {
     @GetMapping("cpf")
     public UsuarioSubCanalNivelResponse findByCpf(@RequestParam String cpf) {
         return usuarioService.findByCpf(cpf);
+    }
+
+    @PostMapping("mover-avatar-minio")
+    public void moverAvatarMinio() {
+        usuarioService.moverAvatarMinio();
     }
 }

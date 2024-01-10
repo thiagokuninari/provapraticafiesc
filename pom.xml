@@ -6,7 +6,7 @@
 
     <groupId>br.com.xbrain</groupId>
     <artifactId>autenticacao-api</artifactId>
-    <version>4.1.5</version>
+    <version>4.2.22</version>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -79,6 +79,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -238,6 +243,12 @@
             <version>3.17</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Caelum Stella -->
         <dependency>
             <groupId>br.com.caelum.stella</groupId>
@@ -275,6 +286,13 @@
             <version>2.17.0</version>
             <scope>import</scope>
             <type>pom</type>
+        </dependency>
+
+        <!-- minIO -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>7.0.1</version>
         </dependency>
     </dependencies>
 

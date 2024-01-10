@@ -74,15 +74,18 @@ app-config:
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
-  url-estatico: https://estatico-hom.conexaoclarobrasil.com.br
-  url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   url-origin-cors: http://localhost
-  estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
-  upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
+  upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
+  url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
 
-  usuario-foto:
-    dir: ${app-config.upload-dir}/usuario/foto
-    url: ${app-config.url-estatico-upload}/usuario/foto
+  minio:
+    url: http://192.168.50.6:9000
+    access:
+      name: ${MINIO_TOKEN}
+      secret: ${MINIO_SECRET}
+    bucket:
+      name: conexao-claro-brasil
+    public: https://files-dev.conexaoclarobrasil.com.br/public
 
   email:
     enviar: true
@@ -104,6 +107,8 @@ app-config:
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
+    usuario-atualizar-socio-principal-success: usuario-atualizar-socio-principal-success.queue
+    usuario-atualizar-socio-principal-failure: usuario-atualizar-socio-principal-failure.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
@@ -142,6 +147,8 @@ app-config:
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
     atualizar-permissao-tecnico-indicador: atualizar-permissao-tecnico-indicador.queue
     atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
+    organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
+    organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -204,9 +211,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
-    gerador-lead-api:
-      client: gerador-lead-api
-      secret: g3r4d0rl34d4p1
+    feeder-api:
+      client: feeder-api
+      secret: f33d3r4p1
     indicacao-api:
       client: indicacao-api
       secret: 1nd1c4c40
@@ -228,6 +235,15 @@ app-config:
     claro-indico-api:
       client: claro-indico-api
       secret: cl4r0_1nd1c0_4p1
+    lei-nao-perturbe-api:
+      client: lei-nao-perturbe-api
+      secret: l31n4op3rtur8e4p1
+    bloqueio-ligacao-api:
+      client: bloqueio-ligacao-api
+      secret: bl0qu310l1g4c404p1
+    quality-call-api:
+      client: quality-call-api
+      secret: qu4l1tyc4ll4p1
     gestao-colaborador-pol-api:
       client: gestao-colaborador-pol-api
       secret: g3st40c0l4b0r4d0r
@@ -275,16 +291,25 @@ app-config:
       url: http://192.168.50.1:6595
     emails:
       #url: http://localhost:8080
-      url: http://api-hom.conexaoclarobrasil.com.br/email
+      url: https://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
     mailing-importacao:
       #url: http://localhost:8087
       url: http://192.168.50.1:6530
+    lei-nao-perturbe:
+      #url: http://localhost:8109
+      url: http://192.168.50.1:8109
+    extrato-comissao:
+      #url: http://localhost:8309
+      url: http://192.168.50.1:8309
     funil-prospeccao:
       #url: http://localhost:8100
       url: http://192.168.50.1:6605
+    localizacao:
+#      url: http://localhost:8039
+      url: https://api-dev.conexaoclarobrasil.com.br/localizacao
     gestao-colaborador-pol:
       #url: http://localhost:8310
       url: http://192.168.50.1:8310
@@ -339,6 +364,12 @@ zuul:
     mailing-importacao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.mailing-importacao.url}
+    lei-nao-perturbe:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.lei-nao-perturbe.url}
+    extrato-comissao:
+      sensitive-headers: Cookie,Set-Cookie
+      url: ${app-config.services.extrato-comissao.url}
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}

@@ -31,16 +31,14 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamento;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissoesHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -69,7 +67,7 @@ public class FeederServiceTest {
 
     @Test
     public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
-        service.removerPermissoesEspeciais(List.of(1));
+        service.removerPermissoesEspeciais(List.of(1), FUNCIONALIDADES_FEEDER_PARA_AA);
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(eq(List.of(15000, 15005, 15012, 3046)), eq(List.of(1)));
     }
@@ -85,11 +83,13 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(100)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999),
+            eq(List.of(20018, 20101, 20102, 20104, 15000, 15005, 15012, 3046))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
         when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
             .thenReturn(List.of(umaPermissaoTratarLead(100)));
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999),
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20102, 20104, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
@@ -106,11 +106,13 @@ public class FeederServiceTest {
         verify(usuarioHistoricoService, times(1))
             .save(anyList());
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
-        verify(usuarioService, times(1))
             .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(20018, 20101, 20102, 20104, 15000, 15005,
+                15012, 3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018,
+                20101, 20102, 20104, 20100)));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(permissoes);
     }
@@ -136,10 +138,13 @@ public class FeederServiceTest {
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102, 10));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -155,9 +160,13 @@ public class FeederServiceTest {
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
 
+        var funcionalidades = new ArrayList<>(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        funcionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+        funcionalidades.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_FEEDER_PARA_AA,
+                funcionalidades,
                 List.of(100, 102));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -173,14 +182,15 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(1000)).thenReturn(
             umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(5), eq(999),
+            eq(List.of(15000, 15005, 15012, 3046, 20018, 20101, 20102, 20104, 20100))))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(5));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(usuarioHistoricoService, times(1)).save(anyList());
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+            .getPermissoesEspeciaisDoUsuario(eq(5), eq(999), eq(List.of(15000, 15005, 15012, 3046, 20018,
+                20101, 20102, 20104, 20100)));
     }
 
     @Test
@@ -271,16 +281,19 @@ public class FeederServiceTest {
         var usuarioNovo = umUsuarioMqRequest();
         usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
 
+        var permissoesEsperadas = new ArrayList<Integer>();
+        permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
+        permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
-
-        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA)))
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas)))
             .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
         verify(usuarioService, times(1))
-            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(FUNCIONALIDADES_FEEDER_PARA_AA));
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas));
         verify(usuarioService, times(1))
             .salvarPermissoesEspeciais(eq(umaListaPermissoesFuncionalidadesFeederParaAa(1111)));
     }
@@ -481,6 +494,52 @@ public class FeederServiceTest {
         verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
     }
 
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioNaoExistir() {
+        when(usuarioRepository.exists(1)).thenReturn(false);
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verifyZeroInteractions(permissaoEspecialRepository);
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_naoDeveSalvarPermissoes_quandoUsuarioJaPossuirPermissoes() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000, 15005, 15012, 3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 2);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioNaoPossuirPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of());
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciaisSocioSecundario());
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisSociosSecundarios_deveSalvarPermissoes_quandoUsuarioPossuirUmaPermissao() {
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(3046));
+
+        service.salvarPermissoesEspeciaisSociosSecundarios(List.of(1), 1);
+
+        verify(usuarioRepository).exists(1);
+        verify(permissaoEspecialRepository).findByUsuario(1);
+        verify(permissaoEspecialRepository).save(umaListaPermissoesEspeciais(15000, 15005, 15012));
+    }
+
     private List<PermissaoEspecial> umaListaPermissoesEspeciaisComUmaFuncionalidade(Integer funcionalidadeId) {
         var localDateTime = dataHoraAtual.getDataHora();
         return List.of(PermissaoEspecial.builder()
@@ -508,6 +567,35 @@ public class FeederServiceTest {
                 .build(),
             PermissaoEspecial.builder()
                 .funcionalidade(Funcionalidade.builder().id(visualizar).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build());
+    }
+
+    private List<PermissaoEspecial> umaListaPermissoesEspeciaisSocioSecundario() {
+        var localDateTime = dataHoraAtual.getDataHora();
+        return List.of(
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15000).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15005).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(15012).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(3046).build())
                 .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
                 .dataCadastro(localDateTime)
                 .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
@@ -555,6 +643,7 @@ public class FeederServiceTest {
             Usuario.builder()
                 .id(id)
                 .situacao(situacao)
+                .departamento(umDepartamento(1, "Departamento"))
                 .cargo(
                     Cargo.builder()
                         .codigo(codigoCargo)

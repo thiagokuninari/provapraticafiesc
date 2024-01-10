@@ -1,11 +1,12 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +17,11 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
-@RequestMapping(value = "api/organizacao-empresa")
+@RequiredArgsConstructor
+@RequestMapping(value = "api/organizacoes")
 public class OrganizacaoEmpresaController {
 
-    @Autowired
-    private OrganizacaoEmpresaService service;
+    private final OrganizacaoEmpresaService service;
 
     @GetMapping
     public Page<OrganizacaoEmpresaResponse> getOrganizacaoEmpresa(OrganizacaoEmpresaFiltros filtros,
@@ -37,7 +38,7 @@ public class OrganizacaoEmpresaController {
     @PostMapping
     @ResponseStatus(CREATED)
     public OrganizacaoEmpresaResponse save(@RequestBody @Validated OrganizacaoEmpresaRequest request) {
-        return OrganizacaoEmpresaResponse.of(service.save(request));
+        return service.save(request);
     }
 
     @PutMapping("{id}/inativar")
@@ -53,16 +54,41 @@ public class OrganizacaoEmpresaController {
     @PutMapping("{id}/editar")
     public OrganizacaoEmpresaResponse update(@PathVariable Integer id,
                                              @Validated @RequestBody OrganizacaoEmpresaRequest request) {
-        return OrganizacaoEmpresaResponse.of(service.update(id, request));
+        return service.update(id, request);
     }
 
-    @GetMapping("nivel")
-    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(@NotNull @RequestParam Integer nivelId) {
-        return service.findAllAtivosByNivelId(nivelId);
+    @GetMapping("consultar-ativos")
+    public List<OrganizacaoEmpresaResponse> findAllAtivos(OrganizacaoEmpresaFiltros filtros) {
+        return service.findAllAtivos(filtros);
     }
 
     @GetMapping("por-nivel")
     public List<OrganizacaoEmpresaResponse> findByNivel(@NotNull @RequestParam Integer nivelId) {
         return service.findAllByNivelId(nivelId);
+    }
+
+    @GetMapping("por-nome")
+    public OrganizacaoEmpresaResponse findByNome(@RequestParam String nome) {
+        return service.findByNome(nome);
+    }
+
+    @GetMapping("select")
+    public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return service.getAllSelect(filtros);
+    }
+
+    @GetMapping("niveis-ids")
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(@RequestParam List<Integer> niveisIds) {
+        return service.findAllOrganizacoesAtivasByNiveisIds(niveisIds);
+    }
+
+    @GetMapping("{organizacao}/ativa")
+    public boolean verificarOrganizacaoAtiva(@PathVariable String organizacao) {
+        return service.isOrganizacaoAtiva(organizacao);
+    }
+
+    @GetMapping("obter-todas")
+    public List<OrganizacaoEmpresaResponse> findAll() {
+        return service.findAll();
     }
 }

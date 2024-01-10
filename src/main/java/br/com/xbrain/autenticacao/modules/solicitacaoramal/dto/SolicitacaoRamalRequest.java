@@ -58,4 +58,6 @@ public class SolicitacaoRamalRequest {
 
     private ESituacaoSolicitacao situacao;
 
+    private Integer equipeId;
+
 }

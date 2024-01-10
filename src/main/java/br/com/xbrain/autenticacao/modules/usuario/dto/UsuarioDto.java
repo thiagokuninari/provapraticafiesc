@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -60,6 +59,11 @@ public class UsuarioDto implements Serializable {
     @Size(max = 120)
     @NotBlank
     private String loginNetSales;
+    @Size(max = 120)
+    private String nomeEquipeVendaNetSales;
+    @Size(max = 120)
+    private String codigoEquipeVendaNetSales;
+    private String canalNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
@@ -92,9 +96,11 @@ public class UsuarioDto implements Serializable {
     private String fotoNomeOriginal;
     private String fotoContentType;
     private Integer organizacaoId;
-    private Integer organizacaoEmpresaId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private boolean isAtualizarSocioPrincipal;
+    private List<Integer> agentesAutorizadosIds;
+    private List<Integer> antigosSociosPrincipaisIds;
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
@@ -113,17 +119,13 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
-        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
         Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
             usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
             usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
         });
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
-            usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
-        }
-        if (!isEmpty(usuarioDto.getOrganizacaoEmpresaId())) {
-            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoEmpresaId()));
+            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoId()));
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
@@ -132,7 +134,6 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
-
         return usuario;
     }
 
@@ -152,11 +153,10 @@ public class UsuarioDto implements Serializable {
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
-        usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        usuarioDto.setOrganizacaoId(getOrganizacaoEmpresaId(usuario));
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
-        usuarioDto.setOrganizacaoEmpresaId(getOrganizacaoEmpresaId(usuario));
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
 
         return usuarioDto;
@@ -167,10 +167,6 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
 
         return usuarioDto;
-    }
-
-    private static Integer getOrganizacaoId(Usuario usuario) {
-        return !isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     private static Integer getOrganizacaoEmpresaId(Usuario usuario) {

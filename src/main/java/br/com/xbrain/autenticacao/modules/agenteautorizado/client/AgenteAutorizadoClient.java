@@ -26,6 +26,10 @@ public interface AgenteAutorizadoClient {
     List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(@RequestParam("aasIds") List<Integer> aasIds,
                                                      @RequestParam("buscarInativos") Boolean buscarInativos);
 
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-sem-d2d/{agenteAutorizadoId}")
+    List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoSemVendedoresD2D(
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
+
     @GetMapping(URL_AGENTE_AUTORIZADO + "/subordinados")
     Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);
 

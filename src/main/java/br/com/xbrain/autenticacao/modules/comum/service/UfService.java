@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UfResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,12 @@ public class UfService {
                 .stream()
                 .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
                 .collect(Collectors.toList());
+    }
+
+    public List<UfResponse> findAllByRegionalIdComUf(Integer regionalId) {
+        return ufRepository.buscarEstadosPorRegional(regionalId)
+            .stream()
+            .map(uf -> new UfResponse(uf.getId(), uf.getNome(), uf.getUf()))
+            .collect(Collectors.toList());
     }
 }

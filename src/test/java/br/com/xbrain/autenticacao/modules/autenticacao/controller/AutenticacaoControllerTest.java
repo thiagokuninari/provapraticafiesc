@@ -80,8 +80,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(100)))
             .andExpect(jsonPath("$.nome", is("ADMIN")))
@@ -101,7 +101,10 @@ public class AutenticacaoControllerTest {
             .andExpect(jsonPath("$.cpf", is("38957979875")))
             .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
             .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())))
-            .andExpect(jsonPath("$.loginNetSales", is("123456")));
+            .andExpect(jsonPath("$.loginNetSales", is("123456")))
+            .andExpect(jsonPath("$.nomeEquipeVendaNetSales", is("VENDAS NET")))
+            .andExpect(jsonPath("$.codigoEquipeVendaNetSales", is("654321")))
+            .andExpect(jsonPath("$.canalNetSales", is("D2D_ACOES_ESPECIAIS")));
     }
 
     @Test
