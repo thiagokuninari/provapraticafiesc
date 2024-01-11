@@ -219,6 +219,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             new BeanPropertyRowMapper<>(Canal.class));
     }
 
+    @Override
+    public List<Integer> getUsuariosIdsByCanal(ECanal canal) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.canais.any().eq(canal))
+            .fetch();
+    }
+
     public Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return Sets.newHashSet(jdbcTemplate.query(" SELECT * FROM SUB_CANAL"
                 + " WHERE ID IN (SELECT FK_SUBCANAL"
@@ -226,6 +235,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(SubCanal.class)));
+    }
+
+    @Override
+    public List<Integer> getUsuariosIdsBySubCanalId(Integer subCanalId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.subCanais.any().id.in(subCanalId))
+            .fetch();
     }
 
     @Override
@@ -593,6 +611,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(cargo.nivel, nivel)
             .where(nivel.codigo.eq(codigoNivel))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> getUsuariosIdsByNivelId(Integer nivelId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
+            .where(nivel.id.eq(nivelId))
             .fetch();
     }
 
@@ -1069,6 +1098,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .join(usuario.cargo, cargo)
             .where(usuario.cargo.id.in(cargosIds))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> getUsuariosIdsByCargoId(Integer cargoId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .join(usuario.cargo, cargo)
+            .where(usuario.cargo.id.eq(cargoId))
             .fetch();
     }
 

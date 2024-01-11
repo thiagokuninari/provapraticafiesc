@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -358,5 +359,34 @@ public class UsuarioRepositoryTest {
     public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
         assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
             .containsExactly(219);
+    }
+
+    @Test
+    public void getUsuariosIdsByNivelId_deveRetornarUsuariosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosIdsByNivelId(3))
+            .hasSize(3)
+            .containsExactlyInAnyOrder(500, 600, 700);
+    }
+
+    @Test
+    public void getUsuariosIdsByCanal_deveRetornarUsuariosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosIdsByCanal(ECanal.D2D_PROPRIO))
+            .hasSize(1)
+            .containsExactlyInAnyOrder(110);
+    }
+
+    @Test
+    @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
+    public void getUsuariosIdsBySubCanalId_deveRetornarUsuariosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosIdsBySubCanalId(1))
+            .hasSize(6)
+            .containsExactlyInAnyOrder(126, 127, 128, 130, 134, 138);
+    }
+
+    @Test
+    public void getUsuariosIdsByCargoId_deveRetornarUsuariosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosIdsByCargoId(4))
+            .hasSize(1)
+            .containsExactlyInAnyOrder(109);
     }
 }

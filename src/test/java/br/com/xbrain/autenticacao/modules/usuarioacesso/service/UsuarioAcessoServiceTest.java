@@ -2,9 +2,11 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
@@ -25,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -57,6 +60,8 @@ public class UsuarioAcessoServiceTest {
     private AutenticacaoService autenticacaoService;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Mock
+    private UsuarioAcessoFiltros usuarioAcessoFiltros;
 
     @Before
     public void setup() {
@@ -204,6 +209,95 @@ public class UsuarioAcessoServiceTest {
                 .build()));
     }
 
+    @Test
+    public void getAll_deveRetornarRegistros_quandoExistir() {
+        PageRequest pageRequest = new PageRequest(0, 10, "id", "ASC");
+
+        when(usuarioAcessoRepository.findAll(any(), eq(pageRequest)))
+            .thenReturn(new PageImpl<>(umaListaUsuarioAcesso()));
+
+        assertThat(usuarioAcessoService.getAll(pageRequest, umUsuarioAcessoFiltros()))
+            .hasSize(3)
+            .extracting("id", "dataHora")
+            .containsExactly(
+                tuple(1, "29/01/2020 14:00:00"),
+                tuple(3, "29/01/2020 13:00:00"),
+                tuple(2, "28/01/2020 16:00:00")
+            );
+    }
+
+    @Test
+    public void aplicarNivelFiltro_deveChamarMetodo_quandoNivelNaoForNulo() {
+        when(usuarioAcessoFiltros.getNivelId()).thenReturn(1);
+
+        usuarioAcessoService.aplicarNivelFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, times(1)).setNiveisIds(any());
+    }
+
+    @Test
+    public void aplicarNivelFiltro_naoDeveChamarMetodo_quandoNivelForNulo() {
+        when(usuarioAcessoFiltros.getNivelId()).thenReturn(null);
+
+        usuarioAcessoService.aplicarNivelFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, never()).setNiveisIds(any());
+    }
+
+    @Test
+    public void aplicarCanalFiltro_deveChamarMetodo_quandoCanalIdNaoForNulo() {
+        when(usuarioAcessoFiltros.getCanal()).thenReturn(ECanal.D2D_PROPRIO);
+
+        usuarioAcessoService.aplicarCanalFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, times(1)).setCanaisIds(any());
+    }
+
+    @Test
+    public void aplicarCanalFiltro_naoDeveChamarMetodo_quandoCanalIdForNulo() {
+        when(usuarioAcessoFiltros.getCanal()).thenReturn(null);
+
+        usuarioAcessoService.aplicarCanalFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, never()).setCanaisIds(any());
+    }
+
+    @Test
+    public void aplicarSubCanalFiltro_deveChamarMetodo_quandoSubCanalIdNaoForNulo() {
+        when(usuarioAcessoFiltros.getSubCanalId()).thenReturn(1);
+
+        usuarioAcessoService.aplicarSubCanalFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, times(1)).setSubCanaisIds(any());
+    }
+
+    @Test
+    public void aplicarSubCanalFiltro_naoDeveChamarMetodo_quandoSubCanalIdForNulo() {
+        when(usuarioAcessoFiltros.getSubCanalId()).thenReturn(null);
+
+        usuarioAcessoService.aplicarSubCanalFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, never()).setSubCanaisIds(any());
+    }
+
+    @Test
+    public void aplicarCargoFiltro_deveChamarMetodo_quandoCargoNaoForNulo() {
+        when(usuarioAcessoFiltros.getCargoId()).thenReturn(1);
+
+        usuarioAcessoService.aplicarCargoFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, times(1)).setCargosIds(any());
+    }
+
+    @Test
+    public void aplicarCargoFiltro_naoDeveChamarMetodo_quandoCargoForNulo() {
+        when(usuarioAcessoFiltros.getCargoId()).thenReturn(null);
+
+        usuarioAcessoService.aplicarCargoFiltro(usuarioAcessoFiltros);
+
+        verify(usuarioAcessoFiltros, never()).setCargosIds(any());
+    }
+
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
         return UsuarioAcesso.builder()
             .id(id)
@@ -219,6 +313,10 @@ public class UsuarioAcessoServiceTest {
             .dataInicial(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN))
             .dataFinal(LocalDateTime.of(LocalDate.now(), LocalTime.MAX))
             .tipo(ETipo.LOGIN)
+            .agenteAutorizadosIds(List.of(1))
+            .canaisIds(List.of(1))
+            .subCanaisIds(List.of(1))
+            .cargosIds(List.of(1))
             .build();
     }
 
@@ -256,5 +354,13 @@ public class UsuarioAcessoServiceTest {
                     .dataFinal("2020-12-01T11:42:39.999Z")
                     .build()))
             .build();
+    }
+
+    private List<UsuarioAcesso> umaListaUsuarioAcesso() {
+        return List.of(
+            umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(3, 13, 29),
+            umUsuarioAcesso(2, 16, 28)
+        );
     }
 }

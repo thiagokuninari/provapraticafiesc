@@ -75,6 +75,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel);
 
+    List<Integer> getUsuariosIdsByNivelId(Integer nivelId);
+
     Page<Usuario> findAll(Predicate predicate, Pageable pageable);
 
     Optional<Usuario> findComConfiguracao(Integer usuarioId);
@@ -137,6 +139,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
+    List<Integer> getUsuariosIdsByCargoId(Integer cargoId);
+
     List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal);
 
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
@@ -149,7 +153,11 @@ public interface UsuarioRepositoryCustom {
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
 
+    List<Integer> getUsuariosIdsByCanal(ECanal canal);
+
     Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds);
+
+    List<Integer> getUsuariosIdsBySubCanalId(Integer subCanalId);
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 

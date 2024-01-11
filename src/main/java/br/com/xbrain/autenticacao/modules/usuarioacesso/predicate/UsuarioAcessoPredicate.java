@@ -1,13 +1,17 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
+import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso;
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UsuarioAcessoPredicate {
 
@@ -65,6 +69,54 @@ public class UsuarioAcessoPredicate {
     public UsuarioAcessoPredicate porAa(Integer aaId, List<Integer> listaUsuarioId) {
         if (!ObjectUtils.isEmpty(aaId)) {
             this.builder.and(usuarioAcesso.usuario.id.in(listaUsuarioId));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porNivel(List<Integer> listaUsuarioId) {
+        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuarioAcesso.usuario.id::in)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porCargo(List<Integer> listaUsuarioId) {
+        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuarioAcesso.usuario.id::in)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porCanal(List<Integer> listaUsuarioId) {
+        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuarioAcesso.usuario.id::in)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porSubCanal(List<Integer> listaUsuarioId) {
+        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuarioAcesso.usuario.id::in)
+                    .collect(Collectors.toList())
+            ));
         }
         return this;
     }

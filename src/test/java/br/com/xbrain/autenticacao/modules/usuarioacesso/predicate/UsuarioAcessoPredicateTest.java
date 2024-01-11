@@ -114,4 +114,52 @@ public class UsuarioAcessoPredicateTest {
         assertThat(new UsuarioAcessoPredicate().porAa(null, List.of(1, 2, 3)).build())
             .isEqualTo(new BooleanBuilder());
     }
+
+    @Test
+    public void porNivel_deveMontarPredicate_quandoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porNivel(List.of(1, 2, 3)).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void porNivel_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porNivel(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void porCanal_deveMontarPredicate_quandoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porCanal(List.of(1, 2, 3)).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void porCanal_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porCanal(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void porSubCanal_deveMontarPredicate_quandoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porSubCanal(List.of(1, 2, 3)).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void porSubCanal_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porSubCanal(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void porCargo_deveMontarPredicate_quandoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porCargo(List.of(1, 2, 3)).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void porCargo_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+        assertThat(new UsuarioAcessoPredicate().porCargo(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
 }

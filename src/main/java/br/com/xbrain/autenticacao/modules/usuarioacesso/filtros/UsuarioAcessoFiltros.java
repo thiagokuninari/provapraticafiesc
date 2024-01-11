@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.filtros;
 
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,6 +46,14 @@ public class UsuarioAcessoFiltros {
     private LocalDateTime dataFinal;
     private Integer organizacaoId;
     private List<CodigoCargo> cargos;
+    private Integer nivelId;
+    private List<Integer> niveisIds;
+    private Integer cargoId;
+    private List<Integer> cargosIds;
+    private ECanal canal;
+    private List<Integer> canaisIds;
+    private Integer subCanalId;
+    private List<Integer> subCanaisIds;
 
     @JsonIgnore
     public BooleanBuilder toPredicate() {
@@ -54,6 +63,10 @@ public class UsuarioAcessoFiltros {
             .porEmail(email)
             .porPeriodo(dataInicio, dataFim, tipo)
             .porAa(aaId, agenteAutorizadosIds)
+            .porNivel(niveisIds)
+            .porCargo(cargosIds)
+            .porCanal(canaisIds)
+            .porSubCanal(subCanaisIds)
             .build();
     }
 

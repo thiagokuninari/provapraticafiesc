@@ -1,11 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
