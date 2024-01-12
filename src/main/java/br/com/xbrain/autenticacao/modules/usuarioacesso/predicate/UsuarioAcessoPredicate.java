@@ -1,17 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
-import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso;
-import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.ExpressionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class UsuarioAcessoPredicate {
 
@@ -73,50 +72,30 @@ public class UsuarioAcessoPredicate {
         return this;
     }
 
-    public UsuarioAcessoPredicate porNivel(List<Integer> listaUsuarioId) {
-        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuarioAcesso.usuario.id::in)
-                    .collect(Collectors.toList())
-            ));
+    public UsuarioAcessoPredicate porNivel(Integer nivelId) {
+        if (nivelId != null) {
+            this.builder.and(usuario.cargo.nivel.id.in(nivelId));
         }
         return this;
     }
 
-    public UsuarioAcessoPredicate porCargo(List<Integer> listaUsuarioId) {
-        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuarioAcesso.usuario.id::in)
-                    .collect(Collectors.toList())
-            ));
+    public UsuarioAcessoPredicate porCargo(Integer cargoId) {
+        if (cargoId != null) {
+            this.builder.and(usuarioAcesso.usuario.cargo.id.eq(cargoId));
         }
         return this;
     }
 
-    public UsuarioAcessoPredicate porCanal(List<Integer> listaUsuarioId) {
-        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuarioAcesso.usuario.id::in)
-                    .collect(Collectors.toList())
-            ));
+    public UsuarioAcessoPredicate porCanal(ECanal canal) {
+        if (canal != null) {
+            this.builder.and(usuarioAcesso.usuario.canais.any().eq(canal));
         }
         return this;
     }
 
-    public UsuarioAcessoPredicate porSubCanal(List<Integer> listaUsuarioId) {
-        if (!ObjectUtils.isEmpty(listaUsuarioId)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(listaUsuarioId, Constantes.QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuarioAcesso.usuario.id::in)
-                    .collect(Collectors.toList())
-            ));
+    public UsuarioAcessoPredicate porSubCanal(Integer subCanalId) {
+        if (subCanalId != null) {
+            this.builder.and(usuarioAcesso.usuario.subCanais.any().id.eq(subCanalId));
         }
         return this;
     }

@@ -177,22 +177,6 @@ public class UsuarioAcessoService {
             .collect(Collectors.toList());
     }
 
-    private List<Integer> getUsuariosIdsByNivelId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return usuarioRepository.getUsuariosIdsByNivelId(usuarioAcessoFiltros.getNivelId());
-    }
-
-    private List<Integer> getUsuariosIdsByCargoId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return usuarioRepository.getUsuariosIdsByCargoId(usuarioAcessoFiltros.getCargoId());
-    }
-
-    private List<Integer> getUsuariosIdsByCanal(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return usuarioRepository.getUsuariosIdsByCanal(usuarioAcessoFiltros.getCanal());
-    }
-
-    private List<Integer> getUsuariosIdsBySubCanalId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return usuarioRepository.getUsuariosIdsBySubCanalId(usuarioAcessoFiltros.getSubCanalId());
-    }
-
     public void exportRegistrosToCsv(HttpServletResponse response, UsuarioAcessoFiltros usuarioAcessoFiltros) {
         var registros = getRegistros(usuarioAcessoFiltros);
 
@@ -250,39 +234,11 @@ public class UsuarioAcessoService {
 
     private void aplicarFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         aplicarAgenteAutorizadoFiltro(usuarioAcessoFiltros);
-        aplicarNivelFiltro(usuarioAcessoFiltros);
-        aplicarCanalFiltro(usuarioAcessoFiltros);
-        aplicarSubCanalFiltro(usuarioAcessoFiltros);
-        aplicarCargoFiltro(usuarioAcessoFiltros);
     }
 
     public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
-        }
-    }
-
-    public void aplicarNivelFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (usuarioAcessoFiltros.getNivelId() != null) {
-            usuarioAcessoFiltros.setNiveisIds(getUsuariosIdsByNivelId(usuarioAcessoFiltros));
-        }
-    }
-
-    public void aplicarCargoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (usuarioAcessoFiltros.getCargoId() != null) {
-            usuarioAcessoFiltros.setCargosIds(getUsuariosIdsByCargoId(usuarioAcessoFiltros));
-        }
-    }
-
-    public void aplicarCanalFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (usuarioAcessoFiltros.getCanal() != null) {
-            usuarioAcessoFiltros.setCanaisIds(getUsuariosIdsByCanal(usuarioAcessoFiltros));
-        }
-    }
-
-    public void aplicarSubCanalFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (usuarioAcessoFiltros.getSubCanalId() != null) {
-            usuarioAcessoFiltros.setSubCanaisIds(getUsuariosIdsBySubCanalId(usuarioAcessoFiltros));
         }
     }
 }

@@ -47,13 +47,9 @@ public class UsuarioAcessoFiltros {
     private Integer organizacaoId;
     private List<CodigoCargo> cargos;
     private Integer nivelId;
-    private List<Integer> niveisIds;
     private Integer cargoId;
-    private List<Integer> cargosIds;
     private ECanal canal;
-    private List<Integer> canaisIds;
     private Integer subCanalId;
-    private List<Integer> subCanaisIds;
 
     @JsonIgnore
     public BooleanBuilder toPredicate() {
@@ -63,10 +59,10 @@ public class UsuarioAcessoFiltros {
             .porEmail(email)
             .porPeriodo(dataInicio, dataFim, tipo)
             .porAa(aaId, agenteAutorizadosIds)
-            .porNivel(niveisIds)
-            .porCargo(cargosIds)
-            .porCanal(canaisIds)
-            .porSubCanal(subCanaisIds)
+            .porNivel(nivelId)
+            .porCargo(cargoId)
+            .porCanal(canal)
+            .porSubCanal(subCanalId)
             .build();
     }
 

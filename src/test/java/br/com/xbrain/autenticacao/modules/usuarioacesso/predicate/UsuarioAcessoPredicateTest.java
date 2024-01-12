@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
@@ -8,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso.usuarioAcesso;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -116,49 +118,49 @@ public class UsuarioAcessoPredicateTest {
     }
 
     @Test
-    public void porNivel_deveMontarPredicate_quandoHouverListaUsuarioIds() {
-        assertThat(new UsuarioAcessoPredicate().porNivel(List.of(1, 2, 3)).build())
-            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    public void porNivel_deveMontarPredicate_quandoInformarNivelId() {
+        assertThat(new UsuarioAcessoPredicate().porNivel(1).build())
+            .isEqualTo(new BooleanBuilder(usuario.cargo.nivel.id.eq(1)));
     }
 
     @Test
-    public void porNivel_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+    public void porNivel_naoDeveMontarPredicate_quandoInformarNivelIdNull() {
         assertThat(new UsuarioAcessoPredicate().porNivel(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 
     @Test
-    public void porCanal_deveMontarPredicate_quandoHouverListaUsuarioIds() {
-        assertThat(new UsuarioAcessoPredicate().porCanal(List.of(1, 2, 3)).build())
-            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    public void porCanal_deveMontarPredicate_quandoInformarCanal() {
+        assertThat(new UsuarioAcessoPredicate().porCanal(ECanal.D2D_PROPRIO).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.canais.any().eq(ECanal.D2D_PROPRIO)));
     }
 
     @Test
-    public void porCanal_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+    public void porCanal_naoDeveMontarPredicate_quandoInformarCanalNull() {
         assertThat(new UsuarioAcessoPredicate().porCanal(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 
     @Test
-    public void porSubCanal_deveMontarPredicate_quandoHouverListaUsuarioIds() {
-        assertThat(new UsuarioAcessoPredicate().porSubCanal(List.of(1, 2, 3)).build())
-            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    public void porSubCanal_deveMontarPredicate_quandoInformarSubCanalId() {
+        assertThat(new UsuarioAcessoPredicate().porSubCanal(1).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.subCanais.any().id.eq(1)));
     }
 
     @Test
-    public void porSubCanal_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+    public void porSubCanal_naoDeveMontarPredicate_quandoInformarSubCanalIdNull() {
         assertThat(new UsuarioAcessoPredicate().porSubCanal(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 
     @Test
-    public void porCargo_deveMontarPredicate_quandoHouverListaUsuarioIds() {
-        assertThat(new UsuarioAcessoPredicate().porCargo(List.of(1, 2, 3)).build())
-            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.id.in(List.of(1, 2, 3))));
+    public void porCargo_deveMontarPredicate_quandoInformarCargoId() {
+        assertThat(new UsuarioAcessoPredicate().porCargo(1).build())
+            .isEqualTo(new BooleanBuilder(usuarioAcesso.usuario.cargo.id.eq(1)));
     }
 
     @Test
-    public void porCargo_deveMontarPredicate_quandosNaoHouverListaUsuarioIds() {
+    public void porCargo_naoDeveMontarPredicate_quandoInformarCargoIdNull() {
         assertThat(new UsuarioAcessoPredicate().porCargo(null).build())
             .isEqualTo(new BooleanBuilder());
     }
