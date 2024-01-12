@@ -77,7 +77,7 @@ app-config:
   url-origin-cors: http://localhost
   upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
   url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
-  dominios-social-hub: XBRAIN.COM.BR,@CLARO.COM.BR,NET.COM.BR,EMBRATEL.COM.BR,CLARONXT.COM.BR,GLOBALHITSS.COM.BR,USTORE.COM.BR
+  dominios-social-hub: XBRAIN.COM.BR,CLARO.COM.BR,NET.COM.BR,EMBRATEL.COM.BR,CLARONXT.COM.BR,GLOBALHITSS.COM.BR,USTORE.COM.BR
 
   minio:
     url: http://192.168.50.6:9000
