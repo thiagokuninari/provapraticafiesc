@@ -49,7 +49,6 @@ public class UsuarioMqRequest {
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
     private boolean equipeTecnica;
-    private Integer agenteAutorizadoAntigoId;
     private boolean tecnicoIndicador;
     private boolean isAtualizarSocioPrincipal;
     private List<Integer> agentesAutorizadosIds;

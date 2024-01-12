@@ -18,7 +18,7 @@ public class UsuarioRemanejamentoRequestTest {
             .extracting(UsuarioRemanejamentoRequest::getUsuarioId, UsuarioRemanejamentoRequest::getUsuarioNome,
                 UsuarioRemanejamentoRequest::getUsuarioEmail, UsuarioRemanejamentoRequest::getUsuarioAntigoId,
                 UsuarioRemanejamentoRequest::getUsuarioSituacao, UsuarioRemanejamentoRequest::getAgenteAutorizadoId,
-                UsuarioRemanejamentoRequest::getColaboradorVendasId, UsuarioRemanejamentoRequest::getAgenteAutorizadoAntigoId
+                UsuarioRemanejamentoRequest::getColaboradorVendasId
             )
             .containsExactly(100, "Thiago", "usuarioteste@gmail.com", 1, ESituacao.A, 5, 6, 10);
     }
@@ -40,7 +40,6 @@ public class UsuarioRemanejamentoRequestTest {
             .nome("Usuário Teste")
             .agenteAutorizadoId(5)
             .colaboradorVendasId(6)
-            .agenteAutorizadoAntigoId(10)
             .email("usuarioteste@gmail.com")
             .build();
     }

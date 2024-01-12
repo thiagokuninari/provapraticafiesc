@@ -20,7 +20,6 @@ public class UsuarioRemanejamentoRequest {
     private ESituacao usuarioSituacao;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
-    private Integer agenteAutorizadoAntigoId;
 
     public static UsuarioRemanejamentoRequest of(Usuario usuario, UsuarioMqRequest request, Integer usuarioAntigoId) {
         return UsuarioRemanejamentoRequest
@@ -32,7 +31,6 @@ public class UsuarioRemanejamentoRequest {
             .usuarioSituacao(usuario.getSituacao())
             .agenteAutorizadoId(request.getAgenteAutorizadoId())
             .colaboradorVendasId(request.getColaboradorVendasId())
-            .agenteAutorizadoAntigoId(request.getAgenteAutorizadoAntigoId())
             .build();
     }
 
