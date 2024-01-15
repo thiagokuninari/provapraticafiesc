@@ -292,4 +292,48 @@ public class AgenteAutorizadoService {
                 EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
         }
     }
+
+    public void atualizarEmailSocioPrincipalInativo(String emailAtual, String emailInativo, Integer socioPrincipalId) {
+        try {
+            client.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public void inativarAntigoSocioPrincipal(String email) {
+        try {
+            client.inativarAntigoSocioPrincipal(email);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public void ativarUsuario(Integer usuarioId) {
+        try {
+            client.ativarUsuario(usuarioId);
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_ATIVAR_USUARIO_AA);
+        }
+    }
+
+    public void inativarUsuario(Integer usuarioId) {
+        try {
+            client.inativarUsuario(usuarioId);
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_INATIVAR_USUARIO_AA);
+        }
+    }
 }

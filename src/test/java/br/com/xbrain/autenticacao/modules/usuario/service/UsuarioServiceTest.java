@@ -174,8 +174,6 @@ public class UsuarioServiceTest {
     @Mock
     private RegionalService regionalService;
     @Mock
-    private UsuarioClientService usuarioClientService;
-    @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
     private ColaboradorVendasService colaboradorVendasService;
@@ -313,7 +311,7 @@ public class UsuarioServiceTest {
             .existeAaAtivoBySocioEmail(anyString());
 
         service.ativar(umUsuarioAtivacaoDto());
-        verify(usuarioClientService, times(1)).alterarSituacao(1);
+        verify(agenteAutorizadoService).ativarUsuario(1);
     }
 
     @Test
@@ -327,7 +325,7 @@ public class UsuarioServiceTest {
             .findComplete(anyInt());
 
         service.ativar(umUsuarioAtivacaoDto());
-        verify(usuarioClientService, never()).alterarSituacao(2);
+        verify(agenteAutorizadoService, never()).ativarUsuario(2);
     }
 
     @Test
@@ -2208,7 +2206,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void ativar_void_quandoDesejarAlterarSituacaoDoUsuarioComId100ParaAtivo() {
+    public void ativar_deveAtivarUsuario_quandoDesejarAlterarSituacaoDoUsuarioComId100ParaAtivo() {
         var usuarioInativo = Usuario.builder()
             .id(100)
             .nome("RENATO")
@@ -2222,8 +2220,8 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioInativo.getSituacao()).isEqualTo(A);
 
-        verify(usuarioClientService, times(1)).alterarSituacao(eq(100));
         verify(repository).save(usuarioInativo);
+        verify(agenteAutorizadoService).ativarUsuario(eq(100));
     }
 
     @Test
@@ -4037,7 +4035,7 @@ public class UsuarioServiceTest {
         verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
         verify(repository, never()).save(any(Usuario.class));
         verify(autenticacaoService, never()).logout(anyInt());
-        verify(parceirosOnlineService, never()).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(agenteAutorizadoService, never()).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
     }
 
     @Test
@@ -4053,7 +4051,7 @@ public class UsuarioServiceTest {
         verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
         verify(repository, never()).save(any(Usuario.class));
         verify(autenticacaoService, never()).logout(anyInt());
-        verify(parceirosOnlineService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
     }
 
     @Test
@@ -4063,7 +4061,7 @@ public class UsuarioServiceTest {
             .findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
 
         doThrow(new IntegracaoException(EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL.getDescricao()))
-            .when(parceirosOnlineService)
+            .when(agenteAutorizadoService)
             .inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
 
         assertThatCode(() -> service
@@ -4074,7 +4072,7 @@ public class UsuarioServiceTest {
         verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
         verify(repository).save(umAntigoSocioPrincipal(ESituacao.I));
         verify(autenticacaoService).logout(22);
-        verify(parceirosOnlineService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
     }
 
     @Test
@@ -4090,7 +4088,7 @@ public class UsuarioServiceTest {
         verify(repository).findByEmail("ANTIGOSOCIO@EMPRESA.COM.BR");
         verify(repository).save(umAntigoSocioPrincipal(ESituacao.I));
         verify(autenticacaoService).logout(22);
-        verify(parceirosOnlineService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
+        verify(agenteAutorizadoService).inativarAntigoSocioPrincipal("ANTIGOSOCIO@EMPRESA.COM.BR");
     }
 
     @Test
@@ -4129,7 +4127,7 @@ public class UsuarioServiceTest {
 
         verify(repository, times(1)).findById(eq(21));
         verify(repository, never()).save(any(Usuario.class));
-        verify(parceirosOnlineService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -4145,7 +4143,7 @@ public class UsuarioServiceTest {
 
         verify(repository, times(1)).findById(eq(23));
         verify(repository, never()).save(any(Usuario.class));
-        verify(parceirosOnlineService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -4161,7 +4159,7 @@ public class UsuarioServiceTest {
 
         verify(repository, times(1)).findById(eq(23));
         verify(repository, never()).save(any(Usuario.class));
-        verify(parceirosOnlineService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -4177,7 +4175,7 @@ public class UsuarioServiceTest {
 
         verify(repository, times(1)).findById(eq(23));
         verify(repository, never()).save(any(Usuario.class));
-        verify(parceirosOnlineService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -4193,7 +4191,7 @@ public class UsuarioServiceTest {
 
         verify(repository, times(1)).findById(eq(23));
         verify(repository, never()).save(any(Usuario.class));
-        verify(parceirosOnlineService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
+        verify(agenteAutorizadoService, never()).atualizarEmailSocioPrincipalInativo(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -4205,7 +4203,7 @@ public class UsuarioServiceTest {
         when(repository.save(eq(umSocioPrincipalComEmailAtualizado))).thenReturn(umSocioPrincipalComEmailAtualizado);
 
         doThrow(new IntegracaoException(EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL.getDescricao()))
-            .when(parceirosOnlineService)
+            .when(agenteAutorizadoService)
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
 
         assertThatCode(() -> service
@@ -4217,7 +4215,7 @@ public class UsuarioServiceTest {
             .findById(eq(23));
         verify(repository, times(1))
             .save(eq(umSocioPrincipalComEmailAtualizado));
-        verify(parceirosOnlineService, times(1))
+        verify(agenteAutorizadoService, times(1))
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
     }
 
@@ -4235,7 +4233,7 @@ public class UsuarioServiceTest {
             .findById(eq(23));
         verify(repository, times(1))
             .save(eq(umSocioPrincipalComEmailAtualizado));
-        verify(parceirosOnlineService, times(1))
+        verify(agenteAutorizadoService, times(1))
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
     }
 

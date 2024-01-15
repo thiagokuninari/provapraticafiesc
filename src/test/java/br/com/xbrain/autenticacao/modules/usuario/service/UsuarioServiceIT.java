@@ -127,8 +127,6 @@ public class UsuarioServiceIT {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @MockBean
     private FeederService feederService;
-    @MockBean
-    private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
     @MockBean
@@ -428,7 +426,7 @@ public class UsuarioServiceIT {
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
         when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
-        doNothing().when(usuarioClientService).alterarSituacao(anyInt());
+        doNothing().when(agenteAutorizadoClient).ativarUsuario(anyInt());
 
         doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)

@@ -162,8 +162,8 @@ public class UsuarioGerenciaController {
         service.limparCpfAntigoSocioPrincipal(id);
     }
 
-    @PutMapping("inativar-email/{idSocioPrincipal}")
-    public void atualizarEmailSocioInativo(@PathVariable Integer idSocioPrincipal) {
-        service.atualizarEmailSocioInativo(idSocioPrincipal);
+    @PutMapping("inativar-email/{socioPrincipalId}")
+    public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
+        service.atualizarEmailSocioInativo(socioPrincipalId);
     }
 }

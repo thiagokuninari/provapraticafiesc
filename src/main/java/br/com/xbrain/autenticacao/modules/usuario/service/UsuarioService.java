@@ -30,7 +30,6 @@ import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -209,8 +208,6 @@ public class UsuarioService {
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
-    private ParceirosOnlineService parceirosOnlineService;
-    @Autowired
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
@@ -238,8 +235,6 @@ public class UsuarioService {
     private CargoSuperiorRepository cargoSuperiorRepository;
     @Autowired
     private RegionalService regionalService;
-    @Autowired
-    private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Autowired
@@ -981,6 +976,10 @@ public class UsuarioService {
         return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
+    private static boolean isSocioPrincipal(Usuario usuario) {
+        return usuario.isSocioPrincipal() && usuario.isAgenteAutorizado();
+    }
+
     public boolean validarSeUsuarioCpfEmailNaoCadastrados(UsuarioExistenteValidacaoRequest usuario) {
         validarCpfCadastrado(usuario.getCpf(), usuario.getId());
         validarEmailCadastrado(usuario.getEmail(), usuario.getId());
@@ -1602,13 +1601,13 @@ public class UsuarioService {
                 usuario));
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
-        alterarSituacaoSocioPrincipal(usuario);
+        ativarSocio(usuario);
     }
 
     public void ativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
-                usuarioClientService.alterarSituacao(id);
+                agenteAutorizadoService.ativarUsuario(id);
                 user.setSituacao(ESituacao.A);
                 repository.save(user);
             });
@@ -1701,7 +1700,7 @@ public class UsuarioService {
     public void inativar(Integer id) {
         repository.findComplete(id)
             .ifPresent(user -> {
-                usuarioClientService.alterarSituacao(id);
+                agenteAutorizadoService.inativarUsuario(id);
                 user.setSituacao(ESituacao.I);
                 repository.save(user);
                 autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(user);
@@ -1718,12 +1717,18 @@ public class UsuarioService {
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
-        alterarSituacaoSocioPrincipal(usuario);
+        inativarSocio(usuario);
     }
 
-    private void alterarSituacaoSocioPrincipal(Usuario usuario) {
-        if (usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()) {
-            usuarioClientService.alterarSituacao(usuario.getId());
+    private void ativarSocio(Usuario usuario) {
+        if (isSocioPrincipal(usuario)) {
+            agenteAutorizadoService.ativarUsuario(usuario.getId());
+        }
+    }
+
+    private void inativarSocio(Usuario usuario) {
+        if (isSocioPrincipal(usuario)) {
+            agenteAutorizadoService.inativarUsuario(usuario.getId());
         }
     }
 
@@ -1964,15 +1969,15 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
-    public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
-        var socio = findOneById(idSocioPrincipal);
+    public void atualizarEmailSocioInativo(Integer socioPrincipalId) {
+        var socio = findOneById(socioPrincipalId);
         var emailAtual = socio.getEmail();
         var emailInativo = atualizarEmailInativo(emailAtual);
 
         socio.setEmail(emailInativo);
         repository.save(socio);
 
-        parceirosOnlineService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
@@ -2189,7 +2194,7 @@ public class UsuarioService {
             autenticacaoService.logout(antigoSocioPrincipal.getId());
         }
 
-        parceirosOnlineService.inativarAntigoSocioPrincipal(email);
+        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
     }
 
     private Usuario findOneByEmail(String email) {

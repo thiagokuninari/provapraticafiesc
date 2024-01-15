@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
@@ -61,7 +61,7 @@ public class UsuarioAcessoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private AgenteAutorizadoClient agenteAutorizadoClient;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
@@ -176,7 +176,7 @@ public class UsuarioAcessoService {
     }
 
     private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return agenteAutorizadoClient.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
+        return agenteAutorizadoService.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());

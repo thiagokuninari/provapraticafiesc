@@ -3,8 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import org.junit.Test;
 
-import java.util.Objects;
-
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistoricoTest.umUsuario;
 import static org.assertj.core.api.Assertions.assertThat;
 

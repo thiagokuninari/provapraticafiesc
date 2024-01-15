@@ -8,8 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -18,8 +16,6 @@ import java.util.List;
     url = "${app-config.services.parceiros-online.url}",
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface ParceirosOnlineClient {
-
-    String API_AGENTE_AUTORIZADOS_USUARIO = "api/agentes-autorizados-usuario";
 
     @GetMapping("api/clusters/permitidos")
     List<ClusterDto> getClusters(@RequestParam("grupoId") Integer grupoId);
@@ -36,11 +32,4 @@ public interface ParceirosOnlineClient {
     @GetMapping("api/cidades/comunicados")
     List<UsuarioCidadeDto> getCidades(@RequestParam("subclusterId") Integer subclusterId);
 
-    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
-    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
-
-    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{idSocioPrincipal}")
-    void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
-                                             @RequestParam("emailInativo") String emailInativo,
-                                             @PathVariable("idSocioPrincipal") Integer idSocioPrincipal);
 }

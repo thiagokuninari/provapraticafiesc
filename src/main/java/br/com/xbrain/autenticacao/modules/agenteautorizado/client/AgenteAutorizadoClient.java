@@ -21,6 +21,8 @@ import java.util.Set;
 public interface AgenteAutorizadoClient {
 
     String URL_AGENTE_AUTORIZADO = "api";
+    String API_USUARIOS_AGENTE_AUTORIZADO = "api/usuarios-agente-autorizado";
+    String API_AGENTE_AUTORIZADOS_USUARIO = "api/agentes-autorizados-usuario";
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/todos-usuarios-dos-aas")
     List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(@RequestParam("aasIds") List<Integer> aasIds,
@@ -91,4 +93,17 @@ public interface AgenteAutorizadoClient {
     @GetMapping(URL_AGENTE_AUTORIZADO + "/superiores/usuario-autenticado")
     List<Integer> getUsuariosIdsSuperioresPol();
 
+    @PutMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/{id}/ativar")
+    void ativarUsuario(@PathVariable("id") Integer id);
+
+    @PutMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/{id}/inativar")
+    void inativarUsuario(@PathVariable("id") Integer id);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
+    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{socioPrincipalId}")
+    void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
+                                             @RequestParam("emailInativo") String emailInativo,
+                                             @PathVariable("socioPrincipalId") Integer socioPrincipalId);
 }

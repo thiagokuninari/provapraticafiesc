@@ -311,6 +311,168 @@ public class AgenteAutorizadoServiceTest {
             .containsExactly(tuple(1, "TESTE", 1, "TESTE@XBRAIN.COM.BR", 1));
     }
 
+    @Test
+    public void ativarUsuario_deveAtivarAgenteAutorizado_quandoSolicitado() {
+        service.ativarUsuario(1);
+
+        verify(client).ativarUsuario(1);
+    }
+
+    @Test
+    public void ativarUsuario_deveLancarException_quandoRetornarErroNaApi() {
+        doThrow(new HystrixBadRequestException("Erro"))
+            .when(client)
+            .ativarUsuario(1);
+
+        assertThatThrownBy(() -> service.ativarUsuario(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#056 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.");
+
+        verify(client).ativarUsuario(1);
+    }
+
+    @Test
+    public void ativarUsuario_deveLancarException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .ativarUsuario(1);
+
+        assertThatThrownBy(() -> service.ativarUsuario(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#056 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.");
+
+        verify(client).ativarUsuario(1);
+    }
+
+    @Test
+    public void inativarUsuario_deveInativarAgenteAutorizado_quandoSolicitado() {
+        service.inativarUsuario(2);
+
+        verify(client).inativarUsuario(2);
+    }
+
+    @Test
+    public void inativarUsuario_deveLancarException_quandoRetornarErroNaApi() {
+        doThrow(new HystrixBadRequestException("Erro"))
+            .when(client)
+            .inativarUsuario(1);
+
+        assertThatThrownBy(() -> service.inativarUsuario(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#057 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.");
+
+        verify(client).inativarUsuario(1);
+    }
+
+    @Test
+    public void inativarUsuario_deveLancarException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .inativarUsuario(1);
+
+        assertThatThrownBy(() -> service.inativarUsuario(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#057 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.");
+
+        verify(client).inativarUsuario(1);
+    }
+
+    @Test
+    public void atualizarEmailSocioPrincipalInativo_deveAtualizarEmailSocioPrincipal_quandoSolicitado() {
+        service.atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        );
+
+        verify(client).atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        );
+    }
+
+    @Test
+    public void atualizarEmailSocioPrincipalInativo_deveLancarException_quandoRetornarErroNaApi() {
+        doThrow(new HystrixBadRequestException("Erro"))
+            .when(client)
+            .atualizarEmailSocioPrincipalInativo(
+                "novoemailsocioteste@xbrain.com.br",
+                "antigoemailsocioteste@xbrain.com.br",
+                1
+            );
+
+        assertThatThrownBy(() -> service.atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        ))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        );
+    }
+
+    @Test
+    public void atualizarEmailSocioPrincipalInativo_deveLancarException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .atualizarEmailSocioPrincipalInativo(
+                "novoemailsocioteste@xbrain.com.br",
+                "antigoemailsocioteste@xbrain.com.br",
+                1
+            );
+
+        assertThatThrownBy(() -> service.atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        ))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#051 - Não foi possível atualizar o e-mail do sócio no Parceiros Online.");
+
+        verify(client).atualizarEmailSocioPrincipalInativo(
+            "novoemailsocioteste@xbrain.com.br",
+            "antigoemailsocioteste@xbrain.com.br",
+            1
+        );
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveInativarEmailSocioPrincipal_quandoSolicitado() {
+        service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+
+        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveLancarException_quandoRetornarErroNaApi() {
+        doThrow(new HystrixBadRequestException("Erro"))
+            .when(client)
+            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+
+        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+    }
+
+    @Test
+    public void inativarAntigoSocioPrincipal_deveLancarException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+
+        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#052 - Não foi possível inativar o sócio no Parceiros Online.");
+
+        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
+    }
+
     private AgenteAutorizadoResponse umAgenteAutorizadoResponse() {
         return AgenteAutorizadoResponse.builder()
             .id("10")
