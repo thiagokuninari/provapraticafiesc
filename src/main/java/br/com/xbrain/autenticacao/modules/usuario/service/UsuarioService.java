@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -58,8 +59,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -161,6 +164,10 @@ public class UsuarioService {
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR);
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser ativado pois o fornecedor está inativo.";
+    private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser salvo pois o fornecedor está inativo.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -244,6 +251,7 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Lazy
     @Autowired
     private SubCanalService subCanalService;
     @Autowired
@@ -256,6 +264,9 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Lazy
+    @Autowired
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -750,12 +761,22 @@ public class UsuarioService {
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
+        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
+    }
+
+    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+        if (usuario.getOrganizacaoEmpresa() != null) {
+            var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
+            if (!organizacaoEmpresa.isAtivo()) {
+                throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+            }
+        }
     }
 
     private void configurarCadastro(Usuario usuario) {
@@ -1006,10 +1027,17 @@ public class UsuarioService {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
         validarCanalD2dProprioESubCanais(usuario);
+        validarOrganizacaoEmpresaReceptivoInternet(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
         validarPadraoEmail(usuario.getEmail());
+    }
+
+    private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
+        if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
+            validarOrganizacaoEmpresaInativa(usuario);
+        }
     }
 
     private void validarPadraoEmail(String email) {
@@ -1325,6 +1353,28 @@ public class UsuarioService {
         }
     }
 
+    @Async
+    public void inativarPorOrganizacaoEmpresa(Integer organizacaoId) {
+        var usuarios = repository.findByOrganizacaoEmpresaId(organizacaoId);
+
+        if (!usuarios.isEmpty()) {
+            usuarios.forEach(this::inativarUsuarioDaOrganizacao);
+        }
+    }
+
+    private void inativarUsuarioDaOrganizacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            try {
+                usuario.setSituacao(ESituacao.I);
+                repository.save(usuario);
+                usuarioHistoricoService.gerarHistoricoDeInativacaoPorOrganizacaoEmpresa(usuario.getId());
+                autenticacaoService.logout(usuario.getId());
+            } catch (Exception ex) {
+                log.error("Erro ao inativar o usuário " + usuario.getId(), ex);
+            }
+        }
+    }
+
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
@@ -1614,6 +1664,9 @@ public class UsuarioService {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         } else if (!isUsuarioAdmin && usuarioInativoPorMuitasSimulacoes) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
+        } else if (!isEmpty(usuario.getOrganizacaoEmpresa())
+            && !usuario.getOrganizacaoEmpresa().isAtivo()) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
         }
 
         repository.save(usuario);

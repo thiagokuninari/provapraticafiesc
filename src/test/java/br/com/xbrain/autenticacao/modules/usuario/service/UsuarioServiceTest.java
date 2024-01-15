@@ -27,7 +27,9 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -55,7 +57,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -93,7 +94,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGeren
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
@@ -217,6 +220,8 @@ public class UsuarioServiceTest {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Mock
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
+    @Mock
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -436,6 +441,23 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void ativar_deveAlterarUsuario_quandoOrganizacaoEmpresaAtiva() {
+        var usuario = umUsuarioCompleto(ESituacao.I, BACKOFFICE_GERENTE, 120,
+            BACKOFFICE, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().id(100).situacao(ESituacaoOrganizacaoEmpresa.A).build());
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        service.ativar(umUsuarioAtivacaoDto());
+    }
+
+    @Test
     public void ativar_deveRetornarExcecao_quandoSubcanalCoordenadorDiferente() {
         doReturn(Optional.of(umUsuarioD2DComCoordenador(PAP)))
             .when(repository)
@@ -479,6 +501,25 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDtoD2d()))
             .withMessage("Não foi encontrado o subcanal do " + umUsuarioD2DSemSubcanal(null).getCargo().getCodigo());
+    }
+
+    @Test
+    public void ativar_deveRetornarExcecao_quandoOrganizacaoEmpresaInativa() {
+        var usuario = umUsuarioCompleto(ESituacao.I, BACKOFFICE_GERENTE, 120,
+            BACKOFFICE, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().id(100).situacao(ESituacaoOrganizacaoEmpresa.I).build());
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
+            .withMessage("O usuário não pode ser ativado pois o fornecedor está inativo.");
     }
 
     @Test
@@ -933,6 +974,55 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_deveLancarExcecao_quandoUsuarioReceptivoPossuirOrganizacaoEmpresaInativa() {
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var usuario = umUsuarioCompleto(SUPERVISOR_RECEPTIVO,
+            5, RECEPTIVO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.INTERNET);
+        usuario.setCanais(null);
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(1)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        usuario.setOrganizacaoEmpresa(organizacao);
+
+        doReturn(organizacao)
+            .when(organizacaoEmpresaService)
+            .findById(anyInt());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(usuario))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
+    }
+
+    @Test
+    public void save_deveLancarExcecao_quandoUsuarioOperacaoCanalInternetPossuirOrganizacaoEmpresaInativa() {
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5, OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.INTERNET);
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(1)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        usuario.setOrganizacaoEmpresa(organizacao);
+
+        doReturn(organizacao)
+            .when(organizacaoEmpresaService)
+            .findById(anyInt());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(usuario))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
+    }
+
+    @Test
     public void save_deveRemoverPermissaoInsideSalesPme_quandoUsuarioJaCadastradoENivelOperacao() {
         doReturn(umUsuarioAutenticadoNivelMso())
             .when(autenticacaoService)
@@ -1088,6 +1178,13 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
 
         service.salvarUsuarioBackoffice(umUsuarioBackoffice());
 
@@ -1099,18 +1196,25 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
-        var usaurio = umUsuarioBackoffice();
+        var usuario = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
-        Assertions.assertThat(usaurio)
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        assertThat(usuario)
             .extracting("cpf")
             .containsExactly("097.238.645-92");
 
-        service.salvarUsuarioBackoffice(usaurio);
+        service.salvarUsuarioBackoffice(usuario);
 
         verify(repository, times(1)).save(usuarioCaptor.capture());
-        Assertions.assertThat(usuarioCaptor.getValue())
+        assertThat(usuarioCaptor.getValue())
             .extracting("cpf")
             .containsExactly("09723864592");
     }
@@ -1122,7 +1226,7 @@ public class UsuarioServiceTest {
         when(repository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("CPF já cadastrado.");
 
@@ -1139,7 +1243,7 @@ public class UsuarioServiceTest {
         when(repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("Email já cadastrado.");
 
@@ -1166,6 +1270,23 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(usuario))
             .withMessage("Usuário sem permissão para o cargo com os canais.");
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_validacaoException_quandoFornecedorInativo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.I)
+            .build();
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
+            .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -2499,7 +2620,7 @@ public class UsuarioServiceTest {
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuarioCadastro.setSubCanais(Set.of(new SubCanal(1)));
 
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(usuarioCadastro))
             .withMessage("Usuário já está cadastrado em outra equipe");
     }
@@ -2716,7 +2837,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> service.save(usuarioComUsuarioCadastroNulo))
+        assertThatCode(() -> service.save(usuarioComUsuarioCadastroNulo))
             .doesNotThrowAnyException();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticadoId();
@@ -2732,7 +2853,7 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        Assertions.assertThatCode(() -> service.save(umUsuarioMso()))
+        assertThatCode(() -> service.save(umUsuarioMso()))
             .doesNotThrowAnyException();
 
         verify(repository, times(1)).saveAndFlush(eq(umUsuarioMso()));

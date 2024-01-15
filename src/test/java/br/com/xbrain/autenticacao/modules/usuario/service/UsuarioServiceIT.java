@@ -66,6 +66,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipe
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -851,7 +855,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .niveisIds(List.of(4, 3)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 371));
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 248, 371));
     }
 
     @Test
@@ -973,6 +977,7 @@ public class UsuarioServiceIT {
                 tuple(245, "ALBERTO ALVES"),
                 tuple(246, "JOAO FONSECA"),
                 tuple(247, "VENDEDOR AA D2D 3"),
+                tuple(248, "HELPDESK 2"),
                 tuple(371, "GABRIEL TESTE"));
     }
 
@@ -1021,7 +1026,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(55);
+        assertThat(usuarios).hasSize(56);
     }
 
     @Test
@@ -1346,6 +1351,7 @@ public class UsuarioServiceIT {
                 tuple(110, "A"),
                 tuple(121, "A"),
                 tuple(101, "A"),
+                tuple(248, "A"),
                 tuple(111, "A"));
     }
 
@@ -1804,5 +1810,26 @@ public class UsuarioServiceIT {
             .situacao(ESituacao.A)
             .nome("Macaulay")
             .build();
+    }
+
+    @Test
+    public void inativarPorOrganizacaoEmpresa_deveInativarUsuarioEGerarHistorico_quandoInformarId() {
+        var usuarioAtivo = usuarioRepository.findById(248).get();
+        assertThat(usuarioAtivo.isAtivo()).isTrue();
+
+        service.inativarPorOrganizacaoEmpresa(1);
+
+        var usuarioInativo = usuarioRepository.findById(248).get();
+
+        assertThat(usuarioInativo.isAtivo()).isFalse();
+
+        assertThat(usuarioHistoricoRepository.findByUsuarioId(usuarioInativo.getId()))
+            .extracting("motivoInativacao.codigo", "observacao", "situacao")
+            .contains(tuple(
+                CodigoMotivoInativacao.ORGANIZACAO_EMPRESA_INATIVA,
+                "Inativado pela organização inativa.",
+                ESituacao.I));
+
+        verify(autenticacaoService, times(1)).logout(anyInt());
     }
 }

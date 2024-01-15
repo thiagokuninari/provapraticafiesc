@@ -18,6 +18,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.ORGANIZACAO_EMPRESA_INATIVA;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -52,6 +53,21 @@ public class UsuarioHistoricoServiceIT {
             .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
             .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
                 "Teste de histórico", 799);
+    }
+
+    @Test
+    public void gerarHistoricoDeInativacaoPorOrganizacaoEmpresa_deveGerarHistorico_quandoOrganizacaoForInativada() {
+        assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
+        usuarioHistoricoService.gerarHistoricoDeInativacaoPorOrganizacaoEmpresa(799);
+
+        List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
+        assertEquals(1, usuarioHistoricos.size());
+
+        assertThat(usuarioHistoricos.get(0))
+            .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
+            .contains(ESituacao.I,
+                findMotivoInativacaoByCodigo(ORGANIZACAO_EMPRESA_INATIVA),
+                "Inativado pela organização inativa.", 799);
     }
 
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {
