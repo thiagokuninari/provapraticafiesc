@@ -60,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
@@ -601,6 +602,7 @@ public class UsuarioService {
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
+            configurarDataReativacao(usuario, situacaoAnterior);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
             configurarCadastro(usuario);
@@ -608,13 +610,11 @@ public class UsuarioService {
             enviarEmailDadosAcesso(usuario, enviarEmail);
 
             return UsuarioDto.of(usuario);
-
-        } catch (PersistenceException ex) {
+        } catch (PersistenceException | DataIntegrityViolationException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
-
         } catch (Exception ex) {
-            log.error("Erro ao salvar Usuário.", ex);
+            log.error("Erro ao salvar Usuário.", ex.getMessage());
             throw ex;
         }
     }
@@ -1255,30 +1255,24 @@ public class UsuarioService {
 
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        try {
-            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
+        var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        configurarUsuario(usuarioMqRequest, usuarioDto);
+        usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
-            enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
+        enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
 
-            if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
-                enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
-            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
-                enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
-            } else {
-                enviarParaFilaDeUsuariosSalvos(usuarioDto);
-            }
-
-            feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-            permissaoTecnicoIndicadorService
-                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-            criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
-        } catch (Exception ex) {
-            usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
-            log.error("Erro ao salvar usuário da fila.", ex);
+        if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
+            enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
+        } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
+            enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
+        } else {
+            enviarParaFilaDeUsuariosSalvos(usuarioDto);
         }
+
+        feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+        criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
     }
 
     private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
@@ -1290,24 +1284,17 @@ public class UsuarioService {
 
     @Transactional
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        try {
-            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
-                configurarUsuario(usuarioMqRequest, usuarioDto);
-                save(UsuarioDto.convertFrom(usuarioDto));
-                configurarDataReativacao(usuarioMqRequest);
-                removerPermissoesFeeder(usuarioMqRequest);
-                feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-                permissaoTecnicoIndicadorService
-                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-                enviarParaFilaDeUsuariosSalvos(usuarioDto);
-            } else {
-                saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
-            }
-        } catch (Exception ex) {
-            usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
-            log.error("erro ao atualizar usuário da fila.", ex);
+        var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            save(UsuarioDto.convertFrom(usuarioDto));
+            removerPermissoesFeeder(usuarioMqRequest);
+            feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            permissaoTecnicoIndicadorService
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            enviarParaFilaDeUsuariosSalvos(usuarioDto);
+        } else {
+            saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
         }
     }
 
@@ -1430,7 +1417,11 @@ public class UsuarioService {
         usuario.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuario, REMANEJAMENTO));
     }
 
-    public boolean isAlteracaoCpf(Usuario usuario) {
+    private boolean isAlteracaoCpf(Usuario usuario) {
+        if (usuario.isNovoCadastro()) {
+            return false;
+        }
+
         var usuarioCpfAntigo = repository.findById(usuario.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
@@ -1537,11 +1528,11 @@ public class UsuarioService {
         atualizarUsuarioMqSender.sendErrorUsuarioRemanejadoAut(request);
     }
 
-    private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
+    public void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioMqSender.sendWithFailure(usuarioMqRequest);
     }
 
-    private void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
+    public void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioAaAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
@@ -2895,9 +2886,9 @@ public class UsuarioService {
             .map(UsuarioResponse::of).collect(toList());
     }
 
-    private void configurarDataReativacao(UsuarioMqRequest usuarioMqRequest) {
-        if (usuarioMqRequest.getSituacao() == ESituacao.A) {
-            repository.updateDataReativacao(LocalDateTime.now(), usuarioMqRequest.getId());
+    private void configurarDataReativacao(Usuario usuario, ESituacao situacaoAnterior) {
+        if (usuario.getSituacao() == ESituacao.A && situacaoAnterior == ESituacao.I) {
+            usuario.setDataReativacao(LocalDateTime.now());
         }
     }
 

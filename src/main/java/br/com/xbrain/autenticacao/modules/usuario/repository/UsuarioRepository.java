@@ -95,10 +95,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     void updateCargo(Cargo cargo, Integer usuarioId);
 
     @Modifying
-    @Query("update Usuario u set u.dataReativacao = ?1 where u.id = ?2")
-    void updateDataReativacao(LocalDateTime dataReativacao, Integer usuarioId);
-
-    @Modifying
     @Query("update Usuario u set u.situacao = ?1 where u.id = ?2")
     void updateSituacao(ESituacao situacao, Integer usuarioId);
 
