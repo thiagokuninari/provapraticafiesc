@@ -43,8 +43,8 @@ public class UsuarioBriefingRequest {
     private Integer cargoId;
     @NotNull
     private Integer departamentoId;
-    @NotEmpty
-    private List<Integer> unidadesNegociosId;
+    @NotNull
+    private Integer unidadeNegocioId;
     @NotEmpty
     private List<Integer> empresasId;
     @Enumerated(EnumType.STRING)

@@ -501,7 +501,7 @@ public class UsuarioGerenciaControllerTest {
                 "O campo nascimento é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo unidadesNegociosId é obrigatório.",
+                "O campo unidadeNegocioId é obrigatório.",
                 "O campo empresasId é obrigatório.")));
 
         verifyNoMoreInteractions(usuarioService);
@@ -1635,7 +1635,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setNascimento(LocalDate.of(2000, 1, 1));
         usuario.setCargoId(110);
         usuario.setDepartamentoId(69);
-        usuario.setUnidadesNegociosId(List.of(1));
+        usuario.setUnidadeNegocioId(1);
         usuario.setEmpresasId(singletonList(4));
         return usuario;
     }
