@@ -91,6 +91,7 @@ import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
@@ -101,7 +102,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umN
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadeDeDistritosDeLondrina;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioCidadeHelper.listaUsuarioCidadesDoParana;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
@@ -194,6 +194,8 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
+    @Captor
+    private ArgumentCaptor<UsuarioSocialHubRequestMq> socialHubRequestCaptor;
     @Captor
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
@@ -1085,6 +1087,78 @@ public class UsuarioServiceTest {
 
         assertThat(service.findIdUsuariosAtivosByCodigoCargos(listaCargos))
             .isEqualTo(List.of(24, 34));
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setEmail("teste@emailpermitido.com.br");
+        usuario.setId(1);
+        usuario.setUsuarioCadastro(new Usuario(1));
+        usuario.setCargo(Cargo.builder()
+            .codigo(BACKOFFICE_GERENTE)
+            .nivel(Nivel.builder()
+                .codigo(BACKOFFICE)
+                .build())
+            .build());
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(1)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(30000)
+                    .build(),
+                Usuario.builder()
+                    .id(1)
+                    .build()
+            );
+
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
+        var dadosSocialHub = socialHubRequestCaptor.getValue();
+        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
+        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailInvalido() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setEmail("teste@Naoemailpermitido.com.br");
+        usuario.setId(1);
+        usuario.setUsuarioCadastro(new Usuario(1));
+        usuario.setCargo(Cargo.builder()
+            .codigo(BACKOFFICE_GERENTE)
+            .nivel(Nivel.builder()
+                .codigo(BACKOFFICE)
+                .build())
+            .build());
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService, never()).save(anyList());
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario));
     }
 
     @Test
@@ -3880,7 +3954,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarPermissaoSocialHub_quandoDominioEmailValido() {
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
         var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
 
         doReturn(Optional.of(usuario))
@@ -3909,10 +3983,15 @@ public class UsuarioServiceTest {
                     .id(1)
                     .build()
             );
+
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
+        var dadosSocialHub = socialHubRequestCaptor.getValue();
+        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
+        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
     }
 
     @Test
-    public void save_naoDeveAdicionarPermissaoSocialHub_quandoDominioEmailInvalido() {
+    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoDominioEmailInvalido() {
         var usuario = umUsuarioSocialHub("teste@emailnaopermitido.com.br");
 
         doReturn(Optional.of(usuario))
@@ -3927,6 +4006,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, never()).save(anyList());
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

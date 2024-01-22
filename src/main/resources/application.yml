@@ -150,6 +150,7 @@ app-config:
     atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
     organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
+    usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
 
   oauth-clients:
     autenticacao-api:

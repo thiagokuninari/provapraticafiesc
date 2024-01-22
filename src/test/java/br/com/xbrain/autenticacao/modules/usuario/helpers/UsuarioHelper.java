@@ -786,6 +786,7 @@ public class UsuarioHelper {
             .departamento(Departamento.builder().id(1).nome("teste").build())
             .cargo(Cargo.builder()
                 .id(1)
+                .codigo(OPERACAO_TELEVENDAS)
                 .nivel(Nivel.builder()
                     .id(1)
                     .codigo(CodigoNivel.XBRAIN)

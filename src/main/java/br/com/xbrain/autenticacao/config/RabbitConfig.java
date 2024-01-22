@@ -149,6 +149,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.organizacao-empresa-atualizacao-nome-failure}")
     private String organizacaoEmpresaAtualizacaoNomeFailureMq;
 
+    @Value("${app-config.queue.usuario-atualizacao-social-hub}")
+    private String usuarioAtualizacaoSocialHubMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -609,5 +612,10 @@ public class RabbitConfig {
         return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorFailureMq())
             .to(exchange)
             .with(atualizarPermissaoTecnicoIndicadorFailureMq);
+    }
+
+    @Bean
+    Queue usuarioAtualizacaoSocialHubMq() {
+        return new Queue(usuarioAtualizacaoSocialHubMq, true);
     }
 }
