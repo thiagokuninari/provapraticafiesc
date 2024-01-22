@@ -17,7 +17,7 @@ public class UsuarioSocialHubRequestMqTest {
         assertEquals(usuario.getNome(), request.getNome());
         assertEquals(usuario.getEmail(), request.getEmail());
         assertEquals(usuario.getCargoCodigo().toString(), request.getCargo());
-        assertEquals(usuario.getCargo().getNivel().getCodigo().toString(), request.getNivel());
+        assertEquals(usuario.getNivelCodigo().toString(), request.getNivel());
     }
 
     @Test
