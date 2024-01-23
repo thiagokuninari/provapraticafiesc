@@ -27,7 +27,9 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
@@ -216,6 +218,8 @@ public class UsuarioServiceTest {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Mock
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
+    @Mock
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     @Before
     public void setUp() {
@@ -1102,6 +1106,13 @@ public class UsuarioServiceTest {
                 .build())
             .build());
 
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        lenient().when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
@@ -1146,6 +1157,13 @@ public class UsuarioServiceTest {
                 .codigo(BACKOFFICE)
                 .build())
             .build());
+
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        lenient().when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
 
         doReturn(Optional.of(usuario))
             .when(repository)
