@@ -93,11 +93,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R))
-                )
-                .fetchOne());
+                .where(usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R)))
+                .orderBy(usuario.dataCadastro.desc())
+                .fetchFirst());
     }
 
     public Optional<Usuario> findUsuarioByEmail(String email) {
@@ -700,7 +699,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao) {
+    public Optional<Usuario> findByEmailIgnoreCase(String email) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
                 .select(usuario)
@@ -709,11 +708,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R))
-                )
-                .fetchOne());
+                .where(usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R)))
+                .orderBy(usuario.dataCadastro.desc())
+                .fetchFirst());
     }
 
     @Override
@@ -1417,7 +1415,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .selectFrom(usuario)
             .leftJoin(usuario.historicosSenhaIncorretas, usuarioSenhaIncorretaHistorico).fetchJoin()
-            .where(usuario.email.eq(email))
+            .where(usuario.email.eq(email)
+                .and(usuario.situacao.eq(A)))
             .fetchOne());
     }
 

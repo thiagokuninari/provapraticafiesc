@@ -1178,7 +1178,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        
+
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
@@ -1276,7 +1276,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_validacaoException_quandoFornecedorInativo() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        
+
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
             .situacao(ESituacaoOrganizacaoEmpresa.I)
@@ -3538,6 +3538,18 @@ public class UsuarioServiceTest {
         verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
     }
 
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_naoDeveGerarHistorico_quandoUsuarioInativo() {
+        var usuarioInativo = umUsuarioInativo();
+        when(repository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(usuarioInativo.getEmail()))
+            .thenReturn(Optional.empty());
+
+        service.gerarHistoricoTentativasLoginSenhaIncorreta(usuarioInativo.getEmail());
+
+        verify(repository).findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(usuarioInativo.getEmail());
+        verify(repository, never()).save(usuarioInativo);
+    }
+
     private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {
         return MotivoInativacao.builder()
             .id(1)
@@ -4286,6 +4298,26 @@ public class UsuarioServiceTest {
             .build();
     }
 
+    @Test
+    public void findByEmail_deveRetornarUmUsuario_quandoUsuarioAtivo() {
+        var usuario = umUsuarioCompleto();
+        when(repository.findByEmail(usuario.getEmail())).thenReturn(Optional.of(usuario));
+
+        assertThat(service.findByEmail(usuario.getEmail())).isNotNull();
+        verify(repository).findByEmail(usuario.getEmail());
+    }
+
+    @Test
+    public void findByEmail_deveLancarException_quandoUsuarioNaoEncontrado() {
+        var usuarioInativo = umUsuarioInativo();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findByEmail(usuarioInativo.getEmail()))
+            .withMessage("Usuário não encontrado.");
+
+        verify(repository).findByEmail(usuarioInativo.getEmail());
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
@@ -4574,6 +4606,7 @@ public class UsuarioServiceTest {
                 .build())
             .unidadesNegocios(List.of(UnidadeNegocio
                 .builder()
+                .id(1)
                 .nome("UNIDADE NEGÓCIO UM")
                 .build()))
             .empresas(List.of(Empresa
