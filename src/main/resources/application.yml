@@ -246,6 +246,9 @@ app-config:
     quality-call-api:
       client: quality-call-api
       secret: qu4l1tyc4ll4p1
+    briefing-api:
+      client: briefing-api
+      secret: br13f1ng
 
   services:
     autenticacao:
