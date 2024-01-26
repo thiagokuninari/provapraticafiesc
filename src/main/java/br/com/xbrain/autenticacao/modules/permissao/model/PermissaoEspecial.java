@@ -23,19 +23,19 @@ public class PermissaoEspecial {
     @Id
     @Column(name = "ID")
     @GenericGenerator(
-            name = "SEQ_PERMISSAO_ESPECIAL",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@org.hibernate.annotations.Parameter(name = "sequence_name", value = "SEQ_PERMISSAO_ESPECIAL")})
+        name = "SEQ_PERMISSAO_ESPECIAL",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {@org.hibernate.annotations.Parameter(name = "sequence_name", value = "SEQ_PERMISSAO_ESPECIAL")})
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_PERMISSAO_ESPECIAL")
     private Integer id;
 
     @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_PERMISSAO_ESPECIAL_USU"),
-            referencedColumnName = "id", updatable = false)
+        referencedColumnName = "id", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
     @JoinColumn(name = "FK_FUNCIONALIDADE", foreignKey = @ForeignKey(name = "FK_PERMISSAO_ESPECIAL_FUNC"),
-            referencedColumnName = "id", updatable = false)
+        referencedColumnName = "id", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Funcionalidade funcionalidade;
 
@@ -47,12 +47,12 @@ public class PermissaoEspecial {
     private LocalDateTime dataBaixa;
 
     @JoinColumn(name = "FK_USUARIO_CADASTRO", foreignKey = @ForeignKey(name = "FK_PERMISSAO_ESPECIAL_USU_CAD"),
-            referencedColumnName = "id", updatable = false)
+        referencedColumnName = "id", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
 
     @JoinColumn(name = "FK_USUARIO_BAIXA", foreignKey = @ForeignKey(name = "FK_PERMISSAO_ESPECIAL_USU_BAI"),
-            referencedColumnName = "ID")
+        referencedColumnName = "ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioBaixa;
 
@@ -69,7 +69,7 @@ public class PermissaoEspecial {
     public static PermissaoEspecial of(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
         return PermissaoEspecial.builder()
             .funcionalidade(new Funcionalidade(funcionalidadeId))
-            .usuarioCadastro(new Usuario(usuarioCadastroId))
+            .usuarioCadastro(usuarioCadastroId != null ? new Usuario(usuarioCadastroId) : null)
             .usuario(new Usuario(usuarioId))
             .dataCadastro(LocalDateTime.now())
             .build();

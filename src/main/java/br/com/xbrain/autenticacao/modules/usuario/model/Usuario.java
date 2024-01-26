@@ -53,18 +53,18 @@ public class Usuario {
     private Integer id;
 
     @NotNull
-    @Column(name = "NOME", length = 100, nullable = false)
+    @Column(name = "NOME", length = 120, nullable = false)
     private String nome;
 
     @NotNull
     @Email
-    @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80)
+    @Size(max = 100)
+    @Column(name = "EMAIL_01", nullable = false, length = 100)
     private String email;
 
     @Email
-    @Size(max = 80)
-    @Column(name = "EMAIL_02", length = 80)
+    @Size(max = 100)
+    @Column(name = "EMAIL_02", length = 100)
     private String email02;
 
     @NotNull
@@ -255,6 +255,15 @@ public class Usuario {
 
     @Transient
     private Integer agenteAutorizadoId;
+
+    @Transient
+    private boolean isAtualizarSocioPrincipal;
+
+    @Transient
+    private List<Integer> agentesAutorizadosIds;
+
+    @Transient
+    private List<Integer> antigosSociosPrincipaisIds;
 
     @Transient
     private String senhaDescriptografada;

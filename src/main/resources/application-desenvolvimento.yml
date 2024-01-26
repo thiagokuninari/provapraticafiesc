@@ -30,7 +30,7 @@ app-config:
     agente-autorizado:
       url: http://172.10.10.105:8300
     emails:
-      url: http://api-hom.conexaoclarobrasil.com.br/email
+      url: https://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       url: http://172.10.10.45:8086
     mailing-importacao:

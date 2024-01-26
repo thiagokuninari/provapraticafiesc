@@ -22,12 +22,22 @@ public class UsuarioMqListener {
 
     @RabbitListener(queues = "${app-config.queue.usuario-cadastro}")
     public void save(UsuarioMqRequest usuarioMqRequest) {
-        service.saveFromQueue(usuarioMqRequest);
+        try {
+            service.saveFromQueue(usuarioMqRequest);
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
+            service.enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
+        }
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-atualizacao}")
     public void atualizar(UsuarioMqRequest usuarioMqRequest) {
-        service.updateFromQueue(usuarioMqRequest);
+        try {
+            service.updateFromQueue(usuarioMqRequest);
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
+            service.enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+        }
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-atualizacao-lojafuturo}")

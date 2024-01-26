@@ -37,13 +37,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     Optional<Usuario> findById(Integer id);
 
-    Optional<Usuario> findByEmail(String email);
-
     Optional<Usuario> findByEmailAndSituacao(String email, ESituacao situacao);
-
-    Optional<Usuario> findUsuarioByEmail(String email);
-
-    List<Usuario> findAllByCpf(String cpf);
 
     Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
@@ -95,10 +89,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     void updateCargo(Cargo cargo, Integer usuarioId);
 
     @Modifying
-    @Query("update Usuario u set u.dataReativacao = ?1 where u.id = ?2")
-    void updateDataReativacao(LocalDateTime dataReativacao, Integer usuarioId);
-
-    @Modifying
     @Query("update Usuario u set u.situacao = ?1 where u.id = ?2")
     void updateSituacao(ESituacao situacao, Integer usuarioId);
 
@@ -123,4 +113,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     void atualizarParaSituacaoInativo(Integer id);
 
     List<Usuario> findByOrganizacaoEmpresaIdAndCargo_CodigoIn(Integer organizacaoEmpresaId, List<CodigoCargo> cargos);
+
+    List<Usuario> findByOrganizacaoEmpresaId(Integer organizacaoEmpresaId);
 }

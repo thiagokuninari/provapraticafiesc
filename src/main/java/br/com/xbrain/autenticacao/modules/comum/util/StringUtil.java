@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
 import br.com.xbrain.xbrainutils.MoneyUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -13,9 +14,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Random;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
+
 public class StringUtil {
 
     private static final int RADIX = 36;
+    private static final String ARROBA = "@";
+    private static final Integer INDEX_ZERO = 0;
+    private static final Integer INDEX_UM = 1;
+    private static final String INATIVO_ARROBA = ".INATIVO@";
 
     public static String getDataAtualEmail() {
         return LocalDate.now().format(DateTimeFormatter
@@ -68,7 +75,7 @@ public class StringUtil {
         return firstName + "" + lastName;
     }
 
-    public static String getSenhaRandomica(int size) {
+    public static String getRandomPassword(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
     }
@@ -80,5 +87,13 @@ public class StringUtil {
     public static boolean existeSemelhancaEntreNomes(String nomeOrigem, String nomeDestino) {
         return extrairNumerosELetras(nomeOrigem)
             .equalsIgnoreCase(extrairNumerosELetras(nomeDestino));
+    }
+
+    public static String atualizarEmailInativo(String email) {
+        if (!EmailUtil.validarEmail(email)) {
+            throw new ValidacaoException(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+        }
+        var emailSplit = email.split(ARROBA);
+        return emailSplit[INDEX_ZERO].concat(INATIVO_ARROBA).concat(emailSplit[INDEX_UM]);
     }
 }

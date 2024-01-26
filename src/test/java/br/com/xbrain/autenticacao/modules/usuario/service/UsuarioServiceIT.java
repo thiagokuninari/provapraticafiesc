@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
@@ -16,7 +15,8 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -35,6 +35,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -54,6 +56,7 @@ import java.util.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
@@ -63,6 +66,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipe
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -123,10 +130,12 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
-    @Autowired
+    @MockBean
     private PermissaoEspecialService permissaoEspecialService;
     @MockBean
     private SubCanalService subCanalService;
+    @Captor
+    private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
 
     @Before
     public void setUp() {
@@ -141,7 +150,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(usuario);
         verify(feederService, never())
-            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
+            .removerPermissoesEspeciais(List.of(371), FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -152,7 +161,7 @@ public class UsuarioServiceIT {
 
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
-            .removerPermissoesEspeciais(List.of(371),FUNCIONALIDADES_FEEDER_PARA_AA);
+            .removerPermissoesEspeciais(List.of(371), FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     @Test
@@ -165,12 +174,16 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
+    public void saveFromQueue_deveNaoEnviarEmail_quandoNaoSalvarUsuario() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setCpf("2292929292929292929229292929");
-        service.saveFromQueue(usuarioMqRequest);
-        verify(sender, times(0)).sendSuccess(any());
-        verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
+
+        assertThatThrownBy(() -> service.saveFromQueue(usuarioMqRequest))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Erro ao cadastrar usuário.");
+
+        verify(sender, never()).sendSuccess(any());
+        verify(emailService, never()).enviarEmailTemplate(any(), any(), any(), any());
         verify(feederService, never()).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
@@ -199,27 +212,21 @@ public class UsuarioServiceIT {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
+        doReturn(true)
+            .when(permissaoEspecialService)
+            .hasPermissaoEspecialAtiva(3, 16101);
+
         service.saveFromQueue(usuarioMqRequest);
         var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
 
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
-        assertThat(permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioDto.getId(), 16101))
-            .isTrue();
         assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioDto.getId()))
             .flatExtracting("situacao", "observacao")
             .contains("ATIVO", "Agente Autorizado com permissão de Equipe Técnica.");
 
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, 16101);
         verify(sender).sendSuccess(any());
         verify(feederService).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
-    }
-
-    @Test
-    public void deveNaoSalvarUsuarioEEnviarParaFilaDeFalha() {
-        try {
-            service.saveFromQueue(new UsuarioMqRequest());
-        } catch (Exception exception) {
-            verify(sender, times(1)).sendWithFailure(any());
-        }
     }
 
     @Test
@@ -579,17 +586,17 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void naoDeveEnviarFilaDeAtualizarUsuariosNoPolQuandoNaoForSocioPrincipal() {
+    public void saveFromQueue_naoDeveEnviarFilaDeAtualizarUsuariosNoPol_quandoNaoForSocioPrincipal() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCpf("672.678.130-03");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_ACEITE);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setSituacao(ESituacao.A);
 
         service.saveFromQueue(usuarioMqRequest);
 
-        verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
+        verify(atualizarUsuarioMqSender, never()).sendSuccess(any());
     }
 
     @Test
@@ -625,7 +632,8 @@ public class UsuarioServiceIT {
     @Test
     public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
         service.updateFromQueue(umUsuario());
-        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
+
+        verify(sender).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -843,7 +851,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .niveisIds(List.of(4, 3)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 371));
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 248, 371));
     }
 
     @Test
@@ -965,6 +973,7 @@ public class UsuarioServiceIT {
                 tuple(245, "ALBERTO ALVES"),
                 tuple(246, "JOAO FONSECA"),
                 tuple(247, "VENDEDOR AA D2D 3"),
+                tuple(248, "HELPDESK 2"),
                 tuple(371, "GABRIEL TESTE"));
     }
 
@@ -1013,7 +1022,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(55);
+        assertThat(usuarios).hasSize(56);
     }
 
     @Test
@@ -1338,6 +1347,7 @@ public class UsuarioServiceIT {
                 tuple(110, "A"),
                 tuple(121, "A"),
                 tuple(101, "A"),
+                tuple(248, "A"),
                 tuple(111, "A"));
     }
 
@@ -1598,12 +1608,18 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         var usuario = umUsuarioMqRequest();
+
+        usuarioRepository.findById(usuario.getId()).ifPresent(usuarioInativo -> {
+            assertThat(usuarioInativo.getSituacao()).isEqualTo(I);
+            assertThat(usuarioInativo.getDataReativacao()).isNull();
+        });
+
         service.updateFromQueue(usuario);
 
-        var usuarioAtualizado = usuarioRepository.findById(usuario.getId()).orElseThrow(
-            () -> new NotFoundException("Usuário não encontrado"));
-        assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
-        assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+        usuarioRepository.findById(usuario.getId()).ifPresent(usuarioAtualizado -> {
+            assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
+            assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+        });
     }
 
     @Test
@@ -1626,51 +1642,56 @@ public class UsuarioServiceIT {
 
     @Test
     public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
-        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+        doReturn(false)
+            .when(permissaoEspecialService)
+            .hasPermissaoEspecialAtiva(100, 16101);
 
-        var permissoes = service.findPermissoesByUsuario(100);
+        service.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
         var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
-
-        assertThat(permissoes.getPermissoesEspeciais())
-            .hasSize(1)
-            .flatExtracting("funcionalidadeId", "nome", "role", "aplicacao")
-            .containsExactly(16101, "Acompanhamento de Indicações do Técnico Vendedor", "BKO_16101", "BACKOFFICE");
 
         assertThat(historicos)
             .flatExtracting("situacao", "observacao")
             .containsExactly(
                 "ATIVO", "Agente Autorizado com permissão de Equipe Técnica.",
-                "ATIVO / ÚLTIMO ACESSO DO USUÁRIO", null
-            );
+                "ATIVO / ÚLTIMO ACESSO DO USUÁRIO", null);
+
         assertThat(historicos.get(0).getCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(100, 16101);
+        verify(permissaoEspecialService).save(anyList());
     }
 
     @Test
-    @Sql("classpath:/tests_database.sql")
     public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
-        var dto = permissaoEquipeTecnicaDto(false, null);
-        usuarioService.atualizarPermissaoEquipeTecnica(dto);
+        service.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, null));
 
-        var permissoes = service.findPermissoesByUsuario(100);
         var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
-
-        assertThat(permissoes.getPermissoesEspeciais())
-            .hasSize(2)
-            .doesNotContain(
-                FuncionalidadeResponse.builder()
-                    .funcionalidadeId(16101)
-                    .nome("Acompanhamento de Indicações do Técnico Vendedor")
-                    .role("BKO_16101")
-                    .aplicacao("BACKOFFICE")
-                    .build()
-            );
 
         assertThat(historicos.get(0))
             .extracting("situacao", "observacao")
             .containsExactly("ATIVO", "Agente Autorizado sem permissão de Equipe Técnica.");
+
         assertThat(historicos.get(0).getCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void saveFromQueue_deveSalvarEnviarParaFilaDeAtualizarSocioPrincipalEAtualizarPermissoesEspeciais_quandoFlagAtualizarSocioPrincipalForTrue() {
+        assertThatCode(() -> usuarioService
+            .saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal()))
+            .doesNotThrowAnyException();
+
+        verify(sender).sendSuccessAtualizarSocioPrincipal(usuarioDtoCaptor.capture());
+        verify(permissaoEspecialService).atualizarPermissoesEspeciaisNovoSocioPrincipal(usuarioDtoCaptor.getValue());
+
+        assertThat(usuarioDtoCaptor.getValue())
+            .extracting("agentesAutorizadosIds", "antigosSociosPrincipaisIds", "isAtualizarSocioPrincipal", "usuarioCadastroId")
+            .containsExactlyInAnyOrder(List.of(50, 55), List.of(32), true, 100);
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
@@ -1736,6 +1757,45 @@ public class UsuarioServiceIT {
             .build();
     }
 
+    public UsuarioMqRequest umUsuarioMqRequestAtualizarSocioPrincipal() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("JOSÉ")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("333.333.333-11")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("renato@hotmail.com")
+            .isCadastroSocioPrincipal(false)
+            .isAtualizarSocioPrincipal(true)
+            .agentesAutorizadosIds(List.of(50, 55))
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .antigosSociosPrincipaisIds(List.of(32))
+            .build();
+    }
+
+    private PermissaoEspecial umaPermissaoEspecial(Integer funcionalidadeId) {
+        return PermissaoEspecial.builder()
+            .funcionalidade(Funcionalidade
+                .builder()
+                .id(funcionalidadeId)
+                .build())
+            .build();
+    }
+
+    private List<PermissaoEspecial> umaListaFuncFeederEAcompIndicacoesTecnicoVendedor() {
+        return List.of(
+            umaPermissaoEspecial(3046),
+            umaPermissaoEspecial(15000),
+            umaPermissaoEspecial(15005),
+            umaPermissaoEspecial(15012),
+            umaPermissaoEspecial(16101));
+    }
+
     private UsuarioMqRequest umUsuarioTrocaCpf() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
@@ -1748,9 +1808,41 @@ public class UsuarioServiceIT {
 
     private UsuarioMqRequest umUsuarioMqRequest() {
         return UsuarioMqRequest.builder()
-            .id(150)
+            .id(120)
             .situacao(ESituacao.A)
             .nome("Macaulay")
+            .cargo(EXECUTIVO)
+            .agenteAutorizadoId(10)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("88855511133")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("MARIA@NET.COM")
+            .isCadastroSocioPrincipal(false)
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(List.of(CLARO_RESIDENCIAL))
             .build();
+    }
+
+    @Test
+    public void inativarPorOrganizacaoEmpresa_deveInativarUsuarioEGerarHistorico_quandoInformarId() {
+        var usuarioAtivo = usuarioRepository.findById(248).get();
+        assertThat(usuarioAtivo.isAtivo()).isTrue();
+
+        service.inativarPorOrganizacaoEmpresa(1);
+
+        var usuarioInativo = usuarioRepository.findById(248).get();
+
+        assertThat(usuarioInativo.isAtivo()).isFalse();
+
+        assertThat(usuarioHistoricoRepository.findByUsuarioId(usuarioInativo.getId()))
+            .extracting("motivoInativacao.codigo", "observacao", "situacao")
+            .contains(tuple(
+                CodigoMotivoInativacao.ORGANIZACAO_EMPRESA_INATIVA,
+                "Inativado pela organização inativa.",
+                ESituacao.I));
+
+        verify(autenticacaoService, times(1)).logout(anyInt());
     }
 }

@@ -18,7 +18,6 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
-import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -28,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -59,8 +59,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -86,6 +89,8 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -160,6 +165,10 @@ public class UsuarioService {
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR);
+    private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser ativado pois o fornecedor está inativo.";
+    private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
+        "O usuário não pode ser salvo pois o fornecedor está inativo.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -243,6 +252,7 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Lazy
     @Autowired
     private SubCanalService subCanalService;
     @Autowired
@@ -255,12 +265,19 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Lazy
+    @Autowired
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
 
         return usuario;
+    }
+
+    private Usuario findOneById(Integer id) {
+        return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     @Transactional
@@ -585,6 +602,7 @@ public class UsuarioService {
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
+            configurarDataReativacao(usuario, situacaoAnterior);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
             configurarCadastro(usuario);
@@ -592,13 +610,11 @@ public class UsuarioService {
             enviarEmailDadosAcesso(usuario, enviarEmail);
 
             return UsuarioDto.of(usuario);
-
-        } catch (PersistenceException ex) {
+        } catch (PersistenceException | DataIntegrityViolationException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
-
         } catch (Exception ex) {
-            log.error("Erro ao salvar Usuário.", ex);
+            log.error("Erro ao salvar Usuário.", ex.getMessage());
             throw ex;
         }
     }
@@ -745,12 +761,22 @@ public class UsuarioService {
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
+        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
+    }
+
+    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+        if (usuario.getOrganizacaoEmpresa() != null) {
+            var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
+            if (!organizacaoEmpresa.isAtivo()) {
+                throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+            }
+        }
     }
 
     private void configurarCadastro(Usuario usuario) {
@@ -971,6 +997,11 @@ public class UsuarioService {
         return true;
     }
 
+    public void validarSeUsuarioCpfEmailNaoCadastrados(String cpf, String email) {
+        validarCpfCadastrado(cpf, null);
+        validarEmailCadastrado(email, null);
+    }
+
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
@@ -996,10 +1027,17 @@ public class UsuarioService {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
         validarCanalD2dProprioESubCanais(usuario);
+        validarOrganizacaoEmpresaReceptivoInternet(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
         validarPadraoEmail(usuario.getEmail());
+    }
+
+    private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
+        if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
+            validarOrganizacaoEmpresaInativa(usuario);
+        }
     }
 
     private void validarPadraoEmail(String email) {
@@ -1217,50 +1255,46 @@ public class UsuarioService {
 
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        try {
-            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
+        var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        configurarUsuario(usuarioMqRequest, usuarioDto);
+        usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
-            if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
-                enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
-            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
-                enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
-            } else {
-                enviarParaFilaDeUsuariosSalvos(usuarioDto);
-            }
+        enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
 
-            feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-            permissaoTecnicoIndicadorService
-                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-            criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
-        } catch (Exception ex) {
-            usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
-            log.error("Erro ao salvar usuário da fila.", ex);
+        if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
+            enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
+        } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
+            enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
+        } else {
+            enviarParaFilaDeUsuariosSalvos(usuarioDto);
+        }
+
+        feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+        criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
+    }
+
+    private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
+        if (socio.isAtualizarSocioPrincipal()) {
+            enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
+            permissaoEspecialService.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
         }
     }
 
     @Transactional
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        try {
-            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
-                configurarUsuario(usuarioMqRequest, usuarioDto);
-                save(UsuarioDto.convertFrom(usuarioDto));
-                configurarDataReativacao(usuarioMqRequest);
-                removerPermissoesFeeder(usuarioMqRequest);
-                feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-                permissaoTecnicoIndicadorService
-                    .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-                enviarParaFilaDeUsuariosSalvos(usuarioDto);
-            } else {
-                saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
-            }
-        } catch (Exception ex) {
-            usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
-            log.error("erro ao atualizar usuário da fila.", ex);
+        var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            save(UsuarioDto.convertFrom(usuarioDto));
+            removerPermissoesFeeder(usuarioMqRequest);
+            feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            permissaoTecnicoIndicadorService
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            enviarParaFilaDeUsuariosSalvos(usuarioDto);
+        } else {
+            saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
         }
     }
 
@@ -1303,6 +1337,28 @@ public class UsuarioService {
             repository.save(usuario);
             usuarioHistoricoService.gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId());
             autenticacaoService.logout(usuario.getId());
+        }
+    }
+
+    @Async
+    public void inativarPorOrganizacaoEmpresa(Integer organizacaoId) {
+        var usuarios = repository.findByOrganizacaoEmpresaId(organizacaoId);
+
+        if (!usuarios.isEmpty()) {
+            usuarios.forEach(this::inativarUsuarioDaOrganizacao);
+        }
+    }
+
+    private void inativarUsuarioDaOrganizacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            try {
+                usuario.setSituacao(ESituacao.I);
+                repository.save(usuario);
+                usuarioHistoricoService.gerarHistoricoDeInativacaoPorOrganizacaoEmpresa(usuario.getId());
+                autenticacaoService.logout(usuario.getId());
+            } catch (Exception ex) {
+                log.error("Erro ao inativar o usuário " + usuario.getId(), ex);
+            }
         }
     }
 
@@ -1361,7 +1417,11 @@ public class UsuarioService {
         usuario.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuario, REMANEJAMENTO));
     }
 
-    public boolean isAlteracaoCpf(Usuario usuario) {
+    private boolean isAlteracaoCpf(Usuario usuario) {
+        if (usuario.isNovoCadastro()) {
+            return false;
+        }
+
         var usuarioCpfAntigo = repository.findById(usuario.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
@@ -1452,6 +1512,10 @@ public class UsuarioService {
         usuarioMqSender.sendSuccessLojaFuturo(usuarioDto);
     }
 
+    private void enviarParaFilaDeAtualizarSocioPrincipalSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessAtualizarSocioPrincipal(usuarioDto);
+    }
+
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -1464,11 +1528,11 @@ public class UsuarioService {
         atualizarUsuarioMqSender.sendErrorUsuarioRemanejadoAut(request);
     }
 
-    private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
+    public void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioMqSender.sendWithFailure(usuarioMqRequest);
     }
 
-    private void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
+    public void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioAaAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
@@ -1513,7 +1577,7 @@ public class UsuarioService {
     }
 
     private String getSenhaRandomica(int size) {
-        return StringUtil.getSenhaRandomica(size);
+        return getRandomPassword(size);
     }
 
     private void validarCpfExistente(Usuario usuario) {
@@ -1591,6 +1655,9 @@ public class UsuarioService {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         } else if (!isUsuarioAdmin && usuarioInativoPorMuitasSimulacoes) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
+        } else if (!isEmpty(usuario.getOrganizacaoEmpresa())
+            && !usuario.getOrganizacaoEmpresa().isAtivo()) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
         }
 
         repository.save(usuario);
@@ -1637,6 +1704,12 @@ public class UsuarioService {
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
         agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+    }
+
+    public void limparCpfAntigoSocioPrincipal(Integer id) {
+        var socio = findOneById(id);
+        socio.setCpf(null);
+        repository.save(socio);
     }
 
     @Transactional
@@ -1913,6 +1986,17 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
+    public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
+        var socio = findOneById(idSocioPrincipal);
+        var emailAtual = socio.getEmail();
+        var emailInativo = atualizarEmailInativo(emailAtual);
+
+        socio.setEmail(emailInativo);
+        repository.save(socio);
+
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+    }
+
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
         var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
@@ -2116,6 +2200,23 @@ public class UsuarioService {
                 repository.save(user);
             });
         });
+    }
+
+    public void inativarAntigoSocioPrincipal(String email) {
+        var antigoSocioPrincipal = findOneByEmail(email);
+
+        if (antigoSocioPrincipal.getSituacao() == ATIVO) {
+            antigoSocioPrincipal.setSituacao(INATIVO);
+            repository.save(antigoSocioPrincipal);
+            autenticacaoService.logout(antigoSocioPrincipal.getId());
+        }
+
+        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
+    }
+
+    private Usuario findOneByEmail(String email) {
+        return repository.findByEmail(email)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public void inativarColaboradores(String cnpj) {
@@ -2785,9 +2886,9 @@ public class UsuarioService {
             .map(UsuarioResponse::of).collect(toList());
     }
 
-    private void configurarDataReativacao(UsuarioMqRequest usuarioMqRequest) {
-        if (usuarioMqRequest.getSituacao() == ESituacao.A) {
-            repository.updateDataReativacao(LocalDateTime.now(), usuarioMqRequest.getId());
+    private void configurarDataReativacao(Usuario usuario, ESituacao situacaoAnterior) {
+        if (usuario.getSituacao() == ESituacao.A && situacaoAnterior == ESituacao.I) {
+            usuario.setDataReativacao(LocalDateTime.now());
         }
     }
 

@@ -50,6 +50,9 @@ public class UsuarioMqRequest {
     private boolean isCadastroSocioPrincipal;
     private boolean equipeTecnica;
     private boolean tecnicoIndicador;
+    private boolean isAtualizarSocioPrincipal;
+    private List<Integer> agentesAutorizadosIds;
+    private List<Integer> antigosSociosPrincipaisIds;
 
     public boolean isNovoCadastro() {
         return this.id == null;

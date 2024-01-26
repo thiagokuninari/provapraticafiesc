@@ -11,12 +11,26 @@ import static org.assertj.core.api.Assertions.within;
 public class PermissaoEspecialTest {
 
     @Test
-    public void of_deveRetornarPermissaoEspecial_quandoChamado() {
-        var permissao = PermissaoEspecial.of(1, 2, 3);
-        assertThat(permissao.getUsuario().getId()).isEqualTo(1);
-        assertThat(permissao.getFuncionalidade().getId()).isEqualTo(2);
-        assertThat(permissao.getUsuarioCadastro().getId()).isEqualTo(3);
-        assertThat(permissao.getDataCadastro())
+    public void of_deveRetornarPermissaoEspecial_seUsuarioCadastroIdNaoNulo() {
+        var permissaoEspecial = PermissaoEspecial.of(89, 4006, 32);
+
+        assertThat(permissaoEspecial)
+            .extracting("usuario.id", "funcionalidade.id", "usuarioCadastro.id")
+            .containsExactly(89, 4006, 32);
+
+        assertThat(permissaoEspecial.getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    public void of_deveRetornarPermissaoEspecial_seUsuarioCadastroIdNulo() {
+        var permissaoEspecial = PermissaoEspecial.of(89, 4006, null);
+
+        assertThat(permissaoEspecial)
+            .extracting("usuario.id", "funcionalidade.id", "usuarioCadastro.id")
+            .containsExactly(89, 4006, null);
+
+        assertThat(permissaoEspecial.getDataCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 }
