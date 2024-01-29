@@ -248,7 +248,7 @@ app-config:
       secret: qu4l1tyc4ll4p1
     briefing-api:
       client: briefing-api
-      secret: br13f1ng
+      secret: br13f1ng4p1
 
   services:
     autenticacao:
