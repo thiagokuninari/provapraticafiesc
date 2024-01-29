@@ -1380,6 +1380,7 @@ public class UsuarioService {
         validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
+        usuario.setHistoricos(null);
         usuario.setId(null);
         log.info("Novo usuário criado com sucesso.");
 
