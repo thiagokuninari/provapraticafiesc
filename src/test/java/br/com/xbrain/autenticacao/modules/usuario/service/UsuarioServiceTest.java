@@ -4280,6 +4280,23 @@ public class UsuarioServiceTest {
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
     }
 
+    @Test
+    public void getEmailsByCargoId_deveRetornarListaEmails_quandoSolicitado() {
+        when(repository.findByCargo_IdAndSituacao(1, A))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(service.getEmailsByCargoId(1))
+            .containsExactly("caio@teste.com", "mario@teste.com", "maria@teste.com");
+    }
+
+    @Test
+    public void getEmailsByCargoId_deveRetornarListaVazia_seNaoHouverEmailsPeloCargo() {
+        when(repository.findByCargo_IdAndSituacao(1, A))
+            .thenReturn(List.of());
+
+        assertThat(service.getEmailsByCargoId(1)).isEmpty();
+    }
+
     private Usuario umSocioPrincipal() {
         return Usuario.builder()
             .id(23)
