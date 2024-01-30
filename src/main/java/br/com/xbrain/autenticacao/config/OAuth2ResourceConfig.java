@@ -68,6 +68,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .regexMatchers("/api/sites/(\\d+)").authenticated()
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
+            .antMatchers("/api/usuarios/buscar-emails/**").authenticated()
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())

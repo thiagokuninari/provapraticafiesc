@@ -587,4 +587,9 @@ public class UsuarioController {
     public void moverAvatarMinio() {
         usuarioService.moverAvatarMinio();
     }
+
+    @GetMapping("buscar-emails/{cargoId}")
+    List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
+        return usuarioService.getEmailsByCargoId(cargoId);
+    }
 }

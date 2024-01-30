@@ -3095,4 +3095,10 @@ public class UsuarioService {
     private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
     }
+
+    public List<String> getEmailsByCargoId(Integer cargoId) {
+        return repository.findByCargo_IdAndSituacao(cargoId, ESituacao.A).stream()
+            .map(Usuario::getEmail)
+            .collect(toList());
+    }
 }

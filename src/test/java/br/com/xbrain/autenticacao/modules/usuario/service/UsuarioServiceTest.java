@@ -1178,7 +1178,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        
+
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
@@ -1276,7 +1276,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_validacaoException_quandoFornecedorInativo() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        
+
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
             .situacao(ESituacaoOrganizacaoEmpresa.I)
@@ -4266,6 +4266,23 @@ public class UsuarioServiceTest {
             .save(eq(umSocioPrincipalComEmailAtualizado));
         verify(agenteAutorizadoService, times(1))
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
+    }
+
+    @Test
+    public void getEmailsByCargoId_deveRetornarListaEmails_quandoSolicitado() {
+        when(repository.findByCargo_IdAndSituacao(1, A))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(service.getEmailsByCargoId(1))
+            .containsExactly("caio@teste.com", "mario@teste.com", "maria@teste.com");
+    }
+
+    @Test
+    public void getEmailsByCargoId_deveRetornarListaVazia_seNaoHouverEmailsPeloCargo() {
+        when(repository.findByCargo_IdAndSituacao(1, A))
+            .thenReturn(List.of());
+
+        assertThat(service.getEmailsByCargoId(1)).isEmpty();
     }
 
     private Usuario umSocioPrincipal() {

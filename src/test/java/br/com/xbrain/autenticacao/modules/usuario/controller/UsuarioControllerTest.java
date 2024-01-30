@@ -2166,4 +2166,26 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getEmailsByCargoId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/buscar-emails/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getEmailsByCargoId(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getEmailsByCargoId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/buscar-emails/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
 }
