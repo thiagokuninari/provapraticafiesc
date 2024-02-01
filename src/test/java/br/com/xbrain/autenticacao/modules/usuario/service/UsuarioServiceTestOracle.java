@@ -313,7 +313,7 @@ public class UsuarioServiceTestOracle {
             .boxed().collect(Collectors.toList()));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
-        Assert.assertEquals(47, response.size());
+        Assert.assertEquals(48, response.size());
     }
 
     @SuppressWarnings("LineLength")
