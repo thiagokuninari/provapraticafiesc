@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.util.ObjectUtils;
@@ -265,5 +266,14 @@ public class UsuarioAutenticado extends OAuth2Request {
         if (!isXbrain()) {
             throw new PermissaoException("Usuário não autorizado!");
         }
+    }
+
+    public List<ETipoCanal> getSubCanaisEnum() {
+        if (CollectionUtils.isNotEmpty(subCanais)) {
+            return subCanais.stream()
+                .map(SubCanalDto::getCodigo)
+                .collect(Collectors.toList());
+        }
+        return null;
     }
 }
