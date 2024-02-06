@@ -9,14 +9,23 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRepository;
+import jdk.jfr.Label;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.nullness.Opt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,12 +50,6 @@ public class ConfiguracaoAgendaService {
             .map(ConfiguracaoAgendaResponse::of);
     }
 
-    public Integer getQtdHorasAdicionaisAgendaByUsuario() {
-        return getConfiguracaoAgendaByUsuario()
-            .map(ConfiguracaoAgenda::getQtdHorasAdicionais)
-            .orElse(VINTE_QUATRO_HORAS);
-    }
-
     public void alterarSituacao(Integer id, ESituacao novaSituacao) {
         repository.findById(id)
             .map(config -> config.alterarSituacao(novaSituacao))
@@ -54,29 +57,47 @@ public class ConfiguracaoAgendaService {
             .orElseThrow(() -> new ValidacaoException("Configuração de agenda não encontrada."));
     }
 
-    private Optional<ConfiguracaoAgenda> getConfiguracaoAgendaByUsuario() {
+    @Transactional(readOnly = true)
+    public Integer getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal subcanal) {
+        return getConfiguracaoAgendaByUsuario(subcanal)
+            .map(ConfiguracaoAgenda::getQtdHorasAdicionais)
+            .orElse(VINTE_QUATRO_HORAS);
+    }
+
+    private Optional<ConfiguracaoAgenda> getConfiguracaoAgendaByUsuario(ETipoCanal subcanal) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var canal = autenticacaoService.getUsuarioCanal();
-        var predicate = isUsuarioComConfigExistenteByNivelAndCanal(usuario, canal)
-            ? new ConfiguracaoAgendaPredicate()
-                .comNivel(usuario.getNivelCodigoEnum())
-                .comCanal(canal)
-            : getPredicateByUsuario(usuario, canal);
-        return repository.findByPredicateOrderByQtdHorasDesc(predicate.build());
+        var configuracao = findBySubcanal(subcanal)
+            .orElse(findByEstruturaAa(usuario, canal)
+                .orElse(findByNivel(usuario)
+                    .orElse(findByCanal(canal)
+                        .orElse(null))));
+        return Optional.ofNullable(configuracao);
     }
 
-    private ConfiguracaoAgendaPredicate getPredicateByUsuario(UsuarioAutenticado usuario, ECanal canal) {
-        var predicate = new ConfiguracaoAgendaPredicate()
-            .ouComSubCanais(canal, usuario.getSubCanaisEnum())
-            .ouComNivel(usuario.getNivelCodigoEnum())
-            .ouComCanal(canal);
-        if (canal == ECanal.AGENTE_AUTORIZADO) {
-            return predicate.ouComEstruturaAa(aaService.getEstruturaByUsuarioId(usuario.getId()));
+    public Optional<ConfiguracaoAgenda> findBySubcanal(ETipoCanal subcanal) {
+        if (subcanal != null) {
+            return repository.findFirstBySubcanalAndSituacaoOrderByQtdHorasAdicionaisDesc(subcanal, ESituacao.A);
         }
-        return predicate;
+        return Optional.empty();
     }
 
-    private boolean isUsuarioComConfigExistenteByNivelAndCanal(UsuarioAutenticado usuario, ECanal canal) {
-        return repository.existsByNivelAndCanalAndSituacao(usuario.getNivelCodigoEnum(), canal, ESituacao.A);
+    private Optional<ConfiguracaoAgenda> findByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
+        if (canal == ECanal.AGENTE_AUTORIZADO) {
+            var estruturaAa = aaService.getEstruturaByUsuarioId(usuario.getId());
+            return repository.findFirstByEstruturaAaAndSituacaoOrderByQtdHorasAdicionaisDesc(estruturaAa, ESituacao.A);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<ConfiguracaoAgenda> findByNivel(UsuarioAutenticado usuario) {
+        if (!usuario.isOperacao()) {
+            return repository.findFirstByNivelAndSituacaoOrderByQtdHorasAdicionaisDesc(usuario.getNivelCodigoEnum(), ESituacao.A);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<ConfiguracaoAgenda> findByCanal(ECanal canal) {
+        return repository.findFirstByCanalAndSituacaoOrderByQtdHorasAdicionaisDesc(canal, ESituacao.A);
     }
 }

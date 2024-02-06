@@ -5,12 +5,14 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class ConfiguracaoAgendaController {
     private final ConfiguracaoAgendaService service;
 
     @GetMapping
-    public Page<ConfiguracaoAgendaResponse> obterConfiguracoesAgenda(ConfiguracaoAgendaFiltros filtros, PageRequest pageable) {
+    public Page<ConfiguracaoAgendaResponse> buscar(ConfiguracaoAgendaFiltros filtros, PageRequest pageable) {
         return service.findAll(filtros, pageable);
     }
 
@@ -40,7 +42,7 @@ public class ConfiguracaoAgendaController {
     }
 
     @GetMapping("horas-adicionais")
-    public Integer getQtdHorasAdicionaisAgendaByUsuario() {
-        return service.getQtdHorasAdicionaisAgendaByUsuario();
+    public Integer getQtdHorasAdicionaisAgendaByUsuario(@RequestParam(required = false) ETipoCanal subcanal) {
+        return service.getQtdHorasAdicionaisAgendaByUsuario(subcanal);
     }
 }

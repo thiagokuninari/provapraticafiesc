@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -14,30 +15,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracaoAgen
 
 public class ConfiguracaoAgendaPredicate extends PredicateBase {
 
-    public ConfiguracaoAgendaPredicate ouComNivel(CodigoNivel nivel) {
-        if (nivel != null) {
-            builder.or(configuracaoAgenda.nivel.eq(nivel));
-        }
-        return this;
-    }
-
-    public ConfiguracaoAgendaPredicate ouComCanal(ECanal canal) {
-        if (canal != null) {
-            builder.or(configuracaoAgenda.canal.eq(canal));
-        }
-        return this;
-    }
-
-    public ConfiguracaoAgendaPredicate ouComEstruturaAa(String estruturaAa) {
-        if (StringUtils.isNotBlank(estruturaAa)) {
-            builder.or(configuracaoAgenda.estruturaAa.equalsIgnoreCase(estruturaAa));
-        }
-        return this;
-    }
-
-    public ConfiguracaoAgendaPredicate ouComSubCanais(ECanal canal, List<ETipoCanal> subCanais) {
-        if (canal == ECanal.D2D_PROPRIO && CollectionUtils.isNotEmpty(subCanais)) {
-            builder.or(configuracaoAgenda.subcanal.in(subCanais));
+    public ConfiguracaoAgendaPredicate comNivel(UsuarioAutenticado usuario) {
+        if (!usuario.isOperacao()) {
+            builder.and(configuracaoAgenda.nivel.eq(usuario.getNivelCodigoEnum()));
         }
         return this;
     }
