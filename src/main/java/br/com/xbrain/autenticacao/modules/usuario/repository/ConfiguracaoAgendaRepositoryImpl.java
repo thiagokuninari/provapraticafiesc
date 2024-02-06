@@ -2,6 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,14 +23,51 @@ public class ConfiguracaoAgendaRepositoryImpl implements ConfiguracaoAgendaRepos
     private final EntityManager entityManager;
 
     @Override
-    public Optional<ConfiguracaoAgenda> findByPredicateOrderByQtdHorasDesc(Predicate predicate) {
+    public Optional<Integer> findQtdHorasAdicionaisByCanal(ECanal canal) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
-                .selectFrom(configuracaoAgenda)
-                .where(configuracaoAgenda.situacao.eq(ESituacao.A)
-                    .and(predicate))
+                .select(configuracaoAgenda.qtdHorasAdicionais)
+                .from(configuracaoAgenda)
+                .where(configuracaoAgenda.canal.eq(canal))
                 .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
-                .fetchFirst());
+                .fetchFirst()
+        );
+    }
+
+    @Override
+    public Optional<Integer> findQtdHorasAdicionaisByNivel(CodigoNivel nivel) {
+        return Optional.ofNullable(
+            new JPAQueryFactory(entityManager)
+                .select(configuracaoAgenda.qtdHorasAdicionais)
+                .from(configuracaoAgenda)
+                .where(configuracaoAgenda.nivel.eq(nivel))
+                .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
+                .fetchFirst()
+        );
+    }
+
+    @Override
+    public Optional<Integer> findQtdHorasAdicionaisByEstruturaAa(String estruturaAa) {
+        return Optional.ofNullable(
+            new JPAQueryFactory(entityManager)
+                .select(configuracaoAgenda.qtdHorasAdicionais)
+                .from(configuracaoAgenda)
+                .where(configuracaoAgenda.estruturaAa.equalsIgnoreCase(estruturaAa))
+                .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
+                .fetchFirst()
+        );
+    }
+
+    @Override
+    public Optional<Integer> findQtdHorasAdicionaisBySubcanal(ETipoCanal subcanal) {
+        return Optional.ofNullable(
+            new JPAQueryFactory(entityManager)
+                .select(configuracaoAgenda.qtdHorasAdicionais)
+                .from(configuracaoAgenda)
+                .where(configuracaoAgenda.subcanal.eq(subcanal))
+                .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
+                .fetchFirst()
+        );
     }
 
     @Override
