@@ -13,7 +13,7 @@ DOCKERFILE="$VARPATHDESTINY/Dockerfile";
 CONTAINER="autenticacao-prod";
 IMAGE_NAME=$CONTAINER;
 PROFILE="producao";
-JAVA_OPTS="-Xms2g -Xmx16g -Dspring.profiles.active=$PROFILE \
+JAVA_OPTS="-Xms2g -Xmx8g -Dspring.profiles.active=$PROFILE \
                           -Delastic.apm.service_name=$CONTAINER-api \
                           -Delastic.apm.server_url=http://192.168.2.23:8200 \
                           -Delastic.apm.application_packages=br.com.xbrain";
