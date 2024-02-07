@@ -57,6 +57,7 @@ public class ConfiguracaoAgenda {
     public static ConfiguracaoAgenda of(ConfiguracaoAgendaRequest request) {
         var configuracao = new ConfiguracaoAgenda();
         BeanUtils.copyProperties(request, configuracao);
+        configuracao.setSituacao(ESituacao.A);
         return configuracao;
     }
 

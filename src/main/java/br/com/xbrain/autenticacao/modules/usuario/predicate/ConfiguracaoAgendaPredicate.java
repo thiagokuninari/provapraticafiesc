@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracaoAgenda.configuracaoAgenda;
 

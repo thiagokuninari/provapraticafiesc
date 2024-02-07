@@ -31,8 +31,4 @@ public enum ECanal {
             .filter(ECanal::isAtivo)
             .collect(Collectors.toList());
     }
-
-    public boolean getIsNotD2dProprio() {
-        return true;
-    }
 }

@@ -14,12 +14,14 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConfiguracaoAgendaService {
@@ -32,7 +34,6 @@ public class ConfiguracaoAgendaService {
 
     public ConfiguracaoAgendaResponse salvar(ConfiguracaoAgendaRequest request) {
         var configuracaoAgenda = ConfiguracaoAgenda.of(request);
-        configuracaoAgenda.setSituacao(ESituacao.A);
         repository.save(configuracaoAgenda);
         return ConfiguracaoAgendaResponse.of(configuracaoAgenda);
     }
@@ -54,32 +55,28 @@ public class ConfiguracaoAgendaService {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var canal = autenticacaoService.getUsuarioCanal();
         return findQtdHorasBySubcanal(subcanal)
-            .orElse(findQtdHorasByEstruturaAa(usuario, canal)
+            .orElse(findQtdHorasByEstruturaAa(usuario.getId(), canal)
                 .orElse(findQtdHorasByNivel(usuario)
                     .orElse(findQtdHorasByCanal(canal)
                         .orElse(VINTE_QUATRO_HORAS))));
     }
 
-    public Optional<Integer> findQtdHorasBySubcanal(ETipoCanal subcanal) {
-        if (subcanal != null) {
-            return repository.findQtdHorasAdicionaisBySubcanal(subcanal);
-        }
-        return Optional.empty();
+    private Optional<Integer> findQtdHorasByEstruturaAa(Integer usuarioId, ECanal canal) {
+        return canal == ECanal.AGENTE_AUTORIZADO
+            ? repository.findQtdHorasAdicionaisByEstruturaAa(aaService.getEstruturaByUsuarioId(usuarioId))
+            : Optional.empty();
     }
 
-    private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
-        if (canal == ECanal.AGENTE_AUTORIZADO) {
-            var estruturaAa = aaService.getEstruturaByUsuarioId(usuario.getId());
-            return repository.findQtdHorasAdicionaisByEstruturaAa(estruturaAa);
-        }
-        return Optional.empty();
+    private Optional<Integer> findQtdHorasBySubcanal(ETipoCanal subcanal) {
+        return subcanal != null
+            ? repository.findQtdHorasAdicionaisBySubcanal(subcanal)
+            : Optional.empty();
     }
 
     private Optional<Integer> findQtdHorasByNivel(UsuarioAutenticado usuario) {
-        if (!usuario.isOperacao()) {
-            return repository.findQtdHorasAdicionaisByNivel(usuario.getNivelCodigoEnum());
-        }
-        return Optional.empty();
+        return !usuario.isOperacao()
+            ? repository.findQtdHorasAdicionaisByNivel(usuario.getNivelCodigoEnum())
+            : Optional.empty();
     }
 
     private Optional<Integer> findQtdHorasByCanal(ECanal canal) {

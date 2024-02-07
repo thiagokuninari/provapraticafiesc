@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
