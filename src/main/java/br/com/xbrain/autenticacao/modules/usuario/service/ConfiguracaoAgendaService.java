@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.peek;
 
@@ -57,13 +56,11 @@ public class ConfiguracaoAgendaService {
     public Integer getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal subcanal) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var canal = autenticacaoService.getUsuarioCanal();
-        var qtdHorasByUsuario = new AtomicReference<>(VINTE_QUATRO_HORAS);
-        findQtdHorasBySubcanal(subcanal)
-            .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByEstruturaAa(usuario, canal)
-                .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByNivel(usuario)
-                    .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByCanal(canal)
-                        .ifPresent(qtdHorasByUsuario::set))));
-        return qtdHorasByUsuario.get();
+        return findQtdHorasBySubcanal(subcanal)
+            .or(() -> findQtdHorasByEstruturaAa(usuario, canal))
+            .or(() -> findQtdHorasByNivel(usuario))
+            .or(() -> findQtdHorasByCanal(canal))
+            .orElse(VINTE_QUATRO_HORAS);
     }
 
     private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
