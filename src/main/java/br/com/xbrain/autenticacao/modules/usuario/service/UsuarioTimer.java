@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
@@ -23,11 +24,15 @@ public class UsuarioTimer {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
+    private AgenteAutorizadoNovoService aaService;
+    @Autowired
     private UsuarioAcessoService usuarioAcessoService;
     @Autowired
     private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
+
+    private static final String EVERY_DAY_AT_ONE_AM = "0 0 1 * * *";
 
     private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
 
@@ -83,5 +88,12 @@ public class UsuarioTimer {
         log.info("Iniciando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
         deslogarUsuarioPorExcessoDeUsoService.deslogarUsuariosInativados();
         log.info("Finalizando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
+    }
+
+    @Scheduled(cron = EVERY_DAY_AT_ONE_AM)
+    public void flushCacheEstruturasByUsuario() {
+        log.info("Removendo caches de estruturaAa por usuário.");
+        aaService.flushCacheEstruturaAaByUsuario();
+        log.info("Caches de estruturaAa por usuário removido.");
     }
 }

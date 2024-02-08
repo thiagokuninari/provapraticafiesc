@@ -64,8 +64,9 @@ public class ConfiguracaoAgendaService {
     }
 
     private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
-        return canal == ECanal.AGENTE_AUTORIZADO && !usuario.isOperacao()
-            ? repository.findQtdHorasAdicionaisByEstruturaAa(aaService.getEstruturaByUsuarioId(usuario.getId()))
+        var estruturaAa = aaService.getEstruturaByUsuarioAndCanal(usuario, canal);
+        return estruturaAa.isPresent()
+            ? repository.findQtdHorasAdicionaisByEstruturaAa(estruturaAa.get())
             : Optional.empty();
     }
 

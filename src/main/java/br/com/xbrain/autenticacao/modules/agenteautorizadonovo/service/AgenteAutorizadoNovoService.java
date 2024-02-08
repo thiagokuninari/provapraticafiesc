@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.AgenteAutorizadoFiltros;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -15,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -23,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -139,6 +143,21 @@ public class AgenteAutorizadoNovoService {
             logger.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
         }
+    }
+
+    @Cacheable(
+        cacheNames = "estrutura-aa-usuario",
+        unless = "#canal.name() != 'AGENTE_AUTORIZADO'",
+        key = "#usuario.id")
+    public Optional<String> getEstruturaByUsuarioAndCanal(UsuarioAutenticado usuario, ECanal canal) {
+        return canal == ECanal.AGENTE_AUTORIZADO && !usuario.isOperacao()
+            ? Optional.ofNullable(getEstruturaByUsuarioId(usuario.getId()))
+            : Optional.empty();
+    }
+
+    @CacheEvict(cacheNames = "estrutura-aa-usuario", allEntries = true)
+    public void flushCacheEstruturaAaByUsuario() {
+        log.info("Flush cache estrutura-aa-usuari");
     }
 
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
