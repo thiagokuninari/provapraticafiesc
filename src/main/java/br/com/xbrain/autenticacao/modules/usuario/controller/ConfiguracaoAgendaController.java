@@ -36,7 +36,7 @@ public class ConfiguracaoAgendaController {
     }
 
     @PostMapping
-    public ConfiguracaoAgendaResponse salvar(@Valid @RequestBody ConfiguracaoAgendaRequest request) {
+    public ConfiguracaoAgendaResponse salvar(@RequestBody @Valid ConfiguracaoAgendaRequest request) {
         return service.salvar(request);
     }
 

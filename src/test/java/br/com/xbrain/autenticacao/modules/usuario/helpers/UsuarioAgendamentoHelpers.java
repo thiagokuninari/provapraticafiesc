@@ -9,10 +9,14 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
@@ -21,6 +25,32 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UsuarioAgendamentoHelpers {
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest() {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaResponse umaConfiguracaoAgendaResponse() {
+        return ConfiguracaoAgendaResponse.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static ConfiguracaoAgenda umaConfiguracaoAgenda() {
+        return ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .situacao(ESituacao.A)
+            .build();
+    }
 
     public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosMesmoSegmentoAgenteAutorizado1300() {
         return List.of(

@@ -8,10 +8,7 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 
 import java.util.Collections;
@@ -19,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
 import static java.util.Collections.singleton;
 
 public class TestBuilders {
@@ -213,6 +211,14 @@ public class TestBuilders {
             .nivel(nivel)
             .nivelCodigo(nivel)
             .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticado(CodigoNivel nivel) {
+        return UsuarioAutenticado.builder()
+            .id(100)
+            .nivelCodigo(nivel.name())
+            .subCanais(Set.of(umSubCanalDto(1, ETipoCanal.PAP, "PAP")))
             .build();
     }
 

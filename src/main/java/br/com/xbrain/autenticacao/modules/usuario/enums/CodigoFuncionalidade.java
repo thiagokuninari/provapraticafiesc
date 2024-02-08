@@ -45,7 +45,8 @@ public enum CodigoFuncionalidade {
     AUT_20024("Visualizar status do Horário de Acesso"),
     AUT_20025("Editar nova checagem de crédito - Sub-canais"),
     BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
-    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
+    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações"),
+    AUT_21615("Gerenciar Configurações Agenda");
 
     @Getter
     private String descricao;

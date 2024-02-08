@@ -16,6 +16,8 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Getter
 @Setter
+@Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "CONFIGURACAO_AGENDA")
@@ -61,11 +63,10 @@ public class ConfiguracaoAgenda {
         return configuracao;
     }
 
-    public ConfiguracaoAgenda alterarSituacao(ESituacao novaSituacao) {
-        if (this.situacao != novaSituacao) {
-            setSituacao(novaSituacao);
-            return this;
+    public void alterarSituacao(ESituacao novaSituacao) {
+        if (this.situacao == novaSituacao) {
+            throw new ValidacaoException("Configuração já possui a mesma situação.");
         }
-        throw new ValidacaoException("Configuração já possui a mesma situação.");
+        setSituacao(novaSituacao);
     }
 }

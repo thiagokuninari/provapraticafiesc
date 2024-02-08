@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.peek;
 
 @Slf4j
 @Service
@@ -45,7 +48,7 @@ public class ConfiguracaoAgendaService {
 
     public void alterarSituacao(Integer id, ESituacao novaSituacao) {
         repository.findById(id)
-            .map(config -> config.alterarSituacao(novaSituacao))
+            .map(peek(config -> config.alterarSituacao(novaSituacao)))
             .map(repository::save)
             .orElseThrow(() -> new ValidacaoException("Configuração de agenda não encontrada."));
     }
@@ -54,16 +57,18 @@ public class ConfiguracaoAgendaService {
     public Integer getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal subcanal) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var canal = autenticacaoService.getUsuarioCanal();
-        return findQtdHorasBySubcanal(subcanal)
-            .orElse(findQtdHorasByEstruturaAa(usuario.getId(), canal)
-                .orElse(findQtdHorasByNivel(usuario)
-                    .orElse(findQtdHorasByCanal(canal)
-                        .orElse(VINTE_QUATRO_HORAS))));
+        var qtdHorasByUsuario = new AtomicReference<>(VINTE_QUATRO_HORAS);
+        findQtdHorasBySubcanal(subcanal)
+            .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByEstruturaAa(usuario, canal)
+                .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByNivel(usuario)
+                    .ifPresentOrElse(qtdHorasByUsuario::set, () -> findQtdHorasByCanal(canal)
+                        .ifPresent(qtdHorasByUsuario::set))));
+        return qtdHorasByUsuario.get();
     }
 
-    private Optional<Integer> findQtdHorasByEstruturaAa(Integer usuarioId, ECanal canal) {
-        return canal == ECanal.AGENTE_AUTORIZADO
-            ? repository.findQtdHorasAdicionaisByEstruturaAa(aaService.getEstruturaByUsuarioId(usuarioId))
+    private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
+        return canal == ECanal.AGENTE_AUTORIZADO && !usuario.isOperacao()
+            ? repository.findQtdHorasAdicionaisByEstruturaAa(aaService.getEstruturaByUsuarioId(usuario.getId()))
             : Optional.empty();
     }
 

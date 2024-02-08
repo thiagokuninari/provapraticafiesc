@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
@@ -27,7 +28,8 @@ public class ConfiguracaoAgendaRepositoryImpl implements ConfiguracaoAgendaRepos
             new JPAQueryFactory(entityManager)
                 .select(configuracaoAgenda.qtdHorasAdicionais)
                 .from(configuracaoAgenda)
-                .where(configuracaoAgenda.canal.eq(canal))
+                .where(configuracaoAgenda.canal.eq(canal)
+                    .and(configuracaoAgenda.situacao.ne(ESituacao.I)))
                 .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -39,7 +41,8 @@ public class ConfiguracaoAgendaRepositoryImpl implements ConfiguracaoAgendaRepos
             new JPAQueryFactory(entityManager)
                 .select(configuracaoAgenda.qtdHorasAdicionais)
                 .from(configuracaoAgenda)
-                .where(configuracaoAgenda.nivel.eq(nivel))
+                .where(configuracaoAgenda.nivel.eq(nivel)
+                    .and(configuracaoAgenda.situacao.ne(ESituacao.I)))
                 .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -51,7 +54,8 @@ public class ConfiguracaoAgendaRepositoryImpl implements ConfiguracaoAgendaRepos
             new JPAQueryFactory(entityManager)
                 .select(configuracaoAgenda.qtdHorasAdicionais)
                 .from(configuracaoAgenda)
-                .where(configuracaoAgenda.estruturaAa.equalsIgnoreCase(estruturaAa))
+                .where(configuracaoAgenda.estruturaAa.equalsIgnoreCase(estruturaAa)
+                    .and(configuracaoAgenda.situacao.ne(ESituacao.I)))
                 .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -63,7 +67,8 @@ public class ConfiguracaoAgendaRepositoryImpl implements ConfiguracaoAgendaRepos
             new JPAQueryFactory(entityManager)
                 .select(configuracaoAgenda.qtdHorasAdicionais)
                 .from(configuracaoAgenda)
-                .where(configuracaoAgenda.subcanal.eq(subcanal))
+                .where(configuracaoAgenda.subcanal.eq(subcanal)
+                    .and(configuracaoAgenda.situacao.ne(ESituacao.I)))
                 .orderBy(configuracaoAgenda.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );

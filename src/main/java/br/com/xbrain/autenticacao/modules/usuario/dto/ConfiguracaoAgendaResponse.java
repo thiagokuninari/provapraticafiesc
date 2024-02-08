@@ -5,14 +5,11 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.beans.BeanUtils;
 
-@Setter
-@Getter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConfiguracaoAgendaResponse {

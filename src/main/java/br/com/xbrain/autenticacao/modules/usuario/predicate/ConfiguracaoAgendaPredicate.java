@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -11,13 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracaoAgenda.configuracaoAgenda;
 
 public class ConfiguracaoAgendaPredicate extends PredicateBase {
-
-    public ConfiguracaoAgendaPredicate comNivel(UsuarioAutenticado usuario) {
-        if (!usuario.isOperacao()) {
-            builder.and(configuracaoAgenda.nivel.eq(usuario.getNivelCodigoEnum()));
-        }
-        return this;
-    }
 
     public ConfiguracaoAgendaPredicate comNivel(CodigoNivel nivel) {
         if (nivel != null) {
