@@ -152,9 +152,7 @@ public class UsuarioAcessoService {
     }
 
     public Page<UsuarioAcessoResponse> getAll(PageRequest pageRequest, UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
-            usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
-        }
+        aplicarFiltros(usuarioAcessoFiltros);
 
         var lista = StreamSupport
             .stream(usuarioAcessoRepository
@@ -193,9 +191,8 @@ public class UsuarioAcessoService {
     }
 
     public List<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
-            usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
-        }
+        aplicarFiltros(usuarioAcessoFiltros);
+
         return StreamSupport
             .stream(usuarioAcessoRepository
                 .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
@@ -235,5 +232,15 @@ public class UsuarioAcessoService {
             usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
+    }
+
+    private void aplicarFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        aplicarAgenteAutorizadoFiltro(usuarioAcessoFiltros);
+    }
+
+    public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
+            usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
+        }
     }
 }

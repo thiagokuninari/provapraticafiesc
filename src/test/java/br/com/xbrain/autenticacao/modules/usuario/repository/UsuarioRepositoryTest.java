@@ -27,11 +27,8 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 

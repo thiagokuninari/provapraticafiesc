@@ -154,6 +154,11 @@ public class UsuarioAcessoControllerTest {
                 .param("dataInicio", "01/01/2020")
                 .param("dataFim", "10/01/2020")
                 .param("tipo", "LOGIN")
+                .param("aaId", String.valueOf(1))
+                .param("nivelId", String.valueOf(1))
+                .param("canal", "D2D_PROPRIO")
+                .param("subCanalId", String.valueOf(1))
+                .param("cargoId", String.valueOf(1))
                 .accept(MediaType.ALL_VALUE))
             .andExpect(status().isOk());
 

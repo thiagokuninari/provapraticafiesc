@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -25,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -57,6 +59,8 @@ public class UsuarioAcessoServiceTest {
     private AutenticacaoService autenticacaoService;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Mock
+    private UsuarioAcessoFiltros usuarioAcessoFiltros;
 
     @Before
     public void setup() {
@@ -204,6 +208,23 @@ public class UsuarioAcessoServiceTest {
                 .build()));
     }
 
+    @Test
+    public void getAll_deveRetornarRegistros_quandoExistir() {
+        PageRequest pageRequest = new PageRequest(0, 10, "id", "ASC");
+
+        when(usuarioAcessoRepository.findAll(any(), eq(pageRequest)))
+            .thenReturn(new PageImpl<>(umaListaUsuarioAcesso()));
+
+        assertThat(usuarioAcessoService.getAll(pageRequest, umUsuarioAcessoFiltros()))
+            .hasSize(3)
+            .extracting("id", "dataHora")
+            .containsExactly(
+                tuple(1, "29/01/2020 14:00:00"),
+                tuple(3, "29/01/2020 13:00:00"),
+                tuple(2, "28/01/2020 16:00:00")
+            );
+    }
+
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
         return UsuarioAcesso.builder()
             .id(id)
@@ -219,6 +240,7 @@ public class UsuarioAcessoServiceTest {
             .dataInicial(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN))
             .dataFinal(LocalDateTime.of(LocalDate.now(), LocalTime.MAX))
             .tipo(ETipo.LOGIN)
+            .agenteAutorizadosIds(List.of(1))
             .build();
     }
 
@@ -256,5 +278,13 @@ public class UsuarioAcessoServiceTest {
                     .dataFinal("2020-12-01T11:42:39.999Z")
                     .build()))
             .build();
+    }
+
+    private List<UsuarioAcesso> umaListaUsuarioAcesso() {
+        return List.of(
+            umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(3, 13, 29),
+            umUsuarioAcesso(2, 16, 28)
+        );
     }
 }

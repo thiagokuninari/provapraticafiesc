@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso;
 import com.querydsl.core.BooleanBuilder;
@@ -8,6 +9,8 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class UsuarioAcessoPredicate {
 
@@ -65,6 +68,34 @@ public class UsuarioAcessoPredicate {
     public UsuarioAcessoPredicate porAa(Integer aaId, List<Integer> listaUsuarioId) {
         if (!ObjectUtils.isEmpty(aaId)) {
             this.builder.and(usuarioAcesso.usuario.id.in(listaUsuarioId));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porNivel(Integer nivelId) {
+        if (nivelId != null) {
+            this.builder.and(usuario.cargo.nivel.id.in(nivelId));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porCargo(Integer cargoId) {
+        if (cargoId != null) {
+            this.builder.and(usuarioAcesso.usuario.cargo.id.eq(cargoId));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porCanal(ECanal canal) {
+        if (canal != null) {
+            this.builder.and(usuarioAcesso.usuario.canais.any().eq(canal));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porSubCanal(Integer subCanalId) {
+        if (subCanalId != null) {
+            this.builder.and(usuarioAcesso.usuario.subCanais.any().id.eq(subCanalId));
         }
         return this;
     }
