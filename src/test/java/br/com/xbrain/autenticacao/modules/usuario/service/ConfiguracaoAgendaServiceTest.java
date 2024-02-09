@@ -5,10 +5,11 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,12 +50,19 @@ public class ConfiguracaoAgendaServiceTest {
 
     @Test
     public void findAll_deveListarConfiguracoes_quandoSolicitado() {
+        var predicateEsperado = new ConfiguracaoAgendaPredicate()
+            .comTipoConfiguracao(ETipoConfiguracao.CANAL)
+            .comCanal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+
         when(repository.findAllByPredicate(any(), any()))
             .thenReturn(new PageImpl<>(singletonList(umaConfiguracaoAgenda())));
 
-        assertThat(service.findAll(new ConfiguracaoAgendaFiltros(), new PageRequest()))
+        assertThat(service.findAll(umaConfiguracaoAgendaFiltros(), new PageRequest()))
             .hasSize(1)
             .containsExactly(umaConfiguracaoAgendaResponse());
+
+        verify(repository).findAllByPredicate(eq(predicateEsperado), any());
     }
 
     @Test
@@ -103,7 +111,6 @@ public class ConfiguracaoAgendaServiceTest {
         verify(repository, never()).findQtdHorasAdicionaisBySubcanal(any());
         verify(repository, never()).findQtdHorasAdicionaisByEstruturaAa(any());
         verify(repository, never()).findQtdHorasAdicionaisByNivel(any());
-        verifyZeroInteractions(aaService);
     }
 
     @Test
@@ -122,19 +129,19 @@ public class ConfiguracaoAgendaServiceTest {
         verify(repository, never()).findQtdHorasAdicionaisByCanal(any());
         verify(repository, never()).findQtdHorasAdicionaisByEstruturaAa(any());
         verify(repository, never()).findQtdHorasAdicionaisByNivel(any());
-        verifyZeroInteractions(aaService);
     }
 
     @Test
-    public void getQtdHorasAdicionaisAgendaByUsuario_deveConsultarPeloSubcanal_quandoQualquerUsuarioAaConsultar() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticado(CodigoNivel.AGENTE_AUTORIZADO));
-        when(autenticacaoService.getUsuarioCanal())
-            .thenReturn(ECanal.AGENTE_AUTORIZADO);
+    public void getQtdHorasAdicionaisAgendaByUsuario_deveConsultarPelaEstrutura_quandoQualquerUsuarioAaConsultar() {
+        var canal = ECanal.AGENTE_AUTORIZADO;
+        var usuario = umUsuarioAutenticado(CodigoNivel.AGENTE_AUTORIZADO);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuario);
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(canal);
         when(repository.findQtdHorasAdicionaisByEstruturaAa(any()))
             .thenReturn(Optional.of(16));
-        when(aaService.getEstruturaByUsuarioId(any()))
-            .thenReturn("AGENTE_AUTORIZADO");
+        when(aaService.getEstruturaByUsuarioAndCanal(usuario, canal))
+            .thenReturn(Optional.of("AGENTE_AUTORIZADO"));
 
         assertThat(service.getQtdHorasAdicionaisAgendaByUsuario(null))
             .isEqualTo(16);

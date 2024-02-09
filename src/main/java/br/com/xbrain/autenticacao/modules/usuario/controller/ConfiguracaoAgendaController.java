@@ -21,7 +21,7 @@ public class ConfiguracaoAgendaController {
     private final ConfiguracaoAgendaService service;
 
     @GetMapping
-    public Page<ConfiguracaoAgendaResponse> buscar(ConfiguracaoAgendaFiltros filtros, PageRequest pageable) {
+    public Page<ConfiguracaoAgendaResponse> buscar(@Valid ConfiguracaoAgendaFiltros filtros, PageRequest pageable) {
         return service.findAll(filtros, pageable);
     }
 

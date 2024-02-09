@@ -6,18 +6,16 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import lombok.*;
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+@Data
 @Entity
-@Getter
-@Setter
 @Builder
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "CONFIGURACAO_AGENDA")
@@ -35,6 +33,11 @@ public class ConfiguracaoAgenda {
     @NotBlank
     @Column(name = "DESCRICAO", nullable = false)
     private String descricao;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TIPO_CONFIGURACAO", nullable = false)
+    private ETipoConfiguracao tipoConfiguracao;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -57,10 +60,19 @@ public class ConfiguracaoAgenda {
     private String estruturaAa;
 
     public static ConfiguracaoAgenda of(ConfiguracaoAgendaRequest request) {
-        var configuracao = new ConfiguracaoAgenda();
-        BeanUtils.copyProperties(request, configuracao);
-        configuracao.setSituacao(ESituacao.A);
+        var configuracao = ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(request.getQtdHorasAdicionais())
+            .tipoConfiguracao(request.getTipoConfiguracao())
+            .descricao(request.getDescricao())
+            .situacao(ESituacao.A)
+            .build();
+        configuracao.aplicarParametrosByTipoConfiguracao(request);
         return configuracao;
+    }
+
+    private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaRequest request) {
+        tipoConfiguracao.getModelConsumer()
+            .accept(this, request);
     }
 
     public void alterarSituacao(ESituacao novaSituacao) {

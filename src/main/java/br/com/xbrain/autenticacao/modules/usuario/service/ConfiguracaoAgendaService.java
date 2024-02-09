@@ -35,6 +35,7 @@ public class ConfiguracaoAgendaService {
     private final AgenteAutorizadoNovoService aaService;
 
     public ConfiguracaoAgendaResponse salvar(ConfiguracaoAgendaRequest request) {
+        request.aplicarValidacoes();
         var configuracaoAgenda = ConfiguracaoAgenda.of(request);
         repository.save(configuracaoAgenda);
         return ConfiguracaoAgendaResponse.of(configuracaoAgenda);

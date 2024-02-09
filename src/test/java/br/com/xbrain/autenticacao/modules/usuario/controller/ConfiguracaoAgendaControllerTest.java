@@ -50,9 +50,19 @@ public class ConfiguracaoAgendaControllerTest {
 
     @Test
     @WithMockUser(roles = PERMISSAO_GERENCIA)
-    public void buscar_deveRetornarOk_quandoPossuirPermissao() {
-        isOk(get(API_URL), mvc);
+    public void buscar_deveRetornarOk_quandoPossuirPermissaoEDadosValidos() {
+        isOk(get(API_URL)
+            .param("tipoConfiguracao", "CANAL"), mvc);
         verify(service).findAll(any(), any());
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void buscar_deveRetornarBadRequest_quandoPossuirPermissaoEDadosInvalidos() {
+        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
+            "O campo tipoConfiguracao é obrigatório."));
+        isBadRequest(get(API_URL), mvc, null, erroEsperado);
+        verifyZeroInteractions(service);
     }
 
     @Test
@@ -123,7 +133,8 @@ public class ConfiguracaoAgendaControllerTest {
     public void salvar_deveRetornarBadRequest_quandoPossuirPermissaoENaoPassarDadosObrigatorios() {
         var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
             "O campo qtdHorasAdicionais é obrigatório.",
-            "O campo descricao é obrigatório."
+            "O campo descricao é obrigatório.",
+            "O campo tipoConfiguracao é obrigatório."
         ));
         isBadRequest(post(API_URL), mvc, new ConfiguracaoAgendaRequest(), erroEsperado);
     }

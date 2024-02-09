@@ -9,12 +9,11 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
@@ -26,11 +25,55 @@ import java.util.stream.Collectors;
 
 public class UsuarioAgendamentoHelpers {
 
+    public static ConfiguracaoAgendaFiltros umaConfiguracaoAgendaFiltros() {
+        return ConfiguracaoAgendaFiltros.builder()
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest() {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(ECanal canal) {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .canal(canal)
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(ETipoCanal subcanal) {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .subcanal(subcanal)
+            .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(CodigoNivel nivel) {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .nivel(nivel)
+            .tipoConfiguracao(ETipoConfiguracao.NIVEL)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(String estrutura) {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .estruturaAa(estrutura)
+            .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
             .build();
     }
 
@@ -48,7 +91,48 @@ public class UsuarioAgendamentoHelpers {
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .canal(ECanal.AGENTE_AUTORIZADO)
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static ConfiguracaoAgenda umaConfiguracaoAgenda(String estrutura) {
+        return ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .situacao(ESituacao.A)
+            .estruturaAa(estrutura)
+            .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
+            .build();
+    }
+
+    public static ConfiguracaoAgenda umaConfiguracaoAgenda(ETipoCanal subcanal) {
+        return ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .situacao(ESituacao.A)
+            .subcanal(subcanal)
+            .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .build();
+    }
+
+    public static ConfiguracaoAgenda umaConfiguracaoAgenda(CodigoNivel nivel) {
+        return ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .situacao(ESituacao.A)
+            .nivel(nivel)
+            .tipoConfiguracao(ETipoConfiguracao.NIVEL)
+            .build();
+    }
+
+    public static ConfiguracaoAgenda umaConfiguracaoAgenda(ECanal canal) {
+        return ConfiguracaoAgenda.builder()
+            .qtdHorasAdicionais(100)
+            .descricao("Descrição")
+            .situacao(ESituacao.A)
+            .canal(canal)
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .build();
     }
 

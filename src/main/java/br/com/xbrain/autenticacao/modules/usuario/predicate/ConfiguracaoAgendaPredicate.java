@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import org.apache.commons.lang.StringUtils;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracaoAgenda.configuracaoAgenda;
@@ -56,6 +57,13 @@ public class ConfiguracaoAgendaPredicate extends PredicateBase {
     public ConfiguracaoAgendaPredicate comSituacao(ESituacao situacao) {
         if (situacao != null) {
             builder.and(configuracaoAgenda.situacao.eq(situacao));
+        }
+        return this;
+    }
+
+    public ConfiguracaoAgendaPredicate comTipoConfiguracao(ETipoConfiguracao tipoConfiguracao) {
+        if (tipoConfiguracao != null) {
+            builder.and(configuracaoAgenda.tipoConfiguracao.eq(tipoConfiguracao));
         }
         return this;
     }
