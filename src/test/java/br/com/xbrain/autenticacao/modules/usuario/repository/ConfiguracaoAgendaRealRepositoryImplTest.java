@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:/configuracao-agenda-test.sql")
-public class ConfiguracaoAgendaRepositoryImplTest {
+public class ConfiguracaoAgendaRealRepositoryImplTest {
 
     @Autowired
-    private ConfiguracaoAgendaRepository repository;
+    private ConfiguracaoAgendaRealRepository repository;
 
     @Test
     public void findQtdHorasAdicionaisByCanal_deveRetornarQtdHorasDaConfigAtiva_quandoExistir() {
@@ -62,13 +62,13 @@ public class ConfiguracaoAgendaRepositoryImplTest {
 
     @Test
     public void findQtdHorasAdicionaisBySubcanal_deveRetornarQtdHorasDaConfigAtiva_quandoExistir() {
-        assertThat(repository.findQtdHorasAdicionaisBySubcanal(ETipoCanal.PAP))
+        assertThat(repository.findQtdHorasAdicionaisBySubcanal(ETipoCanal.PAP.getId()))
             .isEqualTo(Optional.of(30));
     }
 
     @Test
     public void findQtdHorasAdicionaisBySubcanal_deveRetornarOptionalVazio_quandoNaoExistir() {
-        assertThat(repository.findQtdHorasAdicionaisBySubcanal(ETipoCanal.INSIDE_SALES_PME))
+        assertThat(repository.findQtdHorasAdicionaisBySubcanal(ETipoCanal.INSIDE_SALES_PME.getId()))
             .isEqualTo(Optional.empty());
     }
 }

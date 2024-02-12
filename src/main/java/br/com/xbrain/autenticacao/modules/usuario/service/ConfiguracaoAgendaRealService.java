@@ -10,10 +10,10 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
-import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -26,17 +26,17 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.peek;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ConfiguracaoAgendaService {
+public class ConfiguracaoAgendaRealService {
 
     private static final int VINTE_QUATRO_HORAS = 24;
 
-    private final ConfiguracaoAgendaRepository repository;
+    private final ConfiguracaoAgendaRealRepository repository;
     private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoNovoService aaService;
 
     public ConfiguracaoAgendaResponse salvar(ConfiguracaoAgendaRequest request) {
         request.aplicarValidacoes();
-        var configuracaoAgenda = ConfiguracaoAgenda.of(request);
+        var configuracaoAgenda = ConfiguracaoAgendaReal.of(request);
         repository.save(configuracaoAgenda);
         return ConfiguracaoAgendaResponse.of(configuracaoAgenda);
     }
@@ -54,26 +54,30 @@ public class ConfiguracaoAgendaService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal subcanal) {
+    @SneakyThrows
+    public Integer getQtdHorasAdicionaisAgendaByUsuario(Integer subcanalId, Integer aaId) {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var canal = autenticacaoService.getUsuarioCanal();
-        return findQtdHorasBySubcanal(subcanal)
-            .or(() -> findQtdHorasByEstruturaAa(usuario, canal))
+        return findQtdHorasBySubcanal(subcanalId)
+            .or(() -> findQtdHorasByEstruturaAa(usuario, aaId))
             .or(() -> findQtdHorasByNivel(usuario))
             .or(() -> findQtdHorasByCanal(canal))
             .orElse(VINTE_QUATRO_HORAS);
     }
 
-    private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, ECanal canal) {
-        var estruturaAa = aaService.getEstruturaByUsuarioAndCanal(usuario, canal);
-        return estruturaAa.isPresent()
-            ? repository.findQtdHorasAdicionaisByEstruturaAa(estruturaAa.get())
-            : Optional.empty();
+    private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, Integer aaId) {
+        if (!usuario.isOperacao() && usuario.isAgenteAutorizado()) {
+            var estruturaAa = usuario.isSocioPrincipal()
+                ? aaService.getEstruturaByAgenteAutorizadoId(aaId)
+                : autenticacaoService.getTokenProperty("estruturaAa", String.class);
+            return estruturaAa.flatMap(repository::findQtdHorasAdicionaisByEstruturaAa);
+        }
+        return Optional.empty();
     }
 
-    private Optional<Integer> findQtdHorasBySubcanal(ETipoCanal subcanal) {
-        return subcanal != null
-            ? repository.findQtdHorasAdicionaisBySubcanal(subcanal)
+    private Optional<Integer> findQtdHorasBySubcanal(Integer subcanalId) {
+        return subcanalId != null
+            ? repository.findQtdHorasAdicionaisBySubcanal(subcanalId)
             : Optional.empty();
     }
 

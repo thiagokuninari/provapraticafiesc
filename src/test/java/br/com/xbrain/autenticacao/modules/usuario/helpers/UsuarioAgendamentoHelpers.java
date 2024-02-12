@@ -15,7 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
@@ -54,7 +54,7 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
-            .subcanal(subcanal)
+            .subcanalId(subcanal.getId())
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
             .build();
     }
@@ -81,13 +81,14 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaResponse.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
-            .canal(ECanal.AGENTE_AUTORIZADO)
-            .situacao(ESituacao.A)
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .canal(ECanal.AGENTE_AUTORIZADO.getDescricao())
+            .situacao(ESituacao.A.getDescricao())
             .build();
     }
 
-    public static ConfiguracaoAgenda umaConfiguracaoAgenda() {
-        return ConfiguracaoAgenda.builder()
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgenda() {
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .canal(ECanal.AGENTE_AUTORIZADO)
@@ -96,8 +97,8 @@ public class UsuarioAgendamentoHelpers {
             .build();
     }
 
-    public static ConfiguracaoAgenda umaConfiguracaoAgenda(String estrutura) {
-        return ConfiguracaoAgenda.builder()
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(String estrutura) {
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .situacao(ESituacao.A)
@@ -106,18 +107,18 @@ public class UsuarioAgendamentoHelpers {
             .build();
     }
 
-    public static ConfiguracaoAgenda umaConfiguracaoAgenda(ETipoCanal subcanal) {
-        return ConfiguracaoAgenda.builder()
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(ETipoCanal subcanal) {
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .situacao(ESituacao.A)
-            .subcanal(subcanal)
+            .subcanalId(subcanal.getId())
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
             .build();
     }
 
-    public static ConfiguracaoAgenda umaConfiguracaoAgenda(CodigoNivel nivel) {
-        return ConfiguracaoAgenda.builder()
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(CodigoNivel nivel) {
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .situacao(ESituacao.A)
@@ -126,8 +127,8 @@ public class UsuarioAgendamentoHelpers {
             .build();
     }
 
-    public static ConfiguracaoAgenda umaConfiguracaoAgenda(ECanal canal) {
-        return ConfiguracaoAgenda.builder()
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(ECanal canal) {
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
             .descricao("Descrição")
             .situacao(ESituacao.A)

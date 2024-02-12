@@ -1,12 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgenda;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import lombok.*;
-import org.springframework.beans.BeanUtils;
 
 @Data
 @Builder
@@ -16,15 +13,27 @@ public class ConfiguracaoAgendaResponse {
     private Integer id;
     private Integer qtdHorasAdicionais;
     private String descricao;
-    private ESituacao situacao;
+    private ETipoConfiguracao tipoConfiguracao;
+    private String situacao;
     private CodigoNivel nivel;
-    private ECanal canal;
-    private ETipoCanal subcanal;
+    private String canal;
+    private String subcanal;
     private String estruturaAa;
 
-    public static ConfiguracaoAgendaResponse of(ConfiguracaoAgenda configuracaoAgenda) {
-        var response = new ConfiguracaoAgendaResponse();
-        BeanUtils.copyProperties(configuracaoAgenda, response);
+    public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
+        var response = ConfiguracaoAgendaResponse.builder()
+            .id(configuracao.getId())
+            .descricao(configuracao.getDescricao())
+            .tipoConfiguracao(configuracao.getTipoConfiguracao())
+            .qtdHorasAdicionais(configuracao.getQtdHorasAdicionais())
+            .situacao(configuracao.getSituacao().getDescricao())
+            .build();
+        response.aplicarParametrosByTipoConfiguracao(configuracao);
         return response;
+    }
+
+    private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaReal configuracao) {
+        tipoConfiguracao.getResponseConsumer()
+            .accept(this, configuracao);
     }
 }

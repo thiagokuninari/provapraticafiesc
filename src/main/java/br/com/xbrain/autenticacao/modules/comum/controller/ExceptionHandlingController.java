@@ -52,6 +52,18 @@ public class ExceptionHandlingController {
         return getMessageFromValidationException(ex.getBindingResult());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public List<MessageException> argumentValidationError(ConstraintViolationException ex) {
+        var violations = ex.getConstraintViolations();
+        return violations.stream()
+            .map(violation -> new MessageException(
+                violation.getPropertyPath().toString(),
+                String.format("O campo %s %s", violation.getPropertyPath().toString(), violation.getMessage())))
+            .collect(Collectors.toList());
+    }
+
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -80,17 +92,5 @@ public class ExceptionHandlingController {
     @ExceptionHandler(NotImplementedException.class)
     public List<MessageException> argumentValidatorError(NotImplementedException ex) {
         return Arrays.asList(new MessageException(ex.getMessage()));
-    }
-
-    @ResponseBody
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ConstraintViolationException.class)
-    public List<MessageException> argumentValidationError(ConstraintViolationException ex) {
-        var violations = ex.getConstraintViolations();
-        return violations.stream()
-            .map(violation -> new MessageException(
-                violation.getPropertyPath().toString(),
-                String.format("O campo %s %s", violation.getPropertyPath().toString(), violation.getMessage())))
-            .collect(Collectors.toList());
     }
 }

@@ -6,7 +6,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.exceptions.SubCanalCustomExceptionHandler;
-import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaService;
+import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaRealService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     @MockBean(TokenStore.class),
     @MockBean(SubCanalCustomExceptionHandler.class)})
 @WebMvcTest(controllers = ConfiguracaoAgendaController.class)
-public class ConfiguracaoAgendaControllerTest {
+public class ConfiguracaoAgendaRealControllerTest {
 
     private static final String API_URL = "/api/configuracoes/agenda";
     private static final String PERMISSAO_GERENCIA = "AUT_21615";
@@ -46,7 +46,7 @@ public class ConfiguracaoAgendaControllerTest {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private ConfiguracaoAgendaService service;
+    private ConfiguracaoAgendaRealService service;
 
     @Test
     @WithMockUser(roles = PERMISSAO_GERENCIA)
@@ -157,8 +157,8 @@ public class ConfiguracaoAgendaControllerTest {
     @WithMockUser
     public void getQtdHorasAdicionaisAgendaByUsuario_deveRetornarOk_quandoAutenticado() {
         isOk(get(API_URL.concat("/horas-adicionais"))
-            .param("subcanal", "PAP"), mvc);
-        verify(service).getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal.PAP);
+            .param("subcanalId", "1"), mvc);
+        verify(service).getQtdHorasAdicionaisAgendaByUsuario(ETipoCanal.PAP.getId(), null);
     }
 
     @Test

@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.AgenteAutorizadoFiltros;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -16,7 +15,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -145,19 +143,19 @@ public class AgenteAutorizadoNovoService {
         }
     }
 
-    @Cacheable(
-        cacheNames = "estrutura-aa-usuario",
-        unless = "#canal.name() != 'AGENTE_AUTORIZADO'",
-        key = "#usuario.id")
-    public Optional<String> getEstruturaByUsuarioAndCanal(UsuarioAutenticado usuario, ECanal canal) {
-        return canal == ECanal.AGENTE_AUTORIZADO && !usuario.isOperacao()
-            ? Optional.ofNullable(getEstruturaByUsuarioId(usuario.getId()))
-            : Optional.empty();
+    @Cacheable(cacheNames = "estrutura-aa", key = "#aaId")
+    public Optional<String> getEstruturaByAgenteAutorizadoId(Integer aaId) {
+        try {
+            return Optional.ofNullable(client.getEstruturaByAgenteAutorizadoId(aaId));
+        } catch (Exception ex) {
+            log.error("Falha ao obter estrutura do agente autorizado {}.", aaId);
+            return Optional.empty();
+        }
     }
 
-    @CacheEvict(cacheNames = "estrutura-aa-usuario", allEntries = true)
-    public void flushCacheEstruturaAaByUsuario() {
-        log.info("Flush cache estrutura-aa-usuari");
+    @CacheEvict(cacheNames = "estrutura-aa", allEntries = true)
+    public void flushCacheEstruturasAas() {
+        log.info("Flush cache estrutura-aa-usuario");
     }
 
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {

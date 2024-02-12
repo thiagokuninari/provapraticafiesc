@@ -32,8 +32,6 @@ public class UsuarioTimer {
 
     private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
 
-    private static final String EVERY_DAY_AT_ONE_AM = "0 0 1 * * *";
-
     private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
 
     private static final String EVERY_DAY_AT_FOUR_AM = "0 0 4 * * *";
@@ -90,10 +88,10 @@ public class UsuarioTimer {
         log.info("Finalizando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
     }
 
-    @Scheduled(cron = EVERY_DAY_AT_ONE_AM)
-    public void flushCacheEstruturasByUsuario() {
+    @Scheduled(cron = EVERY_30_MINUTE)
+    public void flushCacheEstruturasAas() {
         log.info("Removendo caches de estruturaAa por usuário.");
-        aaService.flushCacheEstruturaAaByUsuario();
+        aaService.flushCacheEstruturasAas();
         log.info("Caches de estruturaAa por usuário removido.");
     }
 }
