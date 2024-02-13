@@ -1,13 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -43,8 +42,6 @@ public class UsuarioAgendamentoServiceTest {
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @MockBean
     private UsuarioService usuarioService;
     @MockBean
     private UsuarioRepository usuarioRepository;
@@ -62,9 +59,9 @@ public class UsuarioAgendamentoServiceTest {
         when(usuarioRepository.findById(eq(9991))).thenReturn(umUsuarioId9991());
         when(agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(eq(1300), any()))
                 .thenReturn(usuariosMesmoSegmentoAgenteAutorizado1300());
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(1300), eq(false)))
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
                 .thenReturn(todosUsuariosDoAgenteAutorizado1300());
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(999), anyBoolean()))
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(999), anyBoolean()))
                 .thenReturn(todosUsuariosDoAgenteAutorizado999());
         when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(133).build())))
                 .thenReturn(umaPermissaoDeVendaResponse());
@@ -143,7 +140,7 @@ public class UsuarioAgendamentoServiceTest {
     public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosSupervisionadosAndSupervisor_seForSupervisor() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(1300), eq(false)))
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
                 .thenReturn(todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas());
         when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(102).build())))
                 .thenReturn(umaPermissaoDeVendaResponse());

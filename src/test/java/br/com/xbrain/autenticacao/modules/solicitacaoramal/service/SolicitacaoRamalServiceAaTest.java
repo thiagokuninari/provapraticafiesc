@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioClient;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
@@ -69,28 +68,26 @@ public class SolicitacaoRamalServiceAaTest {
     private SocioClient socioClient;
     @MockBean
     private UsuarioService usuarioService;
-    @MockBean
-    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private SolicitacaoRamalServiceAa service;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Test
     public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForAgenteAutorizado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
             .getUsuario()))).thenReturn(Arrays.asList(1, 2));
-        when(agenteAutorizadoNovoService.getAaById(eq(7129))).thenReturn(criaAa());
+        when(agenteAutorizadoService.getAaById(eq(7129))).thenReturn(criaAa());
         when(repository.save(any(SolicitacaoRamal.class))).thenReturn(umaSolicitacaoRamal(1));
-        when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(7129))
+        when(agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(7129))
             .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
 
         service.save(criaSolicitacaoRamal(null, 7129));
 
         verify(autenticacaoService, times(1)).getUsuarioId();
-        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(7129));
+        verify(agenteAutorizadoService, times(1)).getAaById(eq(7129));
         verify(repository, times(1)).save(any(SolicitacaoRamal.class));
     }
 
@@ -129,9 +126,9 @@ public class SolicitacaoRamalServiceAaTest {
             .thenReturn(umUsuarioAutenticado());
         when(repository.findById(1))
             .thenReturn(Optional.of(umaSolicitacaoRamal(1)));
-        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
             .getUsuario()))).thenReturn(Arrays.asList(1, 2));
-        when(agenteAutorizadoNovoService.getAaById(eq(7129))).thenReturn(criaAa());
+        when(agenteAutorizadoService.getAaById(eq(7129))).thenReturn(criaAa());
         when(repository.save(any(SolicitacaoRamal.class)))
             .thenReturn(umaSolicitacaoRamal(1));
 
@@ -147,20 +144,20 @@ public class SolicitacaoRamalServiceAaTest {
     public void getDadosAdicionais_deveChamarClientPeloAgenteAutorizadoId() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getAaById(1)).thenReturn(umAgenteAutorizado());
+        when(agenteAutorizadoService.getAaById(1)).thenReturn(umAgenteAutorizado());
         when(client.obterNomeTelefoniaPorId(1)).thenReturn(umaTelefonia());
-        when(agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(1))
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
             .thenReturn(List.of());
         when(socioClient.findSocioPrincipalByAaId(1)).thenReturn(umSocioPrincipal());
         when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
 
         service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
 
-        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(1));
+        verify(agenteAutorizadoService, times(1)).getAaById(eq(1));
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
         verify(client, times(1)).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
         verify(socioClient, times(1)).findSocioPrincipalByAaId(eq(1));
-        verify(agenteAutorizadoClient, times(1))
+        verify(agenteAutorizadoService, times(1))
             .getUsuariosAaAtivoComVendedoresD2D(eq(1));
     }
 
@@ -168,7 +165,7 @@ public class SolicitacaoRamalServiceAaTest {
     public void getDadosAdicionais_deveLancarException_quandoOcorrerAlgumErro() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getAaById(1)).thenReturn(umAgenteAutorizado());
+        when(agenteAutorizadoService.getAaById(1)).thenReturn(umAgenteAutorizado());
         when(client.obterNomeTelefoniaPorId(1)).thenThrow(RetryableException.class);
         when(client.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1)).thenReturn(List.of());
 
@@ -177,7 +174,7 @@ public class SolicitacaoRamalServiceAaTest {
                 umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1)))
             .withMessage("#008 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
-        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(1));
+        verify(agenteAutorizadoService, times(1)).getAaById(eq(1));
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
     }
 
@@ -186,7 +183,7 @@ public class SolicitacaoRamalServiceAaTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(usuarioService.findComplete(1)).thenReturn(umUsuario());
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
-        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(umUsuario()))
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(umUsuario()))
             .thenReturn(List.of(1, 2));
 
         service.verificaPermissaoSobreOAgenteAutorizado(1);
@@ -194,7 +191,7 @@ public class SolicitacaoRamalServiceAaTest {
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(usuarioService, times(1)).findComplete(1);
         verify(autenticacaoService, times(1)).getUsuarioId();
-        verify(agenteAutorizadoNovoService, times(1)).getAgentesAutorizadosPermitidos(umUsuario());
+        verify(agenteAutorizadoService, times(1)).getAgentesAutorizadosPermitidos(umUsuario());
     }
 
     @Test

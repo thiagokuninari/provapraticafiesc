@@ -117,12 +117,14 @@ public class FeederService {
         if (CodigoCargo.ASSISTENTE_RELACIONAMENTO != usuarioMqRequest.getCargo()
             && (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
+            log.info("Adicionando permissões Feeder para usuário novo com id: {}.", usuario.getId());
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColaboradorConformeCargo(usuarioNovo.getId(),
                     usuarioMqRequest.getAgenteAutorizadoFeeder(), usuarioMqRequest.getUsuarioCadastroId(),
                     usuarioMqRequest.getCargo(), usuarioMqRequest.getDepartamento()))
                 .orElse(List.of());
             usuarioService.salvarPermissoesEspeciais(permissoesFeeder);
+            log.info("Permissões Feeder adicionadas com sucesso.");
         }
     }
 

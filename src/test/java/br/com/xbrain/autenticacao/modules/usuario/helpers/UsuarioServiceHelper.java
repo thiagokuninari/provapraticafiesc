@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;

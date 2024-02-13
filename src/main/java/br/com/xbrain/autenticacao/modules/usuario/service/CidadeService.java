@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
@@ -45,7 +45,7 @@ public class CidadeService {
     @Autowired
     private CidadeRepository cidadeRepository;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @Autowired
     private RegionalService regionalService;
     @Lazy
@@ -186,7 +186,7 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
         return Stream.concat(
-                agenteAutorizadoService.getCidades(subclusterId).stream(),
+                parceirosOnlineService.getCidades(subclusterId).stream(),
                 getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
             .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());

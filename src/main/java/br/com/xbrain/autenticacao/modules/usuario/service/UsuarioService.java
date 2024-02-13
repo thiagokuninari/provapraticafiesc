@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.PermissaoTecnicoIndicadorService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -24,14 +24,13 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -88,9 +87,9 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -173,8 +172,6 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repository;
     @Autowired
-    private AgenteAutorizadoClient agenteAutorizadoClient;
-    @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -217,8 +214,6 @@ public class UsuarioService {
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private EntityManager entityManager;
@@ -249,8 +244,6 @@ public class UsuarioService {
     @Autowired
     private RegionalService regionalService;
     @Autowired
-    private UsuarioClientService usuarioClientService;
-    @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Lazy
     @Autowired
@@ -259,6 +252,8 @@ public class UsuarioService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private ColaboradorVendasService colaboradorVendasService;
     @Value("${app-config.url-foto-usuario}")
     private String urlDir;
     @Autowired
@@ -373,6 +368,18 @@ public class UsuarioService {
             .map(UsuarioResponse::of);
     }
 
+    public UsuarioResponse findUsuarioByCpfComSituacaoAtivoOuInativo(String cpf) {
+        return repository.findTop1UsuarioByCpfAndSituacaoIn(getOnlyNumbers(cpf), List.of(ESituacao.A, ESituacao.I))
+            .map(UsuarioResponse::of)
+            .orElse(null);
+    }
+
+    public UsuarioResponse findUsuarioByEmailComSituacaoAtivoOuInativo(String email) {
+        return repository.findTop1UsuarioByEmailAndSituacaoIn(email, List.of(ESituacao.A, ESituacao.I))
+            .map(UsuarioResponse::of)
+            .orElse(null);
+    }
+
     public UsuarioResponse buscarAtualByCpf(String cpf) {
         return UsuarioResponse.of(repository
             .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
@@ -438,7 +445,7 @@ public class UsuarioService {
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
-        var lista = agenteAutorizadoNovoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
+        var lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -480,7 +487,7 @@ public class UsuarioService {
         }
 
         return Stream.of(
-                agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
+                agenteAutorizadoService.getIdsUsuariosSubordinados(false),
                 repository.getUsuariosSubordinados(usuario.getId()))
             .flatMap(Collection::stream)
             .distinct()
@@ -492,7 +499,7 @@ public class UsuarioService {
             return List.of();
         }
         var usuariosPol = CollectionUtils.isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
-            ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
+            ? getIdDosUsuariosParceiros(filtros)
             : filtros.getUsuariosFiltradosPorCidadePol();
         var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuario.getId()));
         usuariosSubordinados.addAll(usuariosPol);
@@ -501,7 +508,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
-        return agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(filtros);
+        return agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(filtros);
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
@@ -538,7 +545,7 @@ public class UsuarioService {
 
         subordinados.addAll(UsuarioHierarquiaDto
             .ofAgenteAutorizadoResponseList(
-                agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(usuariosIds, true)));
+                agenteAutorizadoService.findAgentesAutorizadosByUsuariosIds(usuariosIds, true)));
 
         return subordinados;
     }
@@ -656,7 +663,7 @@ public class UsuarioService {
 
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
         if (usuarioOriginal.isNivelOperacao() && usuarioOriginal.isCanalAgenteAutorizadoRemovido(usuarioAlterado.getCanais())) {
-            var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
+            var aas = agenteAutorizadoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
             if (!CollectionUtils.isEmpty(aas)) {
                 throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
             }
@@ -991,6 +998,10 @@ public class UsuarioService {
         return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
+    private static boolean isSocioPrincipal(Usuario usuario) {
+        return usuario.isSocioPrincipal() && usuario.isAgenteAutorizado();
+    }
+
     public boolean validarSeUsuarioCpfEmailNaoCadastrados(UsuarioExistenteValidacaoRequest usuario) {
         validarCpfCadastrado(usuario.getCpf(), usuario.getId());
         validarEmailCadastrado(usuario.getEmail(), usuario.getId());
@@ -1271,7 +1282,7 @@ public class UsuarioService {
 
         feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
         permissaoTecnicoIndicadorService
-            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest, false);
         criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
     }
 
@@ -1291,7 +1302,7 @@ public class UsuarioService {
             removerPermissoesFeeder(usuarioMqRequest);
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
             permissaoTecnicoIndicadorService
-                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuarioDto, usuarioMqRequest, false);
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } else {
             saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
@@ -1362,46 +1373,55 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
         try {
             var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+            var usuarioNovo = duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+            gerarHistoricoAtivoAposRemanejamento(usuarioNovo);
+            adicionarPermissoesEspeciais(usuarioNovo, usuarioMqRequest);
         } catch (Exception ex) {
-            enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
-            log.error("Erro ao processar usuário da fila: ", ex);
+            log.error("Falha ao remanejar usuário {}: \n", usuarioMqRequest.getId(), ex);
+            throw new ValidacaoException("Ocorreu um erro ao remanejar o usuário.");
         }
     }
 
-    @Transactional
-    private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+    private Usuario duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+        log.info("Inicia processo de remanejamento para usuário {}.", usuarioMqRequest.getId());
         usuario.removerCaracteresDoCpf();
+        var usuarioAntigoId = usuario.getId();
         salvarUsuarioRemanejado(usuario);
-        permissaoTecnicoIndicadorService
-            .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
-        var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
-        gerarHistoricoAtivoAposRemanejamento(usuario);
-        usuarioNovo = repository.save(usuarioNovo);
-        enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
-        feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
-        permissaoTecnicoIndicadorService
-            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService.removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+        var usuarioNovo = repository.save(criaNovoUsuarioAPartirDoRemanejado(usuario));
+        var remanejamentoRequest = UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId);
+        colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        log.info("Usuário remanejado com sucesso. Usuário Antigo {} | Usuário Novo {} | Agente Autorizado: {}",
+            usuarioMqRequest.getId(), usuarioNovo.getId(), usuarioMqRequest.getAgenteAutorizadoId());
+
+        return usuarioNovo;
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
+        log.info("Remanejando usuário {}.", usuarioRemanejado.getId());
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
+        log.info("Usuário remanejado com sucesso.");
     }
 
     private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
+        log.info("Criando novo usuário a partir do usuário {} remanejado.", usuario.getId());
         validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
+        usuario.setHistoricos(null);
         usuario.setId(null);
+        log.info("Novo usuário criado com sucesso.");
+
         return usuario;
     }
 
@@ -1413,8 +1433,19 @@ public class UsuarioService {
     }
 
     private void gerarHistoricoAtivoAposRemanejamento(Usuario usuario) {
-        usuario.getHistoricos().clear();
+        log.info("Adicionando histórico de remanejamento para usuário {}.", usuario.getId());
+        Optional.ofNullable(usuario.getHistoricos()).ifPresent(List::clear);
         usuario.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuario, REMANEJAMENTO));
+        repository.save(usuario);
+        log.info("Histórico de remanejamento adicionado com sucesso.");
+    }
+
+    private void adicionarPermissoesEspeciais(Usuario usuarioNovo, UsuarioMqRequest usuarioMqRequest) {
+        log.info("Adicionando permissões especiais para usuário {}.", usuarioNovo.getId());
+        feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
+        permissaoTecnicoIndicadorService
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest, true);
+        log.info("Permissões especiais adicionadas com sucesso.");
     }
 
     private boolean isAlteracaoCpf(Usuario usuario) {
@@ -1520,14 +1551,6 @@ public class UsuarioService {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
 
-    private void enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
-        atualizarUsuarioMqSender.sendUsuarioRemanejadoAut(request);
-    }
-
-    private void enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
-        atualizarUsuarioMqSender.sendErrorUsuarioRemanejadoAut(request);
-    }
-
     public void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioMqSender.sendWithFailure(usuarioMqRequest);
     }
@@ -1621,13 +1644,13 @@ public class UsuarioService {
                 usuario));
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
-        alterarSituacaoSocioPrincipal(usuario);
+        ativarSocio(usuario);
     }
 
     public void ativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
-                usuarioClientService.alterarSituacao(id);
+                agenteAutorizadoService.ativarUsuario(id);
                 user.setSituacao(ESituacao.A);
                 repository.save(user);
             });
@@ -1641,7 +1664,7 @@ public class UsuarioService {
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
         var isClienteLojaFuturo = CLIENTE_LOJA_FUTURO.equals(usuario.getCargo().getCodigo());
-        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoNovoService.getEstruturaByUsuarioId(usuario.getId()));
+        var isAaEstruturaLojaFuturo = "LOJA_FUTURO".equals(agenteAutorizadoService.getEstruturaByUsuarioId(usuario.getId()));
 
         if (isEmpty(usuario.getCpf()) && !isClienteLojaFuturo) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
@@ -1694,16 +1717,16 @@ public class UsuarioService {
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
-        return agenteAutorizadoNovoService.existeAaAtivoByUsuarioId(usuarioId);
+        return agenteAutorizadoService.existeAaAtivoByUsuarioId(usuarioId);
     }
 
     private boolean encontrouAgenteAutorizadoBySocioEmail(String usuarioEmail) {
-        return agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(usuarioEmail);
+        return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
-        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+        colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
     }
 
     public void limparCpfAntigoSocioPrincipal(Integer id) {
@@ -1723,7 +1746,7 @@ public class UsuarioService {
     public void inativar(Integer id) {
         repository.findComplete(id)
             .ifPresent(user -> {
-                usuarioClientService.alterarSituacao(id);
+                agenteAutorizadoService.inativarUsuario(id);
                 user.setSituacao(ESituacao.I);
                 repository.save(user);
                 autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(user);
@@ -1740,12 +1763,18 @@ public class UsuarioService {
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
-        alterarSituacaoSocioPrincipal(usuario);
+        inativarSocio(usuario);
     }
 
-    private void alterarSituacaoSocioPrincipal(Usuario usuario) {
-        if (usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()) {
-            usuarioClientService.alterarSituacao(usuario.getId());
+    private void ativarSocio(Usuario usuario) {
+        if (isSocioPrincipal(usuario)) {
+            agenteAutorizadoService.ativarUsuario(usuario.getId());
+        }
+    }
+
+    private void inativarSocio(Usuario usuario) {
+        if (isSocioPrincipal(usuario)) {
+            agenteAutorizadoService.inativarUsuario(usuario.getId());
         }
     }
 
@@ -1986,15 +2015,15 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
-    public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
-        var socio = findOneById(idSocioPrincipal);
+    public void atualizarEmailSocioInativo(Integer socioPrincipalId) {
+        var socio = findOneById(socioPrincipalId);
         var emailAtual = socio.getEmail();
         var emailInativo = atualizarEmailInativo(emailAtual);
 
         socio.setEmail(emailInativo);
         repository.save(socio);
 
-        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
@@ -2220,7 +2249,7 @@ public class UsuarioService {
     }
 
     public void inativarColaboradores(String cnpj) {
-        var emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        var emailColaboradores = agenteAutorizadoService.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             var usuario = repository.findByEmail(colaborador)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2298,7 +2327,7 @@ public class UsuarioService {
         ).map(UsuarioCsvResponse::getId).collect(toList()));
 
         if (!usuarioRequest.getUsuarioIds().isEmpty()) {
-            var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
+            var agenteAutorizadosUsuarioDtos = agenteAutorizadoService
                 .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
 
             usuarioCsvResponses.parallelStream().forEach(usuarioCsvResponse -> {
@@ -2460,7 +2489,7 @@ public class UsuarioService {
 
     private List<Integer> getIdUsuariosAa(Integer aaId) {
         try {
-            return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, true)
+            return agenteAutorizadoService.getUsuariosByAaId(aaId, true)
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(toList());
@@ -2674,7 +2703,7 @@ public class UsuarioService {
     }
 
     private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
-        return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, false)
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(toList());
@@ -2699,7 +2728,7 @@ public class UsuarioService {
     }
 
     private List<Integer> buscarUsuariosIdsPorAasIds(List<Integer> aasIds, Boolean buscarInativos) {
-        return agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
+        return agenteAutorizadoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
             .stream()
             .map(UsuarioDtoVendas::getId)
             .distinct()
@@ -2977,12 +3006,13 @@ public class UsuarioService {
                 var usuarioInativacaoDto = UsuarioInativacaoDto.builder()
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
+                    .observacao(ECodigoObservacao.ITL.getObservacao())
                     .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
-                    .observacao("Usuário inativo devido ao erro excessivo de senha")
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
-                this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+                var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.ITL);
+                this.inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
             }
         }
     }

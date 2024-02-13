@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -44,7 +44,7 @@ public class PermissaoEspecialServiceTest {
     @Mock
     private PermissaoEspecialRepository repository;
     @Mock
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ColaboradorVendasService colaboradorVendasService;
     @Mock
     private FeederService feederService;
     @Captor
@@ -63,12 +63,12 @@ public class PermissaoEspecialServiceTest {
     @Test
     public void processarPermissoesEspeciaisGerentesCoordenadores_deveProcessarPermissoes_sePassarIdPorParametro() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(anyList(), anyList())).thenReturn(List.of(1, 2));
+        when(colaboradorVendasService.getUsuariosAaFeederPorCargo(anyList(), anyList())).thenReturn(List.of(1, 2));
 
         service.processarPermissoesEspeciaisGerentesCoordenadores(List.of(1));
 
         verify(autenticacaoService, times(2)).getUsuarioAutenticado();
-        verify(agenteAutorizadoService, times(1)).getUsuariosAaFeederPorCargo(List.of(1), umaListaCodigoCargo());
+        verify(colaboradorVendasService, times(1)).getUsuariosAaFeederPorCargo(List.of(1), umaListaCodigoCargo());
         verify(feederService, times(1)).salvarPermissoesEspeciaisCoordenadoresGerentes(eq(List.of(1, 2)), eq(1));
     }
 
@@ -123,7 +123,7 @@ public class PermissaoEspecialServiceTest {
             .isThrownBy(() -> service.processarPermissoesEspeciaisGerentesCoordenadores(List.of(1)))
             .withMessageContaining("Usuário não autorizado!");
 
-        verify(agenteAutorizadoService, never()).getUsuariosAaFeederPorCargo(any(), any());
+        verify(colaboradorVendasService, never()).getUsuariosAaFeederPorCargo(any(), any());
         verify(feederService, never()).salvarPermissoesEspeciaisCoordenadoresGerentes(any(), anyInt());
     }
 
@@ -139,7 +139,7 @@ public class PermissaoEspecialServiceTest {
             .withMessage("Usuário não autorizado!");
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verifyZeroInteractions(agenteAutorizadoService);
+        verifyZeroInteractions(colaboradorVendasService);
         verifyZeroInteractions(feederService);
     }
 
@@ -147,14 +147,14 @@ public class PermissaoEspecialServiceTest {
     public void reprocessarPermissoesEspeciaisSociosSecundarios_naoDeveReprocessarPermissoes_quandoErroComClient() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         doThrow(RetryableException.class)
-            .when(agenteAutorizadoService)
+            .when(colaboradorVendasService)
             .getUsuariosAaFeederPorCargo(List.of(), List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
 
         assertThatExceptionOfType(RetryableException.class)
             .isThrownBy(() -> service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of()));
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(),
+        verify(colaboradorVendasService).getUsuariosAaFeederPorCargo(List.of(),
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
         verifyZeroInteractions(feederService);
     }
@@ -164,13 +164,13 @@ public class PermissaoEspecialServiceTest {
         var usuarioAutenticado = umUsuarioAutenticado();
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
-        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(null,
+        when(colaboradorVendasService.getUsuariosAaFeederPorCargo(null,
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
 
         service.reprocessarPermissoesEspeciaisSociosSecundarios(null);
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(null,
+        verify(colaboradorVendasService).getUsuariosAaFeederPorCargo(null,
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
         verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
     }
@@ -180,13 +180,13 @@ public class PermissaoEspecialServiceTest {
         var usuarioAutenticado = umUsuarioAutenticado();
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
-        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(List.of(1),
+        when(colaboradorVendasService.getUsuariosAaFeederPorCargo(List.of(1),
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
 
         service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of(1));
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(1),
+        verify(colaboradorVendasService).getUsuariosAaFeederPorCargo(List.of(1),
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
         verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
     }
@@ -196,13 +196,13 @@ public class PermissaoEspecialServiceTest {
         var usuarioAutenticado = umUsuarioAutenticado();
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
-        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(List.of(),
+        when(colaboradorVendasService.getUsuariosAaFeederPorCargo(List.of(),
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))).thenReturn(List.of(123));
 
         service.reprocessarPermissoesEspeciaisSociosSecundarios(List.of());
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(agenteAutorizadoService).getUsuariosAaFeederPorCargo(List.of(),
+        verify(colaboradorVendasService).getUsuariosAaFeederPorCargo(List.of(),
             List.of(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO));
         verify(feederService).salvarPermissoesEspeciaisSociosSecundarios(List.of(123), usuarioAutenticado.getId());
     }

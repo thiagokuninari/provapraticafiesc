@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class GrupoService {
     private AutenticacaoService autenticacaoService;
 
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
 
     public List<GrupoDto> getAllByRegionalId(Integer regionalId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -65,7 +65,7 @@ public class GrupoService {
     public List<GrupoDto> getAtivosParaComunicados(Integer regionalId) {
         return Stream.concat(
             getAllByRegionalId(regionalId).stream(),
-            agenteAutorizadoService.getGrupos(regionalId).stream())
+            parceirosOnlineService.getGrupos(regionalId).stream())
             .filter(distinctByKey(GrupoDto::getId))
             .collect(Collectors.toList());
     }

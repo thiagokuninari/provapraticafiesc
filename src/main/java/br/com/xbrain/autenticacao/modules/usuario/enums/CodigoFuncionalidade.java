@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum CodigoFuncionalidade {
 
@@ -45,10 +46,10 @@ public enum CodigoFuncionalidade {
     AUT_20024("Visualizar status do Horário de Acesso"),
     AUT_20025("Editar nova checagem de crédito - Sub-canais"),
     BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
-    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações");
+    VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações"),
+    POL_GERENCIAR_EQUIPE_VENDA("Gerenciar Equive Vendas no POL");
 
-    @Getter
-    private String descricao;
+    private final String descricao;
 
     public String getRole() {
         return "ROLE_" + name();

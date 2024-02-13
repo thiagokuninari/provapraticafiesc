@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
+@Getter
+@AllArgsConstructor
 public enum EErrors {
 
     ERRO_CONVERTER_EXCEPTION(
@@ -156,21 +158,25 @@ public enum EErrors {
         "#050 - O e-mail cadastrado para o usuário está inválido.",
         "#050 - O e-mail cadastrado para o usuário está inválido ou vazio."),
     ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL(
-        "#051 - Não foi possível atualizar o e-mail do sócio no POL.",
-        "#051 - Não foi possível atualizar o e-mail do sócio no POL."),
+        "#051 - Não foi possível atualizar o e-mail do sócio no Parceiros Online.",
+        "#051 - Não foi possível atualizar o e-mail do sócio no Agente Autorizado API."),
     ERRO_SOCIO_NAO_INATIVADO_NO_POL(
         "#052 - Não foi possível inativar o sócio no Parceiros Online.",
-        "#052 - Não foi possível inativar o sócio no Parceiros Online.");
+        "#052 - Não foi possível inativar o sócio no Agente Autorizado API."),
+    ERRO_AO_LIMPAR_CPF_COLABORADOR("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#053 - Ocorreu um erro ao tentar limpar o CPF do colaborador."),
+    ERRO_OBTER_EMAILS_DOS_COLABORADORES_DO_AA(
+        "#054 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#054 - Erro ao obter os emails dos colaboradores do agente autorizado."),
+    ERRO_REMANEJAR_COLABORADOR_POL(
+        "#055 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#055 - Ocorreu um erro ao remanejar um colaborador do Parceiros Online."),
+    ERRO_ATIVAR_USUARIO_AA("#056 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
+        "#056 - Ocorreu um erro ao tentar ativar o usuário do agente autorizado."),
+    ERRO_INATIVAR_USUARIO_AA("#057 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
+        "#057 - Ocorreu um erro ao tentar inativar o usuário do agente autorizado.");
 
+    private final String descricao;
+    private final String descricaoTecnica;
 
-    @Getter
-    @Setter
-    private String descricao;
-    @Getter
-    private String descricaoTecnica;
-
-    EErrors(String descricao, String descricaoTecnica) {
-        this.descricao = descricao;
-        this.descricaoTecnica = descricaoTecnica;
-    }
 }

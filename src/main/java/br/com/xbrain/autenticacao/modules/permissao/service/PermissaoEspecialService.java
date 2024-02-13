@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.permissao.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -33,7 +33,7 @@ public class PermissaoEspecialService {
     private final PermissaoEspecialRepository repository;
     private final AutenticacaoService autenticacaoService;
     private final FeederService feederService;
-    private final AgenteAutorizadoService agenteAutorizadoService;
+    private final ColaboradorVendasService colaboradorVendasService;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
@@ -68,7 +68,7 @@ public class PermissaoEspecialService {
     public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaIds) {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
-        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+        var usuariosIds = colaboradorVendasService.getUsuariosAaFeederPorCargo(aaIds, List.of(
                 CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR))
             .stream()
             .filter(Objects::nonNull)
@@ -80,7 +80,7 @@ public class PermissaoEspecialService {
     public void reprocessarPermissoesEspeciaisSociosSecundarios(List<Integer> aaIds) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         usuarioAutenticado.validarAdministrador();
-        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+        var usuariosIds = colaboradorVendasService.getUsuariosAaFeederPorCargo(aaIds, List.of(
                 CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))
             .stream()
             .filter(Objects::nonNull)

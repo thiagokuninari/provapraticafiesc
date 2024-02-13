@@ -1418,6 +1418,42 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser(roles = {"POL_GERENCIAR_EQUIPE_VENDA", "APPLICATION"})
+    public void remanejarUsuario_deveRetornarOk_quandoPossuirPermissao() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).remanejarUsuario(any(UsuarioMqRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = "BKO_PRIORIZAR_INDICACOES")
+    public void remanejarUsuario_deveRetornarForbidden_quandoNaoPossuirPermissao() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void remanejarUsuario_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(put(API_URI.concat("/remanejar-usuario"))
+                .content(convertObjectToJsonBytes(new UsuarioMqRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void validarCpfEmailSocio_deveRetornarOk_quandoCpfNaoCadastrado() {
         mvc.perform(get(API_URI + "/existir/usuario/cpf-email")

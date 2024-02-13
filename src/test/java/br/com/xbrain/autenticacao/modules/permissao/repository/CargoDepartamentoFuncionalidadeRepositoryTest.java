@@ -22,9 +22,9 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class CargoDepartamentoFuncionalidadeRepositoryTest {
 
-    private static Integer USUARIO_SOCIO_ID = 226;
-    private static Integer CARGO_SOCIO_ID = 41;
-    private static Integer DEPARTAMENTO_SOCIO_ID = 40;
+    private static final Integer CARGO_SOCIO_ID = 41;
+    private static final Integer USUARIO_SOCIO_ID = 226;
+    private static final Integer DEPARTAMENTO_SOCIO_ID = 40;
 
     @Autowired
     private CargoDepartamentoFuncionalidadeRepository repository;

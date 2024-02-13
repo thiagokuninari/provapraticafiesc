@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.config.CacheConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class CidadeServiceIT {
     @MockBean
     private AutenticacaoService autenticacaoService;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
 
     @Test
     public void getCidadesDistritos_deveConsultarDoCache_quandoInformarApenasDistritosComoF() {

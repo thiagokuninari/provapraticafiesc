@@ -43,6 +43,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
+import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL;
 
 @Configuration
 @EnableAuthorizationServer
@@ -175,6 +176,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String qualityCallApiClient;
     @Value("${app-config.oauth-clients.quality-call-api.secret}")
     private String qualityCallApiSecret;
+    @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.client}")
+    private String gestaoColaboradoresPolApiClient;
+    @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.secret}")
+    private String gestaoColaboradoresPolApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -313,7 +318,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .and()
             .withClient(backofficeApiClient)
             .secret(backofficeApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(feederApiClient)
@@ -324,13 +329,13 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .and()
             .withClient(agenteAutorizadoApiClient)
             .secret(agenteAutorizadoApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes("agente-autorizado-api")
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(colaboradorVendasApiClient)
             .secret(colaboradorVendasApiSecret)
-            .authorizedGrantTypes("client_credentials")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes("colaborador-vendas-api")
             .authorities(ROLE_APPLICATION)
             .and()
@@ -368,6 +373,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(qualityCallApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(QUALITY_CALL.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(gestaoColaboradoresPolApiClient)
+            .secret(gestaoColaboradoresPolApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(GESTAO_COLABORADORES_POL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

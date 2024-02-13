@@ -20,7 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccao
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,19 +32,15 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "api/usuarios")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
-    @Autowired
-    private UsuarioAgendamentoService usuarioAgendamentoService;
-    @Autowired
-    private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
-    @Autowired
-    private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
+    private final UsuarioService usuarioService;
+    private final UsuarioAgendamentoService usuarioAgendamentoService;
+    private final UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
+    private final UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
+    private final DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -253,7 +249,11 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioByEmail(@RequestParam String email, @RequestParam(required = false) Boolean buscarAtivo) {
         Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email, buscarAtivo);
         return emailAaOptional.orElse(null);
+    }
 
+    @GetMapping(value = "obter-usuario-por-email", params = "email")
+    public UsuarioResponse findUsuarioByEmailComSituacaoAtivoOuInativo(@RequestParam String email) {
+        return usuarioService.findUsuarioByEmailComSituacaoAtivoOuInativo(email);
     }
 
     @PostMapping("emails")
@@ -266,6 +266,11 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf, @RequestParam(required = false) Boolean buscarAtivo) {
         Optional<UsuarioResponse> cpfAaOpt = usuarioService.findByCpfAa(cpf, buscarAtivo);
         return cpfAaOpt.orElse(null);
+    }
+
+    @GetMapping(value = "obter-usuario-por-cpf", params = "cpf")
+    public UsuarioResponse findUsuarioByCpfComSituacaoAtivoOuInativo(@RequestParam String cpf) {
+        return usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
     }
 
     @PostMapping("cpfs")

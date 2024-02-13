@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorInativacaoPolRequest;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ public class InativarColaboradorMqSender {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public void sendSuccess(String email) {
-        rabbitTemplate.convertAndSend(inativarColaboradorPolQueue, email);
+    public void sendSuccess(ColaboradorInativacaoPolRequest colaboradorInativacao) {
+        rabbitTemplate.convertAndSend(inativarColaboradorPolQueue, colaboradorInativacao);
     }
 }

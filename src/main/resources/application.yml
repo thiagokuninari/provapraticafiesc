@@ -134,8 +134,6 @@ app-config:
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
     atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
-    usuario-remanejado-aut: usuario-remanejado-aut.queue
-    usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
     cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
     sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
@@ -246,6 +244,9 @@ app-config:
     quality-call-api:
       client: quality-call-api
       secret: qu4l1tyc4ll4p1
+    gestao-colaborador-pol-api:
+      client: gestao-colaborador-pol-api
+      secret: g3st40c0l4b0r4d0r
 
   services:
     autenticacao:
@@ -295,7 +296,7 @@ app-config:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
     mailing-importacao:
-#      url: http://localhost:8087
+      #url: http://localhost:8087
       url: http://192.168.50.1:6530
     lei-nao-perturbe:
       #url: http://localhost:8109
@@ -309,7 +310,9 @@ app-config:
     localizacao:
 #      url: http://localhost:8039
       url: https://api-dev.conexaoclarobrasil.com.br/localizacao
-
+    gestao-colaborador-pol:
+      #url: http://localhost:8310
+      url: http://192.168.50.1:8310
 
 flyway:
   enabled: true
@@ -370,6 +373,9 @@ zuul:
     funil-prospeccao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.funil-prospeccao.url}
+    gestao-colaborador-pol:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gestao-colaborador-pol.url}
 
   host:
     connect-timeout-millis: 1800000

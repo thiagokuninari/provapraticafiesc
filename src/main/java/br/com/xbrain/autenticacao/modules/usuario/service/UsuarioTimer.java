@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECodigoObservacao;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +40,10 @@ public class UsuarioTimer {
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
-    private static final String ORIGEM = "Usuário inativado pelo processo automático";
-
     @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
-        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
+        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ECodigoObservacao.IFA.getObservacao());
         log.info("Usuários inativados: {}", usuariosInativados);
     }
 

@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -53,9 +53,9 @@ public class RelatorioLoginLogoutServiceTest {
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     @Mock
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @Mock
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private UsuarioRepository usuarioRepository;
 
@@ -269,7 +269,7 @@ public class RelatorioLoginLogoutServiceTest {
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
 
         verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
-        verify(agenteAutorizadoNovoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
+        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
     }
 
     @Test
@@ -392,7 +392,7 @@ public class RelatorioLoginLogoutServiceTest {
     }
 
     private void mockBuscarUsuariosPermitidosIds(List<Integer> ids) {
-        when(agenteAutorizadoNovoService.getUsuariosIdsByAaId(eq(67), eq(true)))
+        when(agenteAutorizadoService.getUsuariosIdsByAaId(eq(67), eq(true)))
             .thenReturn(ids);
     }
 

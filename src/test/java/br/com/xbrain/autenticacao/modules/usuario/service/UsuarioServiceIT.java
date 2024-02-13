@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -12,9 +12,10 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineClient;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
@@ -48,6 +49,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -66,10 +68,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipe
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -97,9 +98,11 @@ public class UsuarioServiceIT {
     @MockBean
     private EmailService emailService;
     @MockBean
-    private AgenteAutorizadoClient agenteAutorizadoClient;
+    private ParceirosOnlineClient parceirosOnlineClient;
     @MockBean
-    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
+    private ColaboradorVendasService colaboradorVendasService;
+    @MockBean
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -126,8 +129,6 @@ public class UsuarioServiceIT {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @MockBean
     private FeederService feederService;
-    @MockBean
-    private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
     @MockBean
@@ -136,6 +137,8 @@ public class UsuarioServiceIT {
     private SubCanalService subCanalService;
     @Captor
     private ArgumentCaptor<UsuarioDto> usuarioDtoCaptor;
+    @Autowired
+    private EntityManager entityManager;
 
     @Before
     public void setUp() {
@@ -419,8 +422,8 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
-        doNothing().when(usuarioClientService).alterarSituacao(anyInt());
+        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        doNothing().when(agenteAutorizadoClient).ativarUsuario(anyInt());
 
         doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
@@ -463,7 +466,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoNovoClient)
+            .when(agenteAutorizadoClient)
             .existeAaAtivoBySocioEmail(anyString());
 
         thrown.expect(ValidacaoException.class);
@@ -482,7 +485,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoNovoClient)
+            .when(agenteAutorizadoClient)
             .existeAaAtivoByUsuarioId(anyInt());
 
         thrown.expect(ValidacaoException.class);
@@ -521,7 +524,9 @@ public class UsuarioServiceIT {
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
         Usuario usuario = service.findByIdCompleto(100);
-        assertEquals(usuario.getCpf(), null);
+        assertNull(usuario.getCpf());
+
+        verify(colaboradorVendasService, times(1)).limparCpfColaboradorVendas(usuario.getEmail());
     }
 
     @Test
@@ -1031,7 +1036,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
-            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(anyInt(), any());
+            .when(agenteAutorizadoClient).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(100))
             .build());
@@ -1099,10 +1104,10 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
-            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(10), any());
+            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(10), any());
 
         doReturn(umaListaUsuarioResponse(104))
-            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(20), any());
+            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(20), any());
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(10, 20))
@@ -1155,6 +1160,66 @@ public class UsuarioServiceIT {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+
+        var usuariosAntesRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAntesRemanejar)
+            .extracting("id", "situacao")
+            .containsExactly(tuple(1000, ESituacao.A));
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAposRemanejar)
+            .extracting("id", "situacao")
+            .containsAnyOf(tuple(1000, ESituacao.R));
+
+        verify(colaboradorVendasService).atualizarUsuarioRemanejado(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarComSucesso_quandoOcorrerExceptionAposRemanejamento() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+
+        doThrow(RuntimeException.class)
+            .when(feederService)
+            .adicionarPermissaoFeederParaUsuarioNovo(any(), any());
+        assertThatCode(() -> service.remanejarUsuario(usuarioMqRequest))
+            .isInstanceOf(ValidacaoException.class);
+
+        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAposRemanejar)
+            .extracting("id", "situacao")
+            .containsExactlyInAnyOrder(
+                tuple(1000, ESituacao.R),
+                tuple(8, ESituacao.A));
+
+        verify(colaboradorVendasService).atualizarUsuarioRemanejado(any());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemoverFormatacaoCpf_quandoEnviarParaRemanejar() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+        var cpfFormatado = "955.125.930-05";
+        usuarioMqRequest.setCpf(cpfFormatado);
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
+
+        assertThat(usuarioRemanejado)
+            .extracting("situacao", "cpf")
+            .containsExactly(tuple(ESituacao.A, "95512593005"), tuple(ESituacao.R, "95512593005"));
+
+        verify(colaboradorVendasService).atualizarUsuarioRemanejado(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test

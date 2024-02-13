@@ -1,10 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -13,7 +13,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.assertj.core.groups.Tuple;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,13 +61,13 @@ public class UsuarioServiceTestOracle {
     @MockBean
     private AutenticacaoService autenticacaoService;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private ParceirosOnlineService parceirosOnlineService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
     public void setUp() {
@@ -99,14 +98,14 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForGerente() {
         Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
-                Set.of(SUPERVISOR_OPERACAO.name())).size());
+            Set.of(SUPERVISOR_OPERACAO.name())).size());
     }
 
     @Test
     public void getIdsSubordinadosDasHierarquias_idsDosVendedoresParaMultiplosCargos_quandoForGerente() {
         assertThat(service.getIdsSubordinadosDaHierarquia(227,
             Set.of(COORDENADOR_OPERACAO.name(),
-                   SUPERVISOR_OPERACAO.name())))
+                SUPERVISOR_OPERACAO.name())))
             .isNotEmpty()
             .hasSize(6);
     }
@@ -134,10 +133,10 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
-                .hasSize(1)
-                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel", "situacao")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A));
+            .hasSize(1)
+            .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel", "situacao")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A));
     }
 
     @Test
@@ -156,7 +155,7 @@ public class UsuarioServiceTestOracle {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any()))
             .thenReturn(List.of(111, 104, 115));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
@@ -169,18 +168,20 @@ public class UsuarioServiceTestOracle {
 
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
-                Tuple.tuple(104, "operacao_gerente_comercial"),
-                Tuple.tuple(100, "ADMIN"),
-                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
-                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
-                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
-                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
-                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
-                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(369, "MARIA AUGUSTA"),
-                Tuple.tuple(370, "HELIO OLIVEIRA"));
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(100, "ADMIN"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(115, "joao silveira"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(370, "HELIO OLIVEIRA"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(111, "HELPDESK"),
+                tuple(238, "COORDENADOR OPERACAO 3"));
     }
 
     @Test
@@ -188,7 +189,7 @@ public class UsuarioServiceTestOracle {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any()))
             .thenReturn(List.of(111, 104, 115));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
@@ -201,18 +202,20 @@ public class UsuarioServiceTestOracle {
 
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
-                Tuple.tuple(104, "operacao_gerente_comercial"),
-                Tuple.tuple(100, "ADMIN"),
-                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
-                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
-                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
-                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
-                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
-                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
-                Tuple.tuple(369, "MARIA AUGUSTA"),
-                Tuple.tuple(370, "HELIO OLIVEIRA"));
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(100, "ADMIN"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(115, "joao silveira"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(370, "HELIO OLIVEIRA"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(111, "HELPDESK"),
+                tuple(238, "COORDENADOR OPERACAO 3"));
     }
 
     @Test
@@ -325,33 +328,33 @@ public class UsuarioServiceTestOracle {
             .contains(
                 tuple(116, "ALBERTO PEREIRA"),
                 tuple(117, "ROBERTO ALMEIDA"),
-                        tuple(119, "JOANA OLIVEIRA"));
+                tuple(119, "JOANA OLIVEIRA"));
     }
 
     @SuppressWarnings("LineLength")
     @Test
     public void getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter_deveRetornarVazio_quandoUsuarioNaoPossuirSubordinadosComCargoExecutivoOuHunter() {
         assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(500))
-                .isEmpty();
+            .isEmpty();
     }
 
     @Test
     public void getSubordinadosDoUsuario_deveRetornarTodosSubordinadosDoUsuario_quandoUsuarioPossuirSubordinados() {
         assertThat(service.getSubordinadosDoUsuario(115))
-                .hasSize(5)
-                .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
-                .contains(
-                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                            CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
-                            "Sócio Principal"),
-                    tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
-                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                    tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
-                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                    tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
-                        OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+            .hasSize(5)
+            .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
+            .contains(
+                tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
+                    OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
+                    CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                    "Sócio Principal"),
+                tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                    OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                    OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                    OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
     }
 
     @Test
@@ -360,7 +363,7 @@ public class UsuarioServiceTestOracle {
             .boxed().collect(Collectors.toList());
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
 
         var filtros = new UsuarioFiltros();
         filtros.setCnpjAa("15.765.222/0001-72");
@@ -372,7 +375,7 @@ public class UsuarioServiceTestOracle {
     public void getAll_deveRetornarVazia_quandoInformarListaSemRegistro() {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
 
         var filtros = new UsuarioFiltros();
         filtros.setCnpjAa("15.765.222/0001-72");

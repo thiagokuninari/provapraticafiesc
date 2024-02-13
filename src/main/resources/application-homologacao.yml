@@ -72,6 +72,8 @@ app-config:
       url: http://172.10.10.113:8304
     localizacao:
       url: http://localizacao-api:8039
+    gestao-colaborador-pol:
+      url: http://gestao-colaborador-pol-api:8310
 
   email:
     enviar: true

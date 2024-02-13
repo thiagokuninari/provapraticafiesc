@@ -142,6 +142,11 @@ public class UsuarioGerenciaController {
         return service.validarSeUsuarioCpfEmailNaoCadastrados(usuarioParaValidar);
     }
 
+    @PutMapping("remanejar-usuario")
+    public void remanejarUsuario(@RequestBody UsuarioMqRequest request) {
+        service.remanejarUsuario(request);
+    }
+
     @GetMapping("existir/usuario/cpf-email")
     public void validarCpfEmailSocio(@RequestParam String cpf, @RequestParam String email) {
         service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
@@ -157,8 +162,8 @@ public class UsuarioGerenciaController {
         service.limparCpfAntigoSocioPrincipal(id);
     }
 
-    @PutMapping("inativar-email/{idSocioPrincipal}")
-    public void atualizarEmailSocioInativo(@PathVariable Integer idSocioPrincipal) {
-        service.atualizarEmailSocioInativo(idSocioPrincipal);
+    @PutMapping("inativar-email/{socioPrincipalId}")
+    public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
+        service.atualizarEmailSocioInativo(socioPrincipalId);
     }
 }

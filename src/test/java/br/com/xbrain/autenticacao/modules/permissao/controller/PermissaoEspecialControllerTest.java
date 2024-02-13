@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.permissao.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.client.ColaboradorVendasClient;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,6 +53,8 @@ public class PermissaoEspecialControllerTest {
     private MockMvc mvc;
     @MockBean
     private PermissaoEspecialService permissaoEspecialService;
+    @MockBean
+    private ColaboradorVendasClient colaboradorVendasClient;
 
     @Test
     @SneakyThrows
@@ -96,6 +100,8 @@ public class PermissaoEspecialControllerTest {
         mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
+
+        verify(colaboradorVendasClient, times(0)).getUsuariosAaFeederPorCargo(anyList(), anyList());
     }
 
     @Test
