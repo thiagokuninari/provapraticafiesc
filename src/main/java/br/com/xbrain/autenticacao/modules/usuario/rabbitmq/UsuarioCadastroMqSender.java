@@ -20,6 +20,8 @@ public class UsuarioCadastroMqSender {
     private String usuarioAtualizarSocioPrincipalSuccessMqQueue;
     @Value("${app-config.queue.usuario-cadastro-failure}")
     private String usuarioCadastroFailureQueue;
+    @Value("${app-config.queue.usuario-remanejar-pol-failure}")
+    private String usuarioRemanejarPolFailureMq;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -42,5 +44,9 @@ public class UsuarioCadastroMqSender {
 
     public void sendWithFailure(UsuarioMqRequest usuarioMqRequest) {
         rabbitTemplate.convertAndSend(usuarioCadastroFailureQueue, usuarioMqRequest);
+    }
+
+    public void sendRemanejamentoWithFailure(UsuarioMqRequest usuarioMqRequest) {
+        rabbitTemplate.convertAndSend(usuarioRemanejarPolFailureMq, usuarioMqRequest);
     }
 }

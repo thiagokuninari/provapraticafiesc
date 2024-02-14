@@ -134,6 +134,7 @@ app-config:
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
     atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
+    usuario-remanejar-pol-failure: usuario-remanejar-pol-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
     cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
     sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue

@@ -96,7 +96,10 @@ public class RabbitConfig {
     private String usuarioUltimoAcessoPolMq;
 
     @Value("${app-config.queue.usuario-remanejar-pol}")
-    private String usuarioRemanejarPol;
+    private String usuarioRemanejarPolMq;
+
+    @Value("${app-config.queue.usuario-remanejar-pol-failure}")
+    private String usuarioRemanejarPolFailureMq;
 
     @Value("${app-config.queue.atualizar-permissao-feeder}")
     private String atualizarPermissaoFeederMq;
@@ -312,7 +315,12 @@ public class RabbitConfig {
 
     @Bean
     Queue usuarioRemanejarPol() {
-        return new Queue(usuarioRemanejarPol, false);
+        return new Queue(usuarioRemanejarPolMq, false);
+    }
+
+    @Bean
+    Queue usuarioRemanejarPolFailureMq() {
+        return new Queue(usuarioRemanejarPolFailureMq, false);
     }
 
     @Bean
@@ -541,7 +549,12 @@ public class RabbitConfig {
 
     @Bean
     public Binding usuarioRemanejarPolBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioRemanejarPol()).to(exchange).with(usuarioRemanejarPol);
+        return BindingBuilder.bind(usuarioRemanejarPol()).to(exchange).with(usuarioRemanejarPolMq);
+    }
+
+    @Bean
+    public Binding usuarioRemanejarPolFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRemanejarPolFailureMq()).to(exchange).with(usuarioRemanejarPolFailureMq);
     }
 
     @Bean

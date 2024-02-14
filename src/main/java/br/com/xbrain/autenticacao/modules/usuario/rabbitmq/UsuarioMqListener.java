@@ -92,7 +92,13 @@ public class UsuarioMqListener {
 
     @RabbitListener(queues = "${app-config.queue.usuario-remanejar-pol}")
     public void usuarioRemanejar(UsuarioMqRequest usuarioMqRequest) {
-        service.remanejarUsuario(usuarioMqRequest);
+        try {
+            service.remanejarUsuario(usuarioMqRequest);
+        } catch (Exception ex) {
+            log.error("Falha ao remanejar usuário {}: \n", usuarioMqRequest.getId(), ex);
+            usuarioMqRequest.setException(ex.getMessage());
+            service.enviarParaFilaDeErroRemanejarUsuarios(usuarioMqRequest);
+        }
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-inativacao-por-aa}")

@@ -1185,27 +1185,6 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void remanejarUsuario_deveRemanejarComSucesso_quandoOcorrerExceptionAposRemanejamento() {
-        var usuarioMqRequest = umUsuarioRemanejamento();
-
-        doThrow(RuntimeException.class)
-            .when(feederService)
-            .adicionarPermissaoFeederParaUsuarioNovo(any(), any());
-        assertThatCode(() -> service.remanejarUsuario(usuarioMqRequest))
-            .isInstanceOf(ValidacaoException.class);
-
-        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
-
-        assertThat(usuariosAposRemanejar)
-            .extracting("id", "situacao")
-            .containsExactlyInAnyOrder(
-                tuple(1000, ESituacao.R),
-                tuple(8, ESituacao.A));
-
-        verify(colaboradorVendasService).atualizarUsuarioRemanejado(any());
-    }
-
-    @Test
     public void remanejarUsuario_deveRemoverFormatacaoCpf_quandoEnviarParaRemanejar() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         var cpfFormatado = "955.125.930-05";

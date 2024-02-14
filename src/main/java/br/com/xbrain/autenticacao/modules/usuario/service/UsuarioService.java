@@ -1375,16 +1375,11 @@ public class UsuarioService {
 
     @Transactional
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
-        try {
-            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            configurarUsuario(usuarioMqRequest, usuarioDto);
-            var usuarioNovo = duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
-            gerarHistoricoAtivoAposRemanejamento(usuarioNovo);
-            adicionarPermissoesEspeciais(usuarioNovo, usuarioMqRequest);
-        } catch (Exception ex) {
-            log.error("Falha ao remanejar usuário {}: \n", usuarioMqRequest.getId(), ex);
-            throw new ValidacaoException("Ocorreu um erro ao remanejar o usuário.");
-        }
+        var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        configurarUsuario(usuarioMqRequest, usuarioDto);
+        var usuarioNovo = duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+        gerarHistoricoAtivoAposRemanejamento(usuarioNovo);
+        adicionarPermissoesEspeciais(usuarioNovo, usuarioMqRequest);
     }
 
     private Usuario duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
@@ -1557,6 +1552,10 @@ public class UsuarioService {
 
     public void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioAaAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
+    }
+
+    public void enviarParaFilaDeErroRemanejarUsuarios(UsuarioMqRequest usuarioMqRequest) {
+        usuarioMqSender.sendRemanejamentoWithFailure(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
