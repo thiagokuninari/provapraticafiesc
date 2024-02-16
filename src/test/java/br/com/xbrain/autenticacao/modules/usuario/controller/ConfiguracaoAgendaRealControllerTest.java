@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.exceptions.SubCanalCustomExceptionHandler;
 import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaRealService;
 import org.junit.Test;
@@ -25,8 +26,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendame
 import static helpers.TestRequisitionHelper.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -34,8 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @Import(OAuth2ResourceConfig.class)
 @MockBeans({
-    @MockBean(EquipeVendaD2dService.class),
     @MockBean(TokenStore.class),
+    @MockBean(EquipeVendaD2dService.class),
     @MockBean(SubCanalCustomExceptionHandler.class)})
 @WebMvcTest(controllers = ConfiguracaoAgendaController.class)
 public class ConfiguracaoAgendaRealControllerTest {
@@ -50,19 +50,9 @@ public class ConfiguracaoAgendaRealControllerTest {
 
     @Test
     @WithMockUser(roles = PERMISSAO_GERENCIA)
-    public void buscar_deveRetornarOk_quandoPossuirPermissaoEDadosValidos() {
-        isOk(get(API_URL)
-            .param("tipoConfiguracao", "CANAL"), mvc);
+    public void buscar_deveRetornarOk_quandoPossuirPermissao() {
+        isOk(get(API_URL), mvc);
         verify(service).findAll(any(), any());
-    }
-
-    @Test
-    @WithMockUser(roles = PERMISSAO_GERENCIA)
-    public void buscar_deveRetornarBadRequest_quandoPossuirPermissaoEDadosInvalidos() {
-        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
-            "O campo tipoConfiguracao é obrigatório."));
-        isBadRequest(get(API_URL), mvc, null, erroEsperado);
-        verifyZeroInteractions(service);
     }
 
     @Test
@@ -77,6 +67,28 @@ public class ConfiguracaoAgendaRealControllerTest {
     public void buscar_deveRetornarUnauthorized_quandoNaoAutenticado() {
         isUnauthorized(get(API_URL), mvc);
         verifyZeroInteractions(service);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void atualizar_deveRetornarOk_quandoPossuirPermissao() {
+        isOk(put(API_URL.concat("/2/atualizar"))
+            .param("qtdHoras", "100"), mvc);
+        verify(service).atualizar(2, 100);
+    }
+
+    @Test
+    @WithMockUser
+    public void atualizar_deveRetornarForbidden_quandoNaoPossuirPermissao() {
+        isForbidden(put(API_URL.concat("/2/atualizar")), mvc);
+        verifyNoMoreInteractions(service);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void atualizar_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        isUnauthorized(put(API_URL.concat("/2/atualizar")), mvc);
+        verifyNoMoreInteractions(service);
     }
 
     @Test
@@ -133,10 +145,45 @@ public class ConfiguracaoAgendaRealControllerTest {
     public void salvar_deveRetornarBadRequest_quandoPossuirPermissaoENaoPassarDadosObrigatorios() {
         var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
             "O campo qtdHorasAdicionais é obrigatório.",
-            "O campo descricao é obrigatório.",
             "O campo tipoConfiguracao é obrigatório."
         ));
         isBadRequest(post(API_URL), mvc, new ConfiguracaoAgendaRequest(), erroEsperado);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void salvar_deveRetornarBadRequest_quandoNaoPassarParametroDoCanal() {
+        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
+            "O campo canal é obrigatório."
+        ));
+        isBadRequest(post(API_URL), mvc, umaConfiguracaoAgendaRequest(ETipoConfiguracao.CANAL), erroEsperado);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void salvar_deveRetornarBadRequest_quandoNaoPassarParametroDoNivel() {
+        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
+            "O campo nivel é obrigatório."
+        ));
+        isBadRequest(post(API_URL), mvc, umaConfiguracaoAgendaRequest(ETipoConfiguracao.NIVEL), erroEsperado);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void salvar_deveRetornarBadRequest_quandoNaoPassarParametroDaEstrutura() {
+        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
+            "O campo estruturaAa é obrigatório."
+        ));
+        isBadRequest(post(API_URL), mvc, umaConfiguracaoAgendaRequest(ETipoConfiguracao.ESTRUTURA), erroEsperado);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void salvar_deveRetornarBadRequest_quandoNaoPassarParametroDoSubcanal() {
+        var erroEsperado = jsonPath("$[*].message", containsInAnyOrder(
+            "O campo subcanalId é obrigatório."
+        ));
+        isBadRequest(post(API_URL), mvc, umaConfiguracaoAgendaRequest(ETipoConfiguracao.SUBCANAL), erroEsperado);
     }
 
     @Test

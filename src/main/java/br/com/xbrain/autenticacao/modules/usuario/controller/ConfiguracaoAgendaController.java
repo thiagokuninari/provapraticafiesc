@@ -36,7 +36,13 @@ public class ConfiguracaoAgendaController {
 
     @PostMapping
     public ConfiguracaoAgendaResponse salvar(@RequestBody @Valid ConfiguracaoAgendaRequest request) {
+        request.aplicarValidacoes();
         return service.salvar(request);
+    }
+
+    @PutMapping("{id}/atualizar")
+    public void atualizar(@PathVariable Integer id, @RequestParam Integer qtdHoras) {
+        service.atualizar(id, qtdHoras);
     }
 
     @GetMapping("horas-adicionais")

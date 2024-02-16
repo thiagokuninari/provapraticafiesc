@@ -25,13 +25,6 @@ public class ConfiguracaoAgendaRealPredicate extends PredicateBase {
         return this;
     }
 
-    public ConfiguracaoAgendaRealPredicate comDescricao(String descricao) {
-        if (StringUtils.isNotBlank(descricao)) {
-            builder.and(configuracaoAgendaReal.descricao.containsIgnoreCase(descricao));
-        }
-        return this;
-    }
-
     public ConfiguracaoAgendaRealPredicate comQtdHorasAdicionais(Integer qtdHorasAdicionais) {
         if (qtdHorasAdicionais != null) {
             builder.and(configuracaoAgendaReal.qtdHorasAdicionais.eq(qtdHorasAdicionais));
@@ -63,6 +56,13 @@ public class ConfiguracaoAgendaRealPredicate extends PredicateBase {
     public ConfiguracaoAgendaRealPredicate comTipoConfiguracao(ETipoConfiguracao tipoConfiguracao) {
         if (tipoConfiguracao != null) {
             builder.and(configuracaoAgendaReal.tipoConfiguracao.eq(tipoConfiguracao));
+        }
+        return this;
+    }
+
+    public ConfiguracaoAgendaRealPredicate comConfiguracaoPadrao(Boolean configuracaoPadrao) {
+        if (configuracaoPadrao != null) {
+            builder.and(configuracaoAgendaReal.tipoConfiguracao.isNull());
         }
         return this;
     }

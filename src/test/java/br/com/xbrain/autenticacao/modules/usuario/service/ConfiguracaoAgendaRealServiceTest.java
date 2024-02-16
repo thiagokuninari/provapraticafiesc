@@ -5,18 +5,22 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaHistoricoResponseTest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaRealPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -39,13 +43,65 @@ public class ConfiguracaoAgendaRealServiceTest {
     private AutenticacaoService autenticacaoService;
     @Mock
     private AgenteAutorizadoNovoService aaService;
+    @Mock
+    private ConfiguracaoAgendaRealService self;
+
+    @Before
+    public void setup() {
+        ReflectionTestUtils.setField(service, "self", self);
+        when(repository.getQtdHorasPadrao()).thenReturn(24);
+    }
 
     @Test
-    public void salvar_deveSalvarConfiguracao_quandoSolicitado() {
+    public void salvar_deveSalvarConfiguracao_quandoDadosValidos() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(OrganizacaoEmpresaHistoricoResponseTest.umUsuarioAutenticado());
+        when(repository.existsByCanal(any()))
+            .thenReturn(false);
+
         assertThat(service.salvar(umaConfiguracaoAgendaRequest()))
             .isEqualTo(umaConfiguracaoAgendaResponse());
 
-        verify(repository).save(umaConfiguracaoAgenda());
+        verify(repository).existsByCanal(ECanal.AGENTE_AUTORIZADO);
+        verify(self).flushCacheConfigCanal();
+    }
+
+    @Test
+    public void salvar_deveLancarException_quandoConfigExistente() {
+        when(repository.existsByCanal(any()))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.salvar(umaConfiguracaoAgendaRequest()))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Não é possível salvar uma configuração já existente.");
+
+        verify(repository).existsByCanal(ECanal.AGENTE_AUTORIZADO);
+        verify(repository, never()).save(any(ConfiguracaoAgendaReal.class));
+        verify(self, never()).flushCacheConfigCanal();
+    }
+
+    @Test
+    public void salvar_deveLancarException_quandoNivelOperacao() {
+        assertThatCode(() -> service.salvar(umaConfiguracaoAgendaRequest(CodigoNivel.OPERACAO)))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Não é possível criar configurações para esse nível, "
+                + "por favor selecione um canal ou subcanal.");
+
+        verifyZeroInteractions(self, repository, autenticacaoService);
+    }
+
+    @Test
+    public void atualizar_deveAtualizarELimparCache_quandoSolicitado() {
+        var configEsperada = umaConfiguracaoAgenda();
+        configEsperada.setQtdHorasAdicionais(200);
+
+        when(repository.findById(100))
+            .thenReturn(Optional.ofNullable(umaConfiguracaoAgenda()));
+
+        service.atualizar(100, 200);
+
+        verify(repository).save(configEsperada);
+        verify(self).flushCacheConfigCanal();
     }
 
     @Test
@@ -77,6 +133,7 @@ public class ConfiguracaoAgendaRealServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).save(configuracaoAlterada);
+        verify(self).flushCacheConfigCanal();
     }
 
     @Test
@@ -86,6 +143,15 @@ public class ConfiguracaoAgendaRealServiceTest {
         assertThatCode(() -> service.alterarSituacao(1, ESituacao.A))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Configuração já possui a mesma situação.");
+    }
+
+    @Test
+    public void alterarSituacao_deveLancarException_quandoSituacaoPadrao() {
+        when(repository.findById(any())).thenReturn(Optional.of(umaConfiguracaoAgendaPadrao()));
+
+        assertThatCode(() -> service.alterarSituacao(1, ESituacao.I))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Não é possível alterar a situação da configuração padrão.");
     }
 
     @Test
@@ -136,13 +202,12 @@ public class ConfiguracaoAgendaRealServiceTest {
     @Test
     public void getQtdHorasAdicionaisAgendaByUsuario_deveConsultarPelaEstrutura_quandoQualquerUsuarioAaConsultar() {
         var canal = ECanal.AGENTE_AUTORIZADO;
-        var usuario = umUsuarioAutenticado(CodigoNivel.AGENTE_AUTORIZADO);
-
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuario);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(CodigoNivel.AGENTE_AUTORIZADO));
         when(autenticacaoService.getUsuarioCanal()).thenReturn(canal);
         when(repository.findQtdHorasAdicionaisByEstruturaAa(any()))
             .thenReturn(Optional.of(16));
-        when(autenticacaoService.getTokenProperty("estruturaAa", String.class))
+        when(autenticacaoService.getTokenProperty(any(), any()))
             .thenReturn(Optional.of("AGENTE_AUTORIZADO"));
 
         assertThat(service.getQtdHorasAdicionaisAgendaByUsuario(null, 100))

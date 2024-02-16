@@ -18,7 +18,12 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Path;
+import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,16 +40,21 @@ public class UsuarioAgendamentoHelpers {
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest() {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(ETipoConfiguracao config) {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .tipoConfiguracao(config)
             .build();
     }
 
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(ECanal canal) {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .canal(canal)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .build();
@@ -53,7 +63,6 @@ public class UsuarioAgendamentoHelpers {
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(ETipoCanal subcanal) {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .subcanalId(subcanal.getId())
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
             .build();
@@ -62,7 +71,6 @@ public class UsuarioAgendamentoHelpers {
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(CodigoNivel nivel) {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .nivel(nivel)
             .tipoConfiguracao(ETipoConfiguracao.NIVEL)
             .build();
@@ -71,7 +79,6 @@ public class UsuarioAgendamentoHelpers {
     public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequest(String estrutura) {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .estruturaAa(estrutura)
             .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
             .build();
@@ -80,61 +87,96 @@ public class UsuarioAgendamentoHelpers {
     public static ConfiguracaoAgendaResponse umaConfiguracaoAgendaResponse() {
         return ConfiguracaoAgendaResponse.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .canal(ECanal.AGENTE_AUTORIZADO.getDescricao())
             .situacao(ESituacao.A.getDescricao())
             .build();
     }
 
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgendaPadrao() {
+        return ConfiguracaoAgendaReal.builder()
+            .qtdHorasAdicionais(24)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda() {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .canal(ECanal.AGENTE_AUTORIZADO)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .situacao(ESituacao.A)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(String estrutura) {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .situacao(ESituacao.A)
             .estruturaAa(estrutura)
             .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(ETipoCanal subcanal) {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .situacao(ESituacao.A)
             .subcanalId(subcanal.getId())
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(CodigoNivel nivel) {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .situacao(ESituacao.A)
             .nivel(nivel)
             .tipoConfiguracao(ETipoConfiguracao.NIVEL)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda(ECanal canal) {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
-            .descricao("Descrição")
             .situacao(ESituacao.A)
             .canal(canal)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
+    }
+
+    public static List<ConstraintViolation> umaConstraintViolation(String mensagem, String propriedade,
+                                                                   String validationMessage, Class classe) {
+        var path = new Path() {
+            @Override
+            public Iterator<Node> iterator() {
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return propriedade;
+            }
+        };
+
+        return List.of(ConstraintViolationImpl.forReturnValueValidation(
+            validationMessage, null, mensagem, classe, null, null,
+            null, path, null, null, null, null));
     }
 
     public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosMesmoSegmentoAgenteAutorizado1300() {

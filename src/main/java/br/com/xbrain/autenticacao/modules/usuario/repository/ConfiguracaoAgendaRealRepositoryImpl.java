@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -22,6 +23,7 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
     private final EntityManager entityManager;
 
     @Override
+    @Cacheable("horas-adicionais-canal")
     public Optional<Integer> findQtdHorasAdicionaisByCanal(ECanal canal) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
@@ -35,6 +37,7 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
     }
 
     @Override
+    @Cacheable("horas-adicionais-nivel")
     public Optional<Integer> findQtdHorasAdicionaisByNivel(CodigoNivel nivel) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
@@ -48,6 +51,7 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
     }
 
     @Override
+    @Cacheable("horas-adicionais-estrutura")
     public Optional<Integer> findQtdHorasAdicionaisByEstruturaAa(String estruturaAa) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
@@ -61,6 +65,7 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
     }
 
     @Override
+    @Cacheable("horas-adicionais-subcanal")
     public Optional<Integer> findQtdHorasAdicionaisBySubcanal(Integer subcanalId) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
@@ -71,6 +76,16 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
                 .orderBy(configuracaoAgendaReal.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
+    }
+
+    @Override
+    @Cacheable(cacheNames = "horas-adicionais-padrao", key = "'DEFAULT'")
+    public Integer getQtdHorasPadrao() {
+        return new JPAQueryFactory(entityManager)
+            .select(configuracaoAgendaReal.qtdHorasAdicionais)
+            .from(configuracaoAgendaReal)
+            .where(configuracaoAgendaReal.tipoConfiguracao.isNull())
+            .fetchOne();
     }
 
     @Override

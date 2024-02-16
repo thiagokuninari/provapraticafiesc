@@ -38,25 +38,6 @@ public class ConfiguracaoAgendaRealPredicateTest {
     }
 
     @Test
-    public void comDescricao_deveMontarPredicate_quandoPassarDescricao() {
-        assertThat(new ConfiguracaoAgendaRealPredicate().comDescricao("desc").build())
-            .isEqualTo(new BooleanBuilder(configuracaoAgendaReal.descricao.containsIgnoreCase("desc")));
-
-    }
-
-    @Test
-    public void comDescricao_naoDeveMontarPredicate_quandoNaoPassarDescricao() {
-        assertThat(new ConfiguracaoAgendaRealPredicate().comDescricao(null).build())
-            .isEqualTo(new BooleanBuilder());
-    }
-
-    @Test
-    public void comDescricao_naoDeveMontarPredicate_quandoDescricaoVazia() {
-        assertThat(new ConfiguracaoAgendaRealPredicate().comDescricao(" ").build())
-            .isEqualTo(new BooleanBuilder());
-    }
-
-    @Test
     public void comQtdHorasAdicionais_deveMontarPredicate_quandoPassarQtdHorasAdicionais() {
         assertThat(new ConfiguracaoAgendaRealPredicate().comQtdHorasAdicionais(10).build())
             .isEqualTo(new BooleanBuilder(configuracaoAgendaReal.qtdHorasAdicionais.eq(10)));

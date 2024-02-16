@@ -20,4 +20,6 @@ public interface ConfiguracaoAgendaRealRepositoryCustom {
     Optional<Integer> findQtdHorasAdicionaisBySubcanal(Integer subcanalId);
 
     Page<ConfiguracaoAgendaReal> findAllByPredicate(Predicate predicate, PageRequest pageable);
+
+    Integer getQtdHorasPadrao();
 }

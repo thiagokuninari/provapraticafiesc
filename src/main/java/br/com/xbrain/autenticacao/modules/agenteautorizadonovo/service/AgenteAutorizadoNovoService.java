@@ -155,7 +155,7 @@ public class AgenteAutorizadoNovoService {
 
     @CacheEvict(cacheNames = "estrutura-aa", allEntries = true)
     public void flushCacheEstruturasAas() {
-        log.info("Flush cache estrutura-aa-usuario");
+        log.info("Flush cache estrutura-aa");
     }
 
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {

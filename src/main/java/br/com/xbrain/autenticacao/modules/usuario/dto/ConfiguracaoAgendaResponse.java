@@ -12,7 +12,6 @@ import lombok.*;
 public class ConfiguracaoAgendaResponse {
     private Integer id;
     private Integer qtdHorasAdicionais;
-    private String descricao;
     private ETipoConfiguracao tipoConfiguracao;
     private String situacao;
     private CodigoNivel nivel;
@@ -23,7 +22,6 @@ public class ConfiguracaoAgendaResponse {
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
         var response = ConfiguracaoAgendaResponse.builder()
             .id(configuracao.getId())
-            .descricao(configuracao.getDescricao())
             .tipoConfiguracao(configuracao.getTipoConfiguracao())
             .qtdHorasAdicionais(configuracao.getQtdHorasAdicionais())
             .situacao(configuracao.getSituacao().getDescricao())

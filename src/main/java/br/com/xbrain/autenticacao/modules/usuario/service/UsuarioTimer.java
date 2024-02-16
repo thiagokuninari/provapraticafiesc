@@ -88,10 +88,9 @@ public class UsuarioTimer {
         log.info("Finalizando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
     }
 
-    @Scheduled(cron = EVERY_30_MINUTE)
+    @Scheduled(cron = EVERY_DAY_AT_MIDNIGHT)
     public void flushCacheEstruturasAas() {
-        log.info("Removendo caches de estruturaAa por usuário.");
+        log.info("Removendo caches de estrutura por agente autorizado.");
         aaService.flushCacheEstruturasAas();
-        log.info("Caches de estruturaAa por usuário removido.");
     }
 }
