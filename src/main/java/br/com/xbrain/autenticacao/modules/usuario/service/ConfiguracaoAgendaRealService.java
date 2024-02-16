@@ -75,7 +75,7 @@ public class ConfiguracaoAgendaRealService {
     }
 
     private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, Integer aaId) {
-        if (!usuario.isOperacao() && usuario.isAgenteAutorizado()) {
+        if (aaId != null && !usuario.isOperacao() && usuario.isAgenteAutorizado()) {
             var estruturaAa = usuario.isSocioPrincipal()
                 ? aaService.getEstruturaByAgenteAutorizadoId(aaId)
                 : autenticacaoService.getTokenProperty("estruturaAa", String.class)

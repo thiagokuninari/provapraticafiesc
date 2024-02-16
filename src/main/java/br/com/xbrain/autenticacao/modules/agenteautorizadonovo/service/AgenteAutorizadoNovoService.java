@@ -143,7 +143,7 @@ public class AgenteAutorizadoNovoService {
         }
     }
 
-    @Cacheable(cacheNames = "estrutura-aa", key = "#aaId")
+    @Cacheable(cacheNames = "estrutura-aa", key = "#aaId", unless = "#aaId == null")
     public Optional<String> getEstruturaByAgenteAutorizadoId(Integer aaId) {
         try {
             return Optional.ofNullable(client.getEstruturaByAgenteAutorizadoId(aaId));
