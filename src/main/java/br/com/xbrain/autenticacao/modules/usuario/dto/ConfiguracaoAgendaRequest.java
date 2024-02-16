@@ -33,7 +33,9 @@ public class ConfiguracaoAgendaRequest {
     private String estruturaAa;
 
     public void aplicarValidacoes() {
-        ValidationUtils.aplicarValidacoes(this, tipoConfiguracao.getGroupValidator());
+        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
+            ValidationUtils.aplicarValidacoes(this, tipoConfiguracao.getGroupValidator());
+        }
     }
 
     public void validarNivelOperacao() {

@@ -115,11 +115,7 @@ public class ConfiguracaoAgendaRealService {
     }
 
     public void flushCacheByTipoConfig(ETipoConfiguracao tipoConfiguracao) {
-        if (tipoConfiguracao != null) {
-            tipoConfiguracao.getCacheFlusher().accept(self);
-        } else {
-            self.flushCacheConfigPadrao();
-        }
+        tipoConfiguracao.getCacheFlusher().accept(self);
     }
 
     @CacheEvict(cacheNames = "horas-adicionais-canal", allEntries = true)

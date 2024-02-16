@@ -33,8 +33,9 @@ public class ConfiguracaoAgendaReal {
     @Column(name = "QTD_HORAS", nullable = false)
     private Integer qtdHorasAdicionais;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO_CONFIGURACAO")
+    @Column(name = "TIPO_CONFIGURACAO", nullable = false)
     private ETipoConfiguracao tipoConfiguracao;
 
     @NotNull
@@ -79,8 +80,9 @@ public class ConfiguracaoAgendaReal {
     }
 
     private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaRequest request) {
-        tipoConfiguracao.getModelConsumer()
-            .accept(this, request);
+        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
+            tipoConfiguracao.getModelConsumer().accept(this, request);
+        }
     }
 
     public void alterarSituacao(ESituacao novaSituacao) {
@@ -91,7 +93,7 @@ public class ConfiguracaoAgendaReal {
     }
 
     public void validarConfiguracaoPadrao() {
-        if (tipoConfiguracao == null) {
+        if (tipoConfiguracao == ETipoConfiguracao.PADRAO) {
             throw new ValidacaoException("Não é possível alterar a situação da configuração padrão.");
         }
     }

@@ -10,11 +10,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfiguracaoAgendaFiltros {
+    @NotNull
     private ETipoConfiguracao tipoConfiguracao;
     private Integer qtdHorasAdicionais;
     private CodigoNivel nivel;
@@ -22,20 +25,19 @@ public class ConfiguracaoAgendaFiltros {
     private Integer subcanalId;
     private String estruturaAa;
     private ESituacao situacao;
-    private Boolean configuracaoPadrao;
 
     public ConfiguracaoAgendaRealPredicate toPredicate() {
         var predicate = new ConfiguracaoAgendaRealPredicate()
             .comQtdHorasAdicionais(qtdHorasAdicionais)
             .comTipoConfiguracao(tipoConfiguracao)
-            .comConfiguracaoPadrao(configuracaoPadrao)
             .comSituacao(situacao);
         aplicarParametrosByTipoConfiguracao(predicate);
         return predicate;
     }
 
     private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaRealPredicate predicate) {
-        tipoConfiguracao.getPredicateConsumer()
-            .accept(predicate, this);
+        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
+            tipoConfiguracao.getPredicateConsumer().accept(predicate, this);
+        }
     }
 }

@@ -47,7 +47,11 @@ public enum ETipoConfiguracao {
         (predicate, filtros) -> predicate.comSubCanal(filtros.getSubcanalId()),
         (response, model) -> response.setSubcanal(ETipoCanal.valueOf(model.getSubcanalId()).getDescricao()),
         (repository, request) -> repository.existsBySubcanalId(request.getSubcanalId()),
-        ConfiguracaoAgendaRealService::flushCacheConfigSubcanal);
+        ConfiguracaoAgendaRealService::flushCacheConfigSubcanal),
+    PADRAO(
+        null, null, null, null,
+        (repository, request) -> repository.existeConfiguracaoPadrao(),
+        ConfiguracaoAgendaRealService::flushCacheConfigPadrao);
 
     private final Class<?> groupValidator;
     private final BiConsumer<ConfiguracaoAgendaReal, ConfiguracaoAgendaRequest> modelConsumer;

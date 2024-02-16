@@ -22,4 +22,6 @@ public interface ConfiguracaoAgendaRealRepositoryCustom {
     Page<ConfiguracaoAgendaReal> findAllByPredicate(Predicate predicate, PageRequest pageable);
 
     Integer getQtdHorasPadrao();
+
+    boolean existeConfiguracaoPadrao();
 }

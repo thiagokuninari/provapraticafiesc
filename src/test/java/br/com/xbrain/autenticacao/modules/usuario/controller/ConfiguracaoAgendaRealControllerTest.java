@@ -51,7 +51,7 @@ public class ConfiguracaoAgendaRealControllerTest {
     @Test
     @WithMockUser(roles = PERMISSAO_GERENCIA)
     public void buscar_deveRetornarOk_quandoPossuirPermissao() {
-        isOk(get(API_URL), mvc);
+        isOk(get(API_URL).param("tipoConfiguracao", "PADRAO"), mvc);
         verify(service).findAll(any(), any());
     }
 

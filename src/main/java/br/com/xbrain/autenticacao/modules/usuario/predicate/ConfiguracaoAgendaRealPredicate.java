@@ -59,11 +59,4 @@ public class ConfiguracaoAgendaRealPredicate extends PredicateBase {
         }
         return this;
     }
-
-    public ConfiguracaoAgendaRealPredicate comConfiguracaoPadrao(Boolean configuracaoPadrao) {
-        if (configuracaoPadrao != null) {
-            builder.and(configuracaoAgendaReal.tipoConfiguracao.isNull());
-        }
-        return this;
-    }
 }

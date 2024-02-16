@@ -31,7 +31,8 @@ public class ConfiguracaoAgendaResponse {
     }
 
     private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaReal configuracao) {
-        tipoConfiguracao.getResponseConsumer()
-            .accept(this, configuracao);
+        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
+            tipoConfiguracao.getResponseConsumer().accept(this, configuracao);
+        }
     }
 }

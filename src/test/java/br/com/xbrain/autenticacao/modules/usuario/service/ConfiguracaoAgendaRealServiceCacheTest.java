@@ -165,7 +165,7 @@ public class ConfiguracaoAgendaRealServiceCacheTest {
     @Test
     public void flushCacheByTipoConfig_deveLimparCacheDefault_quandoSolicitado() {
         repository.getQtdHorasPadrao();
-        service.flushCacheByTipoConfig(null);
+        service.flushCacheByTipoConfig(ETipoConfiguracao.PADRAO);
 
         assertThat(cacheManager.getCache("horas-adicionais-padrao")
             .get("DEFAULT", Integer.class))

@@ -97,6 +97,7 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(24)
             .situacao(ESituacao.A)
+            .tipoConfiguracao(ETipoConfiguracao.PADRAO)
             .build();
     }
 

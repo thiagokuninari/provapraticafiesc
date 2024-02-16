@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -84,8 +85,16 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
         return new JPAQueryFactory(entityManager)
             .select(configuracaoAgendaReal.qtdHorasAdicionais)
             .from(configuracaoAgendaReal)
-            .where(configuracaoAgendaReal.tipoConfiguracao.isNull())
+            .where(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.PADRAO))
             .fetchOne();
+    }
+
+    @Override
+    public boolean existeConfiguracaoPadrao() {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(configuracaoAgendaReal)
+            .where(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.PADRAO))
+            .fetchFirst() != null;
     }
 
     @Override
