@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaHistoricoResponseTest;
@@ -11,17 +12,21 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaRealHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaRealPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
@@ -29,6 +34,8 @@ import static helpers.TestBuilders.umUsuarioAutenticado;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -37,6 +44,8 @@ public class ConfiguracaoAgendaRealServiceTest {
 
     @InjectMocks
     private ConfiguracaoAgendaRealService service;
+    @Mock
+    private ConfiguracaoAgendaRealHistoricoRepository historicoRepository;
     @Mock
     private ConfiguracaoAgendaRealRepository repository;
     @Mock
@@ -62,6 +71,8 @@ public class ConfiguracaoAgendaRealServiceTest {
         assertThat(service.salvar(umaConfiguracaoAgendaRequest()))
             .isEqualTo(umaConfiguracaoAgendaResponse());
 
+        verify(historicoRepository).save((ConfiguracaoAgendaRealHistorico) MockitoHamcrest.argThat(
+            hasProperty("acao", equalTo(EAcao.CADASTRO))));
         verify(repository).existsByCanal(ECanal.AGENTE_AUTORIZADO);
         verify(self).flushCacheConfigCanal();
     }
@@ -78,6 +89,7 @@ public class ConfiguracaoAgendaRealServiceTest {
         verify(repository).existsByCanal(ECanal.AGENTE_AUTORIZADO);
         verify(repository, never()).save(any(ConfiguracaoAgendaReal.class));
         verify(self, never()).flushCacheConfigCanal();
+        verifyZeroInteractions(historicoRepository);
     }
 
     @Test
@@ -87,7 +99,7 @@ public class ConfiguracaoAgendaRealServiceTest {
             .hasMessage("Não é possível criar configurações para esse nível, "
                 + "por favor selecione um canal ou subcanal.");
 
-        verifyZeroInteractions(self, repository, autenticacaoService);
+        verifyZeroInteractions(self, repository, historicoRepository, autenticacaoService);
     }
 
     @Test
@@ -95,11 +107,15 @@ public class ConfiguracaoAgendaRealServiceTest {
         var configEsperada = umaConfiguracaoAgenda();
         configEsperada.setQtdHorasAdicionais(200);
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(OrganizacaoEmpresaHistoricoResponseTest.umUsuarioAutenticado());
         when(repository.findById(100))
             .thenReturn(Optional.ofNullable(umaConfiguracaoAgenda()));
 
         service.atualizar(100, 200);
 
+        verify(historicoRepository).save((ConfiguracaoAgendaRealHistorico) MockitoHamcrest.argThat(
+            hasProperty("acao", equalTo(EAcao.ATUALIZACAO))));
         verify(repository).save(configEsperada);
         verify(self).flushCacheConfigCanal();
     }
@@ -126,12 +142,16 @@ public class ConfiguracaoAgendaRealServiceTest {
         var configuracaoAlterada = umaConfiguracaoAgenda();
         configuracaoAlterada.setSituacao(ESituacao.I);
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(OrganizacaoEmpresaHistoricoResponseTest.umUsuarioAutenticado());
         when(repository.findById(any())).thenReturn(Optional.of(umaConfiguracaoAgenda()));
         when(repository.save(configuracaoAlterada)).thenReturn(configuracaoAlterada);
 
         assertThatCode(() -> service.alterarSituacao(1, ESituacao.I))
             .doesNotThrowAnyException();
 
+        verify(historicoRepository).save((ConfiguracaoAgendaRealHistorico) MockitoHamcrest.argThat(
+            hasProperty("acao", equalTo(EAcao.INATIVACAO))));
         verify(repository).save(configuracaoAlterada);
         verify(self).flushCacheConfigCanal();
     }
@@ -143,6 +163,8 @@ public class ConfiguracaoAgendaRealServiceTest {
         assertThatCode(() -> service.alterarSituacao(1, ESituacao.A))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Configuração já possui a mesma situação.");
+
+        verifyZeroInteractions(historicoRepository);
     }
 
     @Test
@@ -152,6 +174,8 @@ public class ConfiguracaoAgendaRealServiceTest {
         assertThatCode(() -> service.alterarSituacao(1, ESituacao.I))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Não é possível alterar a situação da configuração padrão.");
+
+        verifyZeroInteractions(historicoRepository);
     }
 
     @Test
@@ -159,6 +183,8 @@ public class ConfiguracaoAgendaRealServiceTest {
         assertThatCode(() -> service.alterarSituacao(1, ESituacao.A))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Configuração de agenda não encontrada.");
+
+        verifyZeroInteractions(historicoRepository);
     }
 
     @Test
@@ -234,5 +260,15 @@ public class ConfiguracaoAgendaRealServiceTest {
         verify(repository, never()).findQtdHorasAdicionaisBySubcanal(any());
         verify(repository, never()).findQtdHorasAdicionaisByEstruturaAa(any());
         verify(repository, never()).findQtdHorasAdicionaisByNivel(any());
+    }
+
+    @Test
+    public void findHistoricoByConfiguracaoId_deveListarHistorico_quandoSolicitado() {
+        when(historicoRepository.findByConfiguracao_Id(eq(1), any()))
+            .thenReturn(new PageImpl<>(List.of(umaConfiguracaoAgendaHistorico())));
+
+        assertThat(service.findHistoricoByConfiguracaoId(1, new PageRequest()))
+            .containsExactly(umaConfiguracaoAgendaHistoricoResponse())
+            .hasSize(1);
     }
 }

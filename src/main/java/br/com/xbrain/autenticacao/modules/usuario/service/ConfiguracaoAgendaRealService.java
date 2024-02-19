@@ -4,14 +4,18 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAut
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRealHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
+import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaRealHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +33,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.peek;
 @RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class ConfiguracaoAgendaRealService {
 
+    private final ConfiguracaoAgendaRealHistoricoRepository historicoRepository;
     private final ConfiguracaoAgendaRealRepository repository;
     private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoNovoService aaService;
@@ -39,6 +44,7 @@ public class ConfiguracaoAgendaRealService {
         validarConfiguracaoExistente(request);
         var configuracaoAgenda = ConfiguracaoAgendaReal.of(request, autenticacaoService.getUsuarioAutenticado());
         repository.save(configuracaoAgenda);
+        gerarHistorico(configuracaoAgenda, EAcao.CADASTRO);
         flushCacheByTipoConfig(configuracaoAgenda.getTipoConfiguracao());
         return ConfiguracaoAgendaResponse.of(configuracaoAgenda);
     }
@@ -47,6 +53,7 @@ public class ConfiguracaoAgendaRealService {
         var config = findById(id);
         config.setQtdHorasAdicionais(qtdHoras);
         repository.save(config);
+        gerarHistorico(config, EAcao.ATUALIZACAO);
         flushCacheByTipoConfig(config.getTipoConfiguracao());
     }
 
@@ -60,6 +67,7 @@ public class ConfiguracaoAgendaRealService {
             .map(peek(ConfiguracaoAgendaReal::validarConfiguracaoPadrao))
             .map(peek(config -> config.alterarSituacao(novaSituacao)))
             .map(repository::save)
+            .map(peek(config -> gerarHistorico(config, novaSituacao.getAcao())))
             .map(peek(config -> flushCacheByTipoConfig(config.getTipoConfiguracao())))
             .orElseThrow(() -> new ValidacaoException("Configuração de agenda não encontrada."));
     }
@@ -72,6 +80,18 @@ public class ConfiguracaoAgendaRealService {
             .or(() -> findQtdHorasByNivel(usuario))
             .or(() -> findQtdHorasByCanal(usuario, canal))
             .orElse(repository.getQtdHorasPadrao());
+    }
+
+    public Page<ConfiguracaoAgendaRealHistoricoResponse> findHistoricoByConfiguracaoId(Integer id,
+                                                                                       PageRequest pageable) {
+        return historicoRepository.findByConfiguracao_Id(id, pageable)
+            .map(ConfiguracaoAgendaRealHistoricoResponse::of);
+    }
+
+    private void gerarHistorico(ConfiguracaoAgendaReal configuracao, EAcao acao) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        var historico = ConfiguracaoAgendaRealHistorico.of(configuracao, usuario, acao);
+        historicoRepository.save(historico);
     }
 
     private Optional<Integer> findQtdHorasByEstruturaAa(UsuarioAutenticado usuario, Integer aaId) {

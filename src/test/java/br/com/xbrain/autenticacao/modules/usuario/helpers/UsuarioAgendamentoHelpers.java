@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
@@ -9,15 +10,9 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 
 import javax.validation.ConstraintViolation;
@@ -99,6 +94,24 @@ public class UsuarioAgendamentoHelpers {
             .situacao(ESituacao.A)
             .tipoConfiguracao(ETipoConfiguracao.PADRAO)
             .build();
+    }
+
+    public static ConfiguracaoAgendaRealHistorico umaConfiguracaoAgendaHistorico() {
+        return ConfiguracaoAgendaRealHistorico.builder()
+            .configuracao(umaConfiguracaoAgenda())
+            .dataAcao(LocalDateTime.of(2024, 12, 30, 12, 30))
+            .acao(EAcao.CADASTRO)
+            .usuarioAcaoId(2)
+            .usuarioAcaoNome("Thiago")
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRealHistoricoResponse umaConfiguracaoAgendaHistoricoResponse() {
+        return new ConfiguracaoAgendaRealHistoricoResponse(
+            "Cadastrado",
+            LocalDateTime.of(2024, 12, 30, 12, 30),
+            2,
+            "Thiago");
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda() {

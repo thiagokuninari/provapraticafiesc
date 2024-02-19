@@ -18,4 +18,8 @@ public enum ESituacao {
     public static List<ESituacao> getOnlyAtivoInativo() {
         return List.of(A, I);
     }
+
+    public EAcao getAcao() {
+        return this == A ? EAcao.ATIVACAO : EAcao.INATIVACAO;
+    }
 }

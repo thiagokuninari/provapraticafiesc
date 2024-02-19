@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRealHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaRealService;
@@ -49,5 +50,11 @@ public class ConfiguracaoAgendaController {
     public Integer getQtdHorasAdicionaisAgendaByUsuario(@RequestParam(required = false) Integer subcanalId,
                                                         @RequestParam(required = false) Integer aaId) {
         return service.getQtdHorasAdicionaisAgendaByUsuario(subcanalId, aaId);
+    }
+
+    @GetMapping("{id}/historico")
+    public Page<ConfiguracaoAgendaRealHistoricoResponse> findHistoricoByConfiguracaoId(@PathVariable Integer id,
+                                                                                       PageRequest pageable) {
+        return service.findHistoricoByConfiguracaoId(id, pageable);
     }
 }

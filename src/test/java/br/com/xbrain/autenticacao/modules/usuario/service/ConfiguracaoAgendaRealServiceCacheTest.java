@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @MockBeans({
     @MockBean(AutenticacaoService.class),
-    @MockBean(AgenteAutorizadoNovoService.class)
+    @MockBean(AgenteAutorizadoNovoService.class),
+    @MockBean(ConfiguracaoAgendaRealHistoricoRepository.class)
 })
 @ContextConfiguration(classes = {
     CacheConfig.class,
