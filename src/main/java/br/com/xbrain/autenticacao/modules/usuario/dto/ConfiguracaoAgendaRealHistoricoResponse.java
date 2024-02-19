@@ -20,13 +20,15 @@ public class ConfiguracaoAgendaRealHistoricoResponse {
     private LocalDateTime dataAcao;
     private Integer usuarioAcaoId;
     private String usuarioAcaoNome;
+    private Integer qtdHorasAtualizada;
 
     public static ConfiguracaoAgendaRealHistoricoResponse of(ConfiguracaoAgendaRealHistorico historico) {
         return new ConfiguracaoAgendaRealHistoricoResponse(
             historico.getAcao().getDescricao(),
             historico.getDataAcao(),
             historico.getUsuarioAcaoId(),
-            historico.getUsuarioAcaoNome()
+            historico.getUsuarioAcaoNome(),
+            historico.getQtdHorasAtualizada()
         );
     }
 }

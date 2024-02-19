@@ -11,6 +11,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EAcao.ATUALIZACAO;
+
 @Data
 @Entity
 @Builder
@@ -40,6 +42,9 @@ public class ConfiguracaoAgendaRealHistorico {
     @Column(name = "DATA_ACAO", nullable = false)
     private LocalDateTime dataAcao;
 
+    @Column(name = "QTD_HORAS_ATUALIZADA")
+    private Integer qtdHorasAtualizada;
+
     @Column(name = "USUARIO_ACAO_ID")
     private Integer usuarioAcaoId;
 
@@ -54,6 +59,7 @@ public class ConfiguracaoAgendaRealHistorico {
             .dataAcao(LocalDateTime.now())
             .configuracao(configuracao)
             .acao(acao)
+            .qtdHorasAtualizada(acao == ATUALIZACAO ? configuracao.getQtdHorasAdicionais() : null)
             .build();
     }
 }

@@ -111,7 +111,8 @@ public class UsuarioAgendamentoHelpers {
             "Cadastrado",
             LocalDateTime.of(2024, 12, 30, 12, 30),
             2,
-            "Thiago");
+            "Thiago",
+            null);
     }
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda() {
