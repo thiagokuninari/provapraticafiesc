@@ -264,18 +264,6 @@ public class OrganizacaoEmpresaService {
         return organizacaoEmpresaRepository.existsByDescricaoAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
     }
 
-    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
-        if (organizacaoEmpresa.isSuporteVendas()) {
-            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
-        }
-    }
-
-    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
-        if (organizacaoEmpresa.isSuporteVendas()) {
-            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
-        }
-    }
-
     private void salvarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
         if (organizacaoEmpresa.isSuporteVendas()) {
             callService.salvarConfiguracaoSuporteVendas(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
@@ -286,6 +274,18 @@ public class OrganizacaoEmpresaService {
                                                     Integer fornecedorId) {
         if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
             callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
+        }
+    }
+
+    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
         }
     }
 }

@@ -3124,4 +3124,8 @@ public class UsuarioService {
     private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
     }
+
+    public List<SelectResponse> findOperadoresSuporteVendasByOrganizacao(Integer organizacaoId) {
+        return repository.findByCodigoCargoAndOrganizacaoId(OPERADOR_SUPORTE_VENDAS, organizacaoId);
+    }
 }
