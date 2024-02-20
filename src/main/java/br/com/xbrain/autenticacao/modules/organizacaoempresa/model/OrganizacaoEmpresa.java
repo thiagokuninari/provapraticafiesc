@@ -88,8 +88,9 @@ public class OrganizacaoEmpresa {
         return situacao == ESituacaoOrganizacaoEmpresa.A;
     }
 
-    public boolean isSuporteVendas() {
-        return nivel.getCodigo() == BACKOFFICE_SUPORTE_VENDAS;
+    public Boolean isSuporteVendas() {
+        return nivel != null
+            && nivel.getCodigo() == BACKOFFICE_SUPORTE_VENDAS;
     }
 
     public OrganizacaoEmpresa(Integer id) {

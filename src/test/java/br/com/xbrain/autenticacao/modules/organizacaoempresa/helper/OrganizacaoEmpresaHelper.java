@@ -176,5 +176,4 @@ public class OrganizacaoEmpresaHelper {
             .codigo(codigo)
             .build();
     }
-
 }

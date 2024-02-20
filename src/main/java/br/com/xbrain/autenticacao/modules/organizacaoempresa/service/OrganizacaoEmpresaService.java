@@ -84,9 +84,9 @@ public class OrganizacaoEmpresaService {
         validarNivelBackoffice(nivel.getCodigo(), request.getCodigo());
         validarNomeEDescricaoPorNivelId(request.getNome(), request.getDescricao(), request.getNivelId());
         validarCodigoPorNivelId(request.getCodigo(), request.getNivelId());
-        var organizacao = OrganizacaoEmpresa.of(request, autenticacaoService.getUsuarioId(), nivel);
-        organizacaoEmpresaRepository.save(organizacao);
-
+        var organizacao = organizacaoEmpresaRepository.save(
+            OrganizacaoEmpresa.of(request, autenticacaoService.getUsuarioId(), nivel));
+        salvarConfiguracaoSuporteVendas(organizacao);
         return OrganizacaoEmpresaResponse.of(organizacao);
     }
 
@@ -142,6 +142,7 @@ public class OrganizacaoEmpresaService {
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
 
         var organizacaoDescricaoAntiga = organizacaoEmpresa.getDescricao();
+        var organizacaoNomeAntigo = organizacaoEmpresa.getNome();
         BeanUtils.copyProperties(request, organizacaoEmpresa);
 
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(
@@ -149,6 +150,8 @@ public class OrganizacaoEmpresaService {
             organizacaoEmpresa.getDescricao(),
             organizacaoEmpresa.getNivel().getId()
         );
+        atualizarConfiguracaoSuporteVendas(organizacaoEmpresa.isSuporteVendas(), organizacaoNomeAntigo,
+            request.getNome(), id);
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
 
@@ -270,6 +273,19 @@ public class OrganizacaoEmpresaService {
     private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
         if (organizacaoEmpresa.isSuporteVendas()) {
             callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void salvarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.salvarConfiguracaoSuporteVendas(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        }
+    }
+
+    private void atualizarConfiguracaoSuporteVendas(boolean isSuporteVendas, String nomeAntigo, String nomeNovo,
+                                                    Integer fornecedorId) {
+        if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
+            callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
         }
     }
 }

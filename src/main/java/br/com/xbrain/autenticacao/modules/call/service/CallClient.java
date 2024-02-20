@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.call.service;
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
+import br.com.xbrain.autenticacao.modules.call.dto.SuporteVendasBkoRequest;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -46,6 +47,13 @@ public interface CallClient {
 
     @GetMapping("api/configuracao-telefonia/todas-discadoras")
     List<ConfiguracaoTelefoniaResponse> getDiscadoras();
+
+    @PostMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO)
+    void salvarConfiguracaoSuporteVendas(@RequestBody SuporteVendasBkoRequest request);
+
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/atualizar")
+    void atualizarConfiguracaoSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId,
+                                            @RequestBody SuporteVendasBkoRequest request);
 
     @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/desvincular-discadora-ramais")
     void desvicularDiscadoraSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);

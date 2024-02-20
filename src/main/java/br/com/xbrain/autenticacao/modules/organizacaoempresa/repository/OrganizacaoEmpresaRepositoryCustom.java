@@ -8,4 +8,5 @@ import java.util.List;
 public interface OrganizacaoEmpresaRepositoryCustom {
 
     List<OrganizacaoEmpresa> findByPredicate(Predicate predicate);
+
 }
