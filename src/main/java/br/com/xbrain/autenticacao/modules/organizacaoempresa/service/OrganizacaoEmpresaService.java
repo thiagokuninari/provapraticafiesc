@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -59,6 +60,7 @@ public class OrganizacaoEmpresaService {
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
     private final UsuarioService usuarioService;
+    private final CallService callService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -111,6 +113,7 @@ public class OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa);
         usuarioService.inativarPorOrganizacaoEmpresa(id);
     }
 
@@ -125,6 +128,7 @@ public class OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        ativarConfiguracaoSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -255,5 +259,17 @@ public class OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacaoEmpresaRepository.existsByDescricaoAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
+        }
     }
 }

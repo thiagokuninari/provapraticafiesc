@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +19,7 @@ public interface CallClient {
     String API_DISCAGEM_TELEFONIA = "api/discagem-telefonia";
     String URL_RAMAL = "api/ramal";
     String API_CACHE_CLEAN_FERIADOS = "/api/public/cache-clean/feriados";
+    String API_SUPORTE_VENDAS_BKO_CONFIGURACAO = "api/suporte-vendas-bko/configuracoes";
 
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
     TelefoniaResponse obterNomeTelefoniaPorId(@PathVariable("id") Integer id);
@@ -49,4 +47,9 @@ public interface CallClient {
     @GetMapping("api/configuracao-telefonia/todas-discadoras")
     List<ConfiguracaoTelefoniaResponse> getDiscadoras();
 
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/desvincular-discadora-ramais")
+    void desvicularDiscadoraSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);
+
+    @PutMapping(API_SUPORTE_VENDAS_BKO_CONFIGURACAO + "/{fornecedorId}/ativar")
+    void ativarConfiguracaoSuporteVendas(@PathVariable("fornecedorId") Integer fornecedorId);
 }
