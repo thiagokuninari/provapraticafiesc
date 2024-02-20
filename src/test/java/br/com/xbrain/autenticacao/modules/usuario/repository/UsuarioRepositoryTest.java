@@ -94,14 +94,19 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllResponsaveisDdd_deveRetornarResponsaveis_quandoFeitaRequisicao() {
-        assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
-            .hasSize(4)
+        assertThat(repository.findAllResponsaveisDdd())
+            .hasSize(9)
             .extracting("value", "text")
             .containsExactlyInAnyOrder(
+                tuple(220, "ANALISTA OP"),
                 tuple(125, "ASSISTENTE OP"),
+                tuple(109, "COORDENADOR"),
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"),
-                tuple(124, "EXECUTIVO OP")
+                tuple(124, "EXECUTIVO OP"),
+                tuple(221, "GERENTE OP"),
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2")
             );
     }
 
@@ -321,13 +326,6 @@ public class UsuarioRepositoryTest {
     @Test
     public void getSubCanaisByUsuarioIds_deveRetornarVazio_seNaoPossuirSubCanais() {
         assertThat(repository.getSubCanaisByUsuarioIds(List.of(100, 121, 123))).isEmpty();
-    }
-
-    private UsuarioPredicate getUsuarioPredicate() {
-        return new UsuarioPredicate()
-            .comDepartamento(List.of(3))
-            .comNivel(List.of(1))
-            .comCargo(List.of(2, 5));
     }
 
     @Test
