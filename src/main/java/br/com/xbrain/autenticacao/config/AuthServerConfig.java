@@ -44,6 +44,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL;
+import static br.com.xbrain.autenticacao.config.EScopes.SUPORTE_VENDAS_BKO;
 
 @Configuration
 @EnableAuthorizationServer
@@ -180,6 +181,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String gestaoColaboradoresPolApiClient;
     @Value("${app-config.oauth-clients.gestao-colaborador-pol-api.secret}")
     private String gestaoColaboradoresPolApiSecret;
+    @Value("${app-config.oauth-clients.suporte-vendas-bko-api.client}")
+    private String suporteVendasBkoApiClient;
+    @Value("${app-config.oauth-clients.suporte-vendas-bko-api.secret}")
+    private String suporteVendasBkoApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -379,7 +384,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(gestaoColaboradoresPolApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(GESTAO_COLABORADORES_POL.getScope())
-            .authorities(ROLE_APPLICATION);
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(suporteVendasBkoApiClient)
+            .secret(suporteVendasBkoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SUPORTE_VENDAS_BKO.getScope());
     }
 
     @Override

@@ -248,6 +248,9 @@ app-config:
     gestao-colaborador-pol-api:
       client: gestao-colaborador-pol-api
       secret: g3st40c0l4b0r4d0r
+    suporte-vendas-bko-api:
+      client: suporte-vendas-bko-api
+      secret: sup0rt3v3nd4sbk0
 
   services:
     autenticacao:
@@ -314,6 +317,9 @@ app-config:
     gestao-colaborador-pol:
       #url: http://localhost:8310
       url: http://192.168.50.1:8310
+    suporte-vendas-bko:
+      #url: http://localhost:8050
+      url: http://192.168.50.1:8050
 
 flyway:
   enabled: true

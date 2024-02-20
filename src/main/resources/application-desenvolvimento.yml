@@ -45,6 +45,8 @@ app-config:
       url: http://localizacao-api:8039
     gestao-colaborador-pol:
       url: http://gestao-colaborador-pol-api:8310
+    suporte-vendas-bko:
+      url: http://suporte-vendas-bko-api:8050
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

@@ -30,7 +30,8 @@ public enum EScopes {
     CLARO_INDICO("claro-indico-api"),
     BLOQUEIO_LIGACAO_API("bloqueio-ligacao-api"),
     QUALITY_CALL("quality-call-api"),
-    GESTAO_COLABORADORES_POL("gestao-colaborador-pol-api");
+    GESTAO_COLABORADORES_POL("gestao-colaborador-pol-api"),
+    SUPORTE_VENDAS_BKO("suporte-vendas-bko-api");
 
     @Getter
     private String scope;
