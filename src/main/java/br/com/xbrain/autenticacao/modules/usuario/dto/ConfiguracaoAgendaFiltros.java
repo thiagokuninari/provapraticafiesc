@@ -17,7 +17,6 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfiguracaoAgendaFiltros {
-    @NotNull
     private ETipoConfiguracao tipoConfiguracao;
     private Integer qtdHorasAdicionais;
     private CodigoNivel nivel;
@@ -36,7 +35,7 @@ public class ConfiguracaoAgendaFiltros {
     }
 
     private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaRealPredicate predicate) {
-        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
+        if (tipoConfiguracao != null && tipoConfiguracao != ETipoConfiguracao.PADRAO) {
             tipoConfiguracao.getPredicateConsumer().accept(predicate, this);
         }
     }
