@@ -45,7 +45,10 @@ public enum ETipoConfiguracao {
         IConfiguracaoAgendaRealGroupsValidation.Canal.D2dProprio.class,
         (model, request) -> model.setSubcanalId(request.getSubcanalId()),
         (predicate, filtros) -> predicate.comSubCanal(filtros.getSubcanalId()),
-        (response, model) -> response.setSubcanal(ETipoCanal.valueOf(model.getSubcanalId()).getDescricao()),
+        (response, model) -> {
+            response.setSubcanalId(model.getSubcanalId());
+            response.setSubcanal(ETipoCanal.valueOf(model.getSubcanalId()).getDescricao());
+        },
         (repository, request) -> repository.existsBySubcanalId(request.getSubcanalId()),
         ConfiguracaoAgendaRealService::flushCacheConfigSubcanal),
     PADRAO(

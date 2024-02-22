@@ -17,6 +17,7 @@ public class ConfiguracaoAgendaResponse {
     private CodigoNivel nivel;
     private String canal;
     private String subcanal;
+    private Integer subcanalId;
     private String estruturaAa;
 
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
