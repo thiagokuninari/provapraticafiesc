@@ -75,7 +75,7 @@ app-config:
     gestao-colaborador-pol:
       url: http://gestao-colaborador-pol-api:8310
     integracao-claro-net:
-      url: http://172.10.10.12:8505
+      url: http://integracao-claro-net-api:8505
 
   email:
     enviar: true
