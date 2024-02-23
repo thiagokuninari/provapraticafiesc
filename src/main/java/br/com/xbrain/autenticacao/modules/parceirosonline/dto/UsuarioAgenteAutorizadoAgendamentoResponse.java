@@ -13,16 +13,19 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id", "nome"})
 public class UsuarioAgenteAutorizadoAgendamentoResponse {
+
     private Integer id;
     private String nome;
     private Integer equipeVendasId;
     private String equipeVendasNome;
     private String supervisorNome;
+    private String cargoUsuario;
 
     public static UsuarioAgenteAutorizadoAgendamentoResponse of(Usuario usuario) {
         return UsuarioAgenteAutorizadoAgendamentoResponse.builder()
                 .id(usuario.getId())
                 .nome(usuario.getNome())
+                .cargoUsuario(usuario.getCargo().getCodigo().toString())
                 .build();
     }
 
