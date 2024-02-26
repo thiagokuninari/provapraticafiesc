@@ -1051,6 +1051,27 @@ public class UsuarioService {
         }
     }
 
+    private void validarCanais(Usuario usuario, Set<UsuarioHierarquia> usuariosHierarquia) {
+        var superioresId = getUsuarioHierarquias(usuariosHierarquia);
+        if (!superioresId.isEmpty()) {
+            var contains = usuariosHierarquia.stream()
+                .map(u -> repository.findById(u.getUsuarioSuperiorId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .anyMatch(usuarioHierarquia -> usuarioHierarquia.getCanais().stream()
+                    .anyMatch(canal -> usuario.getCanais().contains(canal)));
+            if (!contains) {
+                throw new ValidacaoException("Usuário não possui canal em comum com usuários da hierarquia.");
+            }
+        }
+    }
+
+    private List<UsuarioHierarquia> getUsuarioHierarquias(Set<UsuarioHierarquia> usuariosHierarquia) {
+        return usuariosHierarquia.stream()
+            .filter(usuarioHierarquia -> usuarioHierarquia.getUsuarioSuperior() != null)
+            .collect(toList());
+    }
+
     private void validarPadraoEmail(String email) {
         var pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.\\+]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)"
             + "|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})$");
@@ -1120,6 +1141,7 @@ public class UsuarioService {
         removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
+        validarCanais(usuario, usuario.getUsuariosHierarquia());
 
         repository.save(usuario);
     }

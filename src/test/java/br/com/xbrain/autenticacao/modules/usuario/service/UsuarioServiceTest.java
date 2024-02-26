@@ -697,6 +697,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5))
             .thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
         when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
@@ -705,7 +706,9 @@ public class UsuarioServiceTest {
                 new SubCanal(2),
                 new SubCanal(3)
             ));
-        doReturn(umUsuarioAutenticadoAdmin(1))
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorD2d())
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -755,6 +758,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
         when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
             .thenReturn(Set.of(
@@ -765,7 +769,9 @@ public class UsuarioServiceTest {
             ));
         when(repository.getAllSubordinadosComSubCanalId(usuario.getId()))
             .thenReturn(List.of());
-        doReturn(umUsuarioAutenticadoAdmin(1))
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorD2d())
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
@@ -808,6 +814,77 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não possui sub-canal em comum com usuários subordinados.");
 
         verify(applicationEventPublisher, times(1)).publishEvent(any(UsuarioSubCanalEvent.class));
+    }
+
+    @Test
+    public void save_deveLancarException_seUsuarioNaoPossuirCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2),
+            new SubCanal(3)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.AGENTE_AUTORIZADO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorAtivoLocal())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(usuario))
+            .withMessage("Usuário não possui canal em comum com usuários da hierarquia.");
+    }
+
+    @Test
+    public void save_naoDeveLancarException_seUsuarioPossuirCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(
+            new SubCanal(1),
+            new SubCanal(2),
+            new SubCanal(3)
+        ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        doReturn(UsuarioAutenticadoHelper.umUsuarioSuperiorD2d())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario)).doesNotThrowAnyException();
+
+        verify(repository, times(2)).save(eq(usuario));
     }
 
     @Test
@@ -1743,6 +1820,7 @@ public class UsuarioServiceTest {
             .nivelCodigo(nivelCodigo)
             .cargoCodigo(cargo)
             .id(usuarioId)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
             .permissoes(getPermissoes(permissoes))
             .build();
     }
@@ -2864,11 +2942,16 @@ public class UsuarioServiceTest {
         vendedor.setUsuariosHierarquia(new HashSet<>());
         vendedor.setEmail("vendedortest@xbrain.com.br");
         vendedor.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+        vendedor.setCanais(Set.of(ECanal.D2D_PROPRIO));
+        vendedor.setHierarquiasId(List.of(100));
 
         doReturn(Optional.of(vendedor))
             .when(repository)
             .findById(1);
 
+        when(repository.findById(eq(100))).thenReturn(Optional.of(vendedor));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(100, ECanal.D2D_PROPRIO)));
         doReturn(umUsuarioAutenticado(100, "OPERACAO", SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
@@ -2884,11 +2967,16 @@ public class UsuarioServiceTest {
         vendedor.setUsuariosHierarquia(new HashSet<>());
         vendedor.setEmail("vendedortest@xbrain.com.br");
         vendedor.setCargo(umCargo(1, VENDEDOR_OPERACAO));
+        vendedor.setCanais(Set.of(ECanal.D2D_PROPRIO));
+        vendedor.setHierarquiasId(List.of(100));
 
         doReturn(Optional.of(vendedor))
             .when(repository)
             .findById(1);
 
+        when(repository.findById(eq(100))).thenReturn(Optional.of(vendedor));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(100, ECanal.D2D_PROPRIO)));
         doReturn(umUsuarioAutenticado(100, "OPERACAO", ASSISTENTE_OPERACAO, AUT_VISUALIZAR_GERAL))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
