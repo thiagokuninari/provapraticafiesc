@@ -30,6 +30,8 @@ public class SubCanalCompletDto implements Serializable {
     private ESituacao situacao;
     @NotNull
     private Eboolean novaChecagemCredito;
+    @NotNull
+    private Eboolean novaChecagemViabilidade;
 
     public static SubCanalCompletDto of(SubCanal subcanal) {
         var response = new SubCanalCompletDto();

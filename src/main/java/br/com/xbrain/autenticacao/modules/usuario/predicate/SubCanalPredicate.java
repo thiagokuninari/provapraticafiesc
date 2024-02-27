@@ -50,4 +50,11 @@ public class SubCanalPredicate {
         }
         return this;
     }
+
+    public SubCanalPredicate comNovaChecagemViabilidade(Eboolean novaChecagemViabilidade) {
+        if (!isEmpty(novaChecagemViabilidade)) {
+            builder.and(subCanal.novaChecagemViabilidade.eq(novaChecagemViabilidade));
+        }
+        return this;
+    }
 }

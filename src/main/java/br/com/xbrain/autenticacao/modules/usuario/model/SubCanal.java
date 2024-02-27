@@ -37,6 +37,10 @@ public class SubCanal {
     @Enumerated(EnumType.STRING)
     private Eboolean novaChecagemCredito;
 
+    @Column(name = "NOVA_CHECAGEM_VIABILIDADE", length = 1, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Eboolean novaChecagemViabilidade;
+
     public SubCanal(Integer id) {
         this.id = id;
     }
@@ -46,6 +50,7 @@ public class SubCanal {
         this.nome = request.getNome().trim();
         this.situacao = request.getSituacao();
         this.novaChecagemCredito = request.getNovaChecagemCredito();
+        this.novaChecagemViabilidade = request.getNovaChecagemViabilidade();
         return this;
     }
 }

@@ -15,9 +15,10 @@ public class SubCanalTest {
         var subCanal = umSubCanal();
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
+        dto.setNovaChecagemViabilidade(Eboolean.V);
         subCanal.editar(dto);
         assertThat(subCanal)
-            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito")
-            .containsExactly(1, ETipoCanal.PAP_PREMIUM, "Um Outro Nome", ESituacao.I, Eboolean.V);
+            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito", "novaChecagemViabilidade")
+            .containsExactly(1, ETipoCanal.PAP_PREMIUM, "Um Outro Nome", ESituacao.I, Eboolean.V, Eboolean.V);
     }
 }

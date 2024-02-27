@@ -101,7 +101,7 @@ public class SubCanalControllerTest {
     @Test
     public void getSubCanalCompletById_deveRetornarSubCanal_quandoOk() throws Exception {
         when(subCanalService.getSubCanalCompletById(1)).thenReturn(
-            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V));
+            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V));
 
         mvc.perform(get(API_URI + "/1/detalhar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -111,7 +111,8 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$.codigo", is("PAP_PME")))
             .andExpect(jsonPath("$.nome", is("PAP PME")))
             .andExpect(jsonPath("$.situacao", is("A")))
-            .andExpect(jsonPath("$.novaChecagemCredito", is("V")));
+            .andExpect(jsonPath("$.novaChecagemCredito", is("V")))
+            .andExpect(jsonPath("$.novaChecagemViabilidade", is("V")));
 
         verify(subCanalService).getSubCanalCompletById(1);
     }
@@ -137,8 +138,8 @@ public class SubCanalControllerTest {
         var filtros = new SubCanalFiltros();
         when(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .thenReturn(new PageImpl<>(List.of(
-            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F),
-            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V))));
+            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F),
+            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V))));
 
         mvc.perform(get(API_URI + "/listar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -150,10 +151,12 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$.content[0].nome", is("PAP")))
             .andExpect(jsonPath("$.content[0].situacao", is("A")))
             .andExpect(jsonPath("$.content[0].novaChecagemCredito", is("F")))
+            .andExpect(jsonPath("$.content[0].novaChecagemViabilidade", is("F")))
             .andExpect(jsonPath("$.content[1].id", is(2)))
             .andExpect(jsonPath("$.content[1].codigo", is("PAP_PME")))
             .andExpect(jsonPath("$.content[1].nome", is("PAP PME")))
             .andExpect(jsonPath("$.content[1].novaChecagemCredito", is("V")))
+            .andExpect(jsonPath("$.content[1].novaChecagemViabilidade", is("V")))
             .andExpect(jsonPath("$.content[1].situacao", is("A")));
 
         verify(subCanalService).getAllConfiguracoes(pageRequest, filtros);
@@ -207,7 +210,8 @@ public class SubCanalControllerTest {
                 "O campo codigo é obrigatório.",
                 "O campo nome é obrigatório.",
                 "O campo situacao é obrigatório.",
-                "O campo novaChecagemCredito é obrigatório.")));
+                "O campo novaChecagemCredito é obrigatório.",
+                "O campo novaChecagemViabilidade é obrigatório.")));
 
         verify(subCanalService, never()).editar(any());
     }
@@ -216,6 +220,7 @@ public class SubCanalControllerTest {
     public void editar_deveRetornarException_quandoUsuarioLogadoNaoForAdmin() throws Exception {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
+        dto.setNovaChecagemViabilidade(Eboolean.V);
 
         doThrow(PermissaoException.class).when(subCanalService).editar(dto);
 
@@ -280,5 +285,44 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Erro, subcanal não encontrado.")));
         verify(subCanalService).isNovaChecagemCreditoD2d(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemViabilidade_deveDevolverBoolean_quandoOk() throws Exception {
+        when(subCanalService.isNovaChecagemViabilidadeD2d(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-viabilidade-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Eboolean.V.toString())));
+
+        verify(subCanalService).isNovaChecagemViabilidadeD2d(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemViabilidade_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        when(subCanalService.isNovaChecagemViabilidadeD2d(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-viabilidade-d2d"))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).isNovaChecagemViabilidadeD2d(any());
+    }
+
+    @Test
+    public void isNovaChecagemViabilidade_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.isNovaChecagemViabilidadeD2d(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/verificar-nova-checagem-viabilidade-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
+        verify(subCanalService).isNovaChecagemViabilidadeD2d(eq(1));
     }
 }

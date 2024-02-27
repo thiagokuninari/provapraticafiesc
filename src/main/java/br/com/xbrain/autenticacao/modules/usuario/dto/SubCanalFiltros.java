@@ -20,6 +20,7 @@ public class SubCanalFiltros {
     private String nome;
     private List<ESituacao> situacao;
     private Eboolean novaChecagemCredito;
+    private Eboolean novaChecagemViabilidade;
 
     @JsonIgnore
     public SubCanalPredicate toPredicate() {
@@ -27,6 +28,7 @@ public class SubCanalFiltros {
             .comCodigo(codigo)
             .comNome(nome)
             .comSituacao(situacao)
-            .comNovaChecagemCredito(novaChecagemCredito);
+            .comNovaChecagemCredito(novaChecagemCredito)
+            .comNovaChecagemViabilidade(novaChecagemViabilidade);
     }
 }
