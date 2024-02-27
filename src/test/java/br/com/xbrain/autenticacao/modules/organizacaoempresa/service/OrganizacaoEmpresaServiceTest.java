@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoFanoutDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
@@ -254,6 +255,7 @@ public class OrganizacaoEmpresaServiceTest {
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(sender).sendOrganizacaoInativada(new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE));
     }
 
     @Test
@@ -268,6 +270,8 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
         verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
             eq(EHistoricoAcao.INATIVACAO), any());
+        verify(sender).sendOrganizacaoInativada(
+            new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS));
     }
 
     @Test
@@ -284,6 +288,7 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
         verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
             eq(EHistoricoAcao.INATIVACAO), any());
+        verify(sender).sendOrganizacaoInativada(new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE));
     }
 
     @Test
