@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -115,6 +112,7 @@ public class OrganizacaoEmpresaService {
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
         desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa);
         usuarioService.inativarPorOrganizacaoEmpresa(id);
+        enviarOrganizacaoInativadaFanout(OrganizacaoFanoutDto.of(organizacaoEmpresa));
     }
 
     @Transactional
@@ -287,5 +285,9 @@ public class OrganizacaoEmpresaService {
         if (organizacaoEmpresa.isSuporteVendas()) {
             callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
         }
+    }
+
+    public void enviarOrganizacaoInativadaFanout(OrganizacaoFanoutDto organizacaoFanoutDto) {
+        organizacaoEmpresaMqSender.sendOrganizacaoInativada(organizacaoFanoutDto);
     }
 }

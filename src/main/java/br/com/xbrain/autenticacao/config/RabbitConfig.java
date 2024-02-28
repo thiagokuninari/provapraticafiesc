@@ -152,6 +152,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.organizacao-empresa-atualizacao-nome-failure}")
     private String organizacaoEmpresaAtualizacaoNomeFailureMq;
 
+    @Value("${app-config.fanout.organizacao-inativada}")
+    private String organizacaoInativadaFanout;
+
+    @Value("${app-config.queue.inativar-grupos-organizacao-suporte-vendas}")
+    private String inativarGruposByOrganizacaoQueue;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -615,5 +621,20 @@ public class RabbitConfig {
         return BindingBuilder.bind(atualizarPermissaoTecnicoIndicadorFailureMq())
             .to(exchange)
             .with(atualizarPermissaoTecnicoIndicadorFailureMq);
+    }
+
+    @Bean
+    FanoutExchange organizacaoInativadaFanout() {
+        return new FanoutExchange(organizacaoInativadaFanout);
+    }
+
+    @Bean
+    Queue inativarGruposByOrganizacao() {
+        return new Queue(inativarGruposByOrganizacaoQueue, false);
+    }
+
+    @Bean
+    Binding inativarGruposByOrganizacaoBinding(FanoutExchange organizacaoInativadaFanout) {
+        return BindingBuilder.bind(inativarGruposByOrganizacao()).to(organizacaoInativadaFanout);
     }
 }

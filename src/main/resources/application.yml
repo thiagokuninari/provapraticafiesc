@@ -96,6 +96,9 @@ app-config:
   multiplo-login:
     emails: colaborador@claro.com.br
 
+  fanout:
+    organizacao-inativada: organizacao-inativada.fanout
+
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
@@ -150,6 +153,7 @@ app-config:
     atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
     organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
+    inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
 
   oauth-clients:
     autenticacao-api:
