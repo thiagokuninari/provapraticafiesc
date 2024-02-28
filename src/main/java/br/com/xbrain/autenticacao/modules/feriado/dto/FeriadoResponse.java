@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static java.util.Objects.nonNull;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeriadoResponse {

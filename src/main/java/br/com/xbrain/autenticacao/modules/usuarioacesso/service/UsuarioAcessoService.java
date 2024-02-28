@@ -20,9 +20,9 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -41,9 +41,10 @@ import java.util.stream.StreamSupport;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
-@Transactional
-@Service
 @Slf4j
+@Service
+@Transactional
+@RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class UsuarioAcessoService {
 
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido ao inativar "
@@ -51,21 +52,13 @@ public class UsuarioAcessoService {
     private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
         + " os registros antigos da tabela usuário acesso.";
 
-    @Autowired
-    private UsuarioAcessoRepository usuarioAcessoRepository;
-    @Autowired
-    private UsuarioHistoricoService usuarioHistoricoService;
-    @Autowired
-    private InativarColaboradorMqSender inativarColaboradorMqSender;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Lazy
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @Autowired
-    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final UsuarioHistoricoService usuarioHistoricoService;
+    private final UsuarioAcessoRepository usuarioAcessoRepository;
+    private final AgenteAutorizadoService agenteAutorizadoService;
+    private final InativarColaboradorMqSender inativarColaboradorMqSender;
+    private final NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     @Value("${app-config.timer-usuario.data-hora-inativar-usuario-a-partir-de}")
     private String dataHoraInativarUsuario;
@@ -114,46 +107,6 @@ public class UsuarioAcessoService {
         return 0;
     }
 
-    private List<UsuarioDto> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
-        var usuariosUltimoAcessoExpirado =
-            CollectionUtils.emptyIfNull(
-                getUsuariosUltimoAcessoExpiradoAndNotViabilidade(dataHoraInativarUsuario));
-        var usuariosSemUltimoAcesso =
-            CollectionUtils.emptyIfNull(
-                getUsuariosSemUltimoAcessoAndNotViabilidade(dataHoraInativarUsuario));
-
-        return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
-            .collect(Collectors.toList());
-
-    }
-
-    private List<UsuarioDto> getUsuariosSemUltimoAcessoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
-        return usuarioRepository
-            .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
-                dataHoraInativarUsuario);
-    }
-
-    private List<UsuarioDto> getUsuariosUltimoAcessoExpiradoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
-        return usuarioRepository
-            .findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
-                dataHoraInativarUsuario);
-    }
-
-    private void inativarColaboradorPol(UsuarioDto usuario) {
-        if (usuario.getEmail() != null) {
-            var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFA);
-            inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
-        } else {
-            log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
-        }
-    }
-
-    private void usuarioIsXbrain() {
-        if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
-            throw new PermissaoException();
-        }
-    }
-
     public Page<UsuarioAcessoResponse> getAll(PageRequest pageRequest, UsuarioAcessoFiltros usuarioAcessoFiltros) {
         aplicarFiltros(usuarioAcessoFiltros);
 
@@ -164,22 +117,6 @@ public class UsuarioAcessoService {
             .distinct()
             .collect(Collectors.toList());
         return new PageImpl<>(lista, pageRequest, getCountDistinct(usuarioAcessoFiltros));
-    }
-
-    private long getCountDistinct(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return StreamSupport
-            .stream(usuarioAcessoRepository
-                .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
-            .map(UsuarioAcessoResponse::of)
-            .distinct()
-            .count();
-    }
-
-    private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return agenteAutorizadoService.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
-            .stream()
-            .map(UsuarioAgenteAutorizadoResponse::getId)
-            .collect(Collectors.toList());
     }
 
     public void exportRegistrosToCsv(HttpServletResponse response, UsuarioAcessoFiltros usuarioAcessoFiltros) {
@@ -230,6 +167,12 @@ public class UsuarioAcessoService {
         return notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(obterUsuariosIds(request));
     }
 
+    public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
+            usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
+        }
+    }
+
     private List<Integer> obterUsuariosIds(UsuarioLogadoRequest request) {
         return StreamSupport.stream(
                 usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
@@ -241,9 +184,59 @@ public class UsuarioAcessoService {
         aplicarAgenteAutorizadoFiltro(usuarioAcessoFiltros);
     }
 
-    public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
-            usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
+    private long getCountDistinct(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        return StreamSupport
+            .stream(usuarioAcessoRepository
+                .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
+            .map(UsuarioAcessoResponse::of)
+            .distinct()
+            .count();
+    }
+
+    private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        return agenteAutorizadoService.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
+            .stream()
+            .map(UsuarioAgenteAutorizadoResponse::getId)
+            .collect(Collectors.toList());
+    }
+
+    private List<UsuarioDto> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
+        var usuariosUltimoAcessoExpirado =
+            CollectionUtils.emptyIfNull(
+                getUsuariosUltimoAcessoExpiradoAndNotViabilidade(dataHoraInativarUsuario));
+        var usuariosSemUltimoAcesso =
+            CollectionUtils.emptyIfNull(
+                getUsuariosSemUltimoAcessoAndNotViabilidade(dataHoraInativarUsuario));
+
+        return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
+            .collect(Collectors.toList());
+
+    }
+
+    private List<UsuarioDto> getUsuariosSemUltimoAcessoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioRepository
+            .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+                dataHoraInativarUsuario);
+    }
+
+    private List<UsuarioDto> getUsuariosUltimoAcessoExpiradoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioRepository
+            .findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+                dataHoraInativarUsuario);
+    }
+
+    private void inativarColaboradorPol(UsuarioDto usuario) {
+        if (usuario.getEmail() != null) {
+            var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFA);
+            inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
+        } else {
+            log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
+        }
+    }
+
+    private void usuarioIsXbrain() {
+        if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+            throw new PermissaoException();
         }
     }
 }

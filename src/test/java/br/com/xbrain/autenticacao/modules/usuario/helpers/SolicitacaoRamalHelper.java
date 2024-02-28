@@ -28,7 +28,7 @@ public class SolicitacaoRamalHelper {
     public static SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
             .id(id)
-            .quantidadeRamais(38)
+            .quantidadeRamais(1)
             .agenteAutorizadoId(aaId)
             .melhorHorarioImplantacao(LocalTime.of(10, 00))
             .melhorDataImplantacao(LocalDate.of(2019, 01, 25))

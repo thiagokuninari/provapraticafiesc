@@ -109,22 +109,10 @@ public class HorarioAcessoService {
                 .stream()
                 .map(HorarioAtuacao::of)
                 .collect(Collectors.toList()),
-            horarioAcesso, 
+            horarioAcesso,
             historico);
-        
+
         return horarioAcesso;
-    }
-
-    private void desreferenciaHorarioAtuacao(HorarioAcesso horarioAtuacao) {
-        var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAtuacao.getId());
-        horariosAtuacao.forEach(atuacao -> atuacao.setHorarioAcesso(null));
-        horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
-    }
-
-    private void validarSite(Integer siteId) {
-        if (repository.existsBySiteId(siteId)) {
-            throw new ValidacaoException("Site já possui horário de acesso cadastrado.");
-        }
     }
 
     public void criaHorariosAcesso(List<HorarioAtuacao> horariosAtuacao,
@@ -152,7 +140,7 @@ public class HorarioAcessoService {
                 .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
             var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
             var horarioAtual = dataHoraAtual.getDataHora();
-            var horario = horariosAtuacao.stream().filter(horarioAtuacao -> 
+            var horario = horariosAtuacao.stream().filter(horarioAtuacao ->
                 horarioAtuacao.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
                 .findAny().orElse(null);
             if (nonNull(horario)) {
@@ -175,7 +163,7 @@ public class HorarioAcessoService {
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
         var horarioAtual = dataHoraAtual.getDataHora();
-        var horario = horariosAtuacao.stream().filter(horarioAtuacao -> 
+        var horario = horariosAtuacao.stream().filter(horarioAtuacao ->
             horarioAtuacao.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
             .findAny().orElse(null);
         if (nonNull(horario)) {
@@ -198,7 +186,7 @@ public class HorarioAcessoService {
                         .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
                     .map(horarioAcesso -> atuacaoRepository
                         .findByHorarioAcessoId(horarioAcesso.getId()))
-                    .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
+                    .map(horariosAtuacao -> horariosAtuacao.stream().filter(h ->
                         h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
                             .findAny().orElse(null))
                     .ifPresentOrElse(
@@ -225,7 +213,7 @@ public class HorarioAcessoService {
                 .map(site -> repository.findBySiteId(site.getId())
                     .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
                 .map(horarioAcesso -> atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId()))
-                .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
+                .map(horariosAtuacao -> horariosAtuacao.stream().filter(h ->
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
                 .ifPresentOrElse(
                     horario -> {
@@ -277,6 +265,18 @@ public class HorarioAcessoService {
     private void validarCanalUsuario(UsuarioAutenticado usuarioAutenticado) {
         if (!usuarioAutenticado.isXbrainOuMso() && !usuarioAutenticado.getCanais().contains(ATIVO_PROPRIO)) {
             throw USUARIO_SEM_CANAL_VALIDO;
+        }
+    }
+
+    private void desreferenciaHorarioAtuacao(HorarioAcesso horarioAtuacao) {
+        var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAtuacao.getId());
+        horariosAtuacao.forEach(atuacao -> atuacao.setHorarioAcesso(null));
+        horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
+    }
+
+    private void validarSite(Integer siteId) {
+        if (repository.existsBySiteId(siteId)) {
+            throw new ValidacaoException("Site já possui horário de acesso cadastrado.");
         }
     }
 }

@@ -17,7 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -30,18 +30,14 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
 @Service
+@RequiredArgsConstructor
 public class RelatorioLoginLogoutService {
 
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final AgenteAutorizadoService agenteAutorizadoService;
+    private final NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest,
                                                             ECanal canal,

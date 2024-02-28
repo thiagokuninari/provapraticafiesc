@@ -25,7 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,28 +41,20 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
 @Component
+@RequiredArgsConstructor
 public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
-    @Autowired
-    private SolicitacaoRamalRepository solicitacaoRamalRepository;
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    private SolicitacaoRamalService solicitacaoRamalService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private SolicitacaoRamalHistoricoService historicoService;
-    @Autowired
-    private CallService callService;
-    @Autowired
-    private SocioService socioService;
+    private final CallService callService;
+    private final SocioService socioService;
+    private final EmailService emailService;
+    private final DataHoraAtual dataHoraAtual;
+    private final UsuarioService usuarioService;
+    private final AutenticacaoService autenticacaoService;
+    private final SolicitacaoRamalService solicitacaoRamalService;
+    private final AgenteAutorizadoService agenteAutorizadoService;
+    private final SolicitacaoRamalHistoricoService historicoService;
+    private final SolicitacaoRamalRepository solicitacaoRamalRepository;
+
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
@@ -98,6 +90,35 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
         gerarHistorico(solicitacaoRamalPersistida, null);
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+    }
+
+    @Override
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        var agenteAutorizadoResponse = agenteAutorizadoService.getAaById(filtros.getAgenteAutorizadoId());
+
+        return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
+            getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
+            getNomeSocioPrincipalAa(filtros.getAgenteAutorizadoId()),
+            getQuantidadeUsuariosAtivos(filtros.getAgenteAutorizadoId()),
+            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
+            agenteAutorizadoResponse);
+    }
+
+    @Override
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+        var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
+        solicitacaoEncontrada.editar(request);
+        solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
+        solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
+            agenteAutorizadoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId()));
+        solicitacaoEncontrada.retirarMascara();
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
+    }
+
+    public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        autenticacaoService.getUsuarioAutenticado()
+            .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     private void validaSalvarAa(Integer aaId, Integer quantidadeRamais) {
@@ -193,18 +214,6 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
 
-    @Override
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
-        var agenteAutorizadoResponse = agenteAutorizadoService.getAaById(filtros.getAgenteAutorizadoId());
-
-        return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
-            getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
-            getNomeSocioPrincipalAa(filtros.getAgenteAutorizadoId()),
-            getQuantidadeUsuariosAtivos(filtros.getAgenteAutorizadoId()),
-            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
-            agenteAutorizadoResponse);
-    }
-
     private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
         if (agenteAutorizado.getDiscadoraId() != null) {
             return callService.obterNomeTelefoniaPorId(agenteAutorizado.getDiscadoraId()).getNome();
@@ -224,22 +233,4 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
         return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
     }
-
-    @Override
-    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
-        solicitacaoEncontrada.editar(request);
-        solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
-        solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
-            agenteAutorizadoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId()));
-        solicitacaoEncontrada.retirarMascara();
-
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
-    }
-
-    public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
-        autenticacaoService.getUsuarioAutenticado()
-            .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
-    }
-
 }

@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -16,13 +16,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ConsultaCepService {
 
-    @Autowired
-    private ConsultaCepClient consultaCepClient;
-
-    @Autowired
-    private CidadeService cidadeService;
+    private final CidadeService cidadeService;
+    private final ConsultaCepClient consultaCepClient;
 
     public CidadeUfResponse consultarCep(String cep) {
         try {
@@ -59,5 +57,4 @@ public class ConsultaCepService {
         var pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(normalizer).replaceAll("");
     }
-
 }

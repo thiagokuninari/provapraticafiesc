@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.helper;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
@@ -180,5 +181,9 @@ public class HorarioHelper {
 
     public static Page<HorarioAcessoResponse> umaListaHorarioHistoricoResponse() {
         return new PageImpl<>(List.of(umHorarioHistoricoResponse()));
+    }
+
+    public static List<SelectResponse> umaListaSelectResponse() {
+        return List.of(SelectResponse.of(1, "teste"));
     }
 }

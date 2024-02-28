@@ -42,10 +42,10 @@ public class UsuarioAcessoServiceIT {
         Assertions.assertThat(usuariosInativados.longValue()).isEqualTo(4L);
 
         var usuarios = usuarioRepository.findBySituacaoAndIdIn(ESituacao.I, idsUsuariosParaTeste());
-        Assertions.assertThat(usuarios.size()).isEqualTo(2);
+        Assertions.assertThat(usuarios).hasSize(2);
 
         var usuariosComDataReativacaoNull = usuarioRepository.findByDataReativacaoNotNull();
-        Assertions.assertThat(usuariosComDataReativacaoNull.size()).isEqualTo(2);
+        Assertions.assertThat(usuariosComDataReativacaoNull).hasSize(2);
 
         long usuariosHistoricoInativos = idsUsuariosParaTeste().stream()
             .map(id -> usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(id).orElse(new UsuarioHistorico()))

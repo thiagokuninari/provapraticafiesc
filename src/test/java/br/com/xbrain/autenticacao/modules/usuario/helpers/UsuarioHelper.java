@@ -177,6 +177,18 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static UsuarioDto umUsuarioDto(Integer usuarioId) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .nivelId(2)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
     public static UsuarioDto umUsuarioDtoMso() {
         return UsuarioDto.builder()
             .nome("MSO FEEDER")
@@ -770,5 +782,15 @@ public class UsuarioHelper {
     public static UsuarioAutenticado umUsuarioAutenticadoAa() {
         return umUsuarioAutenticadoAtivoProprioComCargo(1, GERENTE_OPERACAO,
             CodigoDepartamento.AGENTE_AUTORIZADO);
+    }
+
+    public static Usuario umUsuarioOperadorTelevendas() {
+        return Usuario.builder()
+            .id(101)
+            .nome("OPERADOR TELEVENDAS")
+            .email("SITECOORDENADOR@XBRAIN.COM.BR")
+            .cargo(Cargo.builder().codigo(OPERACAO_TELEVENDAS).build())
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
     }
 }
