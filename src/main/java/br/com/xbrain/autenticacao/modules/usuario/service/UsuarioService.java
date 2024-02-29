@@ -1914,6 +1914,7 @@ public class UsuarioService {
         usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
+        processarUsuarioParaSocialHub(getUsuario(usuarioDadosAcessoRequest.getUsuarioId()));
         updateSenha(usuario, Eboolean.V);
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
@@ -3004,9 +3005,25 @@ public class UsuarioService {
         var email = usuario.getEmail();
         var dominio = extractDominio(email);
 
-        if (dominiosPermitidos.contains(dominio)) {
-            adicionarPermissaoSocialHub(usuario);
-            enviarParaFilaDeAtualizarUsuariosSocialHub(usuario);
+        if (isDominioPermitido(dominio)) {
+            adicionarPermissaoEEnviarParaFila(usuario);
+        } else {
+            removerPermissoesEspeciaisDoUsuario(usuario);
+        }
+    }
+
+    private boolean isDominioPermitido(String dominio) {
+        return dominiosPermitidos.contains(dominio);
+    }
+
+    private void adicionarPermissaoEEnviarParaFila(Usuario usuario) {
+        adicionarPermissaoSocialHub(usuario);
+        enviarParaFilaDeAtualizarUsuariosSocialHub(usuario);
+    }
+
+    private void removerPermissoesEspeciaisDoUsuario(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
         }
     }
 
