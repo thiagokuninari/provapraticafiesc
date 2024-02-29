@@ -49,6 +49,13 @@ public class RegionalService {
             .collect(Collectors.toList());
     }
 
+    public List<Integer> getRegionalIds(Integer usuarioId) {
+        return repository.getAllByUsuarioId(usuarioId)
+            .stream()
+            .map(Regional::getId)
+            .collect(Collectors.toList());
+    }
+
     public RegionalDto findById(Integer regionalId) {
         return of(repository.findById(regionalId)
             .orElseThrow(() -> new ValidacaoException("Regional não encontrada.")));
