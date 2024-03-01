@@ -1,9 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -15,14 +19,17 @@ public class ConfiguracaoAgendaResponse {
     private ETipoConfiguracao tipoConfiguracao;
     private String situacao;
     private CodigoNivel nivel;
-    private String canal;
+    private ECanal canal;
     private String subcanal;
     private Integer subcanalId;
     private String estruturaAa;
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
         var response = ConfiguracaoAgendaResponse.builder()
             .id(configuracao.getId())
+            .dataCadastro(configuracao.getDataCadastro())
             .tipoConfiguracao(configuracao.getTipoConfiguracao())
             .qtdHorasAdicionais(configuracao.getQtdHorasAdicionais())
             .situacao(configuracao.getSituacao().getDescricao())

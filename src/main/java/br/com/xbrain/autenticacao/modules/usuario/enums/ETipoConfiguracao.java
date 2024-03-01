@@ -24,7 +24,7 @@ public enum ETipoConfiguracao {
         IConfiguracaoAgendaRealGroupsValidation.Canal.class,
         (model, request) -> model.setCanal(request.getCanal()),
         (predicate, filtros) -> predicate.comCanal(filtros.getCanal()),
-        (response, model) -> response.setCanal(model.getCanal().getDescricao()),
+        (response, model) -> response.setCanal(model.getCanal()),
         (repository, request) -> repository.existsByCanal(request.getCanal()),
         ConfiguracaoAgendaRealService::flushCacheConfigCanal),
     NIVEL(

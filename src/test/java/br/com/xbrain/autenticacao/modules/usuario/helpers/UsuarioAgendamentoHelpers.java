@@ -83,8 +83,9 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaResponse.builder()
             .qtdHorasAdicionais(100)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
-            .canal(ECanal.AGENTE_AUTORIZADO.getDescricao())
+            .canal(ECanal.AGENTE_AUTORIZADO)
             .situacao(ESituacao.A.getDescricao())
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
             .build();
     }
 
