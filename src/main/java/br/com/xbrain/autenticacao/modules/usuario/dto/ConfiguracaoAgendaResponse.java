@@ -4,8 +4,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +23,7 @@ public class ConfiguracaoAgendaResponse {
     private String subcanal;
     private Integer subcanalId;
     private String estruturaAa;
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
