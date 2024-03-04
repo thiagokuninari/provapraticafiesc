@@ -69,7 +69,7 @@ public class ConfiguracaoAgendaRealServiceTest {
             .thenReturn(false);
 
         assertThat(service.salvar(umaConfiguracaoAgendaRequest()))
-            .isEqualTo(umaConfiguracaoAgendaResponse());
+            .isEqualToIgnoringGivenFields(umaConfiguracaoAgendaResponse(), "dataCadastro");
 
         verify(historicoRepository).save((ConfiguracaoAgendaRealHistorico) MockitoHamcrest.argThat(
             hasProperty("acao", equalTo(EAcao.CADASTRO))));
