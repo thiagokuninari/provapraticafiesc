@@ -590,10 +590,10 @@ public class UsuarioService {
             removerPermissoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
-            processarUsuarioParaSocialHub(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
+            processarUsuarioParaSocialHub(usuario);
 
             return UsuarioDto.of(usuario);
 
