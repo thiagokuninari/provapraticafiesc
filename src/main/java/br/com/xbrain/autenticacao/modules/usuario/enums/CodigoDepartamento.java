@@ -23,5 +23,8 @@ public enum CodigoDepartamento {
     PROJETOS,
     SUPORTE_COMERCIAL,
     TRADE_MARKETING,
-    TECNICO
+    TECNICO,
+    CREDITO,
+    ANTI_FRAUDE,
+    ENDERECOS
 }
