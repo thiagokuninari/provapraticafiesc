@@ -1176,7 +1176,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, never()).save(anyList());
-        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario));
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
     }
 
     @Test
@@ -4024,7 +4024,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, never()).save(anyList());
-        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario));
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
