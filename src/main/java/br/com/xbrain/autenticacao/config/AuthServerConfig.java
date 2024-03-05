@@ -43,6 +43,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
 import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
+import static br.com.xbrain.autenticacao.config.EScopes.SOCIAL_HUB;
 
 @Configuration
 @EnableAuthorizationServer
@@ -175,6 +176,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String qualityCallApiClient;
     @Value("${app-config.oauth-clients.quality-call-api.secret}")
     private String qualityCallApiSecret;
+    @Value("${app-config.oauth-clients.social-hub-api.client}")
+    private String socialHubApiClient;
+    @Value("${app-config.oauth-clients.social-hub-api.secret}")
+    private String socialHubApiSecret;
+
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -368,6 +374,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(qualityCallApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(QUALITY_CALL.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(socialHubApiClient)
+            .secret(socialHubApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SOCIAL_HUB.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

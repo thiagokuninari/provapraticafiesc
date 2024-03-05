@@ -29,7 +29,8 @@ public enum EScopes {
     SOLICITACAO_PAP("solicitacao-pap"),
     CLARO_INDICO("claro-indico-api"),
     BLOQUEIO_LIGACAO_API("bloqueio-ligacao-api"),
-    QUALITY_CALL("quality-call-api");
+    QUALITY_CALL("quality-call-api"),
+    SOCIAL_HUB("social-hub-api");
 
     @Getter
     private String scope;

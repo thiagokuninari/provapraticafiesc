@@ -246,6 +246,9 @@ app-config:
     quality-call-api:
       client: quality-call-api
       secret: qu4l1tyc4ll4p1
+    social-hub-api:
+      client: social-hub-api
+      secret: s0c14lhub4p1
 
   services:
     autenticacao:
