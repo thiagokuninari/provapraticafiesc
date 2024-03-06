@@ -285,8 +285,6 @@ app-config:
     solicitacao-pap:
       #url: http://localhost:8108
       url: https://api-dev.conexaoclarobrasil.com.br/solicitacao-cliente-pap
-    consulta-cep:
-      url: http://192.168.2.28:8186
     notificacao:
       #url: http://localhost:8081
       url: http://192.168.50.1:6595
