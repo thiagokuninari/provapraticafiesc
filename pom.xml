@@ -6,7 +6,7 @@
 
     <groupId>br.com.xbrain</groupId>
     <artifactId>autenticacao-api</artifactId>
-    <version>4.3.8</version>
+    <version>4.3.9</version>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
