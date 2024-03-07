@@ -10,11 +10,11 @@ VARPATHSOURCE="/var/jenkins_home/.m2/repository/br/com/xbrain/"$NAME_APP"/"$POM_
 VARPATHDESTINY="/home/xbrain/prod/autenticacao";
 JAR_FILE=$NAME_APP"-"$POM_VERSION".jar";
 DOCKERFILE="$VARPATHDESTINY/Dockerfile";
-CONTAINER="autenticacao-prod";
+CONTAINER="autenticacao-api-prod";
 IMAGE_NAME=$CONTAINER;
 PROFILE="producao";
 JAVA_OPTS="-Xms2g -Xmx8g -Dspring.profiles.active=$PROFILE \
-                          -Delastic.apm.service_name=$CONTAINER-api \
+                          -Delastic.apm.service_name=$CONTAINER \
                           -Delastic.apm.server_url=http://192.168.2.23:8200 \
                           -Delastic.apm.application_packages=br.com.xbrain";
 
