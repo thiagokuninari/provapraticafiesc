@@ -74,6 +74,8 @@ app-config:
       url: http://172.10.10.113:8304
     localizacao:
       url: http://localizacao-api:8039
+    integracao-claro-net:
+      url: http://integracao-claro-net-api:8505
 
   email:
     enviar: true

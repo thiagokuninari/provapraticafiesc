@@ -248,6 +248,9 @@ app-config:
     gestao-colaborador-pol-api:
       client: gestao-colaborador-pol-api
       secret: g3st40c0l4b0r4d0r
+    integracao-claro-net-api:
+      client: integracao-claro-net-api
+      secret: 1nt3gr4c40cl4r0n3t
 
   services:
     autenticacao:
@@ -312,6 +315,9 @@ app-config:
     gestao-colaborador-pol:
       #url: http://localhost:8310
       url: http://192.168.50.1:8310
+    integracao-claro-net:
+      #url: http://localhost:8505
+      url: http://192.168.50.1:8505
 
 flyway:
   enabled: true
@@ -375,6 +381,9 @@ zuul:
     gestao-colaborador-pol:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.gestao-colaborador-pol.url}
+    integracao-claro-net:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.integracao-claro-net.url}
 
   host:
     connect-timeout-millis: 1800000
