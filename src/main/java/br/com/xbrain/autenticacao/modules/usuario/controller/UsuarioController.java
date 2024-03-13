@@ -435,10 +435,10 @@ public class UsuarioController {
         return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);
     }
 
-    @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
+    @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}/tipoContato/{tipoContato}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
-        @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
-        return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
+        @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId, @PathVariable String tipoContato) {
+        return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId, tipoContato);
     }
 
     @GetMapping("usuario-funil-prospeccao")

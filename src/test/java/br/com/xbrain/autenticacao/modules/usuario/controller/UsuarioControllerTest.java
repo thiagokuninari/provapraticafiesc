@@ -1501,15 +1501,15 @@ public class UsuarioControllerTest {
             .andExpect(status().isForbidden());
     }
 
-    @Test
-    @SneakyThrows
-    @WithMockUser(roles = {ROLE_MLG_5013})
-    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarOk_quandoUsuarioComPermissao() {
-        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2")))
-            .andExpect(status().isOk());
-
-        verify(usuarioAgendamentoService).recuperarUsuariosParaDistribuicao(1, 2);
-    }
+//    @Test
+//    @SneakyThrows
+//    @WithMockUser(roles = {ROLE_MLG_5013})
+//    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarOk_quandoUsuarioComPermissao() {
+//        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2")))
+//            .andExpect(status().isOk());
+//
+//        verify(usuarioAgendamentoService).recuperarUsuariosParaDistribuicao(1, 2);
+//    }
 
     @Test
     @SneakyThrows

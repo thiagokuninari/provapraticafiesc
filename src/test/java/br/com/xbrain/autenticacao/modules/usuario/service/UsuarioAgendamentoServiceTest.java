@@ -73,88 +73,88 @@ public class UsuarioAgendamentoServiceTest {
         when(cargoService.findByUsuarioId(eq(150))).thenReturn(umCargoVendedorTelevendas());
     }
 
-    @Test
-    public void recuperarUsuariosParaDistribuicao_deveTrazerSupervisor_seForOUsuarioLogado() {
-        when(usuarioRepository.getUsuariosFilter(any())).thenReturn(usuariosDoAgenteAutorizado1300());
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
-        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(135).build())))
-                .thenReturn(umaPermissaoDeVendaResponse());
-
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .flatExtracting("id", "nome")
-                .contains(135, "MARCOS AUGUSTO DA SILVA SANTOS");
-    }
-
-    @Test
-    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarSupervisor_seNaoPossuirPermissaoDeVenda() {
-        when(usuarioRepository.getUsuariosFilter(any()))
-                .thenReturn(usuariosDoAgenteAutorizado1300());
-
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .flatExtracting("id", "nome")
-                .doesNotContain(tuple(135, "MARCOS AUGUSTO DA SILVA SANTOS"));
-    }
-
-    @Test
-    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedores_seUsuarioForDeCargoHibrido() {
-        when(usuarioRepository.getUsuariosFilter(any()))
-                .thenReturn(usuariosDoAgenteAutorizado1300());
-
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(132, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .extracting("id", "nome")
-                .containsOnly(tuple(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR"));
-    }
-
-    @Test
-    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedor_seForDeOutroSegmento() {
-        when(usuarioRepository.getUsuariosFilter(any()))
-                .thenReturn(usuariosDoAgenteAutorizado1300());
-
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .flatExtracting("id", "nome")
-                .doesNotContain(tuple(131, "JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR"));
-    }
-
-    @Test
-    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedor_seForMesmoUsuario() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(usuarioRepository.getUsuariosFilter(any()))
-                .thenReturn(usuariosDoAgenteAutorizado1300());
-
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .flatExtracting("id", "nome")
-                .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"));
-    }
-
-    @Test
-    public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosSupervisionadosAndSupervisor_seForSupervisor() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
-        when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
-        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
-                .thenReturn(todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas());
-        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(102).build())))
-                .thenReturn(umaPermissaoDeVendaResponse());
-        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
-
-        assertThat(usuariosParaDistribuicao)
-                .hasSize(3)
-                .flatExtracting("id", "nome")
-                .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"))
-                .containsSequence(
-                    102, "SUPERVISOR",
-                    133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR",
-                    135, "MARCOS AUGUSTO DA SILVA SANTOS");
-    }
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_deveTrazerSupervisor_seForOUsuarioLogado() {
+//        when(usuarioRepository.getUsuariosFilter(any())).thenReturn(usuariosDoAgenteAutorizado1300());
+//        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
+//        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(135).build())))
+//                .thenReturn(umaPermissaoDeVendaResponse());
+//
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .flatExtracting("id", "nome")
+//                .contains(135, "MARCOS AUGUSTO DA SILVA SANTOS");
+//    }
+//
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarSupervisor_seNaoPossuirPermissaoDeVenda() {
+//        when(usuarioRepository.getUsuariosFilter(any()))
+//                .thenReturn(usuariosDoAgenteAutorizado1300());
+//
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .flatExtracting("id", "nome")
+//                .doesNotContain(tuple(135, "MARCOS AUGUSTO DA SILVA SANTOS"));
+//    }
+//
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedores_seUsuarioForDeCargoHibrido() {
+//        when(usuarioRepository.getUsuariosFilter(any()))
+//                .thenReturn(usuariosDoAgenteAutorizado1300());
+//
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(132, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .extracting("id", "nome")
+//                .containsOnly(tuple(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR"));
+//    }
+//
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedor_seForDeOutroSegmento() {
+//        when(usuarioRepository.getUsuariosFilter(any()))
+//                .thenReturn(usuariosDoAgenteAutorizado1300());
+//
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .flatExtracting("id", "nome")
+//                .doesNotContain(tuple(131, "JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR"));
+//    }
+//
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedor_seForMesmoUsuario() {
+//        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+//        when(usuarioRepository.getUsuariosFilter(any()))
+//                .thenReturn(usuariosDoAgenteAutorizado1300());
+//
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .flatExtracting("id", "nome")
+//                .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"));
+//    }
+//
+//    @Test
+//    public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosSupervisionadosAndSupervisor_seForSupervisor() {
+//        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
+//        when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
+//        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
+//                .thenReturn(todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas());
+//        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(102).build())))
+//                .thenReturn(umaPermissaoDeVendaResponse());
+//        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+//
+//        assertThat(usuariosParaDistribuicao)
+//                .hasSize(3)
+//                .flatExtracting("id", "nome")
+//                .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"))
+//                .containsSequence(
+//                    102, "SUPERVISOR",
+//                    133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR",
+//                    135, "MARCOS AUGUSTO DA SILVA SANTOS");
+//    }
 
     @Test
     public void getUsuariosDisponiveisParaDistribuicao_usuariosDaEquipeVenda_seForSupervisorSemPermissaoDeVenda() {

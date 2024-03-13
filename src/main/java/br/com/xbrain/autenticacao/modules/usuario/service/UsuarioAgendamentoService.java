@@ -34,6 +34,7 @@ import static com.google.common.collect.Lists.partition;
 @Service
 @RequiredArgsConstructor
 public class UsuarioAgendamentoService {
+
     private static final List<CodigoCargo> CARGOS_HIBRIDOS_PERMITIDOS = List.of(
         CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
         CodigoCargo.AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
@@ -67,36 +68,70 @@ public class UsuarioAgendamentoService {
     private final UsuarioRepository usuarioRepository;
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
-                                                                                              Integer agenteAutorizadoId) {
+                                                                                              Integer agenteAutorizadoId,
+                                                                                              String tipoContato) {
+        return isUsuarioAutenticadoSupervisor()
+            ? recuperarUsuariosParaSupervisor(usuarioId, agenteAutorizadoId, tipoContato)
+            : recuperarUsuariosParaOutrosUsuarios(usuarioId, agenteAutorizadoId, tipoContato);
+    }
+
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaSupervisor(Integer usuarioId,
+                                                                                             Integer agenteAutorizadoId,
+                                                                                             String tipoContato) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(
+            Collections.singletonList(usuarioAutenticado));
+
         var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
-        var usuariosIds = getUsuarioIds(usuariosDoAa);
+        var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuariosDoAa)
+            .stream()
+            .map(UsuarioAgendamentoResponse::getId)
+            .collect(Collectors.toList());
 
-        var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
+        return filtrarUsuariosSolicitante(usuarioId, agenteAutorizadoId, tipoContato, supervisorComPermissaoVenda).stream()
+            .filter(u -> usuariosSupervisionados.contains(u.getId())
+                || Objects.equals(u.getId(), usuarioAutenticado.getId()))
+            .distinct()
+            .collect(Collectors.toList());
+    }
 
-        var vendedoresDoMesmoCanal = getVendedoresDoMesmoCanal(usuarioId, agenteAutorizadoId, usuariosHibridos);
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaOutrosUsuarios(Integer usuarioId,
+                                                                                                 Integer agenteAutorizadoId,
+                                                                                                 String tipoContato) {
 
-        if (isUsuarioAutenticadoSupervisor()) {
-            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
-            var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(
-                Collections.singletonList(usuarioAutenticado));
-            var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuariosDoAa)
-                .stream()
-                .map(UsuarioAgendamentoResponse::getId)
-
-                .collect(Collectors.toList());
-            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresDoMesmoCanal.stream())
-                .filter(u -> !u.isUsuarioSolicitante(usuarioId)
-                    && (usuariosSupervisionados.contains(u.getId())
-                    || Objects.equals(u.getId(), usuarioAutenticado.getId())))
-                .distinct()
-                .collect(Collectors.toList());
-        }
-
+        var usuariosHibridos = obterUsuariosHibridosDoAa(agenteAutorizadoId);
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
 
-        return Stream.concat(usuariosHibridosValidos.stream(), vendedoresDoMesmoCanal.stream())
+        return filtrarUsuariosSolicitante(usuarioId, agenteAutorizadoId, tipoContato, usuariosHibridosValidos);
+    }
+
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> filtrarUsuariosSolicitante(
+        Integer usuarioId,
+        Integer agenteAutorizadoId,
+        String tipoContato,
+        List<UsuarioAgenteAutorizadoAgendamentoResponse> request) {
+
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosIds = getUsuarioIds(usuariosDoAa);
+        var usuariosHibridos = obterUsuariosHibridosDoAa(agenteAutorizadoId);
+
+        var vendedores = obterVendedores(usuarioId, agenteAutorizadoId, tipoContato, usuariosIds, usuariosHibridos);
+        return Stream.concat(request.stream(), vendedores.stream())
             .filter(u -> !u.isUsuarioSolicitante(usuarioId))
             .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> obterVendedores(Integer usuarioId,
+                                                                             Integer agenteAutorizadoId,
+                                                                             String tipoContato,
+                                                                             List<Integer> usuariosIds,
+                                                                             List<Usuario> usuariosHibridos) {
+        var vendedoresDoAa = obterVendedoresDoAa(usuariosIds, tipoContato);
+        var vendedoresDoMesmoCanal =
+            getVendedoresDoMesmoCanal(usuarioId, agenteAutorizadoId, usuariosHibridos);
+
+        return Stream.concat(vendedoresDoMesmoCanal.stream(), vendedoresDoAa.stream())
             .collect(Collectors.toList());
     }
 
@@ -124,13 +159,16 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
-    private List<Usuario> obterUsuariosHibridosDoAa(List<Integer> usuariosDoAa) {
+    private List<Usuario> obterUsuariosHibridosDoAa(Integer agenteAutorizadoId) {
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosIds = getUsuarioIds(usuariosDoAa);
+
         Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
             .filter(u -> this.isSupervisor(u.getCargoCodigo()))
-            .ifPresent(u -> usuariosDoAa.add(u.getId()));
+            .ifPresent(u -> usuariosIds.add(u.getId()));
 
         return usuarioRepository.getUsuariosFilter(new UsuarioPredicate()
-                .comIds(usuariosDoAa)
+                .comIds(usuariosIds)
                 .build())
             .stream()
             .filter(u -> isCargoHibrido(u.getCargoCodigo()))
@@ -255,4 +293,45 @@ public class UsuarioAgendamentoService {
             .map(this::isSupervisor)
             .orElse(false);
     }
+
+    public List<UsuarioAgenteAutorizadoAgendamentoResponse> obterVendedoresDoAa(
+        List<Integer> usuarioIds,
+        String tipoContato) {
+
+        return getUsuarioById(usuarioIds).stream()
+            .filter(usuario -> validarUsuarioPermissao(usuario, tipoContato))
+            .map(UsuarioAgenteAutorizadoAgendamentoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    private boolean validarUsuarioPermissao(Usuario usuario, String tipoContato) {
+        var permissao = validarTipoContato(tipoContato);
+
+        var permissaoUsuario = usuarioService.findPermissoesByUsuario(usuario);
+
+        return Stream.concat(
+                permissaoUsuario.getPermissoesCargoDepartamento()
+                    .stream()
+                    .map(CargoDepartamentoFuncionalidadeResponse::getFuncionalidadeRole),
+                permissaoUsuario.getPermissoesEspeciais()
+                    .stream()
+                    .map(FuncionalidadeResponse::getRole))
+            .anyMatch(permissao::equalsIgnoreCase);
+    }
+
+    private List<Usuario> getUsuarioById(List<Integer> ids) {
+        return usuarioRepository.getUsuariosFilter(
+            new UsuarioPredicate()
+                .comIds(ids)
+                .build());
+    }
+
+    private String validarTipoContato(String tipoContato) {
+        return Objects.equals(tipoContato, "PRESENCIAL")
+            ? "VDS_TABULACAO_MANUAL"
+            : Objects.equals(tipoContato, "CLICK_TO_CALL")
+            ? "VDS_TABULACAO_CLICKTOCALL"
+            : "VDS_TABULACAO_DISCADORA";
+    }
+
 }
