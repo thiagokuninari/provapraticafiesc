@@ -1876,6 +1876,7 @@ public class UsuarioServiceTest {
                 .codigoNivel(OPERACAO)
                 .nomeNivel("OPERACAO")
                 .cpf("097.238.645-92")
+                .canais(Collections.emptySet())
                 .build());
     }
 
@@ -4494,6 +4495,31 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
 
         verify(repository).findByEmail(usuarioInativo.getEmail());
+    }
+
+    @Test
+    public void findUsuarioD2dByCpf_deveRetornarUsuarioSubCanalResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanalInsideSales()));
+
+        var cpf = "11122233344";
+        var predicate = new UsuarioPredicate();
+        predicate.comCpf(cpf)
+            .comCanalD2d(true);
+
+        when(repository.findByPredicate(predicate.build())).thenReturn(Optional.of(usuario));
+
+        assertThat(service.findUsuarioD2dByCpf(cpf))
+            .extracting("id", "nome", "codigoNivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(4, INSIDE_SALES_PME, "Inside Sales PME")));
+    }
+
+    @Test
+    public void findUsuarioD2dByCpf_deveRetornarNovoObjeto_seUsuarioNaoExistir() {
+        assertThat(service.findUsuarioD2dByCpf("00000000000")).isEqualTo(null);
+
+        verify(repository, times(1)).findByPredicate(any());
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

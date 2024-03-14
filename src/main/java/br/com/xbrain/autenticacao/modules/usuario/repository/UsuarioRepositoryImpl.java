@@ -1429,4 +1429,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
+    @Override
+    public Optional<Usuario> findByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(predicate)
+            .fetchFirst());
+    }
 }

@@ -41,9 +41,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMIN
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
 import static helpers.TestBuilders.umUsuario;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -2244,5 +2241,27 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuarioD2dByCpf_deveRetornarOk_quandoUsuarioExistir() {
+        mvc.perform(get(BASE_URL + "/d2d")
+                .param("cpf", "38957979875"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findUsuarioD2dByCpf("38957979875");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuarioD2dByCpf_naoDeveRetornarNotFound_quandoUsuarioNaoExistir() {
+        mvc.perform(get(BASE_URL + "/d2d")
+                .param("cpf", "00000000000"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findUsuarioD2dByCpf("00000000000");
     }
 }

@@ -80,4 +80,13 @@ public class SubCanalHelper {
     private static SubCanal umSubcanal(ETipoCanal tipoCanal) {
         return SubCanal.builder().codigo(tipoCanal).build();
     }
+
+    public static SubCanal umSubCanalInsideSales() {
+        return SubCanal.builder()
+            .id(4)
+            .codigo(ETipoCanal.INSIDE_SALES_PME)
+            .nome("Inside Sales PME")
+            .situacao(A)
+            .build();
+    }
 }

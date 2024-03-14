@@ -592,4 +592,9 @@ public class UsuarioController {
     public void moverAvatarMinio() {
         usuarioService.moverAvatarMinio();
     }
+
+    @GetMapping("d2d")
+    public UsuarioSubCanalResponse findUsuarioD2dByCpf(@RequestParam String cpf) {
+        return usuarioService.findUsuarioD2dByCpf(cpf);
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,6 +88,8 @@ public class UsuarioResponse {
             usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
             usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
             usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
+            usuarioResponse.setCanais(!ObjectUtils.isEmpty(usuario.getCanais())
+                ? usuario.getCanais() : Collections.emptySet());
             usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
                 ? usuario.getSubCanais().stream()
                     .map(SubCanalDto::of)

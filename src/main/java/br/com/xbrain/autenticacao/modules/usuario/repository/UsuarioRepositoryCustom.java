@@ -200,4 +200,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
 
     List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos);
+
+    Optional<Usuario> findByPredicate(Predicate predicate);
 }
