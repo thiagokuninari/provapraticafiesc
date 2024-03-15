@@ -1489,27 +1489,34 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2")))
+        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2"))
+            .param("tipoContato", "PRESENCIAL"))
             .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioAgendamentoService);
     }
 
     @Test
     @SneakyThrows
     @WithMockUser
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarForbidden_quandoUsuarioSemPermissao() {
-        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2")))
+        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2"))
+            .param("tipoContato", "PRESENCIAL"))
             .andExpect(status().isForbidden());
+
+        verifyNoMoreInteractions(usuarioAgendamentoService);
     }
 
-//    @Test
-//    @SneakyThrows
-//    @WithMockUser(roles = {ROLE_MLG_5013})
-//    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarOk_quandoUsuarioComPermissao() {
-//        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2")))
-//            .andExpect(status().isOk());
-//
-//        verify(usuarioAgendamentoService).recuperarUsuariosParaDistribuicao(1, 2);
-//    }
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {ROLE_MLG_5013})
+    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarOk_quandoUsuarioComPermissao() {
+        mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2"))
+                .param("tipoContato", "PRESENCIAL"))
+            .andExpect(status().isOk());
+
+        verify(usuarioAgendamentoService).recuperarUsuariosParaDistribuicao(1, 2, "PRESENCIAL");
+    }
 
     @Test
     @SneakyThrows
