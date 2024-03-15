@@ -59,12 +59,13 @@ public class UsuarioAgendamentoServiceTest {
         when(usuarioService.findPermissoesByUsuario(umUsuarioAutenticadoSupervisor().getUsuario()))
             .thenReturn(umaPermissaoDeVendaClickToCall());
         when(agenteAutorizadoService.getUsuariosByAaId(1300, false))
-            .thenReturn(UsuariosDoAa1300ComEquipesDeVendas());
+            .thenReturn(usuariosDoAa1300ComEquipesDeVendas());
         when(agenteAutorizadoService.getUsuariosByAaId(999, true))
             .thenReturn(listaUsuariosDoAgenteAutorizado999());
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosParaDistribuicao_deveRetornarListaVazia_quandoNaoTiverVendedoresSupervisionadosDoSupervisorAutenticado() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
         when(repository.getUsuariosFilter(any(Predicate.class))).thenReturn(usuariosDoAgenteAutorizado1300());
@@ -82,6 +83,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosParaDistribuicao_deveRetornarApenasUsuarioHibridosEVendedoresSupervisionados_quandoUsuarioAutenticadoSupervisor() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
         when(repository.getUsuariosFilter(any(Predicate.class))).thenReturn(usuariosDoAgenteAutorizado1300());
@@ -155,6 +157,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosHibridosEVendedoresTelevendas_quandoTipoContatoClickToCall() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSocio());
         when(repository.getUsuariosFilter(any(Predicate.class))).thenReturn(usuariosDoAgenteAutorizado1300());
@@ -180,6 +183,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosParaDistribuicao_deveRetornarApenasSocioPrincipal_quandoSupervisorSemPermissaoVendaESemVendedores() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSocio());
         when(usuarioService.findPermissoesByUsuario(any(Usuario.class))).thenReturn(umaPermissaoVisualizarGeral());
@@ -250,6 +254,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarusuariosDaEquipeVenda_seForSupervisorSemPermissaoDeVenda() {
         var resultMap = new HashMap<Integer, Integer>();
         resultMap.put(9991, 999);
@@ -278,6 +283,7 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
     public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarusuariosDaEquipeVendaAndSupervisor_quandoSupervisorComPermissaoDeVenda() {
         var resultMap = new HashMap<Integer, Integer>();
         resultMap.put(9991, 999);

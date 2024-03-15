@@ -435,6 +435,7 @@ public class UsuarioController {
         return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);
     }
 
+    @SuppressWarnings("LineLength")
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(@PathVariable Integer usuarioId,
                                                                                                       @PathVariable Integer agenteAutorizadoId,

@@ -41,6 +41,7 @@ public class UsuarioAgendamentoService {
     private final AgenteAutorizadoService agenteAutorizadoService;
     private final EquipeVendasUsuarioService equipeVendasUsuarioService;
 
+    @SuppressWarnings("LineLength")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId,
                                                                                               String tipoContato) {
@@ -85,6 +86,7 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("LineLength")
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> getColaboradoresSupervionados(Integer usuarioId,
                                                                                            Integer agenteAutorizadoId,
                                                                                            String tipoContato,
@@ -108,6 +110,7 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("LineLength")
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> getColaboradoresVendas(Integer usuarioId,
                                                                                     Integer agenteAutorizadoId,
                                                                                     String tipoContato,
@@ -119,13 +122,13 @@ public class UsuarioAgendamentoService {
         return filtrarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId, tipoContato, usuariosDoAa, usuariosHibridos, usuariosHibridosValidos);
     }
 
+    @SuppressWarnings("LineLength")
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> filtrarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                              Integer agenteAutorizadoId,
                                                                                              String tipoContato,
                                                                                              List<UsuarioAgenteAutorizadoResponse> usuariosDoAa,
                                                                                              List<Usuario> usuariosHibridos,
                                                                                              List<UsuarioAgenteAutorizadoAgendamentoResponse> request) {
-
 
         var vendedoresDoMesmoCanal = getVendedoresDoMesmoCanal(usuarioId, agenteAutorizadoId, usuariosHibridos);
         var vendedoresDoAa = getVendedoresDoAa(tipoContato, usuariosDoAa);
@@ -262,6 +265,7 @@ public class UsuarioAgendamentoService {
             .orElse(false);
     }
 
+    @SuppressWarnings("LineLength")
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> getVendedoresDoAa(String tipoContato,
                                                                                List<UsuarioAgenteAutorizadoResponse> usuariosDoAa) {
         var usuariosIds = getUsuarioIds(usuariosDoAa);

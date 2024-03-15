@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.UsuariosDoAa1300ComEquipesDeVendas;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosDoAa1300ComEquipesDeVendas;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umaListaDeAgenteAutorizadoResponse;
 import static org.assertj.core.api.Assertions.*;
@@ -111,7 +111,7 @@ public class AgenteAutorizadoServiceTest {
 
     @Test
     public void getUsuariosAaAtivoComVendedoresD2D_deveRetornarListaUsuarioAgenteAutorizadoResponse_quandoSolicitado() {
-        doReturn(UsuariosDoAa1300ComEquipesDeVendas())
+        doReturn(usuariosDoAa1300ComEquipesDeVendas())
             .when(client)
             .getUsuariosAaAtivoComVendedoresD2D(1);
 

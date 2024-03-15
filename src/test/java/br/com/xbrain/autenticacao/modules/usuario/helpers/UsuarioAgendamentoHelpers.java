@@ -196,7 +196,7 @@ public class UsuarioAgendamentoHelpers {
         );
     }
 
-    public static List<UsuarioAgenteAutorizadoResponse> UsuariosDoAa1300ComEquipesDeVendas() {
+    public static List<UsuarioAgenteAutorizadoResponse> usuariosDoAa1300ComEquipesDeVendas() {
         return List.of(
                 new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", 999),
                 new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", 980),
