@@ -10,7 +10,7 @@ VARPATHSOURCE="/var/jenkins_home/.m2/repository/br/com/xbrain/"$NAME_APP"/"$POM_
 VARPATHDESTINY="/home/xbrain/crt/autenticacao";
 JAR_FILE=$NAME_APP"-"$POM_VERSION".jar";
 DOCKERFILE="$VARPATHDESTINY/Dockerfile";
-CONTAINER="autenticacao-crt";
+CONTAINER="autenticacao-api-crt";
 IMAGE_NAME=$CONTAINER;
 PROFILE="certificacao";
 JAVA_OPTS="-Xms1g -Xmx3g -Dspring.profiles.active=$PROFILE -XX:+UseContainerSupport \
@@ -21,7 +21,7 @@ JAVA_OPTS="-Xms1g -Xmx3g -Dspring.profiles.active=$PROFILE -XX:+UseContainerSupp
                          -Dcom.sun.management.jmxremote.authenticate=false \
                          -Dcom.sun.management.jmxremote.local.only=false \
                          -Djava.rmi.server.hostname=192.168.1.40 \
-                         -Delastic.apm.service_name=$CONTAINER-api \
+                         -Delastic.apm.service_name=$CONTAINER \
                          -Delastic.apm.server_url=http://192.168.2.23:8200 \
                          -Delastic.apm.application_packages=br.com.xbrain";
 MAXIMO_MEMORIA="4g";
