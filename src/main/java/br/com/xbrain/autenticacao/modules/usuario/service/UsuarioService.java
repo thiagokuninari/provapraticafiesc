@@ -561,7 +561,7 @@ public class UsuarioService {
         return repository.findAllExecutivosOperacaoDepartamentoComercial(predicate);
     }
 
-    public List<UsuarioAutoComplete> findAllResponsaveisDdd(@Nullable CodigoCargo cargo) {
+    public List<UsuarioAutoComplete> findAllResponsaveisDdd() {
         return repository.findAllResponsaveisDdd();
     }
 

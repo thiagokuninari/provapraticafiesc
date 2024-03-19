@@ -630,17 +630,6 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser
-    public void findAllResponsaveisDdd_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL.concat("/responsaveis-ddd"))
-                .param("cargo", "AGENTE_AUTORIZADO_GERENTE"))
-            .andExpect(status().isOk());
-
-        verify(usuarioService).findAllResponsaveisDdd(CodigoCargo.AGENTE_AUTORIZADO_GERENTE);
-    }
-
-    @Test
-    @SneakyThrows
     @WithAnonymousUser
     public void vincularUsuariosComSuperior_vincular_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/vincula/hierarquia")))

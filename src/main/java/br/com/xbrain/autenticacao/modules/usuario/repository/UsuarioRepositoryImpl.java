@@ -337,7 +337,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(usuario.departamento, departamento)
             .innerJoin(departamento.nivel, nivel)
-            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER, ASSISTENTE_OPERACAO, GERENTE_OPERACAO, COORDENADOR_OPERACAO, OPERACAO_ANALISTA)
+            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER, ASSISTENTE_OPERACAO, GERENTE_OPERACAO,
+                    COORDENADOR_OPERACAO, OPERACAO_ANALISTA)
                 .and(departamento.codigo.eq(COMERCIAL))
                 .and(nivel.codigo.eq(OPERACAO))
                 .and(usuario.canais.any().eq(AGENTE_AUTORIZADO))

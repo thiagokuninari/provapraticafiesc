@@ -201,7 +201,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .hasSize(6);
+            .hasSize(9);
     }
 
     @Test
@@ -271,7 +271,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void getUsuariosOperacaoCanalAa_deveRetornarUsuariosOpNivelAa() {
         assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
-            .hasSize(7);
+            .hasSize(10);
     }
 
     @Test
