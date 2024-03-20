@@ -104,6 +104,9 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
             .where(predicate)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(pageable.getOrderDirection().equals("ASC")
+                ? configuracaoAgendaReal.dataCadastro.asc().nullsFirst()
+                : configuracaoAgendaReal.dataCadastro.desc().nullsFirst())
             .fetch();
 
         return new PageImpl<>(query, pageable, query.size());

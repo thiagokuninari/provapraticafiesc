@@ -47,7 +47,7 @@ public interface AgenteAutorizadoNovoClient {
     @GetMapping(URL_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura")
     String getEstruturaByUsuarioIdAndAtivo(@PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping(URL_AGENTE_AUTORIZADO + "/{aaId}/obter-estrutura-aa")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/{aaId}/obter-nome-estrutura-aa")
     String getEstruturaByAgenteAutorizadoId(@PathVariable("aaId") Integer aaId);
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura/sem-situacao")
