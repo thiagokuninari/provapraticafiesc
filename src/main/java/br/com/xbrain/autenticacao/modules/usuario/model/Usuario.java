@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -301,6 +302,13 @@ public class Usuario {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioMqRequest, usuario);
         usuario.setUsuarioCadastro(new Usuario(usuarioMqRequest.getUsuarioCadastroId()));
+        return usuario;
+    }
+
+    public static Usuario from(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        var usuario = new Usuario();
+        usuario.setId(usuarioDadosAcessoRequest.getUsuarioId());
+        usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         return usuario;
     }
 

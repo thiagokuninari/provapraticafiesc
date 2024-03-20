@@ -55,6 +55,16 @@ public class RegionalServiceTest {
     }
 
     @Test
+    public void getRegionalIds_deveRetornarIdsDasRegionais_doUsuarioInformadoPeloParametro() {
+        when(regionalRepository.getAllByUsuarioId(USUARIO_ID))
+            .thenReturn(List.of(Regional.builder().id(1027).nome("RPS").build()));
+
+        assertThat(regionalService.getRegionalIds(USUARIO_ID))
+            .isNotNull()
+            .containsExactly(1027);
+    }
+
+    @Test
     public void findById_deveRetornarUmaRegional_seExistir() {
         when(regionalRepository.findById(USUARIO_ID))
             .thenReturn(Optional.of(Regional.builder().id(1).nome("LESTE").situacao(A).build()));

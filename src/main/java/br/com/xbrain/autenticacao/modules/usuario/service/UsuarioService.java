@@ -168,6 +168,7 @@ public class UsuarioService {
         "O usuário não pode ser ativado pois o fornecedor está inativo.";
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
+    private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
 
     @Autowired
     private UsuarioRepository repository;
@@ -263,6 +264,8 @@ public class UsuarioService {
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
+    private Set<String> dominiosPermitidos;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -615,6 +618,7 @@ public class UsuarioService {
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
+            processarUsuarioParaSocialHub(usuario);
 
             return UsuarioDto.of(usuario);
         } catch (PersistenceException | DataIntegrityViolationException ex) {
@@ -773,6 +777,7 @@ public class UsuarioService {
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
+        processarUsuarioParaSocialHub(usuario);
         enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
     }
@@ -2032,6 +2037,7 @@ public class UsuarioService {
         usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
+        processarUsuarioParaSocialHub(getUsuario(usuarioDadosAcessoRequest.getUsuarioId()));
         updateSenha(usuario, Eboolean.V);
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
@@ -3161,5 +3167,53 @@ public class UsuarioService {
 
     private List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos) {
         return repository.getIdsUsuariosHierarquiaPorCargos(codigoCargos);
+    }
+
+    private void processarUsuarioParaSocialHub(Usuario usuario) {
+        var email = usuario.getEmail();
+        var dominio = extractDominio(email);
+
+        if (isDominioPermitido(dominio)) {
+            adicionarPermissaoEEnviarParaFila(usuario);
+        } else {
+            removerPermissoesEspeciaisDoUsuario(usuario);
+        }
+    }
+
+    private boolean isDominioPermitido(String dominio) {
+        return dominiosPermitidos.contains(dominio);
+    }
+
+    private void adicionarPermissaoEEnviarParaFila(Usuario usuario) {
+        adicionarPermissaoSocialHub(usuario);
+        enviarParaFilaDeAtualizarUsuariosSocialHub(usuario);
+    }
+
+    private void removerPermissoesEspeciaisDoUsuario(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
+        }
+    }
+
+    private void enviarParaFilaDeAtualizarUsuariosSocialHub(Usuario usuario) {
+        var regionais = regionalService.getRegionalIds(usuario.getId());
+        usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais));
+    }
+
+    private String extractDominio(String email) {
+        int atIndex = email.lastIndexOf("@");
+        if (atIndex != -1) {
+            return email.substring(atIndex + 1);
+        }
+        return "";
+    }
+
+    private void adicionarPermissaoSocialHub(Usuario usuario) {
+        permissaoEspecialService.save(criarPermissaoEspecialSocialHub(usuario.getId(),
+            usuario.getUsuarioCadastro().getId()));
+    }
+
+    private List<PermissaoEspecial> criarPermissaoEspecialSocialHub(Integer usuarioId, Integer usuarioCadastroId) {
+        return criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, FUNCIONALIDADES_SOCIAL_HUB);
     }
 }

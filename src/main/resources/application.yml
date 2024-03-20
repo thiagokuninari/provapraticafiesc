@@ -77,6 +77,7 @@ app-config:
   url-origin-cors: http://localhost
   upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
   url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
+  dominios-social-hub:
 
   minio:
     url: http://192.168.50.6:9000
@@ -150,6 +151,7 @@ app-config:
     atualizar-permissao-tecnico-indicador-failure: atualizar-permissao-tecnico-indicador-failure.queue
     organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
+    usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
 
   oauth-clients:
     autenticacao-api:
@@ -251,6 +253,9 @@ app-config:
     integracao-claro-net-api:
       client: integracao-claro-net-api
       secret: 1nt3gr4c40cl4r0n3t
+    social-hub-api:
+      client: social-hub-api
+      secret: s0c14lhub4p1
 
   services:
     autenticacao:

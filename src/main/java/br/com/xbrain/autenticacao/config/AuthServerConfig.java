@@ -45,6 +45,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.BLOQUEIO_LIGACAO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL;
 import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_CLARO_NET;
+import static br.com.xbrain.autenticacao.config.EScopes.SOCIAL_HUB;
 
 @Configuration
 @EnableAuthorizationServer
@@ -185,6 +186,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String integracaoClaroNetApiClient;
     @Value("${app-config.oauth-clients.integracao-claro-net-api.secret}")
     private String integracaoClaroNetApiSecret;
+    @Value("${app-config.oauth-clients.social-hub-api.client}")
+    private String socialHubApiClient;
+    @Value("${app-config.oauth-clients.social-hub-api.secret}")
+    private String socialHubApiSecret;
+
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -390,6 +396,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(integracaoClaroNetApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(INTEGRACAO_CLARO_NET.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(socialHubApiClient)
+            .secret(socialHubApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SOCIAL_HUB.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

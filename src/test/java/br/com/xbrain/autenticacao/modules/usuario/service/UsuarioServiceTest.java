@@ -57,6 +57,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -94,9 +95,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGeren
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
@@ -199,6 +198,8 @@ public class UsuarioServiceTest {
     @Captor
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
     @Captor
+    private ArgumentCaptor<UsuarioSocialHubRequestMq> socialHubRequestCaptor;
+    @Captor
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
@@ -220,6 +221,12 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+
+    @Before
+    public void setUp() {
+        ReflectionTestUtils.setField(service, "dominiosPermitidos",
+            new HashSet<>(Arrays.asList("EMAILPERMITIDO.COM.BR")));
+    }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1247,6 +1254,92 @@ public class UsuarioServiceTest {
 
         assertThat(service.findIdUsuariosAtivosByCodigoCargos(listaCargos))
             .isEqualTo(List.of(24, 34));
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setEmail("teste@emailpermitido.com.br");
+        usuario.setId(1);
+        usuario.setUsuarioCadastro(new Usuario(1));
+        usuario.setCargo(Cargo.builder()
+            .codigo(BACKOFFICE_GERENTE)
+            .nivel(Nivel.builder()
+                .codigo(BACKOFFICE)
+                .build())
+            .build());
+
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        lenient().when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(1)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(30000)
+                    .build(),
+                Usuario.builder()
+                    .id(1)
+                    .build()
+            );
+
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
+        var dadosSocialHub = socialHubRequestCaptor.getValue();
+        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
+        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailInvalido() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setEmail("teste@Naoemailpermitido.com.br");
+        usuario.setId(1);
+        usuario.setUsuarioCadastro(new Usuario(1));
+        usuario.setCargo(Cargo.builder()
+            .codigo(BACKOFFICE_GERENTE)
+            .nivel(Nivel.builder()
+                .codigo(BACKOFFICE)
+                .build())
+            .build());
+
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        lenient().when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService, never()).save(anyList());
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
     }
 
     @Test
@@ -4520,6 +4613,68 @@ public class UsuarioServiceTest {
         assertThat(service.findUsuarioD2dByCpf("00000000000")).isEqualTo(null);
 
         verify(repository, times(1)).findByPredicate(any());
+    }
+
+    @Test
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(1)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(30000)
+                    .build(),
+                Usuario.builder()
+                    .id(1)
+                    .build()
+            );
+
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
+        var dadosSocialHub = socialHubRequestCaptor.getValue();
+        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
+        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
+    }
+
+    @Test
+    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoDominioEmailInvalido() {
+        var usuario = umUsuarioSocialHub("teste@emailnaopermitido.com.br");
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+
+        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialService, never()).save(anyList());
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

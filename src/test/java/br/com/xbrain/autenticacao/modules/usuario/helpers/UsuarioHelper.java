@@ -793,4 +793,28 @@ public class UsuarioHelper {
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
             .build();
     }
+
+    public static Usuario umUsuarioSocialHub(String email) {
+        return Usuario.builder()
+            .id(1)
+            .cpf("097.238.645-92")
+            .nome("Seiya")
+            .email(email)
+            .situacao(ESituacao.A)
+            .usuariosHierarquia(new HashSet<>())
+            .usuarioCadastro(new Usuario(1))
+            .hierarquiasId(List.of(2))
+            .canais(Set.of(ECanal.INTERNET))
+            .departamento(Departamento.builder().id(1).nome("teste").build())
+            .cargo(Cargo.builder()
+                .id(1)
+                .codigo(OPERACAO_TELEVENDAS)
+                .nivel(Nivel.builder()
+                    .id(1)
+                    .codigo(CodigoNivel.XBRAIN)
+                    .build())
+                .build())
+            .build();
+    }
+
 }

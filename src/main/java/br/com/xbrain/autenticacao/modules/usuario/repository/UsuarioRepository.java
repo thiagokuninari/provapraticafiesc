@@ -63,6 +63,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findByFotoDiretorioIsNotNull();
 
+    Optional<Usuario> getUsuarioCadastroById(Integer usuarioId);
+
     @Modifying
     @Query("update Usuario u set u.fotoDiretorio = ?1 where u.id = ?2")
     void updateFotoDiretorio(String caminhoNovo, Integer usuarioId);

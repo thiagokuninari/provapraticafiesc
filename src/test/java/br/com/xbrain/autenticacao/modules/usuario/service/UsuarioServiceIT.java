@@ -1203,8 +1203,13 @@ public class UsuarioServiceIT {
 
     @Test
     public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
-        service.alterarDadosAcessoEmail(umUsuarioDadosAcessoRequest());
-        verify(sender, times(1)).sendSuccess(any());
+        var dadosAcessoRequest = umUsuarioDadosAcessoRequest();
+
+        service.alterarDadosAcessoEmail(dadosAcessoRequest);
+
+        verify(sender).sendSuccess(any());
+        verify(notificacaoService)
+            .enviarEmailAtualizacaoEmail(any(Usuario.class), eq(dadosAcessoRequest));
     }
 
     private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
