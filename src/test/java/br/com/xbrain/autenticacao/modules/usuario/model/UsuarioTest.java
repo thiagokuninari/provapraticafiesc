@@ -388,6 +388,16 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isTecnico_deveRetornarTrue_quandoForCargoTecnico() {
+        assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_TECNICO_GERENTE).isTecnico()).isTrue();
+    }
+
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoNaoForCargoTecnico() {
+        assertThat(umUsuarioComCargo(VENDEDOR_OPERACAO).isTecnico()).isFalse();
+    }
+
+    @Test
     public void removerCaracteresDoCpf_deveRemoverFormatacao_quandoChamado() {
         var usuario = umUsuarioConvertFrom();
         usuario.setCpf("123.123.123-12");

@@ -738,4 +738,15 @@ public class Usuario {
         }
         this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
     }
+
+    public boolean isTecnico() {
+        var cargosTecnico = List.of(
+            AGENTE_AUTORIZADO_TECNICO_GERENTE,
+            AGENTE_AUTORIZADO_TECNICO_VENDEDOR,
+            AGENTE_AUTORIZADO_TECNICO_SEGMENTADO,
+            AGENTE_AUTORIZADO_TECNICO_SUPERVISOR,
+            AGENTE_AUTORIZADO_TECNICO_COORDENADOR
+        );
+        return cargo != null && cargosTecnico.contains(cargo.getCodigo());
+    }
 }

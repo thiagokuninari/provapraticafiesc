@@ -24,6 +24,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorTecnicoService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -94,6 +95,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
@@ -256,6 +258,8 @@ public class UsuarioService {
     private ColaboradorVendasService colaboradorVendasService;
     @Value("${app-config.url-foto-usuario}")
     private String urlDir;
+    @Autowired
+    private ColaboradorTecnicoService colaboradorTecnicoService;
     @Autowired
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
@@ -985,6 +989,7 @@ public class UsuarioService {
             var usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
                 var usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
+                usuarioDto.setTipoUsuario(SOCIO);
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -1412,7 +1417,12 @@ public class UsuarioService {
         permissaoTecnicoIndicadorService.removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = repository.save(criaNovoUsuarioAPartirDoRemanejado(usuario));
         var remanejamentoRequest = UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId);
-        colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+
+        if (usuarioNovo.isTecnico()) {
+            colaboradorTecnicoService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        } else {
+            colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        }
         log.info("Usuário remanejado com sucesso. Usuário Antigo {} | Usuário Novo {} | Agente Autorizado: {}",
             usuarioMqRequest.getId(), usuarioNovo.getId(), usuarioMqRequest.getAgenteAutorizadoId());
 
