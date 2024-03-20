@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoServic
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -37,8 +38,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
+import static java.util.stream.StreamSupport.stream;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -110,9 +111,8 @@ public class UsuarioAcessoService {
     public Page<UsuarioAcessoResponse> getAll(PageRequest pageRequest, UsuarioAcessoFiltros usuarioAcessoFiltros) {
         aplicarFiltros(usuarioAcessoFiltros);
 
-        var lista = StreamSupport
-            .stream(usuarioAcessoRepository
-                .findAll(usuarioAcessoFiltros.toPredicate(), pageRequest).spliterator(), false)
+        var lista = stream(usuarioAcessoRepository
+            .findAll(usuarioAcessoFiltros.toPredicate(), pageRequest).spliterator(), false)
             .map(UsuarioAcessoResponse::of)
             .distinct()
             .collect(Collectors.toList());
@@ -133,9 +133,8 @@ public class UsuarioAcessoService {
     public List<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         aplicarFiltros(usuarioAcessoFiltros);
 
-        return StreamSupport
-            .stream(usuarioAcessoRepository
-                .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
+        return stream(usuarioAcessoRepository
+            .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
             .map(UsuarioAcessoResponse::of)
             .distinct()
             .sorted(Comparator.comparing(UsuarioAcessoResponse::getDataHora).reversed())
@@ -167,6 +166,18 @@ public class UsuarioAcessoService {
         return notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(obterUsuariosIds(request));
     }
 
+    public List<UsuarioLogadoResponse> getUsuariosLogadosCompletos(UsuarioLogadoRequest request) {
+        var usuarios = stream(usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
+            .collect(Collectors.toList());
+        var usuariosIds = usuarios.stream().map(Usuario::getId).collect(Collectors.toList());
+        var usuariosIdsLogados = notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(usuariosIds);
+
+        return usuarios.stream()
+            .filter(usuario -> usuariosIdsLogados.contains(usuario.getId()))
+            .map(UsuarioLogadoResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
@@ -174,8 +185,8 @@ public class UsuarioAcessoService {
     }
 
     private List<Integer> obterUsuariosIds(UsuarioLogadoRequest request) {
-        return StreamSupport.stream(
-                usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
+        return stream(
+            usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
     }
@@ -185,9 +196,8 @@ public class UsuarioAcessoService {
     }
 
     private long getCountDistinct(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return StreamSupport
-            .stream(usuarioAcessoRepository
-                .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
+        return stream(usuarioAcessoRepository
+            .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
             .map(UsuarioAcessoResponse::of)
             .distinct()
             .count();
