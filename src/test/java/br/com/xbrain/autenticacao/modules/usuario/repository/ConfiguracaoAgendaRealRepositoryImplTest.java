@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -70,5 +73,21 @@ public class ConfiguracaoAgendaRealRepositoryImplTest {
     public void findQtdHorasAdicionaisBySubcanal_deveRetornarOptionalVazio_quandoNaoExistir() {
         assertThat(repository.findQtdHorasAdicionaisBySubcanal(ETipoCanal.INSIDE_SALES_PME.getId()))
             .isEqualTo(Optional.empty());
+    }
+
+    @Test
+    public void findAllByPredicate_deveListarConfigPadraoPrimeiro_quandoConfigPadraoNaoPossuirDataCadastroEOrdemAsc() {
+        assertThat(repository.findAllByPredicate(new BooleanBuilder(), new PageRequest(0, 10, "id", "ASC")))
+            .hasSize(9)
+            .startsWith(umaConfiguracaoAgendaPadrao())
+            .endsWith(umaConfiguracaoAgendaUltimaOrdemAsc());
+    }
+
+    @Test
+    public void findAllByPredicate_deveListarConfigPadraoPrimeiro_quandoConfigPadraoNaoPossuirDataCadastroEOrdemDesc() {
+        assertThat(repository.findAllByPredicate(new BooleanBuilder(), new PageRequest(0, 10, "id", "DESC")))
+            .hasSize(9)
+            .startsWith(umaConfiguracaoAgendaPadrao())
+            .endsWith(umaConfiguracaoAgendaUltimaOrdemDesc());
     }
 }

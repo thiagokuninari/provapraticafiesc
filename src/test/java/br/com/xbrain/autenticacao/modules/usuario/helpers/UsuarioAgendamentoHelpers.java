@@ -91,9 +91,32 @@ public class UsuarioAgendamentoHelpers {
 
     public static ConfiguracaoAgendaReal umaConfiguracaoAgendaPadrao() {
         return ConfiguracaoAgendaReal.builder()
+            .id(9)
             .qtdHorasAdicionais(24)
             .situacao(ESituacao.A)
             .tipoConfiguracao(ETipoConfiguracao.PADRAO)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgendaUltimaOrdemAsc() {
+        return ConfiguracaoAgendaReal.builder()
+            .id(8)
+            .qtdHorasAdicionais(60)
+            .situacao(ESituacao.I)
+            .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .subcanalId(4)
+            .dataCadastro(LocalDateTime.of(2024, 1, 8, 12, 30, 0))
+            .build();
+    }
+
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgendaUltimaOrdemDesc() {
+        return ConfiguracaoAgendaReal.builder()
+            .id(1)
+            .qtdHorasAdicionais(15)
+            .situacao(ESituacao.A)
+            .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30, 0))
             .build();
     }
 
