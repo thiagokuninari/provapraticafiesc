@@ -67,22 +67,18 @@ public class ConfiguracaoAgendaReal {
     private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaReal of(ConfiguracaoAgendaRequest request, UsuarioAutenticado usuario) {
-        var configuracao = ConfiguracaoAgendaReal.builder()
+        return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(request.getQtdHorasAdicionais())
             .tipoConfiguracao(request.getTipoConfiguracao())
             .usuarioCadastroNome(usuario.getNome())
             .usuarioCadastroId(usuario.getId())
             .dataCadastro(LocalDateTime.now())
+            .estruturaAa(request.getEstruturaAa())
+            .subcanalId(request.getSubcanalId())
+            .canal(request.getCanal())
+            .nivel(request.getNivel())
             .situacao(ESituacao.A)
             .build();
-        configuracao.aplicarParametrosByTipoConfiguracao(request);
-        return configuracao;
-    }
-
-    private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaRequest request) {
-        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
-            tipoConfiguracao.getModelConsumer().accept(this, request);
-        }
     }
 
     public void alterarSituacao(ESituacao novaSituacao) {

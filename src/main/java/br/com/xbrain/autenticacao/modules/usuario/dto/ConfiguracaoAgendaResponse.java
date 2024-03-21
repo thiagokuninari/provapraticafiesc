@@ -2,12 +2,14 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -27,20 +29,19 @@ public class ConfiguracaoAgendaResponse {
     private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
-        var response = ConfiguracaoAgendaResponse.builder()
+        return ConfiguracaoAgendaResponse.builder()
             .id(configuracao.getId())
             .dataCadastro(configuracao.getDataCadastro())
             .tipoConfiguracao(configuracao.getTipoConfiguracao())
             .qtdHorasAdicionais(configuracao.getQtdHorasAdicionais())
             .situacao(configuracao.getSituacao().getDescricao())
+            .canal(configuracao.getCanal())
+            .estruturaAa(configuracao.getEstruturaAa())
+            .subcanalId(configuracao.getSubcanalId())
+            .subcanal(Optional.ofNullable(configuracao.getSubcanalId())
+                .map(ETipoCanal::valueOf)
+                .map(Enum::name)
+                .orElse(null))
             .build();
-        response.aplicarParametrosByTipoConfiguracao(configuracao);
-        return response;
-    }
-
-    private void aplicarParametrosByTipoConfiguracao(ConfiguracaoAgendaReal configuracao) {
-        if (tipoConfiguracao != ETipoConfiguracao.PADRAO) {
-            tipoConfiguracao.getResponseConsumer().accept(this, configuracao);
-        }
     }
 }

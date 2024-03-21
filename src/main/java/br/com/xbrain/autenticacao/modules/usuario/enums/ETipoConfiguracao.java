@@ -2,8 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaRealPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoAgendaRealRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.ConfiguracaoAgendaRealService;
@@ -22,44 +20,30 @@ public enum ETipoConfiguracao {
 
     CANAL(
         IConfiguracaoAgendaRealGroupsValidation.Canal.class,
-        (model, request) -> model.setCanal(request.getCanal()),
         (predicate, filtros) -> predicate.comCanal(filtros.getCanal()),
-        (response, model) -> response.setCanal(model.getCanal()),
         (repository, request) -> repository.existsByCanal(request.getCanal()),
         ConfiguracaoAgendaRealService::flushCacheConfigCanal),
     NIVEL(
         IConfiguracaoAgendaRealGroupsValidation.Nivel.class,
-        (model, request) -> model.setNivel(request.getNivel()),
         (predicate, filtros) -> predicate.comNivel(filtros.getNivel()),
-        (response, model) -> response.setNivel(model.getNivel()),
         (repository, request) -> repository.existsByNivel(request.getNivel()),
         ConfiguracaoAgendaRealService::flushCacheConfigNivel),
     ESTRUTURA(
         IConfiguracaoAgendaRealGroupsValidation.Canal.AgenteAutorizado.class,
-        (model, request) -> model.setEstruturaAa(request.getEstruturaAa()),
         (predicate, filtros) -> predicate.comEstruturaAa(filtros.getEstruturaAa()),
-        (response, model) -> response.setEstruturaAa(model.getEstruturaAa()),
         (repository, request) -> repository.existsByEstruturaAa(request.getEstruturaAa()),
         ConfiguracaoAgendaRealService::flushCacheConfigEstrutura),
     SUBCANAL(
         IConfiguracaoAgendaRealGroupsValidation.Canal.D2dProprio.class,
-        (model, request) -> model.setSubcanalId(request.getSubcanalId()),
         (predicate, filtros) -> predicate.comSubCanal(filtros.getSubcanalId()),
-        (response, model) -> {
-            response.setSubcanalId(model.getSubcanalId());
-            response.setSubcanal(ETipoCanal.valueOf(model.getSubcanalId()).getDescricao());
-        },
         (repository, request) -> repository.existsBySubcanalId(request.getSubcanalId()),
         ConfiguracaoAgendaRealService::flushCacheConfigSubcanal),
     PADRAO(
-        null, null, null, null,
-        (repository, request) -> repository.existeConfiguracaoPadrao(),
+        null, null, null,
         ConfiguracaoAgendaRealService::flushCacheConfigPadrao);
 
     private final Class<?> groupValidator;
-    private final BiConsumer<ConfiguracaoAgendaReal, ConfiguracaoAgendaRequest> modelConsumer;
     private final BiConsumer<ConfiguracaoAgendaRealPredicate, ConfiguracaoAgendaFiltros> predicateConsumer;
-    private final BiConsumer<ConfiguracaoAgendaResponse, ConfiguracaoAgendaReal> responseConsumer;
     private final BiFunction<ConfiguracaoAgendaRealRepository, ConfiguracaoAgendaRequest, Boolean> duplicateValidator;
     private final Consumer<ConfiguracaoAgendaRealService> cacheFlusher;
 }

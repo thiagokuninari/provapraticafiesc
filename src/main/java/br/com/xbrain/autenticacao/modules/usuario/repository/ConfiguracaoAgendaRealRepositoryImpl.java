@@ -31,7 +31,8 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
                 .select(configuracaoAgendaReal.qtdHorasAdicionais)
                 .from(configuracaoAgendaReal)
                 .where(configuracaoAgendaReal.canal.eq(canal)
-                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I)))
+                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I))
+                    .and(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.CANAL)))
                 .orderBy(configuracaoAgendaReal.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -45,7 +46,8 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
                 .select(configuracaoAgendaReal.qtdHorasAdicionais)
                 .from(configuracaoAgendaReal)
                 .where(configuracaoAgendaReal.nivel.eq(nivel)
-                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I)))
+                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I))
+                    .and(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.NIVEL)))
                 .orderBy(configuracaoAgendaReal.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -59,7 +61,8 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
                 .select(configuracaoAgendaReal.qtdHorasAdicionais)
                 .from(configuracaoAgendaReal)
                 .where(configuracaoAgendaReal.estruturaAa.equalsIgnoreCase(estruturaAa)
-                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I)))
+                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I))
+                    .and(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.ESTRUTURA)))
                 .orderBy(configuracaoAgendaReal.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
@@ -73,7 +76,8 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
                 .select(configuracaoAgendaReal.qtdHorasAdicionais)
                 .from(configuracaoAgendaReal)
                 .where(configuracaoAgendaReal.subcanalId.eq(subcanalId)
-                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I)))
+                    .and(configuracaoAgendaReal.situacao.ne(ESituacao.I))
+                    .and(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.SUBCANAL)))
                 .orderBy(configuracaoAgendaReal.qtdHorasAdicionais.desc())
                 .fetchFirst()
         );
