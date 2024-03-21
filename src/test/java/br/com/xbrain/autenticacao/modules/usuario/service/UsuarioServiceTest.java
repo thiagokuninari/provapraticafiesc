@@ -1258,23 +1258,35 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValidoERoleTrue() {
-        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
+    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setEmail("teste@emailpermitido.com.br");
+        usuario.setId(1);
+        usuario.setUsuarioCadastro(new Usuario(1));
+        usuario.setCargo(Cargo.builder()
+            .codigo(BACKOFFICE_GERENTE)
+            .nivel(Nivel.builder()
+                .codigo(BACKOFFICE)
+                .build())
+            .build());
+
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+        lenient().when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(organizacao);
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
 
-        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
-        when(repository.getCanaisByUsuarioIds(anyList()))
-            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
-        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
-            .when(autenticacaoService)
-            .getUsuarioAutenticado();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
             .thenReturn(true);
 
-        assertThatCode(() -> service.save(usuario))
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, times(1)).save(anyList());
