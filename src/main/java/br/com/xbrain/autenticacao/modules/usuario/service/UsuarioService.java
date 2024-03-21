@@ -169,7 +169,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
-    public static final int ROLE_SHB = 30000;
+    private static final int ROLE_SHB = 30000;
 
     @Autowired
     private UsuarioRepository repository;
