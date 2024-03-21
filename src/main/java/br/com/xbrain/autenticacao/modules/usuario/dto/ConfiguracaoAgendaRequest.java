@@ -39,7 +39,7 @@ public class ConfiguracaoAgendaRequest {
     }
 
     public void validarNivelOperacao() {
-        if (nivel == CodigoNivel.OPERACAO) {
+        if (nivel == CodigoNivel.OPERACAO && tipoConfiguracao == ETipoConfiguracao.NIVEL) {
             throw new ValidacaoException("Não é possível criar configurações para esse nível, "
                 + "por favor selecione um canal ou subcanal.");
         }
