@@ -169,6 +169,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
+    public static final int ROLE_SHB = 30000;
 
     @Autowired
     private UsuarioRepository repository;
@@ -2037,7 +2038,6 @@ public class UsuarioService {
         usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
-        processarUsuarioParaSocialHub(getUsuario(usuarioDadosAcessoRequest.getUsuarioId()));
         updateSenha(usuario, Eboolean.V);
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
@@ -3170,13 +3170,16 @@ public class UsuarioService {
     }
 
     private void processarUsuarioParaSocialHub(Usuario usuario) {
+        this.gerenciarPermissaoSocialHub(usuario);
+        this.enviarDadosAtualizacaoParaSocialHub(usuario);
+    }
+
+    private void gerenciarPermissaoSocialHub(Usuario usuario) {
         var email = usuario.getEmail();
         var dominio = extractDominio(email);
 
-        if (isDominioPermitido(dominio)) {
-            adicionarPermissaoEEnviarParaFila(usuario);
-        } else {
-            removerPermissoesEspeciaisDoUsuario(usuario);
+        if (this.isDominioPermitido(dominio)) {
+            this.adicionarPermissaoSocialHub(usuario);
         }
     }
 
@@ -3184,14 +3187,9 @@ public class UsuarioService {
         return dominiosPermitidos.contains(dominio);
     }
 
-    private void adicionarPermissaoEEnviarParaFila(Usuario usuario) {
-        adicionarPermissaoSocialHub(usuario);
-        enviarParaFilaDeAtualizarUsuariosSocialHub(usuario);
-    }
-
-    private void removerPermissoesEspeciaisDoUsuario(Usuario usuario) {
-        if (usuario.getId() != null) {
-            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
+    private void enviarDadosAtualizacaoParaSocialHub(Usuario usuario) {
+        if (permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB)) {
+            this.enviarParaFilaDeAtualizarUsuariosSocialHub(usuario);
         }
     }
 

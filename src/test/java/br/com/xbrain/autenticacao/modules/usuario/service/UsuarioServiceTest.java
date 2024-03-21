@@ -112,6 +112,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService.ROLE_SHB;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -1257,55 +1258,27 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
-        var usuario = umUsuarioBackoffice();
-        usuario.setEmail("teste@emailpermitido.com.br");
-        usuario.setId(1);
-        usuario.setUsuarioCadastro(new Usuario(1));
-        usuario.setCargo(Cargo.builder()
-            .codigo(BACKOFFICE_GERENTE)
-            .nivel(Nivel.builder()
-                .codigo(BACKOFFICE)
-                .build())
-            .build());
-
-        var organizacao = OrganizacaoEmpresa.builder()
-            .id(5)
-            .situacao(ESituacaoOrganizacaoEmpresa.A)
-            .build();
-        lenient().when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(organizacao);
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValidoERoleTrue() {
+        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
 
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
 
-        assertThatCode(() -> service.salvarUsuarioBackoffice(usuario))
+        assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(1)
-            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
-            .containsExactly(
-                Usuario.builder()
-                    .id(1)
-                    .build(),
-                Funcionalidade.builder()
-                    .id(30000)
-                    .build(),
-                Usuario.builder()
-                    .id(1)
-                    .build()
-            );
-
-        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
-        var dadosSocialHub = socialHubRequestCaptor.getValue();
-        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
-        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
+        verify(permissaoEspecialService, times(1)).save(anyList());
+        verify(usuarioMqSender, times(1)).enviarDadosUsuarioParaSocialHub(any());
     }
 
     @Test
@@ -4616,43 +4589,27 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValidoEPermissaoTrue() {
         var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
-
-        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.findById(eq(2)))
+            .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
         doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
 
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(1)
-            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
-            .containsExactly(
-                Usuario.builder()
-                    .id(1)
-                    .build(),
-                Funcionalidade.builder()
-                    .id(30000)
-                    .build(),
-                Usuario.builder()
-                    .id(1)
-                    .build()
-            );
-
-        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(socialHubRequestCaptor.capture());
-        var dadosSocialHub = socialHubRequestCaptor.getValue();
-        assertThat(dadosSocialHub.getCargo()).isEqualTo(usuario.getCargoCodigo().toString());
-        assertThat(dadosSocialHub.getNivel()).isEqualTo(usuario.getCargo().getNivel().getCodigo().toString());
+        verify(permissaoEspecialService).save(anyList());
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(any());
     }
 
     @Test

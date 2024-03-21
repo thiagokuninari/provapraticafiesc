@@ -39,4 +39,8 @@ public class PermissoesHelper {
     public static PermissaoEspecial umaPermissaoIndicacaoInsideSalesPme() {
         return PermissaoEspecial.builder().id(3071).build();
     }
+
+    public static PermissaoEspecial umaPermissaoSocialHub() {
+        return PermissaoEspecial.builder().id(30000).build();
+    }
 }
