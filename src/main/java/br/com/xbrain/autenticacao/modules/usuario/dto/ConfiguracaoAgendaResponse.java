@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,19 +30,13 @@ public class ConfiguracaoAgendaResponse {
     private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaResponse of(ConfiguracaoAgendaReal configuracao) {
-        return ConfiguracaoAgendaResponse.builder()
-            .id(configuracao.getId())
-            .dataCadastro(configuracao.getDataCadastro())
-            .tipoConfiguracao(configuracao.getTipoConfiguracao())
-            .qtdHorasAdicionais(configuracao.getQtdHorasAdicionais())
-            .situacao(configuracao.getSituacao().getDescricao())
-            .canal(configuracao.getCanal())
-            .estruturaAa(configuracao.getEstruturaAa())
-            .subcanalId(configuracao.getSubcanalId())
-            .subcanal(Optional.ofNullable(configuracao.getSubcanalId())
+        var response = new ConfiguracaoAgendaResponse();
+        BeanUtils.copyProperties(configuracao, response);
+        response.setSituacao(configuracao.getSituacao().getDescricao());
+        response.setSubcanal(Optional.ofNullable(configuracao.getSubcanalId())
                 .map(ETipoCanal::valueOf)
                 .map(Enum::name)
-                .orElse(null))
-            .build();
+                .orElse(null));
+        return response;
     }
 }

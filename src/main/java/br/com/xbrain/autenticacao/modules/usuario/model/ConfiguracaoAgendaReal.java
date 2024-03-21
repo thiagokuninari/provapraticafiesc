@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import lombok.*;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -67,18 +68,13 @@ public class ConfiguracaoAgendaReal {
     private LocalDateTime dataCadastro;
 
     public static ConfiguracaoAgendaReal of(ConfiguracaoAgendaRequest request, UsuarioAutenticado usuario) {
-        return ConfiguracaoAgendaReal.builder()
-            .qtdHorasAdicionais(request.getQtdHorasAdicionais())
-            .tipoConfiguracao(request.getTipoConfiguracao())
-            .usuarioCadastroNome(usuario.getNome())
-            .usuarioCadastroId(usuario.getId())
-            .dataCadastro(LocalDateTime.now())
-            .estruturaAa(request.getEstruturaAa())
-            .subcanalId(request.getSubcanalId())
-            .canal(request.getCanal())
-            .nivel(request.getNivel())
-            .situacao(ESituacao.A)
-            .build();
+        var model = new ConfiguracaoAgendaReal();
+        BeanUtils.copyProperties(request, model);
+        model.setUsuarioCadastroId(usuario.getId());
+        model.setUsuarioCadastroNome(usuario.getNome());
+        model.setDataCadastro(LocalDateTime.now());
+        model.setSituacao(ESituacao.A);
+        return model;
     }
 
     public void alterarSituacao(ESituacao novaSituacao) {
