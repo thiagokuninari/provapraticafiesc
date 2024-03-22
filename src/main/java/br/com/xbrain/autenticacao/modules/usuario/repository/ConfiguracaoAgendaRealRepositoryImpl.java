@@ -110,9 +110,8 @@ public class ConfiguracaoAgendaRealRepositoryImpl implements ConfiguracaoAgendaR
             .limit(pageable.getPageSize())
             .orderBy(pageable.getOrderDirection().equals("ASC")
                 ? configuracaoAgendaReal.dataCadastro.asc().nullsFirst()
-                : configuracaoAgendaReal.dataCadastro.desc().nullsFirst())
-            .fetch();
+                : configuracaoAgendaReal.dataCadastro.desc().nullsFirst());
 
-        return new PageImpl<>(query, pageable, query.size());
+        return new PageImpl<>(query.fetch(), pageable, query.fetchCount());
     }
 }
