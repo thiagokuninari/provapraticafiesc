@@ -29,6 +29,17 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaFiltros.builder()
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .canal(ECanal.AGENTE_AUTORIZADO)
+            .nivel(CodigoNivel.OPERACAO)
+            .build();
+    }
+
+    public static ConfiguracaoAgendaRequest umaConfiguracaoAgendaRequestEstruturaCompleta() {
+        return ConfiguracaoAgendaRequest.builder()
+            .qtdHorasAdicionais(100)
+            .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .canal(ECanal.D2D_PROPRIO)
+            .subcanalId(1)
+            .nivel(CodigoNivel.OPERACAO)
             .build();
     }
 
@@ -36,6 +47,7 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .nivel(CodigoNivel.OPERACAO)
             .canal(ECanal.AGENTE_AUTORIZADO)
             .build();
     }
@@ -52,6 +64,7 @@ public class UsuarioAgendamentoHelpers {
             .qtdHorasAdicionais(100)
             .canal(canal)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .nivel(CodigoNivel.OPERACAO)
             .build();
     }
 
@@ -59,6 +72,8 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
             .subcanalId(subcanal.getId())
+            .canal(ECanal.D2D_PROPRIO)
+            .nivel(CodigoNivel.OPERACAO)
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
             .build();
     }
@@ -75,6 +90,8 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaRequest.builder()
             .qtdHorasAdicionais(100)
             .estruturaAa(estrutura)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .canal(ECanal.AGENTE_AUTORIZADO)
             .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
             .build();
     }
@@ -83,6 +100,7 @@ public class UsuarioAgendamentoHelpers {
         return ConfiguracaoAgendaResponse.builder()
             .qtdHorasAdicionais(100)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .nivel(CodigoNivel.OPERACAO)
             .canal(ECanal.AGENTE_AUTORIZADO)
             .situacao(ESituacao.A.getDescricao())
             .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
@@ -139,9 +157,24 @@ public class UsuarioAgendamentoHelpers {
             null);
     }
 
+    public static ConfiguracaoAgendaReal umaConfiguracaoAgendaEstruturaCompleta() {
+        return ConfiguracaoAgendaReal.builder()
+            .qtdHorasAdicionais(100)
+            .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .canal(ECanal.D2D_PROPRIO)
+            .nivel(CodigoNivel.OPERACAO)
+            .subcanalId(1)
+            .situacao(ESituacao.A)
+            .usuarioCadastroId(2)
+            .usuarioCadastroNome("Thiago")
+            .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
+            .build();
+    }
+
     public static ConfiguracaoAgendaReal umaConfiguracaoAgenda() {
         return ConfiguracaoAgendaReal.builder()
             .qtdHorasAdicionais(100)
+            .nivel(CodigoNivel.OPERACAO)
             .canal(ECanal.AGENTE_AUTORIZADO)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
             .situacao(ESituacao.A)
@@ -157,6 +190,8 @@ public class UsuarioAgendamentoHelpers {
             .situacao(ESituacao.A)
             .estruturaAa(estrutura)
             .tipoConfiguracao(ETipoConfiguracao.ESTRUTURA)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
             .usuarioCadastroId(2)
             .usuarioCadastroNome("Thiago")
             .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
@@ -169,6 +204,8 @@ public class UsuarioAgendamentoHelpers {
             .situacao(ESituacao.A)
             .subcanalId(subcanal.getId())
             .tipoConfiguracao(ETipoConfiguracao.SUBCANAL)
+            .canal(ECanal.D2D_PROPRIO)
+            .nivel(CodigoNivel.OPERACAO)
             .usuarioCadastroId(2)
             .usuarioCadastroNome("Thiago")
             .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))
@@ -193,6 +230,7 @@ public class UsuarioAgendamentoHelpers {
             .situacao(ESituacao.A)
             .canal(canal)
             .tipoConfiguracao(ETipoConfiguracao.CANAL)
+            .nivel(CodigoNivel.OPERACAO)
             .usuarioCadastroId(2)
             .usuarioCadastroNome("Thiago")
             .dataCadastro(LocalDateTime.of(2024, 1, 1, 12, 30))

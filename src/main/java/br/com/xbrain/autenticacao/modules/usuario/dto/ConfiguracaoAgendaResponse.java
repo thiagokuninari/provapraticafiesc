@@ -35,7 +35,7 @@ public class ConfiguracaoAgendaResponse {
         response.setSituacao(configuracao.getSituacao().getDescricao());
         response.setSubcanal(Optional.ofNullable(configuracao.getSubcanalId())
                 .map(ETipoCanal::valueOf)
-                .map(Enum::name)
+                .map(ETipoCanal::getDescricao)
                 .orElse(null));
         return response;
     }
