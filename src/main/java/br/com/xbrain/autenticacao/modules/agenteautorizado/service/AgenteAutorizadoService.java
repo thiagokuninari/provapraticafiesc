@@ -4,16 +4,17 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoFiltros;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
+import br.com.xbrain.autenticacao.modules.comum.dto.*;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoRequest;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -335,5 +336,73 @@ public class AgenteAutorizadoService {
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_INATIVAR_USUARIO_AA);
         }
+    }
+
+    public List<ClusterDto> getClusters(Integer grupoId) {
+        try {
+            if (isNotUsuarioComCanalAa()) {
+                return List.of();
+            }
+
+            return client.getClusters(grupoId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<GrupoDto> getGrupos(Integer regionalId) {
+        try {
+            if (isNotUsuarioComCanalAa()) {
+                return List.of();
+            }
+
+            return client.getGrupos(regionalId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<SubClusterDto> getSubclusters(Integer clusterId) {
+        try {
+            if (isNotUsuarioComCanalAa()) {
+                return List.of();
+            }
+
+            return client.getSubclusters(clusterId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<UsuarioCidadeDto> getCidades(Integer subclusterId) {
+        try {
+            if (isNotUsuarioComCanalAa()) {
+                return List.of();
+            }
+
+            return client.getCidades(subclusterId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    private boolean isNotUsuarioComCanalAa() {
+        return !autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
     }
 }

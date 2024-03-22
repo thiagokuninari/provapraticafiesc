@@ -2,9 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
@@ -199,26 +198,6 @@ public class UsuarioAgendamentoHelpers {
                 .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(),
                         u.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS ? 999 : null))
                 .collect(Collectors.toList());
-    }
-
-    public static List<AgenteAutorizadoPermitidoResponse> agentesAutorizadosPermitidos() {
-        return List.of(
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1300)
-                        .cnpj("17.822.087/0001-85")
-                        .cnpjRazaoSocial("17.822.087/0001-85 - S2 TELECOM COMERCIO DE ANTENAS EIRELI - ME")
-                        .build(),
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1400)
-                        .cnpj("06.152.588/0001-85")
-                        .cnpjRazaoSocial("06.152.588/0001-85 - AS2 COMERCIO DE ANTENAS EIRELI - ME")
-                        .build(),
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1500)
-                        .cnpj("07.152.589/0001-85")
-                        .cnpjRazaoSocial("07.152.589/0001-85 - AS3 COMERCIO DE ANTENAS EIRELI - ME")
-                        .build()
-        );
     }
 
     private static Aplicacao umaAplicacao() {

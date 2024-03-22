@@ -29,5 +29,10 @@ app-config:
   upload-async: false
   url-origin-cors: http://localhost
 
+  minio:
+    access:
+      name: 'MINIO_TOKEN'
+      secret: 'MINIO_SECRET'
+
 flyway:
   enabled: false

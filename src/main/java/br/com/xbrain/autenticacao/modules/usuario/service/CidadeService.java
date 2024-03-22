@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
@@ -20,11 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,7 +41,7 @@ public class CidadeService {
     @Autowired
     private CidadeRepository cidadeRepository;
     @Autowired
-    private ParceirosOnlineService parceirosOnlineService;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private RegionalService regionalService;
     @Lazy
@@ -186,7 +182,7 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
         return Stream.concat(
-                parceirosOnlineService.getCidades(subclusterId).stream(),
+                agenteAutorizadoService.getCidades(subclusterId).stream(),
                 getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
             .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());

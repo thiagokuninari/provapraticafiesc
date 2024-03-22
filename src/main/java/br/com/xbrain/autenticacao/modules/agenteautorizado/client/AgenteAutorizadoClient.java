@@ -2,11 +2,12 @@ package br.com.xbrain.autenticacao.modules.agenteautorizado.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
-import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.comum.dto.*;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -106,4 +107,16 @@ public interface AgenteAutorizadoClient {
     void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
                                              @RequestParam("emailInativo") String emailInativo,
                                              @PathVariable("socioPrincipalId") Integer socioPrincipalId);
+
+    @GetMapping("api/clusters/permitidos")
+    List<ClusterDto> getClusters(@RequestParam("grupoId") Integer grupoId);
+
+    @GetMapping("api/grupos/permitidos")
+    List<GrupoDto> getGrupos(@RequestParam("regionalId") Integer regionalId);
+
+    @GetMapping("api/subclusters/permitidos")
+    List<SubClusterDto> getSubclusters(@RequestParam("clusterId") Integer clusterId);
+
+    @GetMapping("api/cidades/comunicados")
+    List<UsuarioCidadeDto> getCidades(@RequestParam("subclusterId") Integer subclusterId);
 }

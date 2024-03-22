@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -14,8 +15,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClie
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
@@ -98,11 +98,9 @@ public class UsuarioServiceIT {
     @MockBean
     private EmailService emailService;
     @MockBean
-    private ParceirosOnlineClient parceirosOnlineClient;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private ColaboradorVendasService colaboradorVendasService;
-    @MockBean
-    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -422,8 +420,8 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
-        doNothing().when(agenteAutorizadoClient).ativarUsuario(anyInt());
+        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        doNothing().when(agenteAutorizadoService).ativarUsuario(anyInt());
 
         doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
@@ -466,7 +464,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoClient)
+            .when(agenteAutorizadoService)
             .existeAaAtivoBySocioEmail(anyString());
 
         thrown.expect(ValidacaoException.class);
@@ -485,7 +483,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoClient)
+            .when(agenteAutorizadoService)
             .existeAaAtivoByUsuarioId(anyInt());
 
         thrown.expect(ValidacaoException.class);
@@ -1036,7 +1034,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(anyInt(), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(100))
             .build());
@@ -1087,7 +1085,7 @@ public class UsuarioServiceIT {
         user.setId(115);
         user.setPermissoes(List.of());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
-        when(agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario(any()))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any()))
             .thenReturn(List.of(111, 104, 115));
 
         assertThat(service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder().build()))
@@ -1104,10 +1102,10 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(10), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
 
         doReturn(umaListaUsuarioResponse(104))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(20), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(10, 20))
