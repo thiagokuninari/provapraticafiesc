@@ -81,6 +81,8 @@ import static org.mockito.Mockito.*;
     "classpath:/tests_usuario_remanejamento.sql", "classpath:/tests_editar_sites.sql"})
 public class UsuarioServiceIT {
 
+    private static final int ROLE_SHB = 30000;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
     @MockBean
@@ -1205,7 +1207,7 @@ public class UsuarioServiceIT {
     public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
         var dadosAcessoRequest = umUsuarioDadosAcessoRequest();
 
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(anyInt(), eq(30000)))
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(anyInt(), eq(ROLE_SHB)))
             .thenReturn(true);
 
         service.alterarDadosAcessoEmail(dadosAcessoRequest);
