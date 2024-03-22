@@ -59,6 +59,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
@@ -80,8 +81,6 @@ import static org.mockito.Mockito.*;
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
     "classpath:/tests_usuario_remanejamento.sql", "classpath:/tests_editar_sites.sql"})
 public class UsuarioServiceIT {
-
-    private static final int ROLE_SHB = 30000;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();

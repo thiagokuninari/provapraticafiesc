@@ -89,6 +89,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGerenciaControllerTest.*;
@@ -130,7 +131,6 @@ public class UsuarioServiceTest {
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
-    private static final int ROLE_SHB = 30000;
 
     @InjectMocks
     private UsuarioService service;

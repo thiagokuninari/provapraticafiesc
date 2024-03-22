@@ -87,6 +87,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
@@ -169,7 +170,6 @@ public class UsuarioService {
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
-    private static final int ROLE_SHB = 30000;
 
     @Autowired
     private UsuarioRepository repository;

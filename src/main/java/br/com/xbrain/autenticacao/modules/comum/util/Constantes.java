@@ -8,4 +8,5 @@ public class Constantes {
     public static final String VIRGULA = ",";
     public static final String TEST = "test";
     public static final int INDICE_ZERO = 0;
+    public static final int ROLE_SHB = 30000;
 }
