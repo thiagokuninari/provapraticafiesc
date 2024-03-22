@@ -2038,6 +2038,7 @@ public class UsuarioService {
         usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
+        processarUsuarioParaSocialHub(getUsuario(usuarioDadosAcessoRequest.getUsuarioId()));
         updateSenha(usuario, Eboolean.V);
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }

@@ -1205,11 +1205,14 @@ public class UsuarioServiceIT {
     public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
         var dadosAcessoRequest = umUsuarioDadosAcessoRequest();
 
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(anyInt(), eq(30000)))
+            .thenReturn(true);
+
         service.alterarDadosAcessoEmail(dadosAcessoRequest);
 
+        verify(sender).enviarDadosUsuarioParaSocialHub(any(UsuarioSocialHubRequestMq.class));
         verify(sender).sendSuccess(any());
-        verify(notificacaoService)
-            .enviarEmailAtualizacaoEmail(any(Usuario.class), eq(dadosAcessoRequest));
+        verify(notificacaoService).enviarEmailAtualizacaoEmail(any(Usuario.class), eq(dadosAcessoRequest));
     }
 
     private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
