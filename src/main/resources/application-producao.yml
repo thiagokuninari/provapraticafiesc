@@ -58,8 +58,6 @@ app-config:
       url: http://172.10.10.74:8097
     call:
       url: http://172.10.10.78:8094
-    parceiros-online:
-      url: http://172.10.10.76:8099
     mailing:
       url: http://172.10.10.77:8095
     equipe-venda:

@@ -264,9 +264,6 @@ app-config:
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       # url: http://localhost:8094
-    parceiros-online:
-      url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      #url: http://localhost:8099
     vendas:
       #url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
@@ -338,9 +335,6 @@ zuul:
     vendas:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.vendas.url}
-    parceiros:
-      sensitiveHeaders: Cookie,Set-Cookie
-      url: ${app-config.services.parceiros-online.url}
     mailing:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.mailing.url}

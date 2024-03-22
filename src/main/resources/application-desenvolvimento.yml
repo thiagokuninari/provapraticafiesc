@@ -7,8 +7,6 @@ app-config:
   services:
     autenticacao:
       url: http://172.10.10.33:8096
-    parceiros-online:
-      url: http://172.10.10.36:8099
     call:
       url: http://172.10.10.38:8094
     vendas:
