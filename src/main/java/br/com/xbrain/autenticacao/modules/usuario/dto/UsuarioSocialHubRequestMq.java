@@ -23,7 +23,7 @@ public class UsuarioSocialHubRequestMq {
     public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds) {
         var request = new UsuarioSocialHubRequestMq();
         BeanUtils.copyProperties(usuario, request);
-        request.setCargo(usuario.getCargoCodigo() != null ? usuario.getCargoCodigo().toString() : null);
+        request.setCargo(usuario.getCargo() != null ? usuario.getCargo().getNome() : null);
         request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
         request.setRegionaisIds(regionaisIds);
         return request;

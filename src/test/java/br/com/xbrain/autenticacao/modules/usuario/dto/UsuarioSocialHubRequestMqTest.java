@@ -19,8 +19,7 @@ public class UsuarioSocialHubRequestMqTest {
         assertEquals(usuario.getId(), request.getId());
         assertEquals(usuario.getNome(), request.getNome());
         assertEquals(usuario.getEmail(), request.getEmail());
-        assertEquals(usuario.getCargoCodigo().toString(), request.getCargo());
-        assertEquals(usuario.getNivelCodigo().toString(), request.getNivel());
+        assertEquals(usuario.getCargo().getNome(), request.getCargo());
         assertEquals(usuario.getNivelCodigo().toString(), request.getNivel());
         assertEquals(List.of(1022), regionaisIds);
     }
