@@ -14,12 +14,12 @@ public class UsuarioSocialHubRequestMqTest {
     public void from_deveCopiarPropriedadesCorretamente_quandoSolicitado() {
         var regionaisIds = List.of(1022);
         var usuario = umUsuarioSocialHub("teste@teste.com");
-        var request = UsuarioSocialHubRequestMq.from(usuario, regionaisIds);
+        var request = UsuarioSocialHubRequestMq.from(usuario, regionaisIds, "Diretor");
 
         assertEquals(usuario.getId(), request.getId());
         assertEquals(usuario.getNome(), request.getNome());
         assertEquals(usuario.getEmail(), request.getEmail());
-        assertEquals(usuario.getCargo().getNome(), request.getCargo());
+        assertEquals("Diretor", request.getCargo());
         assertEquals(usuario.getNivelCodigo().toString(), request.getNivel());
         assertEquals(List.of(1022), regionaisIds);
     }
@@ -29,7 +29,7 @@ public class UsuarioSocialHubRequestMqTest {
         var usuario = umUsuarioSocialHub("teste@teste.com");
         usuario.setCargo(null);
 
-        var request = UsuarioSocialHubRequestMq.from(usuario, List.of());
+        var request = UsuarioSocialHubRequestMq.from(usuario, List.of(), null);
 
         assertEquals(usuario.getId(), request.getId());
         assertEquals(usuario.getNome(), request.getNome());

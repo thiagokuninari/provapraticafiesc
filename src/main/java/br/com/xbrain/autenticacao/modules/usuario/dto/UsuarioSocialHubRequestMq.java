@@ -20,10 +20,10 @@ public class UsuarioSocialHubRequestMq {
     private String cargo;
     private List<Integer> regionaisIds;
 
-    public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds) {
+    public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo) {
         var request = new UsuarioSocialHubRequestMq();
         BeanUtils.copyProperties(usuario, request);
-        request.setCargo(usuario.getCargo() != null ? usuario.getCargo().getNome() : null);
+        request.setCargo(nomeCargo);
         request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
         request.setRegionaisIds(regionaisIds);
         return request;

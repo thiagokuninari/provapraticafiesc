@@ -3196,7 +3196,9 @@ public class UsuarioService {
 
     private void enviarParaFilaDeAtualizarUsuariosSocialHub(Usuario usuario) {
         var regionais = regionalService.getRegionalIds(usuario.getId());
-        usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais));
+        var cargoUsuario = cargoService.findByUsuarioId(usuario.getId());
+        usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais,
+            cargoUsuario.getNome()));
     }
 
     private String extractDominio(String email) {

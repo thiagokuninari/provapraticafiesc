@@ -1283,6 +1283,8 @@ public class UsuarioServiceTest {
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
             .thenReturn(true);
 
@@ -1324,7 +1326,8 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, never()).save(anyList());
-        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
+        verify(usuarioMqSender, never())
+            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
     }
 
     @Test
@@ -4614,6 +4617,8 @@ public class UsuarioServiceTest {
         doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
             .thenReturn(true);
 
@@ -4643,7 +4648,8 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(permissaoEspecialService, never()).save(anyList());
-        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022)));
+        verify(usuarioMqSender, never())
+            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
