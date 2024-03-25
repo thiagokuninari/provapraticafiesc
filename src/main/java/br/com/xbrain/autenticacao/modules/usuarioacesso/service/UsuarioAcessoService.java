@@ -170,12 +170,17 @@ public class UsuarioAcessoService {
         var usuarios = stream(usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
             .collect(Collectors.toList());
         var usuariosIds = usuarios.stream().map(Usuario::getId).collect(Collectors.toList());
-        var usuariosIdsLogados = notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(usuariosIds);
 
-        return usuarios.stream()
-            .filter(usuario -> usuariosIdsLogados.contains(usuario.getId()))
-            .map(UsuarioLogadoResponse::of)
+        return notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(usuariosIds)
+            .stream()
+            .peek(usuarioLogado -> alterarDadosResponse(usuarios, usuarioLogado))
             .collect(Collectors.toList());
+    }
+
+    private void alterarDadosResponse(List<Usuario> usuarios, UsuarioLogadoResponse usuarioLogado) {
+        usuarios.stream()
+            .filter(usuario -> usuarioLogado.getUsuarioId().equals(usuario.getId()))
+            .forEach(usuarioLogado::setDadosResponse);
     }
 
     public void aplicarAgenteAutorizadoFiltro(UsuarioAcessoFiltros usuarioAcessoFiltros) {

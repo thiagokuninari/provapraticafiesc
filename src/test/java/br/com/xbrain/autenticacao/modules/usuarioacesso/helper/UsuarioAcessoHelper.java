@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
@@ -212,5 +213,19 @@ public class UsuarioAcessoHelper {
             .email("TESTE@TESTE.COM")
             .agenteAutorizadoId(aaId)
             .build();
+    }
+
+    public static UsuarioLogadoResponse umUsuarioLogadoResponseBko(Integer usuarioId) {
+        return UsuarioLogadoResponse.builder()
+            .usuarioId(usuarioId)
+            .dataEntrada(LocalDateTime.of(2024, 3, 22, 10, 30))
+            .build();
+    }
+
+    public static List<UsuarioLogadoResponse> umaListaDeUsuariosLogados() {
+        return List.of(
+            umUsuarioLogadoResponseBko(4444),
+            umUsuarioLogadoResponseBko(2000)
+        );
     }
 }

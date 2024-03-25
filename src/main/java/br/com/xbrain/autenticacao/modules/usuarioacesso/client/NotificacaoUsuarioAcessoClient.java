@@ -37,4 +37,7 @@ public interface NotificacaoUsuarioAcessoClient {
 
     @PostMapping(API_USUARIOS_LOGADOS + "/ids")
     List<Integer> getUsuariosLogadosAtualPorIds(@RequestBody List<Integer> usuarioIds);
+
+    @PostMapping(API_USUARIOS_LOGADOS + "/ids/com-data-entrada")
+    List<UsuarioLogadoResponse> getUsuariosLogadosAtualComDataEntradaPorIds(@RequestBody List<Integer> usuariosIds);
 }

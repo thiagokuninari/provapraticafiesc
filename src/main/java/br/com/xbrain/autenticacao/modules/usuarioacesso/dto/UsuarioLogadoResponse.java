@@ -12,19 +12,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UsuarioLogadoResponse {
 
-    private Integer id;
+    private Integer usuarioId;
     private String nome;
     private String email;
     private String fornecedorNome;
-    private LocalDateTime dataLogin;
+    private LocalDateTime dataEntrada;
 
-    public static UsuarioLogadoResponse of(Usuario usuario) {
-        return UsuarioLogadoResponse.builder()
-            .id(usuario.getId())
-            .nome(usuario.getNome())
-            .email(usuario.getEmail())
-            .fornecedorNome(usuario.getOrganizacaoEmpresa().getDescricao())
-            .dataLogin(usuario.getDataUltimoAcesso())
-            .build();
+    public void setDadosResponse(Usuario usuario) {
+        this.nome = usuario.getNome();
+        this.email = usuario.getEmail();
+        this.fornecedorNome = usuario.getOrganizacaoEmpresa().getDescricao();
     }
 }

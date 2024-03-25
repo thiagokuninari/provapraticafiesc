@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDto;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umaListaDeUsuariosOperadorBko;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -283,5 +285,54 @@ public class UsuarioAcessoServiceTest {
 
         verify(usuarioRepository).findAll(predicate);
         verify(notificacaoUsuarioAcessoService).getUsuariosLogadosAtualPorIds(List.of(101, 201));
+    }
+
+    @Test
+    public void getUsuariosLogadosCompletos_deveRetornarListaDeUsuariosLogados_quandoEncontrarUsuarioLogado() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(umaListaDeUsuariosOperadorBko());
+        when(notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(List.of(4444, 2000)))
+            .thenReturn(umaListaDeUsuariosLogados());
+
+        var resultado = service.getUsuariosLogadosCompletos(umUsuarioLogadoRequest());
+
+        assertThat(resultado)
+            .extracting(UsuarioLogadoResponse::getUsuarioId, UsuarioLogadoResponse::getNome,
+                UsuarioLogadoResponse::getEmail, UsuarioLogadoResponse::getFornecedorNome,
+                UsuarioLogadoResponse::getDataEntrada)
+            .containsExactlyInAnyOrder(
+                tuple(
+                    4444, "Khada Jhin", "khadajhin4@teste.com", "Marcos AA",
+                    LocalDateTime.of(2024, 3, 22, 10, 30)
+                ),
+                tuple(
+                    2000, "Veigar", "puromalencarnado@teste.com", "Marcos AA",
+                    LocalDateTime.of(2024, 3, 22, 10, 30)
+                ));
+
+        verify(usuarioRepository).findAll(any(Predicate.class));
+        verify(notificacaoUsuarioAcessoService).getUsuariosLogadosComDataEntradaPorIds(List.of(4444, 2000));
+    }
+
+    @Test
+    public void getUsuariosLogadosCompletos_deveRetornarListaVazia_quandoNaoEncontrarUsuarioLogado() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(umaListaDeUsuariosOperadorBko());
+        when(notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(List.of(4444, 2000)))
+            .thenReturn(List.of());
+
+        assertThat(service.getUsuariosLogadosCompletos(umUsuarioLogadoRequest())).isEmpty();
+
+        verify(usuarioRepository).findAll(any(Predicate.class));
+        verify(notificacaoUsuarioAcessoService).getUsuariosLogadosComDataEntradaPorIds(List.of(4444, 2000));
+    }
+
+    @Test
+    public void getUsuariosLogadosCompletos_deveRetornarListaVazia_quandoNaoEncontrarNenhumUsuarioParaOrganizacaoId() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of());
+        when(notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(List.of())).thenReturn(List.of());
+
+        assertThat(service.getUsuariosLogadosCompletos(umUsuarioLogadoRequest())).isEmpty();
+
+        verify(usuarioRepository).findAll(any(Predicate.class));
+        verify(notificacaoUsuarioAcessoService).getUsuariosLogadosComDataEntradaPorIds(List.of());
     }
 }
