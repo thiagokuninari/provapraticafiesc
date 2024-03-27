@@ -27,7 +27,7 @@ public class ColaboradorTecnicoServiceTest {
     private ColaboradorTecnicoClient client;
 
     @Test
-    public void atualizarUsuarioRemanejado_deveEnviarParaAtualizcaoDoRemanejamento_quandoSolicitado() {
+    public void atualizarUsuarioRemanejado_deveEnviarParaAtualizacaoDoRemanejamento_quandoSolicitado() {
         service.atualizarUsuarioRemanejado(new UsuarioRemanejamentoRequest());
 
         verify(client).atualizarUsuarioRemanejado(new UsuarioRemanejamentoRequest());

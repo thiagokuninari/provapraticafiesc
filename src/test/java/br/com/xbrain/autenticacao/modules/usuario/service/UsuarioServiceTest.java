@@ -3979,7 +3979,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+    public void remanejarUsuario_deveRemanejarColaboradorVendasAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
         var usuarioMqRequest = umUsuarioMqRequestCompleto();
         var usuarioDto = umUsuarioDtoParse();
         var usuarioAntigo = umUsuarioConvertFrom();
@@ -4006,6 +4006,7 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(colaboradorVendasService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorTecnicoService);
     }
 
     @Test
@@ -4036,6 +4037,7 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(colaboradorTecnicoService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorVendasService);
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
