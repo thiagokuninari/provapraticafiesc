@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoSer
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 
@@ -32,18 +34,22 @@ public class AppUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usuarioRepository
-                .findByEmailIgnoreCase(username)
-                .map(u -> {
-                    u.forceLoad();
-                    validarUsuarioPendente(u);
-                    validarUsuarioInativo(u);
-                    validarUsuarioForaHorarioPermitido(u);
-                    return new User(
-                            u.getId().toString() + "-" + u.getEmail(),
-                            autenticacaoService.isEmulacao() ? new BCryptPasswordEncoder().encode("") : u.getSenha(),
-                            funcionalidadeService.getPermissoes(u));
-                }).orElseThrow(() ->
-                        new UsernameNotFoundException("Email ou senha inválidos."));
+            .findByEmailIgnoreCase(username)
+            .map(u -> {
+                u.forceLoad();
+                validarUsuarioPendente(u);
+                validarUsuarioInativo(u);
+                log.info("Iniciando validação de horário permitido para o usuário {}", u.getEmail());
+                validarUsuarioForaHorarioPermitido(u);
+                log.info("Gerando Auth User para o usuário");
+                var user = new User(
+                    u.getId().toString() + "-" + u.getEmail(),
+                    autenticacaoService.isEmulacao() ? new BCryptPasswordEncoder().encode("") : u.getSenha(),
+                    funcionalidadeService.getPermissoes(u));
+                log.info("Auth User gerado com sucesso {}", user);
+                return user;
+            }).orElseThrow(() ->
+                new UsernameNotFoundException("Email ou senha inválidos."));
     }
 
     private void validarUsuarioPendente(Usuario usuario) {

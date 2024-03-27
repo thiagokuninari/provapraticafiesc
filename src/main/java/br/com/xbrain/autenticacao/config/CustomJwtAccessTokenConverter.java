@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,6 +39,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROP
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 import static org.springframework.util.StringUtils.isEmpty;
 
+@Slf4j
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
     JwtAccessTokenConverterConfigurer {
 
@@ -59,9 +61,11 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         DefaultOAuth2AccessToken defaultOAuth2AccessToken = new DefaultOAuth2AccessToken(accessToken);
+        log.info("Iniciando o processo de adição de informações ao token");
         defaultOAuth2AccessToken.setAdditionalInformation(new LinkedHashMap<>(accessToken.getAdditionalInformation()));
         if (authentication.getUserAuthentication() != null) {
             User userAuth = (User) authentication.getUserAuthentication().getPrincipal();
+            log.info("userAuth {}", userAuth);
             usuarioRepository
                 .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
                 .ifPresent(usuario -> setAdditionalInformation(
@@ -120,6 +124,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
+        log.info("Is agente autorizado? {}", usuario.isAgenteAutorizado());
         return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
@@ -136,68 +141,114 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                                           List<Integer> equipesSupervisionadas,
                                           List<EquipeVendaDto> equipeVendas,
                                           List<SelectResponse> sites) {
+        log.info("Adicionando usuarioId ao token");
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
+        log.info("Adicionando cpf ao token");
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
+        log.info("Adicionando email ao token");
         token.getAdditionalInformation().put("email", usuario.getEmail());
+        log.info("Adicionando login ao token");
         token.getAdditionalInformation().put("login", user.getUsername());
+        log.info("Adicionando nome ao token");
         token.getAdditionalInformation().put("nome", usuario.getNome());
+        log.info("Adicionando nomeAbreviado ao token");
         token.getAdditionalInformation().put("nomeAbreviado", StringUtil.getNomeAbreviado(usuario.getNome()));
+        log.info("Adicionando alterarSenha ao token");
         token.getAdditionalInformation().put("alterarSenha", usuario.getAlterarSenha());
+        log.info("Adicionando nivel ao token");
         token.getAdditionalInformation().put("nivel", usuario.getCargo().getNivel().getNome());
+        log.info("Adicionando nivelCodigo ao token");
         token.getAdditionalInformation().put("nivelCodigo", usuario.getCargo().getNivel().getCodigo());
+        log.info("Adicionando departamento ao token");
         token.getAdditionalInformation().put("departamento", usuario.getDepartamento().getNome());
+        log.info("Adicionando departamentoCodigo ao token");
         token.getAdditionalInformation().put("departamentoCodigo", usuario.getDepartamento().getCodigo());
+        log.info("Adicionando cargo ao token");
         token.getAdditionalInformation().put("cargo", usuario.getCargo().getNome());
+        log.info("Adicionando cargoCodigo ao token");
         token.getAdditionalInformation().put("cargoCodigo", usuario.getCargo().getCodigo());
+        log.info("Adicionando cargoId ao token");
         token.getAdditionalInformation().put("cargoId", usuario.getCargoId());
+        log.info("Adicionando nivelId ao token");
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
+        log.info("Adicionando departamentoId ao token");
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
+        log.info("Adicionando canais ao token");
         token.getAdditionalInformation().put("canais", getCanais(usuario));
+        log.info("Adicionando subCanais ao token");
         token.getAdditionalInformation().put("subCanais", getSubCanais(usuario));
+        log.info("Adicionando equipeVendas ao token");
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
+        log.info("Adicionando organizacao ao token");
         token.getAdditionalInformation().put("organizacao", getOrganizacaoEmpresa(usuario));
+        log.info("Adicionando tiposFeeder ao token");
         token.getAdditionalInformation().put("tiposFeeder", getTiposFeeder(usuario));
+        log.info("Adicionando fotoDiretorio ao token");
         token.getAdditionalInformation().put("fotoDiretorio", usuario.getFotoDiretorio());
+        log.info("Adicionando fotoNomeOriginal ao token");
         token.getAdditionalInformation().put("fotoNomeOriginal", usuario.getFotoNomeOriginal());
+        log.info("Adicionando fotoContentType ao token");
         token.getAdditionalInformation().put("fotoContentType", usuario.getFotoContentType());
+        log.info("Adicionando loginNetSales ao token");
         token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
+        log.info("Adicionando nomeEquipeVendaNetSales ao token");
         token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
+        log.info("Adicionando codigoEquipeVendaNetSales ao token");
         token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
+        log.info("Adicionando canalNetSales ao token");
         token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSales());
+        log.info("Adicionando organizacaoId ao token");
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
+        log.info("Adicionando organizacaoNome ao token");
         token.getAdditionalInformation().put("organizacaoNome", getOrganizacaoEmpresaNome(usuario));
+        log.info("Adicionando organizacaoCodigo ao token");
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
 
         if (!isEmpty(empresas)) {
+            log.info("Adicionando empresas ao token");
             token.getAdditionalInformation()
                 .put("empresas", getListaEmpresaPorCampo(empresas, Empresa::getId));
 
+            log.info("Adicionando empresasNome ao token");
             token.getAdditionalInformation()
                 .put("empresasNome", getListaEmpresaPorCampo(empresas, Empresa::getNome));
 
+            log.info("Adicionando empresasCodigo ao token");
             token.getAdditionalInformation()
                 .put("empresasCodigo", getListaEmpresaPorCampo(empresas, Empresa::getCodigo));
         }
 
+        log.info("Adicionando unidadesNegocios ao token");
         token.getAdditionalInformation().put("unidadesNegocios", usuario.getUnidadesNegociosId());
+        log.info("Adicionando agentesAutorizados ao token");
         token.getAdditionalInformation().put("agentesAutorizados", agentesAutorizados);
+        log.info("Adicionando active ao token");
         token.getAdditionalInformation().put("active", true);
+        log.info("Adicionando authorities ao token");
         token.getAdditionalInformation().put("authorities",
             user.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toArray());
+        log.info("Adicionando aplicacoes ao token");
         token.getAdditionalInformation().put("aplicacoes",
             getAplicacoes(usuario));
+        log.info("Adicionando equipesSupervisionadas ao token");
         token.getAdditionalInformation().put("equipesSupervisionadas",
             equipesSupervisionadas);
+        log.info("Adicionando estruturaAa ao token");
         token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
+        log.info("Adicionando tipoCanal ao token");
         token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
+        log.info("Adicionando sites ao token");
         token.getAdditionalInformation().put("sites", sites);
+        log.info("Adicionando siteId ao token");
         token.getAdditionalInformation().put("siteId", sites.stream()
-                .map(SelectResponse::getValue)
-                .findFirst()
-                .orElse(null));
+            .map(SelectResponse::getValue)
+            .findFirst()
+            .orElse(null));
+
+        log.info("Informações adicionadas ao token");
     }
 
     private String getOrganizacaoEmpresa(Usuario usuario) {
@@ -242,6 +293,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     public static Set<String> getCanais(Usuario usuario) {
+        log.info("Canais do usuario {}", usuario.getCanaisString());
+
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
@@ -255,6 +308,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     public Set<SubCanalDto> getSubCanais(Usuario usuario) {
+        log.info("Nível do usuario {}", usuario.getNivelCodigo());
+
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
