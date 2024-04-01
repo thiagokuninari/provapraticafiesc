@@ -23,6 +23,7 @@ public class UsuarioComLoginNetSalesResponse {
     private String razaoSocialEmpresa;
     private String cpfNetSales;
     private String organizacaoEmpresaNome;
+    private String codigoEquipeVenda;
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
         return UsuarioComLoginNetSalesResponse.builder()
@@ -35,6 +36,7 @@ public class UsuarioComLoginNetSalesResponse {
             .organizacaoEmpresaNome(usuario.getOrganizacaoEmpresa() != null
                 ? usuario.getOrganizacaoEmpresa().getDescricao()
                 : null)
+            .codigoEquipeVenda(usuario.getCodigoEquipeVendaNetSales())
             .build();
     }
 
