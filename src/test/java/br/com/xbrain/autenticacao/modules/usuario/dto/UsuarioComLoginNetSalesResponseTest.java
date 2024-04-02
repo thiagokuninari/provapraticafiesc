@@ -23,9 +23,22 @@ public class UsuarioComLoginNetSalesResponseTest {
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome)
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste");
+                "685.313.412-56", "Organizacao teste", "T0909");
+    }
+
+    @Test
+    public void of_deveRetornarUsuarioComLoginNetSalesResponse_quandoCodigoEquipeVendaNull() {
+        var usuario = umUsuario();
+        usuario.setCodigoEquipeVendaNetSales(null);
+        assertThat(UsuarioComLoginNetSalesResponse.of(usuario))
+            .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
+                UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
+                UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+            .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
+                "685.313.412-56", "Organizacao teste", null);
     }
 
     @Test
@@ -66,6 +79,7 @@ public class UsuarioComLoginNetSalesResponseTest {
                 .codigo("ORGANIZACAO_TESTE")
                 .build())
             .canais(Set.of(ECanal.INTERNET))
+            .codigoEquipeVendaNetSales("T0909")
             .build();
     }
 }
