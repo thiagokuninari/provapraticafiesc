@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECodigoObservacao;
@@ -23,6 +24,8 @@ public class UsuarioTimer {
     private UsuarioService service;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private AgenteAutorizadoService aaService;
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
     @Autowired
@@ -82,5 +85,11 @@ public class UsuarioTimer {
         log.info("Iniciando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
         deslogarUsuarioPorExcessoDeUsoService.deslogarUsuariosInativados();
         log.info("Finalizando método deslogarUsuariosInativadosPorExcessoDeUsoDeApi");
+    }
+
+    @Scheduled(cron = EVERY_DAY_AT_MIDNIGHT)
+    public void flushCacheEstruturasAas() {
+        log.info("Removendo caches de estrutura por agente autorizado.");
+        aaService.flushCacheEstruturasAas();
     }
 }

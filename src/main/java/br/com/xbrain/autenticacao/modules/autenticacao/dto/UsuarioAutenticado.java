@@ -201,6 +201,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return cargoCodigo == GERENTE_OPERACAO;
     }
 
+    public boolean isSocioPrincipal() {
+        return cargoCodigo == AGENTE_AUTORIZADO_SOCIO;
+    }
+
     public boolean isSupervisorOperacao() {
         return cargoCodigo == SUPERVISOR_OPERACAO;
     }

@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 @ControllerAdvice
 public class ExceptionHandlingController {
@@ -50,6 +50,18 @@ public class ExceptionHandlingController {
     @ResponseBody
     public List<MessageException> argumentValidationError(MethodArgumentNotValidException ex) {
         return getMessageFromValidationException(ex.getBindingResult());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public List<MessageException> argumentValidationError(ConstraintViolationException ex) {
+        var violations = ex.getConstraintViolations();
+        return violations.stream()
+            .map(violation -> new MessageException(
+                violation.getPropertyPath().toString(),
+                String.format("O campo %s %s", violation.getPropertyPath().toString(), violation.getMessage())))
+            .collect(Collectors.toList());
     }
 
     @ExceptionHandler(BindException.class)

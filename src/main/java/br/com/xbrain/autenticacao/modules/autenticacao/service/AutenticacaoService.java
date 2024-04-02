@@ -104,6 +104,13 @@ public class AutenticacaoService {
         usuarioAutenticado.hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, agentesAutorizados);
     }
 
+    public <T> Optional<T> getTokenProperty(String property, Class<T> type) {
+        return Optional.ofNullable(tokenStore.getAccessToken(getAuthentication())
+                .getAdditionalInformation()
+                .get(property))
+            .map(type::cast);
+    }
+
     @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)

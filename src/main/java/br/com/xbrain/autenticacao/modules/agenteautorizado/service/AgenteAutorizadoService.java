@@ -21,6 +21,8 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -135,6 +137,21 @@ public class AgenteAutorizadoService {
             log.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
         }
+    }
+
+    @Cacheable(cacheNames = "estrutura-aa", key = "#aaId", unless = "#aaId == null")
+    public Optional<String> getEstruturaByAgenteAutorizadoId(Integer aaId) {
+        try {
+            return Optional.ofNullable(client.getEstruturaByAgenteAutorizadoId(aaId));
+        } catch (Exception ex) {
+            log.error("Falha ao obter estrutura do agente autorizado {}.", aaId);
+            return Optional.empty();
+        }
+    }
+
+    @CacheEvict(cacheNames = "estrutura-aa", allEntries = true)
+    public void flushCacheEstruturasAas() {
+        log.info("Flush cache estrutura-aa");
     }
 
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
