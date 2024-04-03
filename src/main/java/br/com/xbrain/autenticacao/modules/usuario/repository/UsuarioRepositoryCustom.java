@@ -202,4 +202,6 @@ public interface UsuarioRepositoryCustom {
     List<Integer> getIdsUsuariosHierarquiaPorCargos(Set<CodigoCargo> codigoCargos);
 
     Optional<Usuario> findByPredicate(Predicate predicate);
+
+    List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
 }

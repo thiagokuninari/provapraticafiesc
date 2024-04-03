@@ -79,6 +79,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/usuarios/bko-centralizado/**").hasRole(
                 CodigoFuncionalidade.BKO_PRIORIZAR_INDICACOES.name())
+            .regexMatchers("/api/usuarios/suporte-vendas/operadores/(\\d+)").hasRole(
+                CodigoFuncionalidade.BKO_21420.name())
             .antMatchers("/api/emular**").hasRole(
                 CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(

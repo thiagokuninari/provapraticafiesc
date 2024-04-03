@@ -48,7 +48,8 @@ public enum CodigoFuncionalidade {
     BKO_PRIORIZAR_INDICACOES("Priorizar Indicações Técnico"),
     VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações"),
     POL_GERENCIAR_EQUIPE_VENDA("Gerenciar Equive Vendas no POL"),
-    AUT_21615("Gerenciar Configurações de Agenda");
+    AUT_21615("Gerenciar Configurações de Agenda"),
+    BKO_21420("Gerenciar Grupos de Operadores Suporte de Vendas");
 
     private final String descricao;
 

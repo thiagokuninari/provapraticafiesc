@@ -1,0 +1,11 @@
+-- Adiciona permissão para gerenciar scripts suporte vendas
+INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO)
+VALUES (22003, 'Gerenciar Scripts Suporte Vendas', 'BKO_22003', 24);
+
+-- Atribui permissão para usuários XBRAIN
+INSERT INTO CARGO_DEPART_FUNC (ID, FK_CARGO, FK_DEPARTAMENTO, FK_FUNCIONALIDADE)
+VALUES (SEQ_CARGO_DEPART_FUNC.nextval, 50, 50, 22003);
+
+-- Atribui permissão para usuários MSO CONSULTOR
+INSERT INTO CARGO_DEPART_FUNC (ID, FK_CARGO, FK_DEPARTAMENTO, FK_FUNCIONALIDADE)
+VALUES (SEQ_CARGO_DEPART_FUNC.nextval, 22, 21, 22003);

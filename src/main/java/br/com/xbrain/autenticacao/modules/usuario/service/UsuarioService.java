@@ -3217,4 +3217,8 @@ public class UsuarioService {
     private List<PermissaoEspecial> criarPermissaoEspecialSocialHub(Integer usuarioId, Integer usuarioCadastroId) {
         return criarPermissoesEspeciaisPor(usuarioId, usuarioCadastroId, FUNCIONALIDADES_SOCIAL_HUB);
     }
+
+    public List<SelectResponse> findOperadoresSuporteVendasByOrganizacao(Integer organizacaoId) {
+        return repository.findByCodigoCargoAndOrganizacaoId(OPERADOR_SUPORTE_VENDAS, organizacaoId);
+    }
 }

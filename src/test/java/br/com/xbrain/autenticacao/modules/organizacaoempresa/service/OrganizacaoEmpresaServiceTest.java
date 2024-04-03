@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -11,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoFanoutDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
@@ -42,6 +44,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa.A;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -67,6 +71,8 @@ public class OrganizacaoEmpresaServiceTest {
     private NivelRepository nivelRepository;
     @Mock
     private OrganizacaoEmpresaMqSender sender;
+    @Mock
+    private CallService callService;
     @Mock
     private UsuarioService usuarioService;
 
@@ -203,6 +209,23 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
+    public void save_deveSalvarOrganizacaoEmpresaESalvarConfiguracaoTelefonia_quandoNivelSuporteVendas() {
+        when(nivelRepository.findById(1)).thenReturn(Optional.of(umNivelSuporteVendas()));
+        when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
+            .thenReturn(umaOrganizacaoEmpresaSuporteVendas(1, "Organizacao Suporte Vendas", "Suporte Vendas"));
+        when(autenticacaoService.getUsuarioId()).thenReturn(100);
+
+        assertThat(service.save(umaOrganizacaoEmpresaSuporteVendasRequest()))
+            .extracting("nome", "nivel.id", "codigo")
+            .containsExactly("Organizacao Suporte Vendas", 1, "Suporte Vendas");
+
+        verify(nivelRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(autenticacaoService).getUsuarioId();
+        verify(callService).salvarConfiguracaoSuporteVendas(1, "Organizacao Suporte Vendas");
+    }
+
+    @Test
     public void save_deveLancarValidacaoException_quandoOrganizacaoEmpresaNivelBackofficeNaoTiverCodigo() {
         when(nivelRepository.findById(1))
             .thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivelBackoffice()));
@@ -246,6 +269,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Test
     public void inativar_deveInativarESalvarHistorico_quandoOrganizacaoEmpresaAtiva() {
         var organizacaoEmpresa = umaOrganizacaoAtiva();
+        organizacaoEmpresa.setNivel(umNivel());
 
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
@@ -264,6 +288,73 @@ public class OrganizacaoEmpresaServiceTest {
 
         verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
         verify(usuarioService).inativarPorOrganizacaoEmpresa(eq(1));
+        verify(sender).sendOrganizacaoInativada(new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE));
+    }
+
+    @Test
+    public void inativar_deveDesvincularRamaisEDiscadora_quandoOrganizacaoSuporteVendas() {
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(
+            umaOrganizacaoEmpresaSuporteVendas(1, "suporte vendas", "SUP_VENDAS")));
+
+        service.inativar(1);
+
+        verify(callService).desvincularDiscadoraERamaisSuporteVendas(1);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.INATIVACAO), any());
+        verify(sender).sendOrganizacaoInativada(
+            new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS));
+    }
+
+    @Test
+    public void inativar_naoDeveDesvincularRamaisEDiscadora_quandoOrganizacaoNaoForSuporteVendas() {
+        var organizacaoEmpresa = umaOrganizacaoEmpresa();
+        organizacaoEmpresa.setNivel(umNivel());
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacaoEmpresa));
+
+        service.inativar(1);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.INATIVACAO), any());
+        verify(sender).sendOrganizacaoInativada(new OrganizacaoFanoutDto(1, CodigoNivel.BACKOFFICE));
+    }
+
+    @Test
+    public void ativar_deveAtivarConfiguracaoSuporteVendas_quandoOrganizacaoSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, "suporte vendas", "SUP_VENDAS");
+        organizacao.setSituacao(ESituacaoOrganizacaoEmpresa.I);
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacao));
+
+        service.ativar(1);
+
+        verify(callService).ativarConfiguracaoSuporteVendas(1);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.ATIVACAO), any());
+    }
+
+    @Test
+    public void ativar_naoDeveAtivarConfiguracaoSuporteVendas_quandoOrganizacaoNaoForSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresa();
+        organizacao.setSituacao(ESituacaoOrganizacaoEmpresa.I);
+        organizacao.setNivel(umNivel());
+
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(organizacao));
+
+        service.ativar(1);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+        verify(historicoService).salvarHistorico(any(OrganizacaoEmpresa.class),
+            eq(EHistoricoAcao.ATIVACAO), any());
     }
 
     @Test
@@ -282,6 +373,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Test
     public void ativar_deveAtivarESalvarHistorico_quandoOrganizacaoEmpresaInativa() {
         var organizacaoEmpresa = umaOrganizacaoInativa();
+        organizacaoEmpresa.setNivel(umNivel());
 
         when(organizacaoEmpresaRepository.findById(any())).thenReturn(Optional.of(organizacaoEmpresa));
 
@@ -430,6 +522,67 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).findById(1);
         verify(organizacaoEmpresaRepository).existsByDescricaoAndNivelIdAndIdNot(organizacaoEmpresaRequest.getDescricao(), 1, 1);
         verify(organizacaoEmpresaRepository, never()).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_deveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNivelSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, "SUPORTE_VENDAS", "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, umaOrganizacaoEmpresaRequest());
+
+        verify(callService).atualizarConfiguracaoSuporteVendas(1, "Organizacao1");
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_naoDeveSalvarConfiguracaoSuporteVendas_quandoOrganizacaoNaoForNiveSuporteVendas() {
+        var organizacao = umaOrganizacaoEmpresaBackoffice(1, "organizacao 1", "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, umaOrganizacaoEmpresaRequest());
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
+    }
+
+    @Test
+    public void update_naoDeveSalvarConfiguracaoSuporteVendas_quandoNomeAntigoIgualNomeNovo() {
+        var request = umaOrganizacaoEmpresaRequest();
+        var organizacao = umaOrganizacaoEmpresaSuporteVendas(1, request.getNome(), "codigo");
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.of(organizacao));
+        when(organizacaoEmpresaRepository.existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+        when(organizacaoEmpresaRepository.existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt()))
+            .thenReturn(false);
+
+        service.update(1, request);
+
+        verifyZeroInteractions(callService);
+        verify(organizacaoEmpresaRepository).findById(1);
+        verify(organizacaoEmpresaRepository).existsByNomeAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).existsByCodigoAndNivelIdAndIdNot(anyString(), anyInt(), anyInt());
+        verify(organizacaoEmpresaRepository).save(any(OrganizacaoEmpresa.class));
     }
 
     @Test

@@ -46,6 +46,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.QUALITY_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL;
 import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_CLARO_NET;
 import static br.com.xbrain.autenticacao.config.EScopes.SOCIAL_HUB;
+import static br.com.xbrain.autenticacao.config.EScopes.SUPORTE_VENDAS_BKO;
 
 @Configuration
 @EnableAuthorizationServer
@@ -190,7 +191,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String socialHubApiClient;
     @Value("${app-config.oauth-clients.social-hub-api.secret}")
     private String socialHubApiSecret;
-
+    @Value("${app-config.oauth-clients.suporte-vendas-bko-api.client}")
+    private String suporteVendasBkoApiClient;
+    @Value("${app-config.oauth-clients.suporte-vendas-bko-api.secret}")
+    private String suporteVendasBkoApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -402,7 +406,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(socialHubApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(SOCIAL_HUB.getScope())
-            .authorities(ROLE_APPLICATION);
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(suporteVendasBkoApiClient)
+            .secret(suporteVendasBkoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SUPORTE_VENDAS_BKO.getScope());
     }
 
     @Override

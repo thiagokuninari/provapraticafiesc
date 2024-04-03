@@ -174,7 +174,13 @@ public enum EErrors {
     ERRO_ATIVAR_USUARIO_AA("#056 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
         "#056 - Ocorreu um erro ao tentar ativar o usuário do agente autorizado."),
     ERRO_INATIVAR_USUARIO_AA("#057 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
-        "#057 - Ocorreu um erro ao tentar inativar o usuário do agente autorizado.");
+        "#057 - Ocorreu um erro ao tentar inativar o usuário do agente autorizado."),
+    ERRO_SALVAR_CONFIGURACAO_FORNECEDOR(
+        "#058 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#058 - Ocorreu um erro ao salvar configuração do fornecedor"),
+    ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR(
+        "#059 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#059 - Ocorreu um erro ao atualizar configuração do fornecedor");
 
     private final String descricao;
     private final String descricaoTecnica;

@@ -1,14 +1,12 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaUpdateDto;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.*;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
@@ -59,6 +57,7 @@ public class OrganizacaoEmpresaService {
     private final NivelRepository nivelRepository;
     private final OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
     private final UsuarioService usuarioService;
+    private final CallService callService;
 
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -82,9 +81,9 @@ public class OrganizacaoEmpresaService {
         validarNivelBackoffice(nivel.getCodigo(), request.getCodigo());
         validarNomeEDescricaoPorNivelId(request.getNome(), request.getDescricao(), request.getNivelId());
         validarCodigoPorNivelId(request.getCodigo(), request.getNivelId());
-        var organizacao = OrganizacaoEmpresa.of(request, autenticacaoService.getUsuarioId(), nivel);
-        organizacaoEmpresaRepository.save(organizacao);
-
+        var organizacao = organizacaoEmpresaRepository.save(
+            OrganizacaoEmpresa.of(request, autenticacaoService.getUsuarioId(), nivel));
+        salvarConfiguracaoSuporteVendas(organizacao);
         return OrganizacaoEmpresaResponse.of(organizacao);
     }
 
@@ -111,7 +110,9 @@ public class OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa);
         usuarioService.inativarPorOrganizacaoEmpresa(id);
+        enviarOrganizacaoInativadaFanout(OrganizacaoFanoutDto.of(organizacaoEmpresa));
     }
 
     @Transactional
@@ -125,6 +126,7 @@ public class OrganizacaoEmpresaService {
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
+        ativarConfiguracaoSuporteVendas(organizacaoEmpresa);
     }
 
     @Transactional
@@ -138,6 +140,7 @@ public class OrganizacaoEmpresaService {
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
 
         var organizacaoDescricaoAntiga = organizacaoEmpresa.getDescricao();
+        var organizacaoNomeAntigo = organizacaoEmpresa.getNome();
         BeanUtils.copyProperties(request, organizacaoEmpresa);
 
         var organizacaoEmpresaUpdate = new OrganizacaoEmpresaUpdateDto(
@@ -145,6 +148,8 @@ public class OrganizacaoEmpresaService {
             organizacaoEmpresa.getDescricao(),
             organizacaoEmpresa.getNivel().getId()
         );
+        atualizarConfiguracaoSuporteVendas(organizacaoEmpresa.isSuporteVendas(), organizacaoNomeAntigo,
+            request.getNome(), id);
         organizacaoEmpresaMqSender.sendUpdateNomeSucess(organizacaoEmpresaUpdate);
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
 
@@ -255,5 +260,34 @@ public class OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacaoEmpresaRepository.existsByDescricaoAndSituacao(organizacao, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    private void salvarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.salvarConfiguracaoSuporteVendas(organizacaoEmpresa.getId(), organizacaoEmpresa.getNome());
+        }
+    }
+
+    private void atualizarConfiguracaoSuporteVendas(boolean isSuporteVendas, String nomeAntigo, String nomeNovo,
+                                                    Integer fornecedorId) {
+        if (isSuporteVendas && !StringUtils.equals(nomeAntigo, nomeNovo)) {
+            callService.atualizarConfiguracaoSuporteVendas(fornecedorId, nomeNovo);
+        }
+    }
+
+    private void desvincularDiscadoraERamaisSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.desvincularDiscadoraERamaisSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    private void ativarConfiguracaoSuporteVendas(OrganizacaoEmpresa organizacaoEmpresa) {
+        if (organizacaoEmpresa.isSuporteVendas()) {
+            callService.ativarConfiguracaoSuporteVendas(organizacaoEmpresa.getId());
+        }
+    }
+
+    public void enviarOrganizacaoInativadaFanout(OrganizacaoFanoutDto organizacaoFanoutDto) {
+        organizacaoEmpresaMqSender.sendOrganizacaoInativada(organizacaoFanoutDto);
     }
 }

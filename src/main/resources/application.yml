@@ -97,6 +97,9 @@ app-config:
   multiplo-login:
     emails: colaborador@claro.com.br
 
+  fanout:
+    organizacao-inativada: organizacao-inativada.fanout
+
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
@@ -152,6 +155,7 @@ app-config:
     organizacao-empresa-atualizacao-nome: organizacao-empresa-atualizacao-nome.queue
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
     usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
+    inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
 
   oauth-clients:
     autenticacao-api:
@@ -256,6 +260,9 @@ app-config:
     social-hub-api:
       client: social-hub-api
       secret: s0c14lhub4p1
+    suporte-vendas-bko-api:
+      client: suporte-vendas-bko-api
+      secret: sup0rt3v3nd4sbk0
 
   services:
     autenticacao:
@@ -323,6 +330,9 @@ app-config:
     integracao-claro-net:
       #url: http://localhost:8505
       url: http://192.168.50.1:8505
+    suporte-vendas-bko:
+      #url: http://localhost:8050
+      url: http://192.168.50.1:8050
 
 flyway:
   enabled: true

@@ -155,6 +155,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-atualizacao-social-hub}")
     private String usuarioAtualizacaoSocialHubMq;
 
+    @Value("${app-config.fanout.organizacao-inativada}")
+    private String organizacaoInativadaFanout;
+
+    @Value("${app-config.queue.inativar-grupos-organizacao-suporte-vendas}")
+    private String inativarGruposByOrganizacaoQueue;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -623,5 +629,20 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAtualizacaoSocialHubMq() {
         return new Queue(usuarioAtualizacaoSocialHubMq, true);
+    }
+
+    @Bean
+    FanoutExchange organizacaoInativadaFanout() {
+        return new FanoutExchange(organizacaoInativadaFanout);
+    }
+
+    @Bean
+    Queue inativarGruposByOrganizacao() {
+        return new Queue(inativarGruposByOrganizacaoQueue, false);
+    }
+
+    @Bean
+    Binding inativarGruposByOrganizacaoBinding(FanoutExchange organizacaoInativadaFanout) {
+        return BindingBuilder.bind(inativarGruposByOrganizacao()).to(organizacaoInativadaFanout);
     }
 }
