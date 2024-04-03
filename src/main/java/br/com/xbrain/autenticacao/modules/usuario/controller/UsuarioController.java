@@ -430,6 +430,11 @@ public class UsuarioController {
         return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
     }
 
+    @GetMapping("distribuicao/agendamentos/{id}/usuario-hibrido")
+    public boolean isUsuarioHibrido(@PathVariable Integer id) {
+        return usuarioAgendamentoService.isUsuarioHibrido(id);
+    }
+
     @GetMapping("distribuicao/agendamentos/equipe-venda/{equipeVendaId}")
     public List<UsuarioDistribuicaoResponse> getUsuariosParaDistribuicaoByEquipeVendaId(@PathVariable Integer equipeVendaId) {
         return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);

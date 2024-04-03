@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeV
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.querydsl.core.types.Predicate;
@@ -345,6 +346,34 @@ public class UsuarioAgendamentoServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioService, never()).findPermissoesByUsuario(any(Usuario.class));
         verify(equipeVendasService, never()).getEquipesPorSupervisor(anyInt());
+    }
+
+    @Test
+    public void isUsuarioHibrido_deveRetornarTrue_quandoUsuarioForHibrido() {
+        when(usuarioService.getUsuarioById(1)).thenReturn(umUsuarioAgendamentoResponse());
+
+        assertThat(service.isUsuarioHibrido(1)).isTrue();
+
+        verify(usuarioService).getUsuarioById(1);
+    }
+
+    @Test
+    public void isUsuarioHibrido_deveRetornarFalse_quandoUsuarioNaoForHibrido() {
+        var usuario = umUsuarioAgendamentoResponse();
+        usuario.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D);
+
+        when(usuarioService.getUsuarioById(1)).thenReturn(usuario);
+
+        assertThat(service.isUsuarioHibrido(1)).isFalse();
+
+        verify(usuarioService).getUsuarioById(1);
+    }
+
+    @Test
+    public void isUsuarioHibrido_deveRetornarFalse_quandoUsuarioNull() {
+        assertThat(service.isUsuarioHibrido(1)).isFalse();
+
+        verify(usuarioService).getUsuarioById(1);
     }
 
 }

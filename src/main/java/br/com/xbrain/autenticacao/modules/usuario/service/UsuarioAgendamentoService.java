@@ -86,6 +86,11 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
+    public boolean isUsuarioHibrido(Integer id) {
+        var usuario = usuarioService.getUsuarioById(id);
+        return usuario != null && isCargoHibrido(usuario.getCargoCodigo());
+    }
+
     @SuppressWarnings("LineLength")
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> getColaboradoresSupervionados(Integer usuarioId,
                                                                                            Integer agenteAutorizadoId,

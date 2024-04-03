@@ -1462,6 +1462,36 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
+    public void isUsuarioHibrido_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/distribuicao/agendamentos/1/usuario-hibrido"))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioAgendamentoService, never()).isUsuarioHibrido(anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void isUsuarioHibrido_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(get(BASE_URL + "/distribuicao/agendamentos/1/usuario-hibrido"))
+            .andExpect(status().isForbidden());
+
+        verify(usuarioAgendamentoService, never()).isUsuarioHibrido(anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(roles = {ROLE_MLG_5013})
+    public void isUsuarioHibrido_deveRetornarOk_quandoUsuarioComPermissao() {
+        mvc.perform(get(BASE_URL + "/distribuicao/agendamentos/1/usuario-hibrido"))
+            .andExpect(status().isOk());
+
+        verify(usuarioAgendamentoService).isUsuarioHibrido(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
     public void getUsuariosParaDistribuicaoByEquipeVendaId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/equipe-venda/1")))
             .andExpect(status().isUnauthorized());
