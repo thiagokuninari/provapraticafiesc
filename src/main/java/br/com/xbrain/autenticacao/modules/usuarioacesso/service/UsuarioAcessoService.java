@@ -107,6 +107,10 @@ public class UsuarioAcessoService {
         return 0;
     }
 
+    public long deletarHistoricoUsuarioAcessoAgendador() {
+        return usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
+    }
+
     public Page<UsuarioAcessoResponse> getAll(PageRequest pageRequest, UsuarioAcessoFiltros usuarioAcessoFiltros) {
         aplicarFiltros(usuarioAcessoFiltros);
 

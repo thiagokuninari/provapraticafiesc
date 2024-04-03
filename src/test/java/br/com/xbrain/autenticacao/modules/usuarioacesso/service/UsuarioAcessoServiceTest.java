@@ -125,6 +125,17 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
+    public void deletarHistoricoUsuarioAcessoAgendador_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
+        when(usuarioAcessoRepository.deletarHistoricoUsuarioAcesso())
+            .thenReturn(2L);
+
+        assertThat(service.deletarHistoricoUsuarioAcessoAgendador())
+            .isEqualTo(2L);
+
+        verify(usuarioAcessoRepository).deletarHistoricoUsuarioAcesso();
+    }
+
+    @Test
     public void getAll_deveBuscarTodosUsuarios_quandoChamado() {
         when(usuarioAcessoRepository.findAll(new UsuarioAcessoFiltros().toPredicate(), new PageRequest()))
             .thenReturn(umaPaginaUsuarioAcesso());
