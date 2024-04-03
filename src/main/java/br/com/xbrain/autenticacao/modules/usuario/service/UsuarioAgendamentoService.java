@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDisponivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -62,7 +63,7 @@ public class UsuarioAgendamentoService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
+    public List<UsuarioDisponivelResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
         var usuariosPol = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, true);
         var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
         popularEquipeVendasId(usuarios);
@@ -72,17 +73,21 @@ public class UsuarioAgendamentoService {
         if (isUsuarioAutenticadoSupervisor(usuarioAutenticado)) {
             var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(List.of(usuarioAutenticado.getUsuario()))
                 .stream()
-                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+                .map(usuario ->
+                    new UsuarioDisponivelResponse(usuario.getId(), usuario.getNome(), isUsuarioHibrido(usuario.getId())))
                 .collect(Collectors.toList());
-            var vendedoresSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getUsuario().getId(), usuarios);
 
-            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresSupervisionados.stream())
-                .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+            var vendedoresSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getUsuario().getId(), usuarios)
+                .stream()
+                .map(usuario ->
+                    new UsuarioDisponivelResponse(usuario.getId(), usuario.getNome(), isUsuarioHibrido(usuario.getId())));
+
+            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresSupervisionados)
                 .collect(Collectors.toList());
         }
 
         return usuarios.stream()
-            .map(usuario -> new UsuarioAgendamentoResponse(usuario.getId(), usuario.getNome()))
+            .map(usuario -> new UsuarioDisponivelResponse(usuario.getId(), usuario.getNome(), isUsuarioHibrido(usuario.getId())))
             .collect(Collectors.toList());
     }
 

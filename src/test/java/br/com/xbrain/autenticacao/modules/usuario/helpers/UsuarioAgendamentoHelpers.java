@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -335,13 +334,6 @@ public class UsuarioAgendamentoHelpers {
             .id(100)
             .nome("VENDAS")
             .codigo(CodigoAplicacao.VDS)
-            .build();
-    }
-
-    public static UsuarioDto umUsuarioAgendamentoResponse() {
-        return UsuarioDto.builder()
-            .id(1)
-            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
             .build();
     }
 

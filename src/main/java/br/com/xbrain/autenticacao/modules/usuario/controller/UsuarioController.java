@@ -426,13 +426,8 @@ public class UsuarioController {
     }
 
     @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
-    public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+    public List<UsuarioDisponivelResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
-    }
-
-    @GetMapping("distribuicao/agendamentos/{id}/usuario-hibrido")
-    public boolean isUsuarioHibrido(@PathVariable Integer id) {
-        return usuarioAgendamentoService.isUsuarioHibrido(id);
     }
 
     @GetMapping("distribuicao/agendamentos/equipe-venda/{equipeVendaId}")
