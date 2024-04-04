@@ -107,6 +107,7 @@ public class UsuarioAcessoService {
         return 0;
     }
 
+    @Transactional
     public long deletarHistoricoUsuarioAcessoAgendador() {
         return usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
     }
