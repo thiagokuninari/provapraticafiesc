@@ -53,7 +53,8 @@ public class UsuarioTimer {
     @Scheduled(cron = EVERY_DAY_AT_FOUR_AM)
     @Async
     public void deletarHistoricoUsuarioAcesso() {
-        long contadorLinhasDeletadas = usuarioAcessoService.deletarHistoricoUsuarioAcesso();
+        log.info("Iniciando fluxo para remover históricos de acesso do usuario");
+        var contadorLinhasDeletadas = usuarioAcessoService.deletarHistoricoUsuarioAcessoAgendador();
         log.info("Total de histórico(s) removido da tabela USUARIO_ACESSO foi de : " + contadorLinhasDeletadas);
     }
 
