@@ -328,11 +328,10 @@ public class UsuarioAcessoServiceTest {
     @Test
     public void getUsuariosLogadosCompletos_deveRetornarListaVazia_quandoNaoEncontrarNenhumUsuarioParaOrganizacaoId() {
         when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of());
-        when(notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(List.of())).thenReturn(List.of());
 
         assertThat(service.getUsuariosLogadosCompletos(umUsuarioLogadoRequest())).isEmpty();
 
         verify(usuarioRepository).findAll(any(Predicate.class));
-        verify(notificacaoUsuarioAcessoService).getUsuariosLogadosComDataEntradaPorIds(List.of());
+        verifyZeroInteractions(notificacaoUsuarioAcessoService);
     }
 }

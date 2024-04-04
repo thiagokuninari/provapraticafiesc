@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -169,6 +170,13 @@ public class UsuarioAcessoService {
     public List<UsuarioLogadoResponse> getUsuariosLogadosCompletos(UsuarioLogadoRequest request) {
         var usuarios = stream(usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
             .collect(Collectors.toList());
+
+        return !usuarios.isEmpty()
+            ? getOperadoresLogados(usuarios)
+            : List.of();
+    }
+
+    private List<UsuarioLogadoResponse> getOperadoresLogados(List<Usuario> usuarios) {
         var usuariosIds = usuarios.stream().map(Usuario::getId).collect(Collectors.toList());
 
         return notificacaoUsuarioAcessoService.getUsuariosLogadosComDataEntradaPorIds(usuariosIds)
