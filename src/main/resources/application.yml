@@ -421,6 +421,8 @@ feign:
         readTimeout: 360000
 
 management:
+  contextPath: /actuator
+  port: ${ACTUATOR_PORT:8081}
   metrics:
     export:
       simple:
