@@ -422,6 +422,8 @@ feign:
 
 management:
   contextPath: /actuator
+  server:
+    port: ${ACTUATOR_PORT:8081}
   metrics:
     export:
       simple:
