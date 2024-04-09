@@ -358,12 +358,12 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser
     public void getUsuarioById_deveRetornarOk_quandoUsuarioAutenticado() {
-        when(usuarioService.findByIdComAa(1)).thenReturn(umUsuario(1, ADMINISTRADOR));
+        when(usuarioService.findCompleteById(1)).thenReturn(umUsuario(1, ADMINISTRADOR));
 
         mvc.perform(get(BASE_URL.concat("/1")))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findByIdComAa(1);
+        verify(usuarioService).findCompleteById(1);
         verify(usuarioService).getFuncionalidadeByUsuario(1);
     }
 

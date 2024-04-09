@@ -4652,6 +4652,29 @@ public class UsuarioServiceTest {
             .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
     }
 
+    @Test
+    public void findByIdComAa_deveLancarException_quandoUsuarioNaoEncontrado() {
+        when(repository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findByIdComAa(1))
+            .withMessage("Usuario não encontrado.");
+
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void findByIdComAa_deveRetornarUmUsuario_quandoUsuarioEncontrado() {
+        var usuario = umUsuarioCompleto();
+        when(repository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(service.findByIdComAa(1))
+            .extracting("nome", "cpf")
+            .containsExactly("NOME UM", "111.111.111-11");
+
+        verify(repository).findById(1);
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
