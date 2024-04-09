@@ -78,6 +78,8 @@ app-config:
       url: http://integracao-claro-net-api:8505
     suporte-vendas-bko:
       url: http://suporte-vendas-bko-api:8050
+    backoffice:
+      url: http://backoffice-api-hom:8101
 
   email:
     enviar: true

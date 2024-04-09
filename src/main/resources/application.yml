@@ -333,6 +333,9 @@ app-config:
     suporte-vendas-bko:
       #url: http://localhost:8050
       url: http://192.168.50.1:8050
+    backoffice:
+      #url: http://localhost:8101
+      url: https://api-dev.conexaoclarobrasil.com.br/backoffice
 
 flyway:
   enabled: true
@@ -399,6 +402,9 @@ zuul:
     integracao-claro-net:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.integracao-claro-net.url}
+    backoffice:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.backoffice.url}
 
   host:
     connect-timeout-millis: 1800000

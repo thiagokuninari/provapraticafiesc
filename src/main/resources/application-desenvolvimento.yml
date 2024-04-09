@@ -49,6 +49,8 @@ app-config:
       url: http://integracao-claro-net-api:8505
     suporte-vendas-bko:
       url: http://suporte-vendas-bko-api:8050
+    backoffice:
+      url: http://backoffice-api-dev:8101
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
