@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.*;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -23,13 +20,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umaListaLoginLogoutResponse;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umaListaDeUsuariosLogados;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
@@ -288,6 +286,45 @@ public class NotificacaoUsuarioAcessoServiceTest {
             .withMessage("#041 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
+    }
+
+    @Test
+    public void getUsuariosLogadosComDataEntradaPorIds_deveRetornarListaDeUsuariosLogados_quandoEncontrarUsuarioLogado() {
+        when(client.getUsuariosLogadosAtualComDataEntradaPorIds(List.of(4444, 2000)))
+            .thenReturn(umaListaDeUsuariosLogados());
+
+        assertThat(service.getUsuariosLogadosComDataEntradaPorIds(List.of(4444, 2000)))
+            .extracting(UsuarioLogadoResponse::getUsuarioId, UsuarioLogadoResponse::getDataEntrada)
+            .containsExactlyInAnyOrder(
+                tuple(4444, LocalDateTime.of(2024, 3, 22, 10, 30)),
+                tuple(2000, LocalDateTime.of(2024, 3, 22, 10, 30))
+            );
+
+        verify(client).getUsuariosLogadosAtualComDataEntradaPorIds(List.of(4444, 2000));
+    }
+
+    @Test
+    public void getUsuariosLogadosComDataEntradaPorIds_deveLancarException_quandoErroComunicacaoComClient() {
+        var listaAaIds = List.of(4444, 2000);
+        doThrow(RetryableException.class).when(client).getUsuariosLogadosAtualComDataEntradaPorIds(listaAaIds);
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosLogadosComDataEntradaPorIds(listaAaIds))
+            .withMessage("Erro ao tentar buscar usuarios logados.");
+
+        verify(client).getUsuariosLogadosAtualComDataEntradaPorIds(listaAaIds);
+    }
+
+    @Test
+    public void getUsuariosLogadosComDataEntradaPorIds_deveLancarException_quandoOcorrerErroNoClient() {
+        var listaAaIds = List.of(4444, 2000);
+        doThrow(HystrixBadRequestException.class).when(client).getUsuariosLogadosAtualComDataEntradaPorIds(listaAaIds);
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosLogadosComDataEntradaPorIds(listaAaIds))
+            .withMessage("Erro ao tentar buscar usuarios logados.");
+
+        verify(client).getUsuariosLogadosAtualComDataEntradaPorIds(listaAaIds);
     }
 
     private UsuarioLogadoRequest umUsuarioLogadoRequest() {

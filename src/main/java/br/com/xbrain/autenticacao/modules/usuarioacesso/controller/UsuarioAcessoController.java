@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +57,10 @@ public class UsuarioAcessoController {
     @GetMapping("usuarios-logados")
     public List<Integer> getUsuariosLogadosAtual(UsuarioLogadoRequest request) {
         return usuarioAcessoService.getUsuariosLogadosAtualPorIds(request);
+    }
+
+    @GetMapping("usuarios-logados-completos")
+    public List<UsuarioLogadoResponse> getUsuariosLogadosCompletos(UsuarioLogadoRequest request) {
+        return usuarioAcessoService.getUsuariosLogadosCompletos(request);
     }
 }

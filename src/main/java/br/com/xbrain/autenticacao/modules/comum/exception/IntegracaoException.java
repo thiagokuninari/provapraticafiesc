@@ -29,6 +29,16 @@ public class IntegracaoException extends RuntimeException {
                 NestedExceptionUtils.buildMessage(erro.getDescricaoTecnica(), cause));
     }
 
+    public IntegracaoException(
+        final Throwable cause,
+        final String className,
+        final String erro) {
+        super(erro);
+
+        Logger.getLogger(className).log(Level.SEVERE,
+            NestedExceptionUtils.buildMessage(erro, cause), cause);
+    }
+
     public IntegracaoException(HystrixBadRequestException request) {
         if (request instanceof FeignBadResponseWrapper) {
             String message = tratarException((FeignBadResponseWrapper) request).get(0).getMessage();

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -248,5 +249,26 @@ public class UsuarioAcessoControllerTest {
             .andExpect(status().isOk());
 
         verify(service).getUsuariosLogadosAtualPorIds(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosLogadosCompletos_deveRetornarUnauthorized_quandoTokenInvalido() {
+        mvc.perform(get(ENDPOINT_USUARIO_ACESSO.concat("/usuarios-logados-completos")))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(service);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosLogadosCompletos_deveRetornarUnauthorized_quandoDadosValidos() {
+        mvc.perform(get(ENDPOINT_USUARIO_ACESSO.concat("/usuarios-logados-completos"))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).getUsuariosLogadosCompletos(any(UsuarioLogadoRequest.class));
     }
 }

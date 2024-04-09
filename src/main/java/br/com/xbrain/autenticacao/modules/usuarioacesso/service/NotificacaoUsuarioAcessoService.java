@@ -135,4 +135,14 @@ public class NotificacaoUsuarioAcessoService {
                 EErrors.ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS);
         }
     }
+
+    public List<UsuarioLogadoResponse> getUsuariosLogadosComDataEntradaPorIds(List<Integer> usuariosIds) {
+        try {
+            return client.getUsuariosLogadosAtualComDataEntradaPorIds(usuariosIds);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                "Erro ao tentar buscar usuarios logados.");
+        }
+    }
 }

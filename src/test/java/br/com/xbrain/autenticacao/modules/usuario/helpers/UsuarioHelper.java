@@ -20,6 +20,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
@@ -817,4 +818,19 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuarioOperadorBko(Integer id, String nome, String email) {
+        return Usuario.builder()
+            .id(id)
+            .nome(nome)
+            .email(email)
+            .organizacaoEmpresa(organizacaoEmpresa())
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosOperadorBko() {
+        return List.of(
+            umUsuarioOperadorBko(4444, "Khada Jhin", "khadajhin4@teste.com"),
+            umUsuarioOperadorBko(2000, "Veigar", "puromalencarnado@teste.com")
+        );
+    }
 }
