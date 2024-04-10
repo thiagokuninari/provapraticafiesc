@@ -27,9 +27,8 @@ import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
@@ -59,8 +58,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     private String destinatarios;
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository
-            .findAllGerenciaAa(pageable, getBuild(filtros));
+        var solicitacoes = solicitacaoRamalRepository.findAllGerenciaAa(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
@@ -130,13 +128,10 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private boolean validarQuantidade(Integer aaId, Integer quantidadeRamais) {
-        var ramais = solicitacaoRamalRepository
-            .findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(aaId)
-            .stream()
-            .mapToInt(SolicitacaoRamal::getQuantidadeRamais)
-            .sum();
+        var ramais = getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, aaId);
+        var usuariosAtivos = getQuantidadeUsuariosAtivos(aaId);
 
-        return quantidadeRamais + ramais > agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(aaId).size();
+        return quantidadeRamais + ramais > usuariosAtivos;
     }
 
     private void validarParametroAa(SolicitacaoRamalRequest request) {
@@ -222,7 +217,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return "";
     }
 
-    private long getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal canal, Integer agenteAutorizadoId) {
+    private Integer getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal canal, Integer agenteAutorizadoId) {
         return callService.obterRamaisParaCanal(canal, agenteAutorizadoId).size();
     }
 
@@ -230,7 +225,16 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return socioService.findSocioPrincipalByAaId(agenteAutorizadoId).getNome();
     }
 
-    private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
+    private Integer getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
         return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
+    }
+
+    public Integer getRamaisDisponiveis(Integer agenteAutorizadoId) {
+        var ramaisSolicitados = getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, agenteAutorizadoId);
+        var usuariosAtivos = getQuantidadeUsuariosAtivos(agenteAutorizadoId);
+
+        return usuariosAtivos > ramaisSolicitados
+            ? usuariosAtivos - ramaisSolicitados
+            : 0;
     }
 }

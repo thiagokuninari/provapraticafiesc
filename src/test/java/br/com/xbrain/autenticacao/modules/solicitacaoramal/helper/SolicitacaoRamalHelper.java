@@ -95,8 +95,17 @@ public class SolicitacaoRamalHelper {
             .build();
     }
 
-    public static List<RamalResponse> umaListaRamalResponse() {
-        return Arrays.asList(new RamalResponse(), new RamalResponse());
+    public static List<RamalResponse> umListRamalResponse() {
+        return List.of(
+            umRamalResponse(1),
+            umRamalResponse(2));
+    }
+
+    public static RamalResponse umRamalResponse(Integer id) {
+        var response = new RamalResponse();
+        response.setId(id);
+        response.setRamal("123456");
+        return response;
     }
 
     public static SocioResponse umSocioResponse() {
