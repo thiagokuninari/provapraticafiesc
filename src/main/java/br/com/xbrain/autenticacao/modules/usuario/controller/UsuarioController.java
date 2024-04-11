@@ -578,6 +578,11 @@ public class UsuarioController {
         return usuarioService.buscarVendedoresReceptivosPorId(ids);
     }
 
+    @GetMapping("vendedores-receptivos/organizacao/{id}")
+    public List<Integer> getAllVendedoresReceptivosIdsByOrganizacaoId(@PathVariable Integer id) {
+        return usuarioService.buscarVendedoresReceptivosIdsPorOrganizacaoId(id);
+    }
+
     @GetMapping("permitidos/select/por-filtros")
     public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);

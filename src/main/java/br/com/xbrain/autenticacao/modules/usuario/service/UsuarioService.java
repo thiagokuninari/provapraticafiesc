@@ -2828,6 +2828,10 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> buscarVendedoresReceptivosIdsPorOrganizacaoId(Integer id) {
+        return repository.findAllVendedoresReceptivosIdsByOrganizacaoId(id);
+    }
+
     private static String verificarSituacao(String nome, ESituacao situacao) {
         return ESituacao.I == situacao
             ? nome.concat(" (INATIVO)")
