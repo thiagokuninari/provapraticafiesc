@@ -3161,7 +3161,7 @@ public class UsuarioServiceTest {
 
         assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEmpty();
 
-        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(eq(1));
+        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(1);
     }
 
     @Test
@@ -3171,7 +3171,7 @@ public class UsuarioServiceTest {
 
         assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEqualTo(List.of(1, 2, 3));
 
-        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(eq(1));
+        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(1);
     }
 
     @Test

@@ -2012,7 +2012,7 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL + "/usuarios-receptivos/{id}/organizacao", 1))
             .andExpect(status().isOk());
 
-        verify(usuarioService).buscarUsuariosReceptivosIdsPorOrganizacaoId(eq(1));
+        verify(usuarioService).buscarUsuariosReceptivosIdsPorOrganizacaoId(1);
     }
 
     @Test
