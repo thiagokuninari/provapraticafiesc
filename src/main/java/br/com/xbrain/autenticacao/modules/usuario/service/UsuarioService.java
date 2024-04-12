@@ -2828,8 +2828,8 @@ public class UsuarioService {
             .collect(toList());
     }
 
-    public List<Integer> buscarVendedoresReceptivosIdsPorOrganizacaoId(Integer id) {
-        return repository.findAllVendedoresReceptivosIdsByOrganizacaoId(id);
+    public List<Integer> buscarUsuariosReceptivosIdsPorOrganizacaoId(Integer id) {
+        return repository.findAllUsuariosReceptivosIdsByOrganizacaoId(id);
     }
 
     private static String verificarSituacao(String nome, ESituacao situacao) {

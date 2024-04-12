@@ -180,7 +180,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 
-    List<Integer> findAllVendedoresReceptivosIdsByOrganizacaoId(Integer id);
+    List<Integer> findAllUsuariosReceptivosIdsByOrganizacaoId(Integer id);
 
     List<UsuarioDto> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
         LocalDateTime dataHoraInativarUsuario);
