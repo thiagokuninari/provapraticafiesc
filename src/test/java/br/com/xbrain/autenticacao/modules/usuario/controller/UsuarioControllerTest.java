@@ -1997,6 +1997,24 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithAnonymousUser
+    public void getAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/usuarios-receptivos/organizacao/{id}", 1))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/usuarios-receptivos/organizacao/{id}", 1))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).buscarUsuariosReceptivosIdsPorOrganizacaoId(anyInt());
+    }
+
+    @Test
+    @SneakyThrows
     @WithMockUser
     public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
         when(usuarioService.getCanaisPermitidosParaOrganizacao())
