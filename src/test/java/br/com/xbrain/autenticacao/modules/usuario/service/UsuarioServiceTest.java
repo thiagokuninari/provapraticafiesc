@@ -3156,7 +3156,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarUsuariosReceptivosIdsPorOrganizacaoId_deverRetornarListaVazia_quandoNaoEncontrarUsuarios() {
-        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(eq(1)))
+        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(1))
             .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEmpty();
@@ -3166,7 +3166,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarUsuariosReceptivosIdsPorOrganizacaoId_deverRetornarUsuariosIdsDeUmaOrganizacao_quandoSolicitado() {
-        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(eq(1)))
+        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(1))
             .thenReturn(List.of(1, 2, 3));
 
         assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEqualTo(List.of(1, 2, 3));
