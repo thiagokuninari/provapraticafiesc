@@ -82,8 +82,8 @@ app-config:
   minio:
     url: http://192.168.50.6:9000
     access:
-      name: 4
-      secret: 4
+      name: ${MINIO_TOKEN}
+      secret: ${MINIO_SECRET}
     bucket:
       name: conexao-claro-brasil
     public: https://files-dev.conexaoclarobrasil.com.br/public
