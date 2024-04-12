@@ -1999,18 +1999,20 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void getAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/usuarios-receptivos/organizacao/{id}", 1))
+        mvc.perform(get(BASE_URL + "/usuarios-receptivos/{id}/organizacao", 1))
             .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
     }
 
     @Test
     @SneakyThrows
     @WithMockUser
     public void getAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/usuarios-receptivos/organizacao/{id}", 1))
+        mvc.perform(get(BASE_URL + "/usuarios-receptivos/{id}/organizacao", 1))
             .andExpect(status().isOk());
 
-        verify(usuarioService).buscarUsuariosReceptivosIdsPorOrganizacaoId(anyInt());
+        verify(usuarioService).buscarUsuariosReceptivosIdsPorOrganizacaoId(eq(1));
     }
 
     @Test

@@ -578,7 +578,7 @@ public class UsuarioController {
         return usuarioService.buscarVendedoresReceptivosPorId(ids);
     }
 
-    @GetMapping("usuarios-receptivos/organizacao/{id}")
+    @GetMapping("usuarios-receptivos/{id}/organizacao")
     public List<Integer> getAllUsuariosReceptivosIdsByOrganizacaoId(@PathVariable Integer id) {
         return usuarioService.buscarUsuariosReceptivosIdsPorOrganizacaoId(id);
     }
