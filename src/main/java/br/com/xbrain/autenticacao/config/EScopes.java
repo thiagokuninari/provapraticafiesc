@@ -33,7 +33,8 @@ public enum EScopes {
     GESTAO_COLABORADORES_POL("gestao-colaborador-pol-api"),
     INTEGRACAO_CLARO_NET("integracao-claro-net-api"),
     SOCIAL_HUB("social-hub-api"),
-    SUPORTE_VENDAS_BKO("suporte-vendas-bko-api");
+    SUPORTE_VENDAS_BKO("suporte-vendas-bko-api"),
+    CHECAGEM_CREDITO_API("checagem-credito-api");
 
     @Getter
     private String scope;

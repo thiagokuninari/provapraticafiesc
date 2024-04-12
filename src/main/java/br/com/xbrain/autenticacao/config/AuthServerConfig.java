@@ -47,6 +47,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.GESTAO_COLABORADORES_POL
 import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_CLARO_NET;
 import static br.com.xbrain.autenticacao.config.EScopes.SOCIAL_HUB;
 import static br.com.xbrain.autenticacao.config.EScopes.SUPORTE_VENDAS_BKO;
+import static br.com.xbrain.autenticacao.config.EScopes.CHECAGEM_CREDITO_API;
 
 @Configuration
 @EnableAuthorizationServer
@@ -195,6 +196,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String suporteVendasBkoApiClient;
     @Value("${app-config.oauth-clients.suporte-vendas-bko-api.secret}")
     private String suporteVendasBkoApiSecret;
+    @Value("${app-config.oauth-clients.checagem-credito-api.client}")
+    private String checagemCreditoApiClient;
+    @Value("${app-config.oauth-clients.checagem-credito-api.secret}")
+    private String checagemCreditoApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -411,7 +416,14 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .withClient(suporteVendasBkoApiClient)
             .secret(suporteVendasBkoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
-            .scopes(SUPORTE_VENDAS_BKO.getScope());
+            .scopes(SUPORTE_VENDAS_BKO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(checagemCreditoApiClient)
+            .secret(checagemCreditoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CHECAGEM_CREDITO_API.getScope())
+            .authorities(ROLE_APPLICATION);
     }
 
     @Override

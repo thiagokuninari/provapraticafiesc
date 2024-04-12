@@ -82,8 +82,8 @@ app-config:
   minio:
     url: http://192.168.50.6:9000
     access:
-      name: ${MINIO_TOKEN}
-      secret: ${MINIO_SECRET}
+      name: 4
+      secret: 4
     bucket:
       name: conexao-claro-brasil
     public: https://files-dev.conexaoclarobrasil.com.br/public
@@ -263,6 +263,9 @@ app-config:
     suporte-vendas-bko-api:
       client: suporte-vendas-bko-api
       secret: sup0rt3v3nd4sbk0
+    checagem-credito-api:
+      client: checagem-credito-api
+      secret: ch3c4g3mcr3d1t04p1
 
   services:
     autenticacao:
@@ -333,6 +336,9 @@ app-config:
     suporte-vendas-bko:
       #url: http://localhost:8050
       url: http://192.168.50.1:8050
+    checagem-credito:
+      #url: http://localhost:8037
+      url: http://192.168.50.1:8037
 
 flyway:
   enabled: true
