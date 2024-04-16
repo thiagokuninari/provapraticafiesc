@@ -10,7 +10,7 @@ app-config:
     parceiros-online:
       url: http://172.10.10.36:8099
     call:
-      url: http://172.10.10.38:8094
+      url: http://call-api-dev:8094
     vendas:
       url: http://172.10.10.34:8097
     mailing:
