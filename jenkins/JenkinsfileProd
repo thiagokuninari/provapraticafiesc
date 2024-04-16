@@ -6,7 +6,6 @@ def COLOR_MAP = [
 pipeline {
     agent any
     environment {
-        MAX_MEMORY = "12g"
         PORT = "8073:8096"
         ACTUATOR_PORT = "8081"
         PROFILE = "producao"
@@ -57,8 +56,6 @@ pipeline {
                         --name=${CONTAINER_NAME} \
                         --restart=unless-stopped -p ${PORT} \
                         --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
                         -e JAVA_OPTS="${JAVA_OPTS}" \
                         -e MINIO_TOKEN="$MINIO_TOKEN"  \
                         -e MINIO_SECRET="$MINIO_SECRET" \
@@ -104,8 +101,6 @@ pipeline {
                         --name=${CONTAINER_NAME} \
                         --restart=unless-stopped -p ${PORT} \
                         --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
                         -e CONFIG_SERVER_TOKEN=${CONFIG_SERVER_TOKEN} \
                         -e CONFIG_SERVER_URL=${CONFIG_SERVER_URL} \
                         -e JAVA_OPTS="${JAVA_OPTS}" \
