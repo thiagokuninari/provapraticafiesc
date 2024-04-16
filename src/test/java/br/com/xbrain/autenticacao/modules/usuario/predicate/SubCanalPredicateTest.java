@@ -55,4 +55,14 @@ public class SubCanalPredicateTest {
         var expected = new BooleanBuilder(subCanal.novaChecagemCredito.eq(V));
         assertThat(predicate).isEqualTo(expected);
     }
+
+    @Test
+    public void comNovaChecagemViabilidade_deveFiltrarPorNovaChecagemViabilidade_quandoNovaChecagemPresenteNoFiltro() {
+        var predicate = new SubCanalPredicate()
+            .comNovaChecagemViabilidade(V)
+            .build();
+
+        var expected = new BooleanBuilder(subCanal.novaChecagemViabilidade.eq(V));
+        assertThat(predicate).isEqualTo(expected);
+    }
 }

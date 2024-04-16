@@ -73,7 +73,7 @@ public class SubCanalServiceTest {
         when(subCanalRepository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
 
         assertThat(subCanalService.getSubCanalCompletById(1))
-            .isEqualTo(new SubCanalCompletDto(1, PAP, "PAP", ESituacao.A, Eboolean.F));
+            .isEqualTo(new SubCanalCompletDto(1, PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F));
     }
 
     @Test
@@ -228,15 +228,15 @@ public class SubCanalServiceTest {
         when(subCanalRepository
             .findAll(filtros.toPredicate().build(), pageRequest))
             .thenReturn(new PageImpl<>(List.of(
-                new SubCanal(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V),
-                new SubCanal(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F))));
+                new SubCanal(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V, Eboolean.V),
+                new SubCanal(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F, Eboolean.F))));
 
         assertThat(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .hasSize(2)
-            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito")
+            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito", "novaChecagemViabilidade")
             .containsExactlyInAnyOrder(
-                tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V),
-                tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F)
+                tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V, Eboolean.V),
+                tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.F, Eboolean.F)
             );
 
         verify(subCanalRepository).findAll(filtros.toPredicate().build(), pageRequest);
@@ -244,8 +244,8 @@ public class SubCanalServiceTest {
 
     @Test
     public void editar_deveEditarSubCanal_quandoTudoOk() {
-        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
-        var suCanal = new SubCanal(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F, Eboolean.F);
+        var suCanal = new SubCanal(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.V, Eboolean.V);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
         when(subCanalRepository.findById(1)).thenReturn(Optional.of(suCanal));
@@ -256,13 +256,13 @@ public class SubCanalServiceTest {
         verify(subCanalRepository).findById(1);
         verify(subCanalRepository).save(subCanalArgumentCaptor.capture());
         assertThat(subCanalArgumentCaptor.getValue())
-            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito")
-            .containsExactly(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+            .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito", "novaChecagemViabilidade")
+            .containsExactly(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F, Eboolean.F);
     }
 
     @Test
     public void editar_deveLancarException_quandoSubCanalNaoEncontrado() {
-        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F, Eboolean.F);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
         when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
@@ -280,7 +280,7 @@ public class SubCanalServiceTest {
     public void editar_deveLancarPermissaoException_quandoUsuarioNaoForAmdin() {
         var user = umUsuarioAutenticadoAdmin();
         user.setNivelCodigo(OPERACAO.name());
-        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F);
+        var dto = new SubCanalCompletDto(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F, Eboolean.F);
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
 
@@ -306,6 +306,23 @@ public class SubCanalServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> subCanalService.isNovaChecagemCreditoD2d(1))
                 .withMessage("Erro, subcanal não encontrado.");
+
+        verify(subCanalRepository).findById(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemViabilidade_deveRetornarEBoolean_quandoTudoOk() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.of(umSubCanal()));
+        assertEquals(subCanalService.isNovaChecagemViabilidadeD2d(1), Eboolean.F);
+        verify(subCanalRepository).findById(eq(1));
+    }
+
+    @Test
+    public void isNovaChecagemViabilidade_deveNotFoundException_quandoSubCanalNaoEncontrado() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> subCanalService.isNovaChecagemViabilidadeD2d(1))
+            .withMessage("Erro, subcanal não encontrado.");
 
         verify(subCanalRepository).findById(eq(1));
     }

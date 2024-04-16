@@ -55,4 +55,9 @@ public class SubCanalController {
     public Eboolean isNovaChecagemCreditoD2d(@PathVariable Integer id) {
         return service.isNovaChecagemCreditoD2d(id);
     }
+
+    @GetMapping("{id}/verificar-nova-checagem-viabilidade-d2d")
+    public Eboolean isNovaChecagemViabilidadeD2d(@PathVariable Integer id) {
+        return service.isNovaChecagemViabilidadeD2d(id);
+    }
 }
