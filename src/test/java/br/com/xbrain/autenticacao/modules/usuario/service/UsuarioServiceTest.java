@@ -2070,14 +2070,16 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getLoginNetSales,
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse::getCanalNetSales)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
                 "UM LOGIN NETSALES",
                 "ATIVO_LOCAL_PROPRIO",
                 "123.456.887-91",
-                "T0909");
+                "T0909",
+                "CANAL VENDAS NETSALES");
     }
 
     @Test
@@ -2097,14 +2099,16 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getLoginNetSales,
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse::getCanalNetSales)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
                 "UM LOGIN NETSALES",
                 "OPERACAO_AGENTE_AUTORIZADO",
                 "123.456.887-91",
-                "T0909");
+                "T0909",
+                "CANAL VENDAS NETSALES");
     }
 
     @Test
@@ -2124,14 +2128,16 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getLoginNetSales,
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+                UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse::getCanalNetSales)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
                 "UM LOGIN NETSALES",
                 "RECEPTIVO_ATENTO",
                 "123.456.887-91",
-                "T0909");
+                "T0909",
+                "CANAL VENDAS NETSALES");
     }
 
     @Test
@@ -2454,6 +2460,7 @@ public class UsuarioServiceTest {
             .cpf("123.456.887-91")
             .situacao(A)
             .codigoEquipeVendaNetSales("T0909")
+            .canalNetSales("CANAL VENDAS NETSALES")
             .build();
     }
 

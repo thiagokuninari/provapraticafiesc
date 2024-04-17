@@ -23,9 +23,10 @@ public class UsuarioComLoginNetSalesResponseTest {
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse:: getCanalNetSales)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste", "T0909");
+                "685.313.412-56", "Organizacao teste", "T0909", "CANAL NETSALES");
     }
 
     @Test
@@ -36,9 +37,10 @@ public class UsuarioComLoginNetSalesResponseTest {
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda)
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse:: getCanalNetSales)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste", null);
+                "685.313.412-56", "Organizacao teste", null, "CANAL NETSALES");
     }
 
     @Test
@@ -80,6 +82,7 @@ public class UsuarioComLoginNetSalesResponseTest {
                 .build())
             .canais(Set.of(ECanal.INTERNET))
             .codigoEquipeVendaNetSales("T0909")
+            .canalNetSales("CANAL NETSALES")
             .build();
     }
 }
