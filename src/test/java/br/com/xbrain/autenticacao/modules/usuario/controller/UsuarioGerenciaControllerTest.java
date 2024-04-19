@@ -1415,42 +1415,6 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void findByAndCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
-        mvc.perform(get(API_URI)
-                .param("cpf", "123.456.789-10")
-                .param("situacao", "R"))
-            .andExpect(status().isOk());
-
-        verify(usuarioService).findByAndCpfAndSituacaoIsNot("123.456.789-10", ESituacao.R);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
-    public void findByAndCpfAndSituacaoIsNot_deveRetornarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(get(API_URI)
-            .param("cpf", "123.456.789-10")
-            .param("situacao", "R"))
-            .andExpect(status().isForbidden());
-
-        verifyNoMoreInteractions(usuarioService);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void findByAndCpfAndSituacaoIsNot_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
-        mvc.perform(get(API_URI)
-                .param("cpf", "123.456.789-10")
-                .param("situacao", "R"))
-            .andExpect(status().isUnauthorized());
-
-        verifyNoMoreInteractions(usuarioService);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void inativarAntigoSocioPrincipal_deveRetornarBadRequest_quandoNaoEmailNaoForPassadoPorParametro() {
         mvc.perform(put(API_URI + "/inativar/socio-principal"))
             .andExpect(status().isBadRequest());

@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -76,11 +75,6 @@ public class UsuarioGerenciaController {
     @GetMapping(params = "email")
     public UsuarioDto getByEmail(@RequestParam String email) {
         return service.findByEmail(email);
-    }
-
-    @GetMapping(params = {"cpf", "situacao"})
-    public UsuarioDto findByAndCpfAndSituacaoIsNot(@RequestParam String cpf, @RequestParam ESituacao situacao) {
-        return service.findByAndCpfAndSituacaoIsNot(cpf, situacao);
     }
 
     @PostMapping("/configuracao")
