@@ -2135,7 +2135,7 @@ public class UsuarioControllerTest {
                 .param("situacao", "R"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findByAndCpfAndSituacaoIsNot("123.456.789-10", ESituacao.R);
+        verify(usuarioService).findByCpfAndSituacaoIsNot("123.456.789-10", ESituacao.R);
     }
 
     @Test

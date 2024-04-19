@@ -323,7 +323,7 @@ public class UsuarioService {
         return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
-    public UsuarioDto findByAndCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
+    public UsuarioDto findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
         return repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
             .map(UsuarioDto::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);

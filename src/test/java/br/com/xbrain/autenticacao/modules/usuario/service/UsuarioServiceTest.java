@@ -3482,7 +3482,7 @@ public class UsuarioServiceTest {
             .when(usuarioRepository)
             .findByCpfAndSituacaoIsNot("38957979875", ESituacao.R);
 
-        assertThat(usuarioService.findByAndCpfAndSituacaoIsNot("38957979875", ESituacao.R))
+        assertThat(usuarioService.findByCpfAndSituacaoIsNot("38957979875", ESituacao.R))
             .extracting("id", "nome", "cpf")
             .containsExactly(1, "NOME UM", "111.111.111-11");
 
@@ -3492,7 +3492,7 @@ public class UsuarioServiceTest {
     @Test
     public void findByAndCpfAndSituacaoIsNot_deveRetornarException_quandoNaoEncontrarUsuario() {
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.findByAndCpfAndSituacaoIsNot("123456789", ESituacao.R))
+            .isThrownBy(() -> usuarioService.findByCpfAndSituacaoIsNot("123456789", ESituacao.R))
             .withMessage("Usuário não encontrado.");
     }
 
