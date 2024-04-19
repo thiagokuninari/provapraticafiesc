@@ -2129,7 +2129,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void findByAndCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
+    public void findByCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
         mvc.perform(get(BASE_URL)
                 .param("cpf", "123.456.789-10")
                 .param("situacao", "R"))
@@ -2141,7 +2141,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void findByAndCpfAndSituacaoIsNot_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+    public void findByCpfAndSituacaoIsNot_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(get(BASE_URL)
                 .param("cpf", "123.456.789-10")
                 .param("situacao", "R"))
