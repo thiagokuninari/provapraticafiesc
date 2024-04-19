@@ -328,4 +328,43 @@ public class SolicitacaoRamalServiceAaTest {
         verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
         verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
     }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_deveRetornarAasDisponiveis_quandoSolicitado() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "TESTE"),
+                tuple(2, "TESTE"));
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_naoDeveRetornarUsuariosRepetidos_seIdsIguais() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of(
+                umUsuarioAgenteAutorizadoResponse(1),
+                umUsuarioAgenteAutorizadoResponse(1)));
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "TESTE"));
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_deveRetornarListaVazia_seUsuariosNaoEncontrados() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of());
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1)).isEmpty();
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
 }

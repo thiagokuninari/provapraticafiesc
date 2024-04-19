@@ -324,7 +324,7 @@ public class SolicitacaoRamalHelper {
 
     public static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id) {
         return UsuarioAgenteAutorizadoResponse.builder()
-            .id(1)
+            .id(id)
             .nome("TESTE")
             .agenteAutorizadoId(11111)
             .email("TESTE@XBRAIN.COM.BR")

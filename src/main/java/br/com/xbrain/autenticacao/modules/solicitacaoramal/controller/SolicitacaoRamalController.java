@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
@@ -85,5 +86,10 @@ public class SolicitacaoRamalController {
     @GetMapping("{agenteAutorizadoId}/ramais-aa-disponiveis")
     public Integer getRamaisDisponiveis(@PathVariable Integer agenteAutorizadoId) {
         return solicitacaoRamalServiceAa.getRamaisDisponiveis(agenteAutorizadoId);
+    }
+
+    @GetMapping("{agenteAutorizadoId}/colaboradores-aa-disponivel")
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosByAgenteAutorizadoId(@PathVariable Integer agenteAutorizadoId) {
+        return solicitacaoRamalServiceAa.getUsuariosAtivosByAgenteAutorizadoId(agenteAutorizadoId);
     }
 }

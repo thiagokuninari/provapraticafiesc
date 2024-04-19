@@ -457,7 +457,7 @@ public class SolicitacaoRamalControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void getRamaisDisponiveis_deveRetornarUnauthorized_quandoNaoPassarToken() {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/ramais-aa-disponiveiso"))
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/ramais-aa-disponiveis"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error", is("unauthorized")));
 
@@ -471,5 +471,25 @@ public class SolicitacaoRamalControllerTest {
             .andExpect(status().isOk());
 
         verify(solicitacaoRamalServiceAa).getRamaisDisponiveis(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosByAgenteAutorizadoId_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/colaboradores-aa-disponivel"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(solicitacaoRamalServiceAa, never()).getUsuariosAtivosByAgenteAutorizadoId(1);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosByAgenteAutorizadoId_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/colaboradores-aa-disponivel"))
+            .andExpect(status().isOk());
+
+        verify(solicitacaoRamalServiceAa).getUsuariosAtivosByAgenteAutorizadoId(1);
     }
 }

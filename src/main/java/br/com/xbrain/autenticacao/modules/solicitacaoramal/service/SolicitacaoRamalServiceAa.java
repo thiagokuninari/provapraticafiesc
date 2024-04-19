@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
@@ -37,7 +38,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
 @Service
 @RequiredArgsConstructor
@@ -97,8 +100,8 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
             getNomeSocioPrincipalAa(filtros.getAgenteAutorizadoId()),
-            getQuantidadeUsuariosAtivos(filtros.getAgenteAutorizadoId()),
-            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
+            getUsuariosAtivosByAgenteAutorizadoId(filtros.getAgenteAutorizadoId()).size(),
+            getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
             agenteAutorizadoResponse);
     }
 
@@ -128,14 +131,14 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private boolean validarQuantidade(Integer aaId, Integer quantidadeRamais) {
-        var ramais = getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, aaId);
-        var usuariosAtivos = getQuantidadeUsuariosAtivos(aaId);
+        var ramais = getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, aaId);
+        var usuariosAtivos = getUsuariosAtivosByAgenteAutorizadoId(aaId).size();
 
         return quantidadeRamais + ramais > usuariosAtivos;
     }
 
     private void validarParametroAa(SolicitacaoRamalRequest request) {
-        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
+        if (request.getCanal() == AGENTE_AUTORIZADO
             && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
         }
@@ -225,13 +228,16 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return socioService.findSocioPrincipalByAaId(agenteAutorizadoId).getNome();
     }
 
-    private Integer getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosByAgenteAutorizadoId(Integer agenteAutorizadoId) {
+        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId)
+            .stream()
+            .filter(distinctByKey(UsuarioAgenteAutorizadoResponse::getId))
+            .collect(Collectors.toList());
     }
 
     public Integer getRamaisDisponiveis(Integer agenteAutorizadoId) {
-        var ramaisSolicitados = getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, agenteAutorizadoId);
-        var usuariosAtivos = getQuantidadeUsuariosAtivos(agenteAutorizadoId);
+        var ramaisSolicitados = getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, agenteAutorizadoId);
+        var usuariosAtivos = getUsuariosAtivosByAgenteAutorizadoId(agenteAutorizadoId).size();
 
         return usuariosAtivos > ramaisSolicitados
             ? usuariosAtivos - ramaisSolicitados
