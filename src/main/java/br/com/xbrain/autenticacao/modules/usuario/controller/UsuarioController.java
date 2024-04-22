@@ -426,7 +426,7 @@ public class UsuarioController {
     }
 
     @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
-    public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+    public List<UsuarioDisponivelResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
     }
 
@@ -435,10 +435,12 @@ public class UsuarioController {
         return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);
     }
 
+    @SuppressWarnings("LineLength")
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
-    public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
-        @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
-        return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
+    public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(@PathVariable Integer usuarioId,
+                                                                                                      @PathVariable Integer agenteAutorizadoId,
+                                                                                                      @RequestParam String tipoContato) {
+        return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId, tipoContato);
     }
 
     @GetMapping("usuario-funil-prospeccao")

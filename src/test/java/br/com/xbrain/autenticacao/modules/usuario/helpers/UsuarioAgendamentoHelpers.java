@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
@@ -20,7 +22,6 @@ import javax.validation.Path;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UsuarioAgendamentoHelpers {
@@ -276,94 +277,67 @@ public class UsuarioAgendamentoHelpers {
                         .build());
     }
 
-    public static UsuarioAgenteAutorizadoResponse umUsuarioAaResponse() {
-        return UsuarioAgenteAutorizadoResponse.builder()
-            .id(9999)
-            .equipeVendaId(999)
-            .nome("Kakarotto")
-            .email("emailTeste@email.com")
-            .agenteAutorizadoId(999)
-            .build();
-    }
-
-    public static Optional<Usuario> umUsuarioId9991() {
-        return Optional.ofNullable(Usuario.builder()
+    public static Usuario umUsuarioId9991() {
+        return Usuario.builder()
             .id(9991)
             .nome("USUARIO 1 DO AA 999")
             .cargo(umCargoVendedorTelevendas())
             .situacao(ESituacao.A)
-            .build());
+            .build();
     }
 
-    public static Optional<Usuario> umUsuarioId9992() {
-        return Optional.ofNullable(Usuario.builder()
+    public static Usuario umUsuarioId9992() {
+        return Usuario.builder()
             .id(9992)
             .nome("USUARIO 2 DO AA 999")
             .cargo(umCargoVendedorTelevendas())
             .situacao(ESituacao.A)
-            .build());
+            .build();
     }
 
-    public static Optional<Usuario> umUsuarioId9993() {
-        return Optional.ofNullable(Usuario.builder()
+    public static Usuario umUsuarioId9993() {
+        return Usuario.builder()
             .id(9993)
             .nome("USUARIO 3 DO AA 999")
             .cargo(umCargoVendedorTelevendas())
             .situacao(ESituacao.A)
-            .build());
+            .build();
     }
 
-    public static Optional<Usuario> umUsuarioId9994() {
-        return Optional.ofNullable(Usuario.builder()
+    public static Usuario umUsuarioId9994() {
+        return Usuario.builder()
             .id(9994)
             .nome("USUARIO 4 DO AA 999")
             .cargo(umCargoVendedorTelevendas())
             .situacao(ESituacao.A)
-            .build());
+            .build();
     }
 
-    public static Optional<Usuario> umUsuarioId9995() {
-        return Optional.ofNullable(Usuario.builder()
+    public static Usuario umUsuarioId9995() {
+        return Usuario.builder()
             .id(9995)
             .nome("USUARIO 5 DO AA 999")
             .cargo(umCargoVendedorTelevendas())
             .situacao(ESituacao.A)
-            .build());
+            .build();
     }
 
     public static List<Usuario> usuariosDoAgenteAutorizado999() {
         return List.of(
-                Usuario.builder()
-                        .id(9991)
-                        .nome("USUARIO 1 DO AA 999")
-                        .cargo(umCargoVendedorTelevendas())
-                        .situacao(ESituacao.A)
-                        .build(),
-                Usuario.builder()
-                        .id(9992)
-                        .nome("USUARIO 2 DO AA 999")
-                        .cargo(umCargoVendedorD2d())
-                        .situacao(ESituacao.I)
-                        .build(),
-                Usuario.builder()
-                        .id(9993)
-                        .nome("USUARIO 3 DO AA 999")
-                        .cargo(umCargoSocioPrincipal())
-                        .situacao(ESituacao.I)
-                        .build(),
-                Usuario.builder()
-                        .id(9994)
-                        .nome("USUARIO 4 DO AA 999")
-                        .cargo(umCargoSocioPrincipal())
-                        .situacao(ESituacao.I)
-                        .build(),
-                Usuario.builder()
-                        .id(9995)
-                        .nome("USUARIO 5 DO AA 999")
-                        .situacao(ESituacao.I)
-                        .cargo(umCargoSupervisor())
-                        .build()
+            umUsuarioId9991(),
+            umUsuarioId9992(),
+            umUsuarioId9993(),
+            umUsuarioId9994(),
+            umUsuarioId9995()
         );
+    }
+
+    public static List<UsuarioAgenteAutorizadoResponse> listaUsuariosDoAgenteAutorizado999() {
+        return usuariosDoAgenteAutorizado999()
+            .stream()
+            .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(),
+                u.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS ? 999 : null))
+            .collect(Collectors.toList());
     }
 
     public static EquipeVendaDto umaEquipeVendasDto() {
@@ -374,49 +348,88 @@ public class UsuarioAgendamentoHelpers {
             .build();
     }
 
-    public static List<Usuario> usuariosDoAgenteAutorizado1300() {
+    public static EquipeVendasSupervisionadasResponse umaEquipeDeVendas() {
+        return EquipeVendasSupervisionadasResponse.builder()
+            .id(999)
+            .descricao("EQUIPE DE VENDAS DO AA 999")
+            .build();
+    }
+
+    public static List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {
         return List.of(
-                Usuario.builder()
-                        .id(130)
-                        .nome("JOÃO MARINHO DA SILVA DOS SANTOS")
-                        .cargo(umCargoVendedorTelevendas())
-                        .build(),
-                Usuario.builder()
-                        .id(131)
-                        .nome("JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR")
-                        .cargo(umCargoVendedorD2d())
-                        .build(),
-                Usuario.builder()
-                        .id(132)
-                        .nome("JOSÉ MARINHO DA SILVA DOS SANTOS")
-                        .cargo(umCargoSocioPrincipal())
-                        .build(),
-                Usuario.builder()
-                        .id(133)
-                        .nome("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")
-                        .cargo(umCargoSupervisor())
-                        .build(),
-                Usuario.builder()
-                        .id(134)
-                        .nome("MARIA DA SILVA SAURO SANTOS")
-                        .cargo(umCargoVendedorTelevendas())
-                        .build(),
-                Usuario.builder()
-                        .id(135)
-                        .nome("MARCOS AUGUSTO DA SILVA SANTOS")
-                        .cargo(umCargoSupervisor())
-                        .build()
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(1)
+                .usuarioNome("RENATO")
+                .equipeVendaId(10)
+                .build(),
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(2)
+                .usuarioNome("JOAO")
+                .equipeVendaId(10)
+                .build()
         );
     }
 
-    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado1300() {
-        return usuariosDoAgenteAutorizado1300()
-                .stream()
-                .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(), null))
-                .collect(Collectors.toList());
+    public static Usuario umVendedorTelevendas() {
+        return Usuario.builder()
+            .id(130)
+            .nome("JOÃO MARINHO DA SILVA DOS SANTOS")
+            .cargo(umCargoVendedorTelevendas())
+            .build();
     }
 
-    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas() {
+    public static Usuario umVendedorD2d() {
+        return Usuario.builder()
+            .id(131)
+            .nome("JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR")
+            .cargo(umCargoVendedorD2d())
+            .build();
+    }
+
+    public static Usuario umSocioPrincipal() {
+        return Usuario.builder()
+            .id(132)
+            .nome("JOSÉ MARINHO DA SILVA DOS SANTOS")
+            .cargo(umCargoSocioPrincipal())
+            .build();
+    }
+
+    public static Usuario umSupervisor() {
+        return Usuario.builder()
+            .id(133)
+            .nome("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")
+            .cargo(umCargoSupervisor())
+            .build();
+    }
+
+    public static Usuario umSuperviorTelevendas() {
+        return Usuario.builder()
+            .id(134)
+            .nome("MARIA DA SILVA SAURO SANTOS")
+            .cargo(umCargoVendedorTelevendas())
+            .build();
+    }
+
+    public static Usuario umSupervisor2() {
+        return Usuario.builder()
+            .id(135)
+            .nome("MARCOS AUGUSTO DA SILVA SANTOS")
+            .cargo(umCargoSupervisor())
+            .build();
+    }
+
+    public static List<Usuario> usuariosDoAgenteAutorizado1300() {
+        return List.of(
+            umVendedorTelevendas(),
+            umVendedorD2d(),
+            umSocioPrincipal(),
+            umSupervisor(),
+            umSuperviorTelevendas(),
+            umSupervisor2()
+        );
+    }
+
+    public static List<UsuarioAgenteAutorizadoResponse> usuariosDoAa1300ComEquipesDeVendas() {
         return List.of(
                 new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", 999),
                 new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", 980),
@@ -425,62 +438,6 @@ public class UsuarioAgendamentoHelpers {
                 new UsuarioAgenteAutorizadoResponse(134, "PAULO JUNIO COLARES MIRANDA", null),
                 new UsuarioAgenteAutorizadoResponse(135, "LEONARDO DOS SANTOS GONCALVES REIS", 999)
         );
-    }
-
-    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado999() {
-        return usuariosDoAgenteAutorizado999()
-                .stream()
-                .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(),
-                        u.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS ? 999 : null))
-                .collect(Collectors.toList());
-    }
-
-    public static List<AgenteAutorizadoPermitidoResponse> agentesAutorizadosPermitidos() {
-        return List.of(
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1300)
-                        .cnpj("17.822.087/0001-85")
-                        .cnpjRazaoSocial("17.822.087/0001-85 - S2 TELECOM COMERCIO DE ANTENAS EIRELI - ME")
-                        .build(),
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1400)
-                        .cnpj("06.152.588/0001-85")
-                        .cnpjRazaoSocial("06.152.588/0001-85 - AS2 COMERCIO DE ANTENAS EIRELI - ME")
-                        .build(),
-                AgenteAutorizadoPermitidoResponse.builder()
-                        .id(1500)
-                        .cnpj("07.152.589/0001-85")
-                        .cnpjRazaoSocial("07.152.589/0001-85 - AS3 COMERCIO DE ANTENAS EIRELI - ME")
-                        .build()
-        );
-    }
-
-    private static Aplicacao umaAplicacao() {
-        var aplicacao = new Aplicacao();
-        aplicacao.setId(100);
-        aplicacao.setNome("VENDAS");
-        aplicacao.setCodigo(CodigoAplicacao.VDS);
-        return aplicacao;
-    }
-
-    public static UsuarioPermissaoResponse umaPermissaoResponseVazia() {
-        return UsuarioPermissaoResponse.builder()
-                .permissoesEspeciais(List.of())
-                .permissoesCargoDepartamento(List.of())
-                .build();
-    }
-
-    public static UsuarioPermissaoResponse umaPermissaoDeVendaResponse() {
-        return UsuarioPermissaoResponse.builder()
-                .permissoesCargoDepartamento(List.of())
-                .permissoesEspeciais(List.of(
-                        FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
-                                .id(100)
-                                .role("VDS_TABULACAO_DISCADORA")
-                                .aplicacao(umaAplicacao())
-                                .build())
-                ))
-                .build();
     }
 
     public static Cargo umCargoVendedorTelevendas() {
@@ -492,7 +449,7 @@ public class UsuarioAgendamentoHelpers {
                 .build();
     }
 
-    private static Cargo umCargoVendedorD2d() {
+    public static Cargo umCargoVendedorD2d() {
         return Cargo.builder()
                 .id(1000)
                 .nome("AGENTE_AUTORIZADO_VENDEDOR_D2D")
@@ -501,7 +458,7 @@ public class UsuarioAgendamentoHelpers {
                 .build();
     }
 
-    private static Cargo umCargoSupervisor() {
+    public static Cargo umCargoSupervisor() {
         return Cargo.builder()
                 .id(2000)
                 .nome("AGENTE_AUTORIZADO_SUPERVISOR")
@@ -518,4 +475,99 @@ public class UsuarioAgendamentoHelpers {
                 .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
                 .build();
     }
+
+    public static UsuarioPermissaoResponse umaPermissaoDeVendaPresencial() {
+        return UsuarioPermissaoResponse.builder()
+            .permissoesCargoDepartamento(List.of())
+            .permissoesEspeciais(List.of(
+                FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+                    .id(100)
+                    .role("VDS_TABULACAO_MANUAL")
+                    .aplicacao(umaAplicacao())
+                    .build())
+            ))
+            .build();
+    }
+
+    public static UsuarioPermissaoResponse umaPermissaoDeVendaDiscadora() {
+        return UsuarioPermissaoResponse.builder()
+            .permissoesCargoDepartamento(List.of())
+            .permissoesEspeciais(List.of(
+                FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+                    .id(100)
+                    .role("VDS_TABULACAO_DISCADORA")
+                    .aplicacao(umaAplicacao())
+                    .build())
+            ))
+            .build();
+    }
+
+    public static UsuarioPermissaoResponse umaPermissaoDeVendaClickToCall() {
+        return UsuarioPermissaoResponse.builder()
+            .permissoesCargoDepartamento(List.of())
+            .permissoesEspeciais(List.of(
+                FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+                    .id(100)
+                    .role("VDS_TABULACAO_CLICKTOCALL")
+                    .aplicacao(umaAplicacao())
+                    .build())
+            ))
+            .build();
+    }
+
+    public static UsuarioPermissaoResponse umaPermissaoVisualizarGeral() {
+        return UsuarioPermissaoResponse.builder()
+            .permissoesCargoDepartamento(List.of())
+            .permissoesEspeciais(List.of(
+                FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+                    .id(100)
+                    .role("AUT_VISUALIZAR_GERAL")
+                    .aplicacao(umaAplicacao())
+                    .build())
+            ))
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoSupervisor() {
+        return UsuarioAutenticado.builder()
+            .id(135)
+            .nome("MARCOS AUGUSTO DA SILVA SANTOS")
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+            .usuario(umUsuario())
+            .build();
+    }
+
+    private static Usuario umUsuario() {
+        return Usuario.builder()
+            .id(135)
+            .nome("MARCOS AUGUSTO DA SILVA SANTOS")
+            .cargo(Cargo.builder().codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR).build())
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoCargoCoordenadorComercial() {
+        return UsuarioAutenticado.builder()
+            .id(101)
+            .nome("COORDENADOR")
+            .cargoCodigo(CodigoCargo.COORDENADOR_OPERACAO)
+            .departamentoCodigo(CodigoDepartamento.COMERCIAL)
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoSocio() {
+        return UsuarioAutenticado.builder()
+            .id(100)
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nome("José")
+            .build();
+    }
+
+    private static Aplicacao umaAplicacao() {
+        return Aplicacao.builder()
+            .id(100)
+            .nome("VENDAS")
+            .codigo(CodigoAplicacao.VDS)
+            .build();
+    }
+
 }
