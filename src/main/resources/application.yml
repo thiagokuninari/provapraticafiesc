@@ -313,8 +313,8 @@ app-config:
 #      url: http://localhost:8039
       url: https://api-dev.conexaoclarobrasil.com.br/localizacao
     gestao-colaborador-pol:
-      url: http://localhost:8310
-#      url: http://192.168.50.1:8310
+#      url: http://localhost:8310
+      url: http://192.168.50.1:8310
     integracao-claro-net:
       #url: http://localhost:8505
       url: http://192.168.50.1:8505
