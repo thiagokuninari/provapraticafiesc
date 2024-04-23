@@ -38,9 +38,7 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
-import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
-import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
@@ -771,29 +769,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 usuarioCidade.usuario.cargo.codigo))
             .from(usuarioCidade)
             .join(usuarioCidade.cidade, cidade)
-            .join(cidade.subCluster, subCluster)
-            .join(subCluster.cluster, cluster)
-            .join(cluster.grupo, grupo)
-            .join(grupo.regional, regional)
-            .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
-                .and(usuarioCidade.usuario.canais.any().in(canais))
-                .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
-            .distinct()
-            .fetch();
-    }
-
-    @Override
-    public List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                               List<Integer> areasAtuacaoIds,
-                                                               List<CodigoCargo> cargos,
-                                                               Set<ECanal> canais) {
-        return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioResponse.class,
-                usuarioCidade.usuario.id,
-                usuarioCidade.usuario.nome,
-                usuarioCidade.usuario.cargo.codigo))
-            .from(usuarioCidade)
-            .join(usuarioCidade.cidade, cidade)
             .join(usuarioCidade.cidade.uf, uf1)
             .join(usuarioCidade.cidade.regional, regional)
             .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
@@ -904,12 +879,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
+    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros) {
         var query = new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario);
-        filtros.setNovasRegionaisIds(novasRegionaisIds);
-        montarQuery(query, filtros, novasRegionaisIds);
+        montarQuery(query, filtros);
 
         return query.where(filtros.toPredicate())
             .distinct()
@@ -917,52 +891,31 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros,
-                                                     List<Integer> novasRegionaisIds) {
+    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros) {
         var query = new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario);
-        filtros.setNovasRegionaisIds(novasRegionaisIds);
-        montarQuery(query, filtros, novasRegionaisIds);
+        montarQuery(query, filtros);
 
         return query.where(filtros.toPredicate())
             .distinct()
             .fetch();
     }
 
-    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
+    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros) {
         var temCidadesIds = !ObjectUtils.isEmpty(filtros.getCidadesIds());
-        var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
-        var temClusterId = Objects.nonNull(filtros.getClusterId());
-        var temGrupoId = Objects.nonNull(filtros.getGrupoId());
         var temUfId = Objects.nonNull(filtros.getUfId());
         var temRegionalId = Objects.nonNull(filtros.getRegionalId());
-        var temNovaRegionalId = temRegionalId
-            && Objects.nonNull(novasRegionaisIds)
-            && novasRegionaisIds.contains(filtros.getRegionalId());
 
-        if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temUfId || temRegionalId) {
+        if (temCidadesIds || temUfId || temRegionalId) {
             query.leftJoin(usuario.cidades, usuarioCidade)
                 .leftJoin(usuarioCidade.cidade, cidade);
         }
-        if (temSubClusterId || temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(cidade.subCluster, subCluster);
-        }
-        if (temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(subCluster.cluster, cluster);
-        }
-        if (temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(cluster.grupo, grupo);
-        }
-        if (temUfId || temRegionalId && temNovaRegionalId) {
+        if (temUfId || temRegionalId) {
             query.leftJoin(cidade.uf, uf1);
         }
         if (temRegionalId) {
-            if (temNovaRegionalId) {
-                query.leftJoin(cidade.regional, regional);
-            } else {
-                query.leftJoin(grupo.regional, regional);
-            }
+            query.leftJoin(cidade.regional, regional);
         }
     }
 

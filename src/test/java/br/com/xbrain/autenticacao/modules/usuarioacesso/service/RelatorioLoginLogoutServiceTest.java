@@ -73,14 +73,14 @@ public class RelatorioLoginLogoutServiceTest {
     public void getLoginsLogoutsDeHoje_retornarLoginsELogounts_quandoDadosValidos() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
         when(agenteAutorizadoService.getUsuariosIdsByAaId(101, true)).thenReturn(List.of(101));
-        when(usuarioRepository.findAllIds(any())).thenReturn(List.of(89));
+        when(usuarioRepository.findAllIds(any(Predicate.class))).thenReturn(List.of(89));
         when(notificacaoUsuarioAcessoService.getLoginsLogoutsDeHoje(Optional.of(List.of(89)), new PageRequest()))
             .thenReturn(umMongoosePageLoginLogoutResponse());
 
         assertThat(service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO,
             101, null)).isEqualTo(umaPaginaLoginLogoutResponse());
 
-        verify(usuarioRepository).findAllIds(any());
+        verify(usuarioRepository).findAllIds(any(Predicate.class));
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(agenteAutorizadoService).getUsuariosIdsByAaId(101, true);
         verify(notificacaoUsuarioAcessoService).getLoginsLogoutsDeHoje(Optional.of(List.of(89)), new PageRequest());
@@ -129,14 +129,14 @@ public class RelatorioLoginLogoutServiceTest {
     public void getCsv_deveBuscarCsv_quandoDadosValidos() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
         when(agenteAutorizadoService.getUsuariosIdsByAaId(101, true)).thenReturn(List.of(101));
-        when(usuarioRepository.findAllIds(any())).thenReturn(List.of(89));
+        when(usuarioRepository.findAllIds(any(Predicate.class))).thenReturn(List.of(89));
 
         service.getCsv(
             new RelatorioLoginLogoutCsvFiltro(),
             new MockHttpServletResponse(),
             ECanal.D2D_PROPRIO, 101, null);
 
-        verify(usuarioRepository).findAllIds(any());
+        verify(usuarioRepository).findAllIds(any(Predicate.class));
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(notificacaoUsuarioAcessoService).getCsv(any(), any());
         verify(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(101);

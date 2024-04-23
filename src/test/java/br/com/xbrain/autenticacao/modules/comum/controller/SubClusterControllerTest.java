@@ -147,26 +147,6 @@ public class SubClusterControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_SUBCLUSTER + "/comunicados")
-                .param("clusterId", "10"))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getAtivosParaComunicados_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get(API_SUBCLUSTER + "/comunicados")
-                .param("clusterId", "10"))
-            .andExpect(status().isOk());
-
-        verify(subClusterService).getAtivosParaComunicados(10);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
     public void getAllSubclusters_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_SUBCLUSTER + "/todos"))
             .andExpect(status().isUnauthorized());

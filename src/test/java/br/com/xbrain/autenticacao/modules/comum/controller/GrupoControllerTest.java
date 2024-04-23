@@ -92,37 +92,6 @@ public class GrupoControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get("/api/grupos/comunicados")
-                .param("regionalId", "10")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getAtivosParaComunicados_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get("/api/grupos/comunicados")
-                .param("regionalId", "10")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(grupoService).getAtivosParaComunicados(10);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getAtivosParaComunicados_deveRetornarBadRequest_seNaoInformarRegionalId() {
-        mvc.perform(get("/api/grupos/comunicados")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
     public void findById_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get("/api/grupos/{grupoId}", 4)
                 .accept(MediaType.APPLICATION_JSON))

@@ -7,16 +7,12 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class SubClusterService {
@@ -26,9 +22,6 @@ public class SubClusterService {
     private SubClusterRepository repository;
     @Autowired
     private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private ParceirosOnlineService parceirosOnlineService;
 
     public List<SubClusterDto> getAllByClusterId(Integer clusterId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -82,13 +75,5 @@ public class SubClusterService {
         var predicate = new SubClusterPredicate()
             .filtrarPermitidos(usuarioAutenticado);
         return SubClusterDto.of(repository.findAllAtivo(predicate.build()));
-    }
-
-    public List<SubClusterDto> getAtivosParaComunicados(Integer clusterId) {
-        return Stream.concat(
-            getAllByClusterId(clusterId).stream(),
-            parceirosOnlineService.getSubclusters(clusterId).stream())
-            .filter(distinctByKey(SubClusterDto::getId))
-            .collect(Collectors.toList());
     }
 }

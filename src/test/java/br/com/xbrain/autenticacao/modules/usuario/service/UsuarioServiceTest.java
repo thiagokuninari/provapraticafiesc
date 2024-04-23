@@ -1734,8 +1734,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorNovaRegionalId() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1744,20 +1743,18 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .regionalId(1027)
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .regionalId(1027)
+                .usuarioService(service)
+                .build()));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorUfId() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1767,20 +1764,18 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .ufId(1)
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .ufId(1)
+                .usuarioService(service)
+                .build()));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarCidadesIds() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1791,14 +1786,13 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .cidadesIds(List.of(5578))
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .cidadesIds(List.of(5578))
+                .usuarioService(service)
+                .build()));
     }
 
     private Usuario umUsuarioAtivo() {

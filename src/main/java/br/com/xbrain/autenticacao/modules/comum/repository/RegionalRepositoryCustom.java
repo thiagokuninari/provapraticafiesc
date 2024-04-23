@@ -10,6 +10,4 @@ public interface RegionalRepositoryCustom {
     List<Regional> getAll(Predicate predicate);
 
     List<Regional> getAllByUsuarioId(Integer usuarioId);
-
-    List<Integer> getNovasRegionaisIds();
 }
