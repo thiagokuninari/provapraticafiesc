@@ -6,7 +6,7 @@ app-config:
 
   services:
     autenticacao:
-      url: http://172.10.10.33:8096
+      url: http://autenticacao-api-dev:8096
     parceiros-online:
       url: http://172.10.10.36:8099
     call:

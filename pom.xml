@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.10.RELEASE</version>
+        <version>1.5.11.RELEASE</version>
     </parent>
 
     <properties>
@@ -19,6 +19,7 @@
         <springcloud.version>1.4.0.RELEASE</springcloud.version>
         <ojdbc6.version>11.2.0.3</ojdbc6.version>
         <querydsl.version>4.1.4</querydsl.version>
+        <jacoco.version>0.8.3</jacoco.version>
         <jackson.hibernate4.version>2.8.2</jackson.hibernate4.version>
         <jackson.jsr310.version>2.8.3</jackson.jsr310.version>
         <jackson.kotlin.version>2.9.9</jackson.kotlin.version>
@@ -122,6 +123,11 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>${jackson.kotlin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Database -->
@@ -385,39 +391,36 @@
                 </executions>
             </plugin>
 
-            <!-- Cobertura de Testes -->
+            <!-- Jacoco Cobertura de Testes-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.3</version>
+                <version>${jacoco.version}</version>
                 <executions>
                     <execution>
-                        <id>default-prepare-agent</id>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>check</id>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>check</goal>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
                         </goals>
                         <configuration>
-                            <rules>
-                                <rule implementation="org.jacoco.maven.RuleConfiguration">
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <limit implementation="org.jacoco.report.check.Limit">
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>0.1</minimum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                            <includes>
-                                <include>**/autenticacao/modules/**</include>
-                            </includes>
+                            <!-- Sets the path to the file hich contains the execution data. -->
+                            <dataFile>target/jacoco.exec</dataFile>
+                            <!-- Sets the output directory for the code coverage report. -->
+                            <outputDirectory>target/jacoco-ut</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

@@ -432,6 +432,22 @@ management:
       simple:
         enabled: false
 
+  contextPath: /actuator
+  port: ${ACTUATOR_PORT:8081}
+  server:
+    port: 8081
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: info, health, loggers, metrics
+
+  health:
+    elasticsearch:
+      response-timeout: 1s
+
 xbrain:
   logging:
     level: INFO

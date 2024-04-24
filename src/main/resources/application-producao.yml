@@ -53,7 +53,7 @@ app-config:
 
   services:
     autenticacao:
-      url: http://172.10.10.73:8096
+      url: http://autenticacao-api-prod:8096
     vendas:
       url: http://172.10.10.74:8097
     call:
