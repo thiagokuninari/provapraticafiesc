@@ -11,7 +11,7 @@ pipeline {
         ACTUATOR_PORT = "8081"
         PROFILE = "certificacao"
         DOCKER_CRT = "docker --context crt"
-        CONTAINER_NAME = autenticacao-api-crt"
+        CONTAINER_NAME = "autenticacao-api-crt"
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
