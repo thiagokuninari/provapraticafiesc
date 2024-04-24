@@ -37,7 +37,7 @@ app-config:
     autenticacao:
       url: http://autenticacao-api-crt:8096
     vendas:
-      url: http://172.10.10.74:8097
+      url: http://vendas-api-crt:8097
     parceiros-online:
       url: http://172.10.10.76:8099
     call:

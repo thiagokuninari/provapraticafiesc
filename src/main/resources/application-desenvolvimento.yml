@@ -12,7 +12,7 @@ app-config:
     call:
       url: http://172.10.10.38:8094
     vendas:
-      url: http://172.10.10.34:8097
+      url: http://vendas-api-dev:8097
     mailing:
       url: http://172.10.10.37:8095
     equipe-venda:
