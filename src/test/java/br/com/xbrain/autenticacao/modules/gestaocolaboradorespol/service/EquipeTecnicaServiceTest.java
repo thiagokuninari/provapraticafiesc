@@ -34,7 +34,7 @@ public class EquipeTecnicaServiceTest {
     }
 
     @Test
-    public void getEquipesPorSupervisor_deveRetornarEquipeTecnicaPorSupervisor_quandoSupervisorNaoSupervisionarEquipe() {
+    public void getEquipesPorSupervisor_deveRetornarEquipeTecnicaPorSupervisor_quandoSupervisorSupervisionarEquipe() {
         doReturn(umaListaEquipeTecnicaSupervisionada()).when(client).getEquipesTecnicasPorSupervisor(1);
 
         assertThat(service.getEquipesPorSupervisor(1))

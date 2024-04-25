@@ -75,7 +75,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                     userAuth,
                     getAgentesAutorizadosPermitidos(usuario),
                     getEmpresasDoUsuario(usuario),
-                    getEquipesSupervisionadas(usuario),
+                    getEquipesVendasSupervisionadas(usuario),
                     getEquipesTecnicasSupervisionadas(usuario),
                     getEquipeVendas(usuario),
                     getSites(usuario)));
@@ -105,7 +105,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             : usuario.getEmpresas();
     }
 
-    private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
+    private List<Integer> getEquipesVendasSupervisionadas(Usuario usuario) {
         return usuario.isAgenteAutorizado()
             ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
             .stream()

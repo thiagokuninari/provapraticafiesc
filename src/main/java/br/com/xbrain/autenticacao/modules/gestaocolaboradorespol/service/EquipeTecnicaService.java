@@ -20,7 +20,7 @@ public class EquipeTecnicaService {
         try {
             return client.getEquipesTecnicasPorSupervisor(supervisorId);
         } catch (Exception ex) {
-            log.warn("Erro ao obter as equipes Tecnicas do supervisor", ex);
+            log.warn("Erro ao obter as equipes técnicas do supervisor", ex);
             return Collections.emptyList();
         }
     }
