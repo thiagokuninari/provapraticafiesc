@@ -56,7 +56,7 @@ pipeline {
             steps {
                 sh '''
                     ${DOCKER_CRT} login ${HARBOR_LOGIN}
-                    if ${DOCKER_CRT} ps -a --format '{{.Names}}' | grep -Eq "${CONTAINER_NAME}"; then
+                    if ${DOCKER_CRT} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
                        ${DOCKER_CRT} stop ${CONTAINER_NAME}
                        ${DOCKER_CRT} rm ${CONTAINER_NAME}
                     fi
@@ -103,7 +103,7 @@ pipeline {
             }
             steps('Realizando rollback') {
                 sh '''
-                    if ${DOCKER_CRT} ps -a --format '{{.Names}}' | grep -Eq "${CONTAINER_NAME}"; then
+                    if ${DOCKER_CRT} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
                        ${DOCKER_CRT} stop ${CONTAINER_NAME}
                        ${DOCKER_CRT} rm ${CONTAINER_NAME}
                     fi
