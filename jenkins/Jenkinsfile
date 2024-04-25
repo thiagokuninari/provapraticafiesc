@@ -71,7 +71,7 @@ pipeline {
             steps {
                 sh '''
                     ${DOCKER_DEV} login ${HARBOR_LOGIN}
-                    if ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "${CONTAINER_NAME}"; then
+                    if ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
                        ${DOCKER_DEV} stop ${CONTAINER_NAME}
                        ${DOCKER_DEV} rm ${CONTAINER_NAME}
                     fi
