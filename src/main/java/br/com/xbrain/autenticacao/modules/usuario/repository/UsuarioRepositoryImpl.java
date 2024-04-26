@@ -328,7 +328,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioAutoComplete> findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(Predicate predicate) {
+    public List<UsuarioAutoComplete> findAllResponsaveisDdd() {
         return new JPAQueryFactory(entityManager)
             .select(
                 Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
@@ -336,11 +336,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(usuario.departamento, departamento)
             .innerJoin(departamento.nivel, nivel)
-            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER, ASSISTENTE_OPERACAO)
-                .and(departamento.codigo.eq(COMERCIAL)
-                    .and(nivel.codigo.eq(OPERACAO)))
+            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER, ASSISTENTE_OPERACAO, GERENTE_OPERACAO,
+                    COORDENADOR_OPERACAO, OPERACAO_ANALISTA)
+                .and(departamento.codigo.eq(COMERCIAL))
+                .and(nivel.codigo.eq(OPERACAO))
                 .and(usuario.canais.any().eq(AGENTE_AUTORIZADO))
-                .and(predicate))
+                .and(usuario.situacao.eq(A)))
             .orderBy(usuario.nome.asc())
             .fetch();
     }

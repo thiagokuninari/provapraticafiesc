@@ -564,11 +564,8 @@ public class UsuarioService {
         return repository.findAllExecutivosOperacaoDepartamentoComercial(predicate);
     }
 
-    public List<UsuarioAutoComplete> findAllResponsaveisDdd(@Nullable CodigoCargo cargo) {
-        var predicate = new UsuarioPredicate()
-            .comCargo(cargo)
-            .build();
-        return repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(predicate);
+    public List<UsuarioAutoComplete> findAllResponsaveisDdd() {
+        return repository.findAllResponsaveisDdd();
     }
 
     public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {

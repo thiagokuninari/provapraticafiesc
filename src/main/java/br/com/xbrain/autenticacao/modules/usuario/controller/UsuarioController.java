@@ -200,8 +200,8 @@ public class UsuarioController {
     }
 
     @GetMapping("responsaveis-ddd")
-    public List<UsuarioAutoComplete> findAllResponsaveisDdd(CodigoCargo cargo) {
-        return usuarioService.findAllResponsaveisDdd(cargo);
+    public List<UsuarioAutoComplete> findAllResponsaveisDdd() {
+        return usuarioService.findAllResponsaveisDdd();
     }
 
     @PostMapping("/vincula/hierarquia")

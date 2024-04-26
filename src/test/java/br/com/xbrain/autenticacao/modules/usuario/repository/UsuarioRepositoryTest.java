@@ -94,14 +94,19 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllResponsaveisDdd_deveRetornarResponsaveis_quandoFeitaRequisicao() {
-        assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
-            .hasSize(4)
+        assertThat(repository.findAllResponsaveisDdd())
+            .hasSize(9)
             .extracting("value", "text")
             .containsExactlyInAnyOrder(
+                tuple(220, "ANALISTA OP"),
                 tuple(125, "ASSISTENTE OP"),
+                tuple(109, "COORDENADOR"),
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"),
-                tuple(124, "EXECUTIVO OP")
+                tuple(124, "EXECUTIVO OP"),
+                tuple(221, "GERENTE OP"),
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2")
             );
     }
 
@@ -196,7 +201,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .hasSize(6);
+            .hasSize(9);
     }
 
     @Test
@@ -266,7 +271,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void getUsuariosOperacaoCanalAa_deveRetornarUsuariosOpNivelAa() {
         assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
-            .hasSize(7);
+            .hasSize(10);
     }
 
     @Test
