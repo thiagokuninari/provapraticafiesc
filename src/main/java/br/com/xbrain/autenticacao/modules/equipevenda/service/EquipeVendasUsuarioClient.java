@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -22,4 +24,6 @@ public interface EquipeVendasUsuarioClient {
     @GetMapping(API_EQUIPE_VENDAS_USUARIO + "/buscar-usuario")
     List<Integer> buscarUsuarioPorId(@RequestParam("id") Integer id);
 
+    @PutMapping(API_EQUIPE_VENDAS_USUARIO)
+    void updateEquipeVendasUsuario(EquipeVendaUsuarioRequest request);
 }

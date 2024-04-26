@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
@@ -604,6 +605,7 @@ public class UsuarioService {
             validar(usuario);
             validarEdicao(usuario);
             validarPromocaoCargo(usuario);
+            enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
@@ -3219,5 +3221,29 @@ public class UsuarioService {
 
     public List<SelectResponse> findOperadoresSuporteVendasByOrganizacao(Integer organizacaoId) {
         return repository.findByCodigoCargoAndOrganizacaoId(OPERADOR_SUPORTE_VENDAS, organizacaoId);
+    }
+
+    private void enviarNovosDadosParaEquipeVendasUsuario(Usuario usuario) {
+        if (!usuario.isNovoCadastro() && usuario.isNivelOperacao()) {
+            var trocaDeSubCanal = isTrocaDeSubCanal(usuario);
+            var trocaDeNome = isTrocaDeNome(usuario);
+
+            if (trocaDeSubCanal || trocaDeNome) {
+                var request = EquipeVendaUsuarioRequest.of(usuario, trocaDeSubCanal, trocaDeNome);
+                equipeVendasUsuarioService.updateEquipeVendasUsuario(request);
+            }
+        }
+    }
+
+    private boolean isTrocaDeNome(Usuario usuario) {
+        return repository.findById(usuario.getId()).stream()
+            .anyMatch(antigoUsuario -> !antigoUsuario.getNome().equals(usuario.getNome()));
+    }
+
+    private boolean isTrocaDeSubCanal(Usuario usuario) {
+        return repository.getSubCanaisByUsuarioIds(List.of(usuario.getId())).stream()
+            .map(SubCanal::getId)
+            .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
+                .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
     }
 }

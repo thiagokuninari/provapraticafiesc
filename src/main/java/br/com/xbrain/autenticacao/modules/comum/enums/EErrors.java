@@ -180,7 +180,10 @@ public enum EErrors {
         "#058 - Ocorreu um erro ao salvar configuração do fornecedor"),
     ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR(
         "#059 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#059 - Ocorreu um erro ao atualizar configuração do fornecedor");
+        "#059 - Ocorreu um erro ao atualizar configuração do fornecedor"),
+    ERRO_ATUALIZAR_EQUIPE_VENDAS_USUARIO(
+        "#060 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#060 - Ocorreu um erro ao tentar atualizar o(s) usuário(s) da equipe vendas.");
 
     private final String descricao;
     private final String descricaoTecnica;

@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -15,10 +17,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umaEquipeVendaUsuarioRequest;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EquipeVendasUsuarioServiceTest {
@@ -76,6 +78,30 @@ public class EquipeVendasUsuarioServiceTest {
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(1))
             .withMessage("#043 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void updateEquipeVendasUsuario_deveLancarException_quandoApiIndisponivel() {
+        doThrow(HystrixBadRequestException.class)
+            .when(equipeVendasUsuarioClient).updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest());
+
+        assertThatThrownBy(() -> equipeVendasUsuarioService.updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#060 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(equipeVendasUsuarioClient).updateEquipeVendasUsuario(any(EquipeVendaUsuarioRequest.class));
+    }
+
+    @Test
+    public void updateEquipeVendasUsuario_deveLancarException_quandoClientRetornarErro() {
+        doThrow(RetryableException.class)
+            .when(equipeVendasUsuarioClient).updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest());
+
+        assertThatThrownBy(() -> equipeVendasUsuarioService.updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#060 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(equipeVendasUsuarioClient).updateEquipeVendasUsuario(any(EquipeVendaUsuarioRequest.class));
     }
 
     private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {

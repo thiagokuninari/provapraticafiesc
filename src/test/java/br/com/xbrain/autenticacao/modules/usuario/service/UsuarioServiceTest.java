@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -1119,7 +1120,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(5)).findById(101112);
+        verify(repository, times(6)).findById(101112);
         verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1137,8 +1138,92 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(5)).findById(101112);
+        verify(repository, times(6)).findById(101112);
         verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
+    }
+
+    @Test
+    public void save_deveEnviarNovosDadosParaEquipeVendas_quandoNomeDoUsuarioForAlterado() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
+
+        doReturn(Optional.of(umUsuario()))
+            .when(repository).findById(1);
+
+        doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
+            .when(repository).getSubCanaisByUsuarioIds(List.of(1));
+
+        assertThatCode(() -> service.save(novoUsuario))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(equipeVendasUsuarioService).updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest());
+        verify(repository).getSubCanaisByUsuarioIds(List.of(1));
+    }
+
+    @Test
+    public void save_deveEnviarNovosDadosParaEquipeVendas_quandoSubcanalDoUsuarioForAlterador() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
+        novoUsuario.setNome("NAKANO");
+
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findById(1);
+
+        doReturn(umSetSubCanal(2, PAP_PME, PAP_PME.getDescricao()))
+            .when(repository).getSubCanaisByUsuarioIds(List.of(1));
+
+        assertThatCode(() -> service.save(novoUsuario))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(equipeVendasUsuarioService).updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequestComTrocaDeSubcanal());
+        verify(repository).getSubCanaisByUsuarioIds(List.of(1));
+    }
+
+    @Test
+    public void save_naoDeveEnviarNovosDadosParaEquipeVendas_quandoNivelDoUsuarioNaoForOperacao() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
+        novoUsuario.setNome("NAKANO");
+        novoUsuario.getCargo().setCodigo(MSO_CONSULTOR);
+        novoUsuario.getCargo().getNivel().setCodigo(MSO);
+
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findById(1);
+
+        assertThatCode(() -> service.save(novoUsuario))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verifyZeroInteractions(equipeVendasUsuarioService);
+    }
+
+    @Test
+    public void save_naoDeveEnviarNovosDadosParaEquipeVendas_quandoNaoPossuirNenhumaAlteracaoNoNomeOuSubCanal() {
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        var novoUsuario = umUsuarioOperacaoComSubCanal(1, 1, PAP);
+        novoUsuario.setNome("NAKANO");
+
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findById(1);
+
+        doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
+            .when(repository).getSubCanaisByUsuarioIds(List.of(1));
+
+        assertThatCode(() -> service.save(novoUsuario))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verifyZeroInteractions(equipeVendasUsuarioService);
     }
 
     @Test

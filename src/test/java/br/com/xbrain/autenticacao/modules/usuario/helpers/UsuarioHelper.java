@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -24,6 +25,7 @@ import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.Organ
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
@@ -113,6 +115,7 @@ public class UsuarioHelper {
                                                        ETipoCanal codigoSubCanal) {
         return Usuario.builder()
             .id(usuarioId)
+            .nome("NAKANO")
             .email("USUARIO.OPERACAO@CLARO.COM.BR")
             .cargo(Cargo.builder()
                 .codigo(VENDEDOR_OPERACAO)
@@ -127,6 +130,8 @@ public class UsuarioHelper {
                 SubCanal.builder()
                     .id(subCanalId)
                     .codigo(codigoSubCanal)
+                    .nome(PAP.getDescricao())
+                    .situacao(A)
                     .build()))
             .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
             .usuariosHierarquia(new HashSet<>())
@@ -832,5 +837,23 @@ public class UsuarioHelper {
             umUsuarioOperadorBko(4444, "Khada Jhin", "khadajhin4@teste.com"),
             umUsuarioOperadorBko(2000, "Veigar", "puromalencarnado@teste.com")
         );
+    }
+
+    public static EquipeVendaUsuarioRequest umaEquipeVendaUsuarioRequest() {
+        return EquipeVendaUsuarioRequest.builder()
+            .usuarioId(1)
+            .usuarioNome("NAKANO")
+            .trocaDeSubCanal(false)
+            .trocaDeNome(true)
+            .build();
+    }
+
+    public static EquipeVendaUsuarioRequest umaEquipeVendaUsuarioRequestComTrocaDeSubcanal() {
+        return EquipeVendaUsuarioRequest.builder()
+            .usuarioId(1)
+            .usuarioNome("NAKANO")
+            .trocaDeSubCanal(true)
+            .trocaDeNome(false)
+            .build();
     }
 }
