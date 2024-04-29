@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class PermissaoTecnicoIndicadorServiceTest {
 
-    private static final Integer PERMISSAO_TECNICO_INDICADOR = 253;
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
 
     @InjectMocks
     private PermissaoTecnicoIndicadorService service;
@@ -49,7 +49,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
             .thenReturn(List.of(usuario));
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
             .thenReturn(false);
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
@@ -67,10 +67,10 @@ public class PermissaoTecnicoIndicadorServiceTest {
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
             .thenReturn(List.of(usuario));
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
             .thenReturn(true);
 
-        var permissoes = List.of(PermissaoEspecial.of(3, PERMISSAO_TECNICO_INDICADOR, 1));
+        var permissoes = PermissaoEspecial.of(3, PERMISSOES_TECNICO_INDICADOR, 1);
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
 
@@ -87,7 +87,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
             .thenReturn(List.of(usuario));
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
             .thenReturn(true);
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
@@ -95,7 +95,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(3)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(3)));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
             .thenReturn(List.of(usuario));
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSAO_TECNICO_INDICADOR))
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
             .thenReturn(false);
 
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.F);
@@ -114,7 +114,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.atualizarPermissaoTecnicoIndicador(dto);
 
         verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(3)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(3)));
     }
 
     @Test
@@ -173,7 +173,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
     @Test
     public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seUsuarioJaPossuirPermissao() {
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR)).thenReturn(true);
 
         var request = UsuarioMqRequest.builder()
             .id(4)
@@ -189,19 +189,19 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
     @Test
     public void removerPermissaoTecnicoIndicadorDoUsuario_deveRemoverPermissao_seSituacaoForRealocado() {
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR)).thenReturn(true);
 
         var usuario = UsuarioDto.builder().id(4).situacao(ESituacao.R).build();
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
         verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
     }
 
     @Test
     public void removerPermissaoTecnicoIndicadorDoUsuario_deveRemoverPermissao_seCargoNaoForValido() {
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR)).thenReturn(true);
 
         var usuario = UsuarioDto.builder()
             .id(4)
@@ -211,7 +211,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
         verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
     }
 
     @Test
@@ -225,12 +225,12 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
         verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
     }
 
     @Test
     public void removerPermissaoTecnicoIndicadorDoUsuario_naoDeveRemoverPermissao_seNaoPossuirPermissao() {
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(false);
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR)).thenReturn(false);
 
         var usuario = UsuarioDto.builder()
             .id(4)
@@ -241,12 +241,12 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
         verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
     }
 
     @Test
     public void removerPermissaoTecnicoIndicadorDoUsuario_naoDeveRemoverPermissao_sePossuirCargoValido() {
-        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(true);
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR)).thenReturn(true);
 
         var usuario = UsuarioDto.builder()
             .id(4)
@@ -257,6 +257,6 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
         verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
     }
 }
