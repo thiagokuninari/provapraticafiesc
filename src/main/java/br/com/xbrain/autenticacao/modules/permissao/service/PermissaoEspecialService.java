@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -30,13 +29,12 @@ public class PermissaoEspecialService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Permissão Especial não encontrada.");
     public static final List<Integer> FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR =
-        List.of(3046, 15000, 15005, 15012, 16101);
+        List.of(3046, 15000, 15005, 15012, 16101, 20018, 20102, 20104);
 
     private final PermissaoEspecialRepository repository;
     private final AutenticacaoService autenticacaoService;
     private final FeederService feederService;
     private final AgenteAutorizadoService agenteAutorizadoService;
-    private final UsuarioService usuarioService;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();

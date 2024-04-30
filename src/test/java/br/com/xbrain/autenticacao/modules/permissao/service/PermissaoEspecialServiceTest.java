@@ -199,7 +199,7 @@ public class PermissaoEspecialServiceTest {
 
     @Test
     public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveAtualizarAsPermissoesDoNovoSocio_quandoSolicitado() {
-        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101);
+        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101, 20018, 20102, 20104);
         doReturn(umaListPermissaoEspecial())
             .when(repository)
             .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
@@ -215,7 +215,7 @@ public class PermissaoEspecialServiceTest {
     @Test
     @SuppressWarnings("LineLength")
     public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveAtualizarAsPermissoesDoNovoSocio_mesmoSeUsuarioCadastroIdNulo() {
-        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101);
+        var permissoesEspeciais = List.of(3046, 15000, 15005, 15012, 16101, 20018, 20102, 20104);
         doReturn(umaListPermissaoEspecial())
             .when(repository)
             .findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(permissoesEspeciais, 1);
