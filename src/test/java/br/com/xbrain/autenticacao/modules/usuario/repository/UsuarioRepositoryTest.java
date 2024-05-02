@@ -27,6 +27,12 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,8 +69,8 @@ public class UsuarioRepositoryTest {
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)
             ))
-            .extracting("id", "email")
-            .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR"), tuple(104, "MARIA@HOTMAIL.COM"));
+            .extracting("id", "email", "nivelCodigo")
+            .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR", XBRAIN), tuple(104, "MARIA@HOTMAIL.COM", XBRAIN));
     }
 
     @Test
@@ -260,12 +266,12 @@ public class UsuarioRepositoryTest {
     @SuppressWarnings("LineLength")
     public void findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
         Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)))
-            .extracting("id", "email")
+            .extracting("id", "email", "nivelCodigo")
             .containsExactlyInAnyOrder(
-                tuple(114, "SUPERVISOR@TESTE.COM"),
-                tuple(115, "SUPERVISOR@TESTE.COM"),
-                tuple(116, "SUPERVISOR@TESTE.COM"),
-                tuple(217, "VIABILIDADE@TESTE.COM"));
+                tuple(114, "SUPERVISOR@TESTE.COM", OPERACAO),
+                tuple(115, "SUPERVISOR@TESTE.COM", OPERACAO),
+                tuple(116, "SUPERVISOR@TESTE.COM", OPERACAO),
+                tuple(217, "VIABILIDADE@TESTE.COM", XBRAIN));
     }
 
     @Test

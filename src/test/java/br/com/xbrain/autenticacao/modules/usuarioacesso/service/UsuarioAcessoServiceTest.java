@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarUsuarioFeederMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
@@ -32,10 +33,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDto;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umaListaDeUsuariosOperadorBko;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -55,6 +58,8 @@ public class UsuarioAcessoServiceTest {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Mock
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Mock
+    private InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
@@ -87,22 +92,22 @@ public class UsuarioAcessoServiceTest {
         ReflectionTestUtils.setField(service, "dataHoraInativarUsuario", "2021-05-30T00:00:00.000");
         when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
             LocalDateTime.of(2021, 5, 30, 0, 0)))
-            .thenReturn(List.of(umUsuarioDto(1)));
+            .thenReturn(List.of(umUsuarioDto(1), umUsuarioFeederDto(3, "useremail@xbrain.com")));
         when(usuarioRepository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
             LocalDateTime.of(2021, 5, 30, 0, 0)))
-            .thenReturn(List.of(umUsuarioDto(2)));
+            .thenReturn(List.of(umUsuarioDto(2), umUsuarioFeederDto(2, "useremail@xbrain.com")));
 
         assertThat(service.inativarUsuariosSemAcesso("TESTE"))
-            .isEqualTo(2);
+            .isEqualTo(4);
 
         verify(usuarioRepository).findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
             LocalDateTime.of(2021, 5, 30, 0, 0));
         verify(usuarioRepository).findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
             LocalDateTime.of(2021, 5, 30, 0, 0));
         verify(usuarioRepository).atualizarParaSituacaoInativo(1);
-        verify(usuarioHistoricoService).gerarHistoricoInativacao(1, "TESTE");
-        verify(usuarioRepository).atualizarParaSituacaoInativo(2);
-        verify(usuarioHistoricoService).gerarHistoricoInativacao(2, "TESTE");
+        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(anyInt(), eq("TESTE"));
+        verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
+        verify(inativarUsuarioFeederMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test

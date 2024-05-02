@@ -86,6 +86,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-colaborador-pol}")
     private String inativarColaboradorPolMq;
 
+    @Value("${app-config.queue.inativar-usuario-feeder}")
+    private String inativarUsuarioFeederMq;
+
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
 
@@ -240,6 +243,11 @@ public class RabbitConfig {
     @Bean
     Queue inativarColaboradorPolMq() {
         return new Queue(inativarColaboradorPolMq, false);
+    }
+
+    @Bean
+    Queue inativarUsuarioFeederMq() {
+        return new Queue(inativarUsuarioFeederMq, false);
     }
 
     @Bean
@@ -549,6 +557,11 @@ public class RabbitConfig {
     @Bean
     public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
+    }
+
+    @Bean
+    public Binding inativarUsuarioFeederBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarUsuarioFeederMq()).to(exchange).with(inativarUsuarioFeederMq);
     }
 
     @Bean

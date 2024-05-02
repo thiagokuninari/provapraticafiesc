@@ -145,6 +145,7 @@ app-config:
     sucesso-cadastro-usuario-feeder-failure: sucesso-cadastro-usuario-feeder-failure.queue
     alterar-situacao-usuario-feeder: alterar-situacao-usuario-feeder.queue
     alterar-situacao-usuario-feeder-failure: alterar-situacao-usuario-feeder-failure.queue
+    inativar-usuario-feeder: inativar-usuario-feeder.queue
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
     limpar-cpf-e-alterar-email-feeder: limpar-cpf-e-alterar-email-feeder.queue
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue

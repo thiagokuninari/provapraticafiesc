@@ -10,8 +10,10 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorInativacaoPolRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECodigoObservacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarUsuarioFeederMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
@@ -60,6 +62,7 @@ public class UsuarioAcessoService {
     private final AgenteAutorizadoService agenteAutorizadoService;
     private final InativarColaboradorMqSender inativarColaboradorMqSender;
     private final NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    private final InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
 
     @Value("${app-config.timer-usuario.data-hora-inativar-usuario-a-partir-de}")
     private String dataHoraInativarUsuario;
@@ -86,7 +89,11 @@ public class UsuarioAcessoService {
                 .peek(usuario -> {
                     usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
                     usuarioHistoricoService.gerarHistoricoInativacao(usuario.getId(), origem);
-                    inativarColaboradorPol(usuario);
+                    if (usuario.getNivelCodigo() == CodigoNivel.FEEDER) {
+                        inativarUsuarioFeeder(usuario);
+                    } else {
+                        inativarColaboradorPol(usuario);
+                    }
                 })
                 .collect(Collectors.toList());
 
@@ -256,6 +263,14 @@ public class UsuarioAcessoService {
         if (usuario.getEmail() != null) {
             var colaboradorInativacao = ColaboradorInativacaoPolRequest.of(usuario.getEmail(), ECodigoObservacao.IFA);
             inativarColaboradorMqSender.sendSuccess(colaboradorInativacao);
+        } else {
+            log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
+        }
+    }
+
+    private void inativarUsuarioFeeder(UsuarioDto usuario) {
+        if (usuario.getEmail() != null) {
+            inativarUsuarioFeederMqSender.sendSuccess(usuario.getEmail());
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
         }
