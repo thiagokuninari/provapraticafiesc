@@ -57,7 +57,7 @@ app-config:
     agente-autorizado:
       url: http://172.10.10.106:8300
     gestao:
-      url: http://172.10.10.71:8091
+      url: http://conexao-gestao-api-crt:8091
     notificacao:
       url: http://172.10.10.98:8081
     emails:
