@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class PermissaoTecnicoIndicadorService {
 
-    private static final Integer PERMISSAO_TECNICO_INDICADOR = 253;
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
     private static final List<CodigoCargo> LISTA_CARGOS_TECNICO_INDICADOR = List.of(
         AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS, AGENTE_AUTORIZADO_SOCIO_SECUNDARIO, AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
         AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
@@ -57,8 +57,8 @@ public class PermissaoTecnicoIndicadorService {
             && (isRemanejamento || usuarioMqRequest.isNovoCadastro()
             || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
             log.info("Adicionando permissão de Técnico Indicador para usuário novo com id {}.", usuarioDto.getId());
-            var permissoes = List.of(PermissaoEspecial.of(
-                usuarioDto.getId(), PERMISSAO_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId()));
+            var permissoes = PermissaoEspecial.of(
+                usuarioDto.getId(), PERMISSOES_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId());
             salvarPermissoesEspeciais(permissoes);
             log.info("Permissões adicionadas com sucesso.");
         }
@@ -83,7 +83,8 @@ public class PermissaoTecnicoIndicadorService {
             .stream()
             .filter(usuario -> !validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
             .map(usuario -> PermissaoEspecial.of(
-                usuario.getId(), PERMISSAO_TECNICO_INDICADOR, dto.getUsuarioAutenticadoId()))
+                usuario.getId(), PERMISSOES_TECNICO_INDICADOR, dto.getUsuarioAutenticadoId()))
+            .flatMap(List::stream)
             .collect(toList());
 
         salvarPermissoesEspeciais(permissoes);
@@ -109,8 +110,7 @@ public class PermissaoTecnicoIndicadorService {
     }
 
     public boolean validarUsuarioComPermissaoTecnicoIndicador(Integer usuarioId) {
-        return permissaoEspecialService.hasPermissaoEspecialAtiva(
-            usuarioId, PERMISSAO_TECNICO_INDICADOR);
+        return permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, PERMISSOES_TECNICO_INDICADOR);
     }
 
     private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
@@ -121,8 +121,7 @@ public class PermissaoTecnicoIndicadorService {
 
     private void removerPermissaoDosUsuarios(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(
-                List.of(PERMISSAO_TECNICO_INDICADOR), usuariosIds);
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, usuariosIds);
         }
     }
 }

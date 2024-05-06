@@ -14,6 +14,8 @@ public interface PermissaoEspecialRepository extends JpaRepository<PermissaoEspe
 
     boolean existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(Integer usuarioId, Integer funcionalidadeId);
 
+    boolean existsByUsuarioIdAndFuncionalidadeIdInAndDataBaixaIsNull(Integer usuarioId, List<Integer> funcionalidadesIds);
+
     List<PermissaoEspecial> findAllByFuncionalidadeIdInAndUsuarioIdAndDataBaixaIsNull(List<Integer> funcionalidadesIds,
                                                                                       Integer usuarioId);
 }
