@@ -162,7 +162,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
         var request = UsuarioMqRequest.builder()
             .id(4)
             .tecnicoIndicador(true)
-            .cargo(CodigoCargo.AGENTE_AUTORIZADO_ASSISTENTE)
+            .cargo(CodigoCargo.BACKOFFICE_SUPERVISOR)
             .build();
         var usuario = new UsuarioDto(4);
 
@@ -205,7 +205,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         var usuario = UsuarioDto.builder()
             .id(4)
-            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_ASSISTENTE)
+            .cargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO)
             .build();
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
