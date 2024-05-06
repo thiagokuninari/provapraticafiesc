@@ -23,21 +23,23 @@ public class UsuarioComLoginNetSalesResponseTest {
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome,
+                UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
                 UsuarioComLoginNetSalesResponse:: getCanalNetSales)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste", "T0909", "CANAL NETSALES");
+                "685.313.412-56", "Organizacao teste", "NOME EQUIPE VENDAS NET SALES", "CANAL NETSALES");
     }
 
     @Test
     public void of_deveRetornarUsuarioComLoginNetSalesResponse_quandoCodigoEquipeVendaNull() {
         var usuario = umUsuario();
-        usuario.setCodigoEquipeVendaNetSales(null);
+        usuario.setNomeEquipeVendaNetSales(null);
         assertThat(UsuarioComLoginNetSalesResponse.of(usuario))
             .extracting(UsuarioComLoginNetSalesResponse::getId, UsuarioComLoginNetSalesResponse::getNome,
                 UsuarioComLoginNetSalesResponse::getLoginNetSales, UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
-                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome, UsuarioComLoginNetSalesResponse::getCodigoEquipeVenda,
+                UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome,
+                UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
                 UsuarioComLoginNetSalesResponse:: getCanalNetSales)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
                 "685.313.412-56", "Organizacao teste", null, "CANAL NETSALES");
@@ -83,6 +85,7 @@ public class UsuarioComLoginNetSalesResponseTest {
             .canais(Set.of(ECanal.INTERNET))
             .codigoEquipeVendaNetSales("T0909")
             .canalNetSales("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDAS NET SALES")
             .build();
     }
 }

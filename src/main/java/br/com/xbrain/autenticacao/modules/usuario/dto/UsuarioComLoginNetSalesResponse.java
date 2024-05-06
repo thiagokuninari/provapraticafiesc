@@ -23,7 +23,7 @@ public class UsuarioComLoginNetSalesResponse {
     private String razaoSocialEmpresa;
     private String cpfNetSales;
     private String organizacaoEmpresaNome;
-    private String codigoEquipeVenda;
+    private String nomeEquipeVendasNetSales;
     private String canalNetSales;
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
@@ -37,7 +37,7 @@ public class UsuarioComLoginNetSalesResponse {
             .organizacaoEmpresaNome(usuario.getOrganizacaoEmpresa() != null
                 ? usuario.getOrganizacaoEmpresa().getDescricao()
                 : null)
-            .codigoEquipeVenda(usuario.getCodigoEquipeVendaNetSales())
+            .nomeEquipeVendasNetSales(usuario.getNomeEquipeVendaNetSales())
             .canalNetSales(usuario.getCanalNetSales())
             .build();
     }
