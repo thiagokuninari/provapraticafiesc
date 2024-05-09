@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanalHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -126,5 +127,12 @@ public class SubCanalService {
 
     public Eboolean isNovaChecagemViabilidadeD2d(Integer id) {
         return findById(id).getNovaChecagemViabilidade();
+    }
+
+    public List<SubCanalHistoricoResponse> getHistorico(Integer id) {
+        return subCanalHistoricoRepository.findBySubCanal_Id(id)
+            .stream()
+            .map(SubCanalHistoricoResponse::of)
+            .collect(Collectors.toList());
     }
 }

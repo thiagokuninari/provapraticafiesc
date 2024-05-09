@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -59,5 +60,10 @@ public class SubCanalController {
     @GetMapping("{id}/verificar-nova-checagem-viabilidade-d2d")
     public Eboolean isNovaChecagemViabilidadeD2d(@PathVariable Integer id) {
         return service.isNovaChecagemViabilidadeD2d(id);
+    }
+
+    @GetMapping("{id}/historico")
+    public List<SubCanalHistoricoResponse> getHistorico(@PathVariable Integer id) {
+        return service.getHistorico(id);
     }
 }
