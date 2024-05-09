@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -9,7 +10,9 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalCompletDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanalHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +32,7 @@ public class SubCanalService {
         new ValidacaoException("Erro, subcanal não encontrado.");
 
     private final SubCanalRepository repository;
+    private final SubCanalHistoricoRepository subCanalHistoricoRepository;
     private final UsuarioService usuarioService;
     private final AutenticacaoService autenticacaoService;
 
@@ -99,13 +103,19 @@ public class SubCanalService {
     }
 
     public void editar(SubCanalCompletDto request) {
-        validarUsuarioAdm();
-        var subCanal = findById(request.getId());
+        var usuarioAutenticado = this.autenticacaoService.getUsuarioAutenticado();
+        this.validarUsuarioAdm(usuarioAutenticado);
+
+        var subCanal = this.findById(request.getId());
+        var subCanalHistorico = SubCanalHistorico.of(subCanal, request, usuarioAutenticado);
         repository.save(subCanal.editar(request));
+
+        subCanalHistorico.setSubCanal(subCanal);
+        this.subCanalHistoricoRepository.save(subCanalHistorico);
     }
 
-    private void validarUsuarioAdm() {
-        if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+    private void validarUsuarioAdm(UsuarioAutenticado usuarioAutenticado) {
+        if (!usuarioAutenticado.isXbrain()) {
             throw new PermissaoException("O usuário logado não possuí permissão para acessar essa funcionalidade.");
         }
     }
