@@ -271,9 +271,9 @@ public class SubCanalServiceTest {
         assertThat(subCanalHistoricoArgumentCaptor.getValue())
             .extracting("id", "subCanal.id", "codigo", "nome", "situacao", "novaChecagemCreditoAntiga",
                 "novaChecagemViabilidadeAntiga", "novaChecagemCreditoNova", "novaChecagemViabilidadeNova",
-                "acao", "dataAcao", "usuarioAcaoId", "usuarioAcaoNome")
+                "acao", "usuarioAcaoId", "usuarioAcaoNome")
             .containsExactly(null, 1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.V, Eboolean.V, Eboolean.F, Eboolean.F,
-                EAcao.ATUALIZACAO, null, 100, "ADMIN");
+                EAcao.ATUALIZACAO, 100, "ADMIN");
     }
 
     @Test
