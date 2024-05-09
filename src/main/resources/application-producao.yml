@@ -81,7 +81,7 @@ app-config:
     integracao-vendas:
       url: http://172.10.10.83:8086
     mailing-importacao:
-      url: http://172.10.10.86:8087
+      url: http://mailing-importacao-api-prod:8087
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     extrato-comissao:
