@@ -43,7 +43,7 @@ app-config:
     call:
       url: http://call-api-crt:8094
     mailing:
-      url: http://172.10.10.77:8095
+      url: http://mailing-api-crt:8095
     mailing-importacao:
       url: http://172.10.10.86:8087
     equipe-venda:
