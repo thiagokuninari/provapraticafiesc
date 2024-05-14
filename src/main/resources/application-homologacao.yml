@@ -80,6 +80,8 @@ app-config:
       url: http://suporte-vendas-bko-api:8050
     checagem-credito:
       url: http://checagem-credito-api:8037
+    backoffice:
+      url: http://backoffice-api-hom:8101
 
   email:
     enviar: true
