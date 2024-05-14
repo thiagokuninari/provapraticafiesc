@@ -39,7 +39,7 @@ app-config:
     vendas:
       url: http://vendas-api-hom:8097
     parceiros-online:
-      url: http://172.10.10.76:8099
+      url: http://parceiros-online-api-hom:8099
     call:
       url: http://call-api-hom:8094
     mailing:
