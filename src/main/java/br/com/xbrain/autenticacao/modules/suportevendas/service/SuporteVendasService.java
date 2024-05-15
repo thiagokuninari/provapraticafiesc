@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.suportevendas.service;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.suportevendas.client.SuporteVendasClient;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -22,7 +21,7 @@ public class SuporteVendasService {
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 SuporteVendasService.class.getName(),
-                EErrors.ERRO_VERIFICAR_GRUPO_SUPORTE_VENDAS);
+                "Ocorreu um erro ao verificar grupo do usuário no suporte-vendas.");
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

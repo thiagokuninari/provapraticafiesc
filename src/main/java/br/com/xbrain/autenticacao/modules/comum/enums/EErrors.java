@@ -145,11 +145,7 @@ public enum EErrors {
         "#046 - Ocorreu um erro ao salvar configuração do fornecedor"),
     ERRO_ATUALIZAR_CONFIGURACAO_FORNECEDOR(
         "#047 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#047 - Ocorreu um erro ao atualizar configuração do fornecedor"),
-    ERRO_VERIFICAR_GRUPO_SUPORTE_VENDAS(
-        "#048 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#048 - Ocorreu um erro ao verificar grupo do usuário no suporte de vendas"
-    );
+        "#047 - Ocorreu um erro ao atualizar configuração do fornecedor");
 
 
     @Getter

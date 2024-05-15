@@ -155,8 +155,6 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
-    private static final String MSG_ERRO_SALVAR_USUARIO_COM_GRUPO_ATIVO_EM_OUTRA_ORG =
-        "O usuário não pode ser salvo com a nova organização, pois possui um grupo ativo na organização antiga.";
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
@@ -770,7 +768,8 @@ public class UsuarioService {
 
     private void validarGrupoAtivoEmOutraOrganizacao(Integer id, Integer novaOrganizacaoId) {
         if (suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(id, novaOrganizacaoId)) {
-            throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_GRUPO_ATIVO_EM_OUTRA_ORG);
+            throw new ValidacaoException("O usuário não pode ser salvo com a nova organização, "
+                + "pois possui um grupo ativo na organização antiga.");
         }
     }
 
