@@ -16,7 +16,7 @@ app-config:
     mailing:
       url: http://172.10.10.37:8095
     equipe-venda:
-      url: http://172.10.10.22:8089
+      url: http://equipe-venda-api-dev:8089
     contato-crn:
       url: http://172.10.10.65:8084
     comunicados:
