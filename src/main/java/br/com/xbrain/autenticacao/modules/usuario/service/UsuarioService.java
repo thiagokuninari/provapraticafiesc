@@ -29,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -44,6 +45,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -153,6 +155,8 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
+    private static final String MSG_ERRO_SALVAR_USUARIO_COM_GRUPO_ATIVO_EM_OUTRA_ORG =
+        "O usuário não pode ser salvo com a nova organização, pois possui um grupo ativo na organização antiga.";
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
         INTERNET_VENDEDOR, INTERNET_COORDENADOR);
     public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
@@ -250,6 +254,10 @@ public class UsuarioService {
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
+    @Autowired
+    private SuporteVendasService suporteVendasService;
+    @Autowired
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -741,6 +749,7 @@ public class UsuarioService {
 
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
+        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
@@ -748,6 +757,21 @@ public class UsuarioService {
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
+    }
+
+    private void validarOrganizacaoEmpresa(Usuario usuario) {
+        if (usuario.getOrganizacaoEmpresa() != null) {
+            var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
+            if (organizacaoEmpresa.isSuporteVendas()) {
+                validarGrupoAtivoEmOutraOrganizacao(usuario.getId(), organizacaoEmpresa.getId());
+            }
+        }
+    }
+
+    private void validarGrupoAtivoEmOutraOrganizacao(Integer id, Integer novaOrganizacaoId) {
+        if (suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(id, novaOrganizacaoId)) {
+            throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_GRUPO_ATIVO_EM_OUTRA_ORG);
+        }
     }
 
     private void configurarCadastro(Usuario usuario) {

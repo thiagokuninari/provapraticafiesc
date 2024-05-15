@@ -29,12 +29,14 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -83,6 +85,8 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresaSuporteVendas;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
@@ -191,6 +195,10 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
     @Mock
     private PermissaoEspecialService permissaoEspecialService;
+    @Mock
+    private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Mock
+    private SuporteVendasService suporteVendasService;
     @Mock
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Mock
@@ -1066,6 +1074,8 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice());
 
@@ -1076,10 +1086,29 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void salvarUsuarioBackoffice_deveLancarException_quandoUsuarioPossuirGrupoAtivoEmOutraOrganizacao() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(organizacaoEmpresaService.findById(any()))
+            .thenReturn(umaOrganizacaoEmpresaSuporteVendas(1, "João", "BKO"));
+        when(suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(any(), any()))
+            .thenReturn(true);
+
+        assertThatCode(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("O usuário não pode ser salvo com a nova organização, "
+                + "pois possui um grupo ativo na organização antiga.");
+
+        verifyZeroInteractions(usuarioRepository, notificacaoService);
+    }
+
+    @Test
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
         var usaurio = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         Assertions.assertThat(usaurio)
             .extracting("cpf")
@@ -1099,6 +1128,8 @@ public class UsuarioServiceTest {
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(usuarioRepository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
@@ -1116,6 +1147,8 @@ public class UsuarioServiceTest {
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(usuarioRepository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(umUsuarioBackoffice()))
@@ -1131,6 +1164,8 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
