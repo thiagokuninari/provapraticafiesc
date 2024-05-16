@@ -22,9 +22,7 @@ public class FeriadoAutomacao {
     private String uf;
     private Integer ano;
 
-    public void mapToFeriadoNacional() {
-        this.tipoFeriado = ETipoFeriado.NACIONAL;
-        this.cidadeId = null;
-        this.ufId = null;
+    public boolean isFacultativo() {
+        return tipoFeriado == ETipoFeriado.FACULTATIVO;
     }
 }

@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
@@ -28,7 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -37,9 +39,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ImportacaoAutomaticaFeriadoService {
 
-    private static final Set<String> FERIADOS_QUE_NAO_CADASTRAM = new HashSet<>(
-        Arrays.asList("SEXTA-FEIRA SANTA", "CORPUS CHRISTI", "DIA DA CONCIÊNCIA NEGRA", "FINADOS"));
-
     private final FeriadoAutomacaoClient feriadoAutomacaoClient;
     private final AutenticacaoService autenticacaoService;
     private final FeriadoService feriadoService;
@@ -47,6 +46,7 @@ public class ImportacaoAutomaticaFeriadoService {
     private final ImportacaoAutomaticaFeriadoRepository importacaoAutomaticaRepository;
     private final UfRepository ufRepository;
     private final CidadeRepository cidadeRepository;
+
     @Value("${app-config.upload-async}")
     private boolean uploadAsync;
 
@@ -107,22 +107,20 @@ public class ImportacaoAutomaticaFeriadoService {
     private void processarTodosOsFeriados(ImportacaoFeriado importacaoFeriado) {
         var ano = LocalDate.now().plusYears(1).getYear();
 
-        var feriadosComErro = processarFeriadosMunicipais(importacaoFeriado, ano);
+        processarFeriadosMunicipais(importacaoFeriado, ano);
         processarFeriadosEstaduais(importacaoFeriado, ano);
-        processarFeriadosNacionais(importacaoFeriado, feriadosComErro, ano);
+        processarFeriadosNacionais(importacaoFeriado, ano);
 
         importacaoFeriado.setSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO);
         importacaoAutomaticaRepository.save(importacaoFeriado);
     }
 
-    public void processarFeriadosNacionais(ImportacaoFeriado importacaoFeriado, List<FeriadoAutomacao> feriadosErro,
-                                           Integer ano) {
+    public void processarFeriadosNacionais(ImportacaoFeriado importacaoFeriado, Integer ano) {
         log.info("Importando feriados nacionais");
 
-        var feriados = corrigirFeriadosComErro(feriadosErro);
-        feriados.addAll(consultarFeriadosNacionais(ano).stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList()));
+        var feriados = consultarFeriadosNacionais(ano).stream()
+            .filter(feriadoAutomacao -> feriadoAutomacao != null && !feriadoAutomacao.isFacultativo())
+            .collect(Collectors.toList());
 
         var feriadosParaCadastrar = filtrarFeriadosNaoCadastradosNoBanco(feriados);
         cadastrarFeriados(feriadosParaCadastrar, importacaoFeriado);
@@ -131,32 +129,18 @@ public class ImportacaoAutomaticaFeriadoService {
         log.info("Total de feriados nacionais importados: {}", feriadosParaCadastrar.size());
     }
 
-    private List<FeriadoAutomacao> processarFeriadosMunicipais(ImportacaoFeriado importacaoFeriado, Integer ano) {
+    private void processarFeriadosMunicipais(ImportacaoFeriado importacaoFeriado, Integer ano) {
         log.info("Importando feriados municipais");
-
         List<FeriadoAutomacao> feriados = new ArrayList<>();
-        List<FeriadoAutomacao> feriadosComErro = new ArrayList<>();
 
         cidadeRepository.findAllCidades()
-            .forEach(cidade -> feriados.addAll(filtrarFeriadosMunicipais(feriadosComErro, cidade, ano)));
+            .forEach(cidade -> feriados.addAll(filtrarFeriadosMunicipais(cidade, ano)));
 
         var feriadosParaCadastrar = filtrarFeriadosNaoCadastradosNoBanco(feriados);
 
         cadastrarFeriados(feriadosParaCadastrar, importacaoFeriado);
         importacaoFeriado.setDescricao("TOTAL DE FERIADOS MUNICIPAIS CADASTRADOS:" + feriadosParaCadastrar.size());
         log.info("Quantidade de feriados municipais importados: {}", feriadosParaCadastrar.size());
-        return feriadosComErro;
-    }
-
-    private List<FeriadoAutomacao> filtrarFeriadosMunicipais(List<FeriadoAutomacao> feriadosComErro, Cidade cidade,
-                                                             Integer ano) {
-        var feriados = consultarFeriadosMunicipais(ano, cidade.getCodigoUf(), cidade.getNome());
-        feriadosComErro.addAll(filtrarFeriadosComErro(feriados));
-
-        return feriados.stream()
-            .filter(feriado -> feriado != null && !FERIADOS_QUE_NAO_CADASTRAM.contains(feriado.getNome().toUpperCase()))
-            .peek(feriadoAutomacao -> preencherInformacoes(feriadoAutomacao, cidade))
-            .collect(Collectors.toList());
     }
 
     public void processarFeriadosEstaduais(ImportacaoFeriado importacaoFeriado, Integer ano) {
@@ -164,17 +148,28 @@ public class ImportacaoAutomaticaFeriadoService {
 
         List<FeriadoAutomacao> feriados = new ArrayList<>();
 
-        ufRepository.findByOrderByNomeAsc().forEach(uf ->
-            feriados.addAll(consultarFeriadosEstaduais(ano, uf.getUf()).stream()
-                .filter(Objects::nonNull)
-                .peek(feriado -> feriado.setUfId(uf.getId()))
-                .collect(Collectors.toList())));
+        ufRepository.findByOrderByNomeAsc()
+            .forEach(uf -> feriados.addAll(filtrarFeriadosEstaduais(uf, ano)));
 
         var feriadosParaCadastrar = filtrarFeriadosNaoCadastradosNoBanco(feriados);
 
         cadastrarFeriados(feriadosParaCadastrar, importacaoFeriado);
         importacaoFeriado.gerarDescricao("TOTAL DE FERIADOS ESTADUAIS CADASTRADOS:" + feriadosParaCadastrar.size());
         log.info("Quantidade de feriados estaduais importados: {}", feriadosParaCadastrar.size());
+    }
+
+    private List<FeriadoAutomacao> filtrarFeriadosMunicipais(Cidade cidade, Integer ano) {
+        return consultarFeriadosMunicipais(ano, cidade.getCodigoUf(), cidade.getNome()).stream()
+            .filter(feriado -> feriado != null && !feriado.isFacultativo())
+            .peek(feriado -> preencherInformacoes(feriado, cidade))
+            .collect(Collectors.toList());
+    }
+
+    private List<FeriadoAutomacao> filtrarFeriadosEstaduais(Uf uf, Integer ano) {
+        return consultarFeriadosEstaduais(ano, uf.getUf()).stream()
+            .filter(feriado -> feriado != null && !feriado.isFacultativo())
+            .peek(feriado -> feriado.setUfId(uf.getId()))
+            .collect(Collectors.toList());
     }
 
     private void cadastrarFeriados(List<FeriadoAutomacao> feriadosAutomacao, ImportacaoFeriado importacaoFeriado) {
@@ -190,18 +185,6 @@ public class ImportacaoAutomaticaFeriadoService {
         if (cidade.getId() != null) {
             feriadoAutomacao.setCidadeId(cidade.getId());
         }
-    }
-
-    private List<FeriadoAutomacao> filtrarFeriadosComErro(List<FeriadoAutomacao> feriadosAutomacao) {
-        return feriadosAutomacao.stream()
-            .filter(feriadoAutomacao -> FERIADOS_QUE_NAO_CADASTRAM.contains(feriadoAutomacao.getNome().toUpperCase()))
-            .collect(Collectors.toList());
-    }
-
-    private List<FeriadoAutomacao> corrigirFeriadosComErro(List<FeriadoAutomacao> feriadosAutomacao) {
-        return feriadosAutomacao.stream()
-            .peek(FeriadoAutomacao::mapToFeriadoNacional)
-            .distinct().collect(Collectors.toList());
     }
 
     private List<FeriadoAutomacao> filtrarFeriadosNaoCadastradosNoBanco(List<FeriadoAutomacao> feriadosAutomacao) {

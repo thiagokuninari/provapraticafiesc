@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum ETipoFeriado {
     NACIONAL("NACIONAL"),
     ESTADUAL("ESTADUAL"),
-    MUNICIPAL("MUNICIPAL");
+    MUNICIPAL("MUNICIPAL"),
+    FACULTATIVO("FACULTATIVO");
 
     private String descricao;
 }
