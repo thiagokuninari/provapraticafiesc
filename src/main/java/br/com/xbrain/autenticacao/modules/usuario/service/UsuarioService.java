@@ -42,6 +42,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -264,6 +265,8 @@ public class UsuarioService {
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Autowired
+    private SuporteVendasService suporteVendasService;
     @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
     private Set<String> dominiosPermitidos;
 
@@ -771,8 +774,8 @@ public class UsuarioService {
 
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
+        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
-        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
@@ -782,12 +785,22 @@ public class UsuarioService {
         return usuario;
     }
 
-    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+    private void validarOrganizacaoEmpresa(Usuario usuario) {
         if (usuario.getOrganizacaoEmpresa() != null) {
             var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
             if (!organizacaoEmpresa.isAtivo()) {
                 throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
             }
+            if (organizacaoEmpresa.isSuporteVendas()) {
+                validarGrupoAtivoEmOutraOrganizacao(usuario.getId(), organizacaoEmpresa.getId());
+            }
+        }
+    }
+
+    private void validarGrupoAtivoEmOutraOrganizacao(Integer id, Integer novaOrganizacaoId) {
+        if (suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(id, novaOrganizacaoId)) {
+            throw new ValidacaoException("O usuário não pode ser salvo com a nova organização, "
+                + "pois possui um grupo ativo na organização antiga.");
         }
     }
 
@@ -1053,7 +1066,7 @@ public class UsuarioService {
 
     private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
         if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
-            validarOrganizacaoEmpresaInativa(usuario);
+            validarOrganizacaoEmpresa(usuario);
         }
     }
 
