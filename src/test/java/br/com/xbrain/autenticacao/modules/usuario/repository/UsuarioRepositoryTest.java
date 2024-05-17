@@ -395,4 +395,10 @@ public class UsuarioRepositoryTest {
                 tuple(122, "VR 2"),
                 tuple(123, "VR 3"));
     }
+
+    @Test
+    public void findAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarUsuariosIdsPorOrganizacao_quandoSolicitado() {
+        assertThat(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(5))
+            .containsExactly(121, 122, 123);
+    }
 }

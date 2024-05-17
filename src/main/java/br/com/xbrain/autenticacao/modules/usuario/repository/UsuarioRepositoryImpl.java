@@ -54,6 +54,7 @@ import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -245,6 +246,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .where(cargo.codigo.in(VENDEDOR_RECEPTIVO, ADMINISTRADOR)
                 .and(usuario.id.in(ids))
+            )
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findAllUsuariosReceptivosIdsByOrganizacaoId(Integer id) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.departamento, departamento)
+            .innerJoin(departamento.nivel, nivel)
+            .where(nivel.codigo.eq(RECEPTIVO)
+                .and(usuario.organizacaoEmpresa.id.eq(id))
             )
             .orderBy(usuario.nome.asc())
             .fetch();

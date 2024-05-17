@@ -3253,6 +3253,26 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void buscarUsuariosReceptivosIdsPorOrganizacaoId_deverRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(1))
+            .thenReturn(Collections.emptyList());
+
+        assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEmpty();
+
+        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(1);
+    }
+
+    @Test
+    public void buscarUsuariosReceptivosIdsPorOrganizacaoId_deverRetornarUsuariosIdsDeUmaOrganizacao_quandoSolicitado() {
+        when(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(1))
+            .thenReturn(List.of(1, 2, 3));
+
+        assertThat(service.buscarUsuariosReceptivosIdsPorOrganizacaoId(1)).isEqualTo(List.of(1, 2, 3));
+
+        verify(repository).findAllUsuariosReceptivosIdsByOrganizacaoId(1);
+    }
+
+    @Test
     public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_usuarios_quandoUsuarioDiferenteDeAaEXbrain() {
         var usuarioComPermissaoDeVisualizarAa = umUsuarioAutenticado(1, "AGENTE_AUTORIZADO",
             CodigoCargo.AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
