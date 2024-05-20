@@ -269,7 +269,7 @@ public class UsuarioController {
     }
 
     @GetMapping(params = {"cpf", "situacao"})
-    public UsuarioDto findByCpfAndSituacaoIsNot(@RequestParam String cpf, @RequestParam ESituacao situacao) {
+    public UsuarioResponse findByCpfAndSituacaoIsNot(@RequestParam String cpf, @RequestParam ESituacao situacao) {
         return usuarioService.findByCpfAndSituacaoIsNot(cpf, situacao);
     }
 
