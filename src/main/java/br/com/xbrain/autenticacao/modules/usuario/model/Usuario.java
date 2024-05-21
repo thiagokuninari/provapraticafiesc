@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto.ID_NIVEL_MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -732,6 +733,6 @@ public class Usuario {
     }
 
     public Integer getOrganizacaoId() {
-        return Optional.ofNullable(organizacaoEmpresa).map(OrganizacaoEmpresa::getId).orElse(null);
+        return mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
     }
 }

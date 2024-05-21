@@ -29,7 +29,6 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -255,8 +254,6 @@ public class UsuarioService {
     private CidadeService cidadeService;
     @Autowired
     private SuporteVendasService suporteVendasService;
-    @Autowired
-    private OrganizacaoEmpresaService organizacaoEmpresaService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -767,8 +764,8 @@ public class UsuarioService {
     }
 
     private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getCargoCodigo(), c -> !c.equals(usuarioAntigo.getCargoCodigo()), false)
-            || mapNull(usuarioAtualizado.getOrganizacaoId(), o -> !o.equals(usuarioAntigo.getOrganizacaoId()), false);
+        return mapNull(usuarioAtualizado.getCargoCodigo(), cargo -> !cargo.equals(usuarioAntigo.getCargoCodigo()), false)
+            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {
