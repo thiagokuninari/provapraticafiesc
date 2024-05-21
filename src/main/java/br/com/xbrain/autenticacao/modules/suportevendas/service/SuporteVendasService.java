@@ -15,13 +15,13 @@ public class SuporteVendasService {
 
     private final SuporteVendasClient client;
 
-    public boolean existsGrupoByUsuarioAndOrganizacaoNot(Integer id, Integer novaOrganizacaoId) {
+    public void desvincularGruposByUsuarioId(Integer id) {
         try {
-            return client.existsGrupoByUsuarioAndOrganizacaoNot(id, novaOrganizacaoId);
+            client.desvincularGruposByUsuarioId(id);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 SuporteVendasService.class.getName(),
-                "Ocorreu um erro ao verificar grupo do usuário no suporte-vendas.");
+                "Ocorreu um erro ao desvincular grupo do usuário no suporte-vendas.");
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

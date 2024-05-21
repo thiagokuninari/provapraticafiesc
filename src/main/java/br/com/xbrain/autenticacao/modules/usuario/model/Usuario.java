@@ -726,4 +726,12 @@ public class Usuario {
         }
         this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
     }
+
+    public boolean isOperadorSuporteVendas() {
+        return OPERADOR_SUPORTE_VENDAS.equals(getCargoCodigo());
+    }
+
+    public Integer getOrganizacaoId() {
+        return Optional.ofNullable(organizacaoEmpresa).map(OrganizacaoEmpresa::getId).orElse(null);
+    }
 }

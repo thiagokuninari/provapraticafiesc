@@ -12,7 +12,6 @@ public interface SuporteVendasClient {
 
     String URI_GRUPOS = "api/grupo";
 
-    @GetMapping(URI_GRUPOS + "/organizacao/{organizacaoId}/verificar-grupos-em-outras-organizacoes/{usuarioId}")
-    boolean existsGrupoByUsuarioAndOrganizacaoNot(@PathVariable("usuarioId") Integer usuarioId,
-                                                  @PathVariable("organizacaoId") Integer organizacaoId);
+    @GetMapping(URI_GRUPOS + "/usuarios/{usuarioId}/desvincular")
+    void desvincularGruposByUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
 }

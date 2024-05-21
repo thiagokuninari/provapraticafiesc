@@ -88,6 +88,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -747,30 +748,27 @@ public class UsuarioService {
 
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
-        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
-        var enviarEmail = usuario.isNovoCadastro();
+        desvincularGruposByUsuario(usuario);
         repository.save(usuario);
 
-        enviarEmailDadosAcesso(usuario, enviarEmail);
+        enviarEmailDadosAcesso(usuario, usuario.isNovoCadastro());
         return usuario;
     }
 
-    private void validarOrganizacaoEmpresa(Usuario usuario) {
-        if (usuario.getOrganizacaoEmpresa() != null) {
-            var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
-            if (organizacaoEmpresa.isSuporteVendas()) {
-                validarGrupoAtivoEmOutraOrganizacao(usuario.getId(), organizacaoEmpresa.getId());
+    public void desvincularGruposByUsuario(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuario, usuarioAntigo)) {
+                suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
             }
         }
     }
 
-    private void validarGrupoAtivoEmOutraOrganizacao(Integer id, Integer novaOrganizacaoId) {
-        if (suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(id, novaOrganizacaoId)) {
-            throw new ValidacaoException("O usuário não pode ser salvo com a nova organização, "
-                + "pois possui um grupo ativo na organização antiga.");
-        }
+    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
+        return mapNull(usuarioAtualizado.getCargoCodigo(), c -> !c.equals(usuarioAntigo.getCargoCodigo()), false)
+            || mapNull(usuarioAtualizado.getOrganizacaoId(), o -> !o.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {
