@@ -93,12 +93,12 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresaSuporteVendas;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGerenciaControllerTest.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
@@ -1282,9 +1282,8 @@ public class UsuarioServiceTest {
         lenient().when(organizacaoEmpresaService.findById(anyInt()))
             .thenReturn(organizacao);
 
-        doReturn(Optional.of(usuario))
-            .when(repository)
-            .findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findComplete(1);
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
@@ -1320,9 +1319,8 @@ public class UsuarioServiceTest {
         lenient().when(organizacaoEmpresaService.findById(anyInt()))
             .thenReturn(organizacao);
 
-        doReturn(Optional.of(usuario))
-            .when(repository)
-            .findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findComplete(1);
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
@@ -1339,8 +1337,6 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
 
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
@@ -1358,20 +1354,59 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveLancarException_quandoUsuarioPossuirGrupoAtivoEmOutraOrganizacao() {
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarCargo() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(SUPERVISOR_SUPORTE_VENDAS, 100);
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(organizacaoEmpresaService.findById(any()))
-            .thenReturn(umaOrganizacaoEmpresaSuporteVendas(1, "João", "BKO"));
-        when(suporteVendasService.existsGrupoByUsuarioAndOrganizacaoNot(any(), any()))
-            .thenReturn(true);
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
-        assertThatCode(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("O usuário não pode ser salvo com a nova organização, "
-                + "pois possui um grupo ativo na organização antiga.");
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
 
-        verifyZeroInteractions(repository, notificacaoService);
+        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarOrganizacao() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 200);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoGrupo_quandoDadosIdenticos() {
+        var usuarioMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioMock))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(suporteVendasService);
     }
 
     @Test
@@ -1379,8 +1414,6 @@ public class UsuarioServiceTest {
         var usuario = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
 
         var organizacao = OrganizacaoEmpresa.builder()
             .id(5)
@@ -5153,5 +5186,17 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
+    }
+
+    private Usuario umUsuarioComCargoEOrganizacao(CodigoCargo cargo, Integer organizacaoId) {
+        return Usuario.builder()
+            .id(100)
+            .cargo(Cargo.builder().codigo(cargo).build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
+                .id(organizacaoId)
+                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
+                .build())
+            .email("email@google.com")
+            .build();
     }
 }

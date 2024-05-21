@@ -12,8 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SuporteVendasServiceTest {
@@ -24,20 +23,20 @@ public class SuporteVendasServiceTest {
     private SuporteVendasClient client;
 
     @Test
-    public void existsGrupoByUsuarioAndOrganizacaoNot_deveRetornarTrue_quandoClientRetornarTrue() {
-        when(client.existsGrupoByUsuarioAndOrganizacaoNot(10, 20))
-            .thenReturn(true);
+    public void desvincularGruposByUsuarioId_deveChamarClient_quandoNaoOcorrerErro() {
+        assertThatCode(() -> service.desvincularGruposByUsuarioId(10))
+            .doesNotThrowAnyException();
 
-        assertTrue(service.existsGrupoByUsuarioAndOrganizacaoNot(10, 20));
+        verify(client).desvincularGruposByUsuarioId(10);
     }
 
     @Test
-    public void existsGrupoByUsuarioAndOrganizacaoNot_deveLancarException_quandoClientRetornarErro() {
+    public void desvincularGruposByUsuarioId_deveLancarException_quandoClientRetornarErro() {
         doThrow(new RetryableException("", null))
-            .when(client).existsGrupoByUsuarioAndOrganizacaoNot(anyInt(), anyInt());
+            .when(client).desvincularGruposByUsuarioId(anyInt());
 
-        assertThatCode(() -> service.existsGrupoByUsuarioAndOrganizacaoNot(10, 20))
+        assertThatCode(() -> service.desvincularGruposByUsuarioId(10))
             .isInstanceOf(IntegracaoException.class)
-            .hasMessage("Ocorreu um erro ao verificar grupo do usuário no suporte-vendas.");
+            .hasMessage("Ocorreu um erro ao desvincular grupo do usuário no suporte-vendas.");
     }
 }
