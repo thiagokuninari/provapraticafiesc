@@ -757,7 +757,7 @@ public class UsuarioService {
     public void desvincularGruposByUsuario(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             var usuarioAntigo = findCompleteById(usuario.getId());
-            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuario, usuarioAntigo)) {
+            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
                 suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
             }
         }
