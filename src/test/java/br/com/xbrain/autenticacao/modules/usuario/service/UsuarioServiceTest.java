@@ -1355,8 +1355,8 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarCargo() {
-        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
-        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(SUPERVISOR_SUPORTE_VENDAS, 100);
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(repository.findComplete(anyInt()))
@@ -1374,8 +1374,8 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarOrganizacao() {
-        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
-        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 200);
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(100, 200);
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(repository.findComplete(anyInt()))
@@ -1393,7 +1393,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoGrupo_quandoDadosIdenticos() {
-        var usuarioMock = umUsuarioComCargoEOrganizacao(OPERADOR_SUPORTE_VENDAS, 100);
+        var usuarioMock = umUsuarioComCargoEOrganizacao(100, 100);
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(repository.findComplete(anyInt()))
@@ -5188,10 +5188,10 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    private Usuario umUsuarioComCargoEOrganizacao(CodigoCargo cargo, Integer organizacaoId) {
+    private Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
         return Usuario.builder()
             .id(100)
-            .cargo(Cargo.builder().codigo(cargo).build())
+            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(organizacaoId)
                 .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())

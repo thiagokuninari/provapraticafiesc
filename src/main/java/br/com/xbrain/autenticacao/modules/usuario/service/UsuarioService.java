@@ -805,7 +805,7 @@ public class UsuarioService {
     }
 
     private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getCargoCodigo(), cargo -> !cargo.equals(usuarioAntigo.getCargoCodigo()), false)
+        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
             || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
