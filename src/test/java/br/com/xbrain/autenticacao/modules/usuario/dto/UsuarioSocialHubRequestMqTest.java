@@ -17,6 +17,7 @@ public class UsuarioSocialHubRequestMqTest {
         var request = UsuarioSocialHubRequestMq.from(usuario, regionaisIds, "Diretor");
 
         assertEquals(usuario.getId(), request.getId());
+        assertEquals(usuario.getTerritorioMercadoDesenvolvimentoId(), request.getTerritorioMercadoDesenvolvimentoId());
         assertEquals(usuario.getNome(), request.getNome());
         assertEquals(usuario.getEmail(), request.getEmail());
         assertEquals("Diretor", request.getCargo());
@@ -28,6 +29,7 @@ public class UsuarioSocialHubRequestMqTest {
     public void from_deveManusearNulosCorretamente_quandoSolicitado() {
         var usuario = umUsuarioSocialHub("teste@teste.com");
         usuario.setCargo(null);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
 
         var request = UsuarioSocialHubRequestMq.from(usuario, List.of(), null);
 
@@ -35,6 +37,7 @@ public class UsuarioSocialHubRequestMqTest {
         assertEquals(usuario.getNome(), request.getNome());
         assertEquals(usuario.getEmail(), request.getEmail());
         assertNull(request.getCargo());
+        assertNull(request.getTerritorioMercadoDesenvolvimentoId());
         assertNull(request.getNivel());
     }
 }

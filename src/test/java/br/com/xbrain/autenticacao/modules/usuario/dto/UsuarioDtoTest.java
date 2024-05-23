@@ -197,7 +197,8 @@ public class UsuarioDtoTest {
     @Test
     public void of_deveRetornarUsuarioDto_quandoSolicitado() {
         var atual = UsuarioDto.of(umUsuarioCompleto(
-            ESituacao.I, VAREJO_VENDEDOR, 120, VAREJO, CodigoDepartamento.COMERCIAL, ECanal.VAREJO));
+            ESituacao.I, VAREJO_VENDEDOR, 120, VAREJO, CodigoDepartamento.COMERCIAL, ECanal.VAREJO, 10));
+
 
         var esperado = UsuarioDto
             .builder()
@@ -224,6 +225,7 @@ public class UsuarioDtoTest {
             .canais(Set.of(ECanal.VAREJO))
             .recuperarSenhaTentativa(0)
             .subCanaisId(Set.of())
+            .territorioMercadoDesenvolvimentoId(10)
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -420,7 +422,7 @@ public class UsuarioDtoTest {
     @Test
     public void of_deveRetornarUsuarioDto_quandoSolicitado_sePermiteEditarCompletoIsTrue() {
         var atual = UsuarioDto.of(umUsuarioCompleto(ESituacao.I, VAREJO_VENDEDOR, 120, VAREJO,
-            CodigoDepartamento.COMERCIAL, ECanal.VAREJO), true);
+            CodigoDepartamento.COMERCIAL, ECanal.VAREJO, null), true);
 
         var esperado = UsuarioDto
             .builder()
@@ -476,8 +478,8 @@ public class UsuarioDtoTest {
         assertThat(atual).isEqualToComparingFieldByField(esperado);
     }
 
-    private Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo,
-                                      CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
+    private Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo, CodigoNivel nivel,
+                                      CodigoDepartamento departamento, ECanal canal, Integer territorioMercadoDesenId) {
         var usuario = Usuario
             .builder()
             .id(1)
@@ -489,6 +491,7 @@ public class UsuarioDtoTest {
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
             .canalNetSales("D2D_CLARO_PESSOAL")
+            .territorioMercadoDesenvolvimentoId(territorioMercadoDesenId)
             .cargo(Cargo
                 .builder()
                 .id(idCargo)

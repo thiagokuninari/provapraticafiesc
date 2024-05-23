@@ -167,6 +167,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
         token.getAdditionalInformation().put("organizacaoNome", getOrganizacaoEmpresaNome(usuario));
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
+        token.getAdditionalInformation().put("territorioMercadoDesenvolvimentoId",
+            getTerritorioMercadoDesenvolvimentoId(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -206,6 +208,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
         return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
+    }
+
+    private Integer getTerritorioMercadoDesenvolvimentoId(Usuario usuario) {
+        return usuario.getTerritorioMercadoDesenvolvimentoId() != null ? usuario.getTerritorioMercadoDesenvolvimentoId() : null;
     }
 
     private String getOrganizacaoEmpresaNome(Usuario usuario) {

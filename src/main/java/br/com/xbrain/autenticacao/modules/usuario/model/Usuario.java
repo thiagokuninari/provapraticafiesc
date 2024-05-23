@@ -284,6 +284,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioSenhaIncorretaHistorico> historicosSenhaIncorretas;
 
+    @Column(name = "FK_TERRITORIO_MERCADO_DESEN")
+    private Integer territorioMercadoDesenvolvimentoId;
+
     public Usuario(Integer id) {
         this.id = id;
     }

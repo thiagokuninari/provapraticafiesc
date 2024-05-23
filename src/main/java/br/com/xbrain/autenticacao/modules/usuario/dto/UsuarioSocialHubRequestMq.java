@@ -19,6 +19,7 @@ public class UsuarioSocialHubRequestMq {
     private String nivel;
     private String cargo;
     private List<Integer> regionaisIds;
+    private Integer territorioMercadoDesenvolvimentoId;
 
     public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo) {
         var request = new UsuarioSocialHubRequestMq();
@@ -26,6 +27,9 @@ public class UsuarioSocialHubRequestMq {
         request.setCargo(nomeCargo);
         request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
         request.setRegionaisIds(regionaisIds);
+        request.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
+            ? usuario.getTerritorioMercadoDesenvolvimentoId()
+            : null);
         return request;
     }
 }

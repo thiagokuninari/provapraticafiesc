@@ -107,6 +107,7 @@ public class UsuarioDto implements Serializable {
     private String cupomLoja;
     private Integer siteId;
     private Set<ETipoFeederMso> tiposFeeder;
+    private Integer territorioMercadoDesenvolvimentoId;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -134,6 +135,9 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
+            ? usuario.getTerritorioMercadoDesenvolvimentoId()
+            : null);
         return usuario;
     }
 
@@ -158,7 +162,9 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
+            ? usuario.getTerritorioMercadoDesenvolvimentoId()
+            : null);
         return usuarioDto;
     }
 

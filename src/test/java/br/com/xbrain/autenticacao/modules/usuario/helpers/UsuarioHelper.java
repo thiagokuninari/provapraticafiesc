@@ -818,6 +818,7 @@ public class UsuarioHelper {
             .usuariosHierarquia(new HashSet<>())
             .usuarioCadastro(new Usuario(1))
             .hierarquiasId(List.of(2))
+            .territorioMercadoDesenvolvimentoId(1)
             .canais(Set.of(ECanal.INTERNET))
             .departamento(Departamento.builder().id(1).nome("teste").build())
             .cargo(Cargo.builder()
