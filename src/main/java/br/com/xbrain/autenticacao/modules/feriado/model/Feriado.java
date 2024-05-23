@@ -127,6 +127,9 @@ public class Feriado {
         if (feriadoAutomacao.getCidadeId() != null) {
             feriado.setCidade(new Cidade(feriadoAutomacao.getCidadeId()));
         }
+        if (importacaoFeriado.getUsuarioCadastroId() != null) {
+            feriado.setUsuarioCadastro(new Usuario(importacaoFeriado.getUsuarioCadastroId()));
+        }
         feriado.setDataCadastro(LocalDateTime.now());
         feriado.setSituacao(ESituacaoFeriado.ATIVO);
         feriado.setImportacaoFeriado(importacaoFeriado);

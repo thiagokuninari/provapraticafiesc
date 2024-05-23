@@ -4,11 +4,14 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class FeriadoHelper {
@@ -52,5 +55,13 @@ public class FeriadoHelper {
     public static List<Uf> umaListUf() {
         return List.of(umUf(1),
             umUf(2));
+    }
+
+    public static ImportacaoFeriado umImportacaoFeriado() {
+        return ImportacaoFeriado.builder()
+            .id(1)
+            .dataCadastro(LocalDateTime.of(2024, 9, 20, 0, 0, 0))
+            .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO)
+            .build();
     }
 }

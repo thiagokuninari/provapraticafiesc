@@ -190,4 +190,28 @@ public class FeriadoRepositoryIT {
             LocalDate.of(2023, 1, 20), 5578, 1, ESituacaoFeriado.ATIVO))
             .isFalse();
     }
+
+    @Test
+    public void findUtimaCidadeFeriadoCadastradoByAno_deveRetornarUltimaCidadeComFeriadosCadastrados_seEncontrado() {
+        assertThat(feriadoRepository.findUtimaCidadeFeriadoCadastradoByAno(2023))
+            .extracting("id", "nome")
+            .containsExactly(5578, "LONDRINA");
+    }
+
+    @Test
+    public void findUtimaCidadeFeriadoCadastradoByAno_deveNaoRetornarNull_seCidadeFeriadoNaoEncontrada() {
+        assertThat(feriadoRepository.findUtimaCidadeFeriadoCadastradoByAno(2024)).isNull();
+    }
+
+    @Test
+    public void findTotalFeriadosImportadosByTipoFeriado_deveRetornarTotalDeFeriadosImportados_seEncontrados() {
+        assertThat(feriadoRepository.findTotalFeriadosImportadosByTipoFeriado(ETipoFeriado.MUNICIPAL, 1))
+            .isEqualTo(2L);
+    }
+
+    @Test
+    public void findTotalFeriadosImportadosByTipoFeriado_deveRetornarZero_seNaoEncontrarRegistros() {
+        assertThat(feriadoRepository.findTotalFeriadosImportadosByTipoFeriado(ETipoFeriado.MUNICIPAL, 2))
+            .isEqualTo(0L);
+    }
 }

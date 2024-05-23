@@ -49,6 +49,8 @@ public class ImportacaoFeriado {
     }
 
     public void gerarDescricao(String descricao) {
-        this.descricao = this.descricao.concat("-").concat(descricao);
+        this.descricao = (this.descricao == null)
+            ? descricao
+            : this.descricao.concat(" - ").concat(descricao);
     }
 }

@@ -108,6 +108,8 @@ public class FeriadoTest {
             .nome("FERIADO ESTADUAL")
             .tipoFeriado(ETipoFeriado.ESTADUAL)
             .dataFeriado("20/09/2023")
+            .ufId(1)
+            .cidadeId(1)
             .build();
     }
 

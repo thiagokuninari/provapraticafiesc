@@ -3,7 +3,9 @@ package br.com.xbrain.autenticacao.modules.feriado.repository;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -53,4 +55,8 @@ public interface FeriadoRepositoryCustom {
     List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno();
 
     List<LocalDate> findAllNacional(LocalDate now);
+
+    Cidade findUtimaCidadeFeriadoCadastradoByAno(Integer ano);
+
+    long findTotalFeriadosImportadosByTipoFeriado(ETipoFeriado tipoFeriado, Integer importacaoFeriadoId);
 }

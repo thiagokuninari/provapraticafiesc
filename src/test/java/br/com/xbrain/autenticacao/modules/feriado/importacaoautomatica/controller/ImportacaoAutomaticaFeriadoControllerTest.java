@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.ImportacaoFeriadoHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service.ImportacaoAutomaticaFeriadoService;
+import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ImportacaoAutomaticaFeriadoController.class)
 @MockBeans({
     @MockBean(EquipeVendaD2dService.class),
+    @MockBean(UsuarioSubCanalObserver.class),
     @MockBean(TokenStore.class),
 })
 @Import(OAuth2ResourceConfig.class)
@@ -60,18 +62,18 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
     public void importarTodosOsFeriadosAnuais_deveImportarTodosOsFeriadosAnuais_seSolicitado() {
-        mvc.perform(post(URL_BASE + "/importar-todos")
+        mvc.perform(post(URL_BASE + "/importar-todos/2024")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(service).importarTodosOsFeriadoAnuais();
+        verify(service).importarTodosOsFeriadoAnuais(2024);
     }
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
     public void importarTodosOsFeriadosAnuais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
-        mvc.perform(post(URL_BASE + "/importar-todos")
+        mvc.perform(post(URL_BASE + "/importar-todos/2024")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
@@ -82,7 +84,7 @@ public class ImportacaoAutomaticaFeriadoControllerTest {
     @SneakyThrows
     @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
     public void importarTodosOsFeriadosAnuais_deveLancarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(post(URL_BASE + "/importar-todos")
+        mvc.perform(post(URL_BASE + "/importar-todos/2024")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 

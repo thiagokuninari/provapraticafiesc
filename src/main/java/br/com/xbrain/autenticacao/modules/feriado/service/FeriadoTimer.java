@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 @RequiredArgsConstructor
 public class FeriadoTimer {
@@ -23,7 +25,7 @@ public class FeriadoTimer {
 
     @Scheduled(cron = UMA_VEZ_POR_ANO_EM_CINCO_DE_DEZEMBRO, zone = TIME_ZONE)
     public void importarTodosOsFeriados() {
-        importacaoService.importarTodosOsFeriadoAnuais();
+        var ano = LocalDate.now().plusYears(1).getYear();
+        importacaoService.importarTodosOsFeriadoAnuais(ano);
     }
-
 }

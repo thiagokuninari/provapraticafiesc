@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -213,5 +214,26 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                         now.with(TemporalAdjusters.lastDayOfYear()).plusDays(1)))
             )
             .fetch();
+    }
+
+    @Override
+    public Cidade findUtimaCidadeFeriadoCadastradoByAno(Integer ano) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.cidade)
+            .from(feriado)
+            .where(feriado.dataFeriado.year().eq(ano))
+            .orderBy(feriado.dataCadastro.desc())
+            .fetchFirst();
+    }
+
+    @Override
+    public long findTotalFeriadosImportadosByTipoFeriado(ETipoFeriado tipoFeriado,
+                                                                  Integer importacaoFeriadoId) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.id)
+            .from(feriado)
+            .where(feriado.tipoFeriado.eq(tipoFeriado)
+                .and(feriado.importacaoFeriado.id.eq(importacaoFeriadoId)))
+            .fetchCount();
     }
 }
