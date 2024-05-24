@@ -135,9 +135,7 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
-        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
-            ? usuario.getTerritorioMercadoDesenvolvimentoId()
-            : null);
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(getTerritorioMercadoDesenvolvimentoId(usuario));
         return usuario;
     }
 
@@ -162,9 +160,7 @@ public class UsuarioDto implements Serializable {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
-            ? usuario.getTerritorioMercadoDesenvolvimentoId()
-            : null);
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(getTerritorioMercadoDesenvolvimentoId(usuario));
         return usuarioDto;
     }
 
@@ -211,5 +207,9 @@ public class UsuarioDto implements Serializable {
         this.id = id;
         this.email = email;
         this.nivelCodigo = nivelCodigo;
+    }
+
+    private static Integer getTerritorioMercadoDesenvolvimentoId(Usuario usuario) {
+        return usuario.getTerritorioMercadoDesenvolvimentoId() != null ? usuario.getTerritorioMercadoDesenvolvimentoId() : null;
     }
 }
