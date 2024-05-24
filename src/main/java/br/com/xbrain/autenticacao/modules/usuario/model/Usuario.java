@@ -749,4 +749,8 @@ public class Usuario {
         }
         this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
     }
+
+    public Integer getTerritorioMercadoDesenvolvimentoIdOrNull() {
+        return territorioMercadoDesenvolvimentoId != null ? territorioMercadoDesenvolvimentoId : null;
+    }
 }

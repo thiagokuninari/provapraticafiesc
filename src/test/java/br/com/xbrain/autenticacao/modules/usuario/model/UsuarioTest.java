@@ -19,8 +19,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class UsuarioTest {
 
@@ -395,6 +394,27 @@ public class UsuarioTest {
         usuario.removerCaracteresDoCpf();
 
         assertThat(usuario.getCpf()).isEqualTo("12312312312");
+    }
+
+    @Test
+    public void getTerritorioMercadoDesenvolvimentoIdOrNull_deveRetornarMercadoDesenId_quandoIdMercadoDesenvolvimentoPresente() {
+        var usuario = new Usuario();
+        usuario.setTerritorioMercadoDesenvolvimentoId(12345);
+
+        Integer esperado = 12345;
+        var resultado = usuario.getTerritorioMercadoDesenvolvimentoIdOrNull();
+
+        assertEquals(esperado, resultado);
+    }
+
+    @Test
+    public void getTerritorioMercadoDesenvolvimentoIdOrNull_deveRetornarNull_quandoIdMercadoDesenvolvimentoNull() {
+        var usuarioDto = new Usuario();
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(null);
+
+        var result = usuarioDto.getTerritorioMercadoDesenvolvimentoIdOrNull();
+
+        assertEquals(null, result);
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {

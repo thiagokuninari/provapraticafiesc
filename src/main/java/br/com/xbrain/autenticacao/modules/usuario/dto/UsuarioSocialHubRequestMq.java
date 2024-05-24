@@ -27,9 +27,7 @@ public class UsuarioSocialHubRequestMq {
         request.setCargo(nomeCargo);
         request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
         request.setRegionaisIds(regionaisIds);
-        request.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoId() != null
-            ? usuario.getTerritorioMercadoDesenvolvimentoId()
-            : null);
+        request.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
         return request;
     }
 }
