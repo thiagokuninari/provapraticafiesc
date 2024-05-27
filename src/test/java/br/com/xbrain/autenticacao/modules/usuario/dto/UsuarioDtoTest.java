@@ -199,7 +199,6 @@ public class UsuarioDtoTest {
         var atual = UsuarioDto.of(umUsuarioCompleto(
             ESituacao.I, VAREJO_VENDEDOR, 120, VAREJO, CodigoDepartamento.COMERCIAL, ECanal.VAREJO, 10));
 
-
         var esperado = UsuarioDto
             .builder()
             .id(1)
