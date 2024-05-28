@@ -40,6 +40,10 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
 import static helpers.TestBuilders.umUsuario;
+import static helpers.Usuarios.ADMIN;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -2312,5 +2316,29 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void findByCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL)
+                .param("cpf", "123.456.789-10")
+                .param("situacao", "R"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findByCpfAndSituacaoIsNot("123.456.789-10", ESituacao.R);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findByCpfAndSituacaoIsNot_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+        mvc.perform(get(BASE_URL)
+                .param("cpf", "123.456.789-10")
+                .param("situacao", "R"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
     }
 }

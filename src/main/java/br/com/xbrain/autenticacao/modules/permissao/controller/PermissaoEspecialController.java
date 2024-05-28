@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.permissao.controller;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,5 +36,10 @@ public class PermissaoEspecialController {
     @PostMapping("reprocessar-permissoes-socios-secundarios")
     public void reprocessarPermissoesEspeciaisSociosSecundarios(@RequestParam(required = false) List<Integer> aaIds) {
         service.reprocessarPermissoesEspeciaisSociosSecundarios(aaIds);
+    }
+
+    @PutMapping("atualizar-permissoes-novo-socio")
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal(@RequestBody UsuarioDto socio) {
+        service.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
     }
 }

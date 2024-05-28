@@ -4793,6 +4793,26 @@ public class UsuarioServiceTest {
         verify(repository).findById(1);
     }
 
+    @Test
+    public void findByAndCpfAndSituacaoIsNot_deveRetornarUsuarioDto_quandoSolicitar() {
+        doReturn(Optional.of(umUsuarioCompleto()))
+            .when(repository)
+            .findByCpfAndSituacaoIsNot("38957979875", ESituacao.R);
+
+        assertThat(service.findByCpfAndSituacaoIsNot("38957979875", ESituacao.R))
+            .extracting("id", "nome", "cpf")
+            .containsExactly(1, "NOME UM", "111.111.111-11");
+
+        verify(repository).findByCpfAndSituacaoIsNot("38957979875", ESituacao.R);
+    }
+
+    @Test
+    public void findByAndCpfAndSituacaoIsNot_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findByCpfAndSituacaoIsNot("123456789", ESituacao.R))
+            .withMessage("Usuário não encontrado.");
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()

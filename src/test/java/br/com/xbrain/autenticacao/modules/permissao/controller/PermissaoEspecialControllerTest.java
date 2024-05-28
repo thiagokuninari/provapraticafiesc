@@ -5,7 +5,9 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.client.ColaboradorVendasClient;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import helpers.TestsHelper;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -158,6 +160,54 @@ public class PermissaoEspecialControllerTest {
             .andExpect(status().isOk());
 
         verify(permissaoEspecialService).reprocessarPermissoesEspeciaisSociosSecundarios(null);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveRetornarOk_seTodosOsDadosCorreto() {
+        var objectMapper = new ObjectMapper();
+        var requestBody = objectMapper.writeValueAsString(umUsuarioDto());
+
+        mvc.perform(put(URL + "/atualizar-permissoes-novo-socio")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(permissaoEspecialService).atualizarPermissoesEspeciaisNovoSocioPrincipal(umUsuarioDto());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveRetornarBadRequest_quandoBodyForVazio() {
+        mvc.perform(put(URL + "/atualizar-permissoes-novo-socio")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verifyZeroInteractions(permissaoEspecialService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarPermissoesEspeciaisNovoSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(URL + "/atualizar-permissoes-novo-socio")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(permissaoEspecialService);
+    }
+
+    private UsuarioDto umUsuarioDto() {
+        return UsuarioDto.builder()
+            .id(1)
+            .nome("USUARIO")
+            .usuarioCadastroId(2)
+            .agenteAutorizadoId(1)
+            .antigosSociosPrincipaisIds(List.of(1, 2))
+            .build();
     }
 
     private PermissaoEspecialRequest novasPermissoes() {

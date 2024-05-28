@@ -273,6 +273,11 @@ public class UsuarioController {
         return usuarioService.findUsuarioByCpfComSituacaoAtivoOuInativo(cpf);
     }
 
+    @GetMapping(params = {"cpf", "situacao"})
+    public UsuarioResponse findByCpfAndSituacaoIsNot(@RequestParam String cpf, @RequestParam ESituacao situacao) {
+        return usuarioService.findByCpfAndSituacaoIsNot(cpf, situacao);
+    }
+
     @PostMapping("cpfs")
     public List<UsuarioResponse> getUsuariosByCpfs(@RequestBody List<String> cpfs,
                                                    @RequestParam(required = false) Boolean buscarAtivo) {

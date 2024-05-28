@@ -352,6 +352,12 @@ public class UsuarioService {
             .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")));
     }
 
+    public UsuarioResponse findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
+        return repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
+            .map(UsuarioResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
         if (Boolean.TRUE.equals(buscarAtivo)) {
             return repository.findByEmailAndSituacao(email, ESituacao.A)

@@ -43,6 +43,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     Optional<Usuario> findByEmailAndSituacao(String email, ESituacao situacao);
 
+    Optional<Usuario> findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao);
+
     List<Usuario> findAllByCpf(String cpf);
 
     Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);

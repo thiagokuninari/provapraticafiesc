@@ -41,8 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.io.ByteStreams.toByteArray;
-import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.convertObjectToJsonString;
+import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -1500,11 +1499,83 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void inativarAntigoSocioPrincipal_deveRetornarBadRequest_quandoNaoEmailNaoForPassadoPorParametro() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal"))
+            .andExpect(status().isBadRequest());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void inativarAntigoSocioPrincipal_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void inativarAntigoSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
         mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
             .andExpect(status().isOk());
 
-        verify(usuarioService).atualizarEmailSocioInativo(300);
+        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(300));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarEmailSocioInativo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void atualizarEmailSocioInativo_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
@@ -1538,13 +1609,6 @@ public class UsuarioGerenciaControllerTest {
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         return dto;
-    }
-
-    private UsuarioDto umUsuarioParaEditar() {
-        return UsuarioDto.builder()
-            .nome("JOAOZINHO")
-            .loginNetSales("MIDORIYA SHOUNEN")
-            .build();
     }
 
     private UsuarioDto umUsuario(String nome) {
