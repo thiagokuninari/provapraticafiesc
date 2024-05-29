@@ -15,17 +15,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.LISTA_CARGOS_SUPERIORES_AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.PERMISSAO_DESBLOQUEAR_INDICACAO_EXTERNA_ID;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static org.springframework.util.ObjectUtils.isEmpty;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class PermissaoTecnicoIndicadorService {
 
     private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
@@ -83,8 +86,8 @@ public class PermissaoTecnicoIndicadorService {
             && (isRemanejamento || usuarioMqRequest.isNovoCadastro()
             || !validarUsuarioComPermissaoTecnicoIndicador(usuarioDto.getId()))) {
             log.info("Adicionando permissão de Técnico Indicador para usuário novo com id {}.", usuarioDto.getId());
-            var permissoes = PermissaoEspecial.of(
-                usuarioDto.getId(), PERMISSOES_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId());
+            var permissoes = getPermissoesTecnicoIndicador(usuarioDto.getId(),
+                usuarioDto.getUsuarioCadastroId(), usuarioMqRequest.getCargo());
             salvarPermissoesEspeciais(permissoes);
             log.info("Permissões adicionadas com sucesso.");
         }
@@ -101,22 +104,22 @@ public class PermissaoTecnicoIndicadorService {
         }
     }
 
-    public void adicionarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
+    private void adicionarPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
         log.info("Adicionando permissão de técnico indicador aos usuários do agente autorizado {}",
             dto.getAgenteAutorizadoId());
 
         var permissoes = buscarUsuariosTabulacaoTecnicoIndicador(dto.getUsuariosIds())
             .stream()
             .filter(usuario -> !validarUsuarioComPermissaoTecnicoIndicador(usuario.getId()))
-            .map(usuario -> PermissaoEspecial.of(
-                usuario.getId(), PERMISSOES_TECNICO_INDICADOR, dto.getUsuarioAutenticadoId()))
+            .map(usuario -> getPermissoesTecnicoIndicador(usuario.getId(), usuario.getUsuarioCadastro().getId(),
+                usuario.getCargoCodigo()))
             .flatMap(List::stream)
             .collect(toList());
 
         salvarPermissoesEspeciais(permissoes);
     }
 
-    public void removerPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
+    private void removerPermissaoTecnicoIndicador(PermissaoTecnicoIndicadorDto dto) {
         log.info("Removendo permissão de técnico indicador dos usuários do agente autorizado {}",
             dto.getAgenteAutorizadoId());
 
@@ -135,8 +138,8 @@ public class PermissaoTecnicoIndicadorService {
             ESituacao.R);
     }
 
-    public boolean validarUsuarioComPermissaoTecnicoIndicador(Integer usuarioId) {
-        return permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, PERMISSOES_TECNICO_INDICADOR);
+    private boolean validarUsuarioComPermissaoTecnicoIndicador(Integer usuarioId) {
+        return permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, getPermissoesEspeciaisTecnicoIndicadorIds());
     }
 
     private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
@@ -147,7 +150,23 @@ public class PermissaoTecnicoIndicadorService {
 
     private void removerPermissaoDosUsuarios(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, usuariosIds);
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(getPermissoesEspeciaisTecnicoIndicadorIds(), usuariosIds);
         }
+    }
+
+    private List<PermissaoEspecial> getPermissoesTecnicoIndicador(Integer usuarioId,
+                                                                  Integer usuarioCadastroId,
+                                                                  CodigoCargo cargo) {
+        var permissoes = PermissaoEspecial.of(usuarioId, PERMISSOES_TECNICO_INDICADOR, usuarioCadastroId);
+        if (LISTA_CARGOS_SUPERIORES_AGENTE_AUTORIZADO.contains(cargo)) {
+            permissoes.add(PermissaoEspecial.of(usuarioId, PERMISSAO_DESBLOQUEAR_INDICACAO_EXTERNA_ID, usuarioCadastroId));
+        }
+        return permissoes;
+    }
+
+    private List<Integer> getPermissoesEspeciaisTecnicoIndicadorIds() {
+        var permissoes = new ArrayList<>(PERMISSOES_TECNICO_INDICADOR);
+        permissoes.add(PERMISSAO_DESBLOQUEAR_INDICACAO_EXTERNA_ID);
+        return permissoes;
     }
 }

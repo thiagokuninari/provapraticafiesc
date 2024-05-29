@@ -14,6 +14,8 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -22,15 +24,15 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 @ActiveProfiles("test")
+@RunWith(MockitoJUnitRunner.class)
 public class PermissaoTecnicoIndicadorServiceTest {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122, 22127);
 
     @InjectMocks
     private PermissaoTecnicoIndicadorService service;
@@ -40,11 +42,15 @@ public class PermissaoTecnicoIndicadorServiceTest {
     private UsuarioRepository usuarioRepository;
     @Mock
     private CargoRepository cargoRepository;
+    @Captor
+    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
-    public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitado() {
+    public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitadoECargoNaoForSuperior() {
         var cargos = List.of(new Cargo(3005), new Cargo(3006));
         var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).situacao(ESituacao.I).build();
+        usuario.setUsuarioCadastro(Usuario.builder().id(1).build());
+        usuario.setCargo(Cargo.builder().codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_VAREJO).build());
 
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
@@ -56,7 +62,52 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(permissaoEspecialService, times(1)).save(anyList());
+        verify(cargoRepository).findByCodigoIn(anyList());
+        verify(usuarioRepository).findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R);
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR);
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(tuple(3, 253, 1),
+                tuple(3, 22122, 1));
+    }
+
+    @Test
+    public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitadoECargoForSuperior() {
+        var cargos = List.of(new Cargo(3005), new Cargo(3006));
+        var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).situacao(ESituacao.I).build();
+        usuario.setUsuarioCadastro(Usuario.builder().id(1).build());
+        usuario.setCargo(Cargo.builder().codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO).build());
+
+        when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
+        when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
+            .thenReturn(List.of(usuario));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
+            .thenReturn(false);
+
+        var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
+
+        service.atualizarPermissaoTecnicoIndicador(dto);
+
+        verify(cargoRepository).findByCodigoIn(anyList());
+        verify(usuarioRepository).findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R);
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR);
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(tuple(3, 253, 1),
+                tuple(3, 22122, 1),
+                tuple(3, 22127, 1));
     }
 
     @Test
@@ -70,13 +121,14 @@ public class PermissaoTecnicoIndicadorServiceTest {
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR))
             .thenReturn(true);
 
-        var permissoes = PermissaoEspecial.of(3, PERMISSOES_TECNICO_INDICADOR, 1);
-
         var dto = new PermissaoTecnicoIndicadorDto(1, List.of(1, 2, 3), 1, Eboolean.V);
 
         service.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(permissaoEspecialService, never()).save(eq(permissoes));
+        verify(cargoRepository).findByCodigoIn(anyList());
+        verify(usuarioRepository).findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R);
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR);
+        verifyNoMoreInteractions(permissaoEspecialService);
     }
 
     @Test
@@ -94,8 +146,10 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(3)));
+        verify(cargoRepository).findByCodigoIn(anyList());
+        verify(usuarioRepository).findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R);
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, List.of(3));
     }
 
     @Test
@@ -113,8 +167,10 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.atualizarPermissaoTecnicoIndicador(dto);
 
-        verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(3)));
+        verify(cargoRepository).findByCodigoIn(anyList());
+        verify(usuarioRepository).findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R);
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(3, PERMISSOES_TECNICO_INDICADOR);
+        verifyNoMoreInteractions(permissaoEspecialService);
     }
 
     @Test
@@ -138,10 +194,20 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
             .build();
         var usuario = new UsuarioDto(4);
+        usuario.setUsuarioCadastroId(2);
 
         service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
-        verify(permissaoEspecialService, times(1)).save(anyList());
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(tuple(4, 253, 2),
+                tuple(4, 22122, 2));
     }
 
     @Test
@@ -184,7 +250,57 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
-        verify(permissaoEspecialService, never()).save(anyList());
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR);
+        verifyNoMoreInteractions(permissaoEspecialService);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarPermissaoDesbloquearIndicacaoExterna_quandoForCargoSuperior() {
+        var request = UsuarioMqRequest.builder()
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+            .build();
+        var usuario = new UsuarioDto(4);
+        usuario.setUsuarioCadastroId(4444);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+
+        var permissoesEspeciaisSalvas = permissaoEspecialCaptor.getValue();
+
+        assertThat(permissoesEspeciaisSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(tuple(4, 253, 4444),
+                tuple(4, 22122, 4444),
+                tuple(4, 22127, 4444));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissaoDesbloquearIndicacaoExterna_quandoNaoForCargoSuperior() {
+        var request = UsuarioMqRequest.builder()
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .build();
+        var usuario = new UsuarioDto(4);
+        usuario.setUsuarioCadastroId(4444);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+
+        var permissoesEspeciaisSalvas = permissaoEspecialCaptor.getValue();
+
+        assertThat(permissoesEspeciaisSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(tuple(4, 253, 4444),
+                tuple(4, 22122, 4444));
     }
 
     @Test
@@ -195,8 +311,8 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
-        verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, List.of(4));
     }
 
     @Test
@@ -210,8 +326,8 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
-        verify(permissaoEspecialService, times(1))
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, List.of(4));
     }
 
     @Test
@@ -224,8 +340,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
-        verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
+        verifyZeroInteractions(permissaoEspecialService);
     }
 
     @Test
@@ -240,8 +355,8 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
-        verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR);
+        verifyNoMoreInteractions(permissaoEspecialService);
     }
 
     @Test
@@ -256,7 +371,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.removerPermissaoTecnicoIndicadorDoUsuario(usuario);
 
-        verify(permissaoEspecialService, never())
-            .deletarPermissoesEspeciaisBy(eq(PERMISSOES_TECNICO_INDICADOR), eq(List.of(4)));
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSOES_TECNICO_INDICADOR);
+        verifyNoMoreInteractions(permissaoEspecialService);
     }
 }
