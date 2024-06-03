@@ -177,4 +177,18 @@ public class CargoControllerTest {
             .andExpect(jsonPath("$", not(empty())))
             .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
     }
+
+    @Test
+    @WithMockUser
+    public void getAllCargos_deveRetornarTodosOsCodigosCargos_quandoSolicitado() throws Exception {
+        when(cargoService.getAllCargos()).thenReturn(List.of(CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
+            CodigoCargo.INTERNET_GERENTE));
+
+        mvc.perform(get(API_CARGO + "/codigo-cargos")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0]", is("AGENTE_AUTORIZADO_GERENTE")))
+            .andExpect(jsonPath("$[1]", is("INTERNET_GERENTE")));
+    }
 }

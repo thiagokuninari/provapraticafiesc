@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ public class CargoService {
     }
 
     private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
-                                                          boolean permiteEditarCompleto) {
+                                                           boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate();
         if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
             predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
@@ -102,14 +103,14 @@ public class CargoService {
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
         return repository.buscarTodosComNiveis(
-            new CargoPredicate()
-                .comNiveis(niveisIds)
-                .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
-                .build())
+                new CargoPredicate()
+                    .comNiveis(niveisIds)
+                    .filtrarPermitidos(usuarioAutenticado, cargosIds)
+                    .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
+                    .build())
             .stream()
             .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ",
-                 cargo.getNome(), cargo.getNivel().getNome())))
+                cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 
@@ -167,5 +168,9 @@ public class CargoService {
         cargosPermitidos.add(cargoProprioId);
 
         return cargosPermitidos;
+    }
+
+    public List<CodigoCargo> getAllCargos() {
+        return Arrays.asList(CodigoCargo.values());
     }
 }
