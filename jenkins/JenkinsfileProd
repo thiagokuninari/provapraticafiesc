@@ -28,7 +28,7 @@ pipeline {
     stages {
         stage('Package') {
             steps {
-                slackSend channel: '#env-producao',
+                slackSend channel: '#env-produção',
                         color: COLOR_MAP[currentBuild.getPreviousBuild().result],
                         message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Started by ${BUILD_USER} (<${env.BUILD_URL}|Open>)"
                 sh 'mvn clean package -DskipTests=true'
@@ -114,12 +114,12 @@ pipeline {
     }
     post {
         always {
-            slackSend channel: '#env-producao',
+            slackSend channel: '#env-produção',
                     color: COLOR_MAP[currentBuild.currentResult],
                     message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
         }
         unstable {
-            slackSend channel: '#env-producao',
+            slackSend channel: '#env-produção',
                     color: COLOR_MAP[currentBuild.currentResult],
                     message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
         }
