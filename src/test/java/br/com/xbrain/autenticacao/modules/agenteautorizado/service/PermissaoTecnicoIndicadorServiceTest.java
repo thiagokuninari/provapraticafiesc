@@ -23,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -48,9 +49,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
     @Test
     public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitadoECargoNaoForSuperior() {
         var cargos = List.of(new Cargo(3005), new Cargo(3006));
-        var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).situacao(ESituacao.I).build();
-        usuario.setUsuarioCadastro(Usuario.builder().id(1).build());
-        usuario.setCargo(Cargo.builder().codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_VAREJO).build());
+        var usuario = umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_VAREJO);
 
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
@@ -80,9 +79,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
     @Test
     public void atualizarPermissaoTecnicoIndicador_deveAdicionarPermissao_quandoSolicitadoECargoForSuperior() {
         var cargos = List.of(new Cargo(3005), new Cargo(3006));
-        var usuario = Usuario.builder().id(3).cargo(new Cargo(3006)).situacao(ESituacao.I).build();
-        usuario.setUsuarioCadastro(Usuario.builder().id(1).build());
-        usuario.setCargo(Cargo.builder().codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO).build());
+        var usuario = umUsuario(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
 
         when(cargoRepository.findByCodigoIn(anyList())).thenReturn(cargos);
         when(usuarioRepository.findByIdInAndCargoInAndSituacaoNot(List.of(1, 2, 3), cargos, ESituacao.R))
