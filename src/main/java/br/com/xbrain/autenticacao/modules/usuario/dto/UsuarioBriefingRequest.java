@@ -57,6 +57,7 @@ public class UsuarioBriefingRequest {
         usuario.setCargo(new Cargo(usuarioBriefingRequest.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioBriefingRequest.getDepartamentoId()));
         usuario.setNascimento(usuarioBriefingRequest.getNascimento().atStartOfDay());
+        usuario.setUnidadesNegociosId(List.of(usuarioBriefingRequest.getUnidadeNegocioId()));
 
         return usuario;
     }
