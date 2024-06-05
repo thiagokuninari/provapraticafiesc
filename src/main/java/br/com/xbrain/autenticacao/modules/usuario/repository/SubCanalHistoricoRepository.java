@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanalHistorico;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.List;
+public interface SubCanalHistoricoRepository extends PagingAndSortingRepository<SubCanalHistorico, Integer> {
 
-public interface SubCanalHistoricoRepository extends CrudRepository<SubCanalHistorico, Integer> {
-
-    List<SubCanalHistorico> findBySubCanal_Id(Integer id);
+    Page<SubCanalHistorico> findBySubCanal_Id(Integer id, Pageable pageable);
 
 }

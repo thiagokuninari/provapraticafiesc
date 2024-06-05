@@ -63,7 +63,7 @@ public class SubCanalController {
     }
 
     @GetMapping("{id}/historico")
-    public List<SubCanalHistoricoResponse> getHistorico(@PathVariable Integer id) {
-        return service.getHistorico(id);
+    public Page<SubCanalHistoricoResponse> getHistorico(PageRequest pageable, @PathVariable Integer id) {
+        return service.getHistorico(id, pageable);
     }
 }

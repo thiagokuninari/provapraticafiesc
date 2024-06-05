@@ -129,10 +129,8 @@ public class SubCanalService {
         return findById(id).getNovaChecagemViabilidade();
     }
 
-    public List<SubCanalHistoricoResponse> getHistorico(Integer id) {
-        return subCanalHistoricoRepository.findBySubCanal_Id(id)
-            .stream()
-            .map(SubCanalHistoricoResponse::of)
-            .collect(Collectors.toList());
+    public Page<SubCanalHistoricoResponse> getHistorico(Integer id, PageRequest pageable) {
+        return subCanalHistoricoRepository.findBySubCanal_Id(id, pageable)
+            .map(SubCanalHistoricoResponse::of);
     }
 }
