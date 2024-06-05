@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.enums;
 
+import java.util.List;
+
 public enum CodigoCargo {
     VENDEDOR_OPERACAO,
     SUPERVISOR_OPERACAO,
@@ -111,5 +113,15 @@ public enum CodigoCargo {
     OPERADOR_SUPORTE_VENDAS,
     SUPERVISOR_SUPORTE_VENDAS,
     COORDENADOR_SUPORTE_VENDAS,
-    GERENTE_SUPORTE_VENDAS
+    GERENTE_SUPORTE_VENDAS;
+
+    public static List<CodigoCargo> getCargosTecnicos() {
+        return List.of(
+            AGENTE_AUTORIZADO_TECNICO_GERENTE,
+            AGENTE_AUTORIZADO_TECNICO_VENDEDOR,
+            AGENTE_AUTORIZADO_TECNICO_SEGMENTADO,
+            AGENTE_AUTORIZADO_TECNICO_SUPERVISOR,
+            AGENTE_AUTORIZADO_TECNICO_COORDENADOR
+        );
+    }
 }

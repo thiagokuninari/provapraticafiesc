@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorTecnicoService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -180,6 +181,8 @@ public class UsuarioServiceTest {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
     private ColaboradorVendasService colaboradorVendasService;
+    @Mock
+    private ColaboradorTecnicoService colaboradorTecnicoService;
     @Mock
     private CargoService cargoService;
     @Mock
@@ -4175,7 +4178,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+    public void remanejarUsuario_deveRemanejarColaboradorVendasAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
         var usuarioMqRequest = umUsuarioMqRequestCompleto();
         var usuarioDto = umUsuarioDtoParse();
         var usuarioAntigo = umUsuarioConvertFrom();
@@ -4202,6 +4205,38 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(colaboradorVendasService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorTecnicoService);
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarColaboradorTecnicoAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioMqRequestCompleto();
+        var usuarioDto = umUsuarioDtoParse();
+        var usuarioAntigo = umUsuarioConvertFrom();
+        usuarioAntigo.setId(null);
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
+        when(cargoRepository.findByCodigo(usuarioMqRequest.getCargo())).thenReturn(umCargoGerente());
+        when(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento())).thenReturn(umDepartamentoAa());
+        when(nivelRepository.findByCodigo(usuarioMqRequest.getNivel())).thenReturn(umNivelAa());
+        when(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()))
+            .thenReturn(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)));
+        when(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa())).thenReturn(List.of(umaEmpresa()));
+        var novoUsuario = umUsuarioConvertFrom();
+        novoUsuario.setCargo(umCargo(1, AGENTE_AUTORIZADO_TECNICO_VENDEDOR));
+        novoUsuario.setUsuariosHierarquia(Set.of());
+        when(repository.save(usuarioAntigo)).thenReturn(novoUsuario);
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        verify(repository).findById(usuarioDto.getId());
+        verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
+        verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
+        verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
+        verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
+        verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
+        verify(colaboradorTecnicoService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorVendasService);
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {

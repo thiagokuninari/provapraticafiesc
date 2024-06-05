@@ -753,4 +753,8 @@ public class Usuario {
     public Integer getTerritorioMercadoDesenvolvimentoIdOrNull() {
         return territorioMercadoDesenvolvimentoId != null ? territorioMercadoDesenvolvimentoId : null;
     }
+
+    public boolean isTecnico() {
+        return cargo != null && getCargosTecnicos().contains(cargo.getCodigo());
+    }
 }

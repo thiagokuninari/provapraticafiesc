@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -108,6 +109,7 @@ public class UsuarioDto implements Serializable {
     private Integer siteId;
     private Set<ETipoFeederMso> tiposFeeder;
     private Integer territorioMercadoDesenvolvimentoId;
+    private ETipoUsuario tipoUsuario;
 
     public UsuarioDto(Integer id) {
         this.id = id;

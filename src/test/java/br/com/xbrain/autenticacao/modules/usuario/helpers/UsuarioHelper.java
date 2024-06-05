@@ -747,7 +747,7 @@ public class UsuarioHelper {
             .empresa(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
             .usuarioCadastroId(69)
             .usuarioCadastroNome("Alguem")
-            .colaboradorVendasId(89)
+            .colaboradorId(89)
             .agenteAutorizadoId(77)
             .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .isCadastroSocioPrincipal(true)
