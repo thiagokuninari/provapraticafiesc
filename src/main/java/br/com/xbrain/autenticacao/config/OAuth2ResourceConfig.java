@@ -131,6 +131,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
             .antMatchers(HttpMethod.POST, "/api/sub-canais/**")
                 .hasRole(CodigoFuncionalidade.AUT_20025.name())
+            .antMatchers(HttpMethod.GET, "/api/sub-canais/**")
+            .authenticated()
             .anyRequest().authenticated();
     }
 
