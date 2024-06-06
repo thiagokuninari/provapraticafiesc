@@ -4751,7 +4751,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoMercadoDesenvolvimentoPresente() {
-        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1);
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
@@ -4777,7 +4777,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoMercadoDesenvolvimentoNaoPresente() {
-        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", null);
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", null, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
@@ -4796,6 +4796,58 @@ public class UsuarioServiceTest {
         verify(permissaoEspecialService, never()).save(anyList());
         verify(usuarioMqSender, never())
             .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
+    }
+
+    @Test
+    public void save_deveRemoverPermissaoSocialHub_quandoMsoOuOperacaoSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, MSO);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository).deletarPermissaoEspecialBy(List.of(ROLE_SHB), List.of(usuario.getId()));
+    }
+
+    @Test
+    public void save_naoDeveRemoverPermissaoSocialHub_quandoOutroNivelSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository, never()).deletarPermissaoEspecialBy(anyList(), anyList());
     }
 
     @Test

@@ -3198,7 +3198,20 @@ public class UsuarioService {
         var mercadoDesenvolvimento = usuario.getTerritorioMercadoDesenvolvimentoIdOrNull();
 
         if (mercadoDesenvolvimento != null) {
-            this.adicionarPermissaoSocialHub(usuario);
+            adicionarPermissaoSocialHub(usuario);
+        } else if (isNivelMercadoDesenvolvimento(usuario)) {
+            removerPermissaoSocialHub(usuario);
+        }
+    }
+
+    private boolean isNivelMercadoDesenvolvimento(Usuario usuario) {
+        var nivelCodigo = usuario.getNivelCodigo();
+        return CodigoNivel.MSO == nivelCodigo || CodigoNivel.OPERACAO == nivelCodigo;
+    }
+
+    private void removerPermissaoSocialHub(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
         }
     }
 
