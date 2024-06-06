@@ -16,4 +16,24 @@ public class ConfiguracaoTelefoniaResponseTest {
         assertThat(configuracaoTelefoniaResponse.getText())
             .isEqualTo("192.168.0.1 - Nome");
     }
+
+    @Test
+    public void getText_deveRetornarNull_quandoIpNull() {
+        var configuracaoTelefoniaResponse = ConfiguracaoTelefoniaResponse.builder()
+            .nome("Nome")
+            .build();
+
+        assertThat(configuracaoTelefoniaResponse.getText())
+            .isEqualTo(null);
+    }
+
+    @Test
+    public void getText_deveRetornarNull_quandoNomeNull() {
+        var configuracaoTelefoniaResponse = ConfiguracaoTelefoniaResponse.builder()
+            .ip("192.168.0.1")
+            .build();
+
+        assertThat(configuracaoTelefoniaResponse.getText())
+            .isEqualTo(null);
+    }
 }
