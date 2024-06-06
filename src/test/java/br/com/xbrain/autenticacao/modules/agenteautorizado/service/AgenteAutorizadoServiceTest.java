@@ -2,25 +2,31 @@ package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umPublicoAlvoComunicadoFiltros;
 import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosDoAa1300ComEquipesDeVendas;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.umaListaDeAgenteAutorizadoResponse;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -32,6 +38,8 @@ public class AgenteAutorizadoServiceTest {
     private AgenteAutorizadoService service;
     @Mock
     private AgenteAutorizadoClient client;
+    @Mock
+    private AutenticacaoService autenticacaoService;
 
     @Test
     public void buscarTodosUsuariosDosAas_integracaoException_seApiIndisponivel() {
@@ -472,6 +480,516 @@ public class AgenteAutorizadoServiceTest {
         verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
     }
 
+    @Test
+    public void getIdsUsuariosSubordinados_deveRetornarIdsUsuariosSubordinados_quandoIncluirProprioForTrue() {
+        when(autenticacaoService.getUsuarioId()).thenReturn(any());
+        when(client.getIdUsuariosDoUsuario(Map.of()))
+            .thenReturn(Set.of(1, 2));
+
+        assertThat(service.getIdsUsuariosSubordinados(true)).isEqualTo(Set.of(1, 2));
+
+        verify(autenticacaoService).getUsuarioId();
+        verify(client).getIdUsuariosDoUsuario(Map.of());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinados_deveRetornarListaVazia_quandoIncluirProprioForFalse() {
+        assertThat(service.getIdsUsuariosSubordinados(false))
+            .isEqualTo(Set.of());
+
+        verify(autenticacaoService, never()).getUsuarioId();
+        verify(client).getIdUsuariosDoUsuario(Map.of());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinados_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getIdUsuariosDoUsuario(Map.of());
+
+        assertThatThrownBy(() -> service.getIdsUsuariosSubordinados(true))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#027 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getIdUsuariosDoUsuario(Map.of());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinados_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getIdUsuariosDoUsuario(Map.of());
+
+        assertThatThrownBy(() -> service.getIdsUsuariosSubordinados(false))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getIdUsuariosDoUsuario(Map.of());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinadosByFiltros_deveRetornarIdsUsuariosSubordinados_quandoFiltrosForemFornecidos() {
+        when(client.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(1, 2));
+
+        assertThat(service.getIdsUsuariosSubordinadosByFiltros(umPublicoAlvoComunicadoFiltros()))
+            .isEqualTo(List.of(1, 2));
+
+        verify(client).getIdsUsuariosPermitidosDoUsuario(any());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinadosByFiltros_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getIdsUsuariosPermitidosDoUsuario(any());
+
+        assertThatThrownBy(() -> service.getIdsUsuariosSubordinadosByFiltros(umPublicoAlvoComunicadoFiltros()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#027 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getIdsUsuariosPermitidosDoUsuario(any());
+    }
+
+    @Test
+    public void getIdsUsuariosSubordinadosByFiltros_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getIdsUsuariosPermitidosDoUsuario(any());
+
+        assertThatThrownBy(() -> service.getIdsUsuariosSubordinadosByFiltros(umPublicoAlvoComunicadoFiltros()))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getIdsUsuariosPermitidosDoUsuario(any());
+    }
+
+    @Test
+    public void getAaByCpnj_deveRetornarAgenteAutorizadoResponse_quandoCnpjForFornecido() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+        when(client.getAaByCpnj(request))
+            .thenReturn(umAgenteAutorizadoResponse());
+
+        assertThat(service.getAaByCpnj("78.620.184/0001-80"))
+            .extracting("razaoSocial", "cnpj")
+            .containsExactly("AA TESTE", "78.620.184/0001-80");
+
+        verify(client).getAaByCpnj(request);
+    }
+
+    @Test
+    public void getAaByCpnj_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+
+        doThrow(RetryableException.class)
+            .when(client)
+            .getAaByCpnj(request);
+
+        assertThatThrownBy(() -> service.getAaByCpnj("78.620.184/0001-80"))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#002 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getAaByCpnj(request);
+    }
+
+    @Test
+    public void getAaByCpnj_deveLancarIntegracaoException_quandoErroNaApi() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getAaByCpnj(request);
+
+        assertThatThrownBy(() -> service.getAaByCpnj("78.620.184/0001-80"))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getAaByCpnj(request);
+    }
+
+    @Test
+    public void getAaById_deveRetornarAgenteAutorizadoResponse_quandoIdForFornecido() {
+        when(client.getAaById(1))
+            .thenReturn(umAgenteAutorizadoResponse());
+
+        assertThat(service.getAaById(1))
+            .extracting("razaoSocial", "cnpj")
+            .containsExactly("AA TESTE", "78.620.184/0001-80");
+
+        verify(client).getAaById(1);
+    }
+
+    @Test
+    public void getAaById_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getAaById(1);
+
+        assertThatThrownBy(() -> service.getAaById(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#005 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getAaById(1);
+    }
+
+    @Test
+    public void getAaById_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getAaById(1);
+
+        assertThatThrownBy(() -> service.getAaById(1))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getAaById(1);
+    }
+
+    @Test
+    public void getEmpresasPermitidas_deveRetornarListaEmpresa_quandoIdForFornecido() {
+        when(client.getEmpresasPermitidas(1))
+            .thenReturn(List.of(umaEmpresaResponse()));
+
+        assertThat(service.getEmpresasPermitidas(1))
+            .extracting("id", "nome", "codigo")
+            .containsExactly(
+                tuple(1, "LTDA", CodigoEmpresa.NET)
+            );
+
+        verify(client).getEmpresasPermitidas(1);
+    }
+
+    @Test
+    public void getEmpresasPermitidas_deveRetornarListaVazia_quandoApiIndisponivel() {
+        doThrow(RuntimeException.class)
+            .when(client)
+            .getEmpresasPermitidas(1);
+
+        assertThat(service.getEmpresasPermitidas(1))
+            .isEqualTo(List.of());
+
+        verify(client).getEmpresasPermitidas(1);
+    }
+
+    @Test
+    public void getEstruturaByUsuarioIdAndAtivo_deveRetornarEstrutura_quandoUsuarioIdForFornecidoEUsuarioAtivo() {
+        when(client.getEstruturaByUsuarioIdAndAtivo(1))
+            .thenReturn("AA");
+
+        assertThat(service.getEstruturaByUsuarioIdAndAtivo(1))
+            .isEqualTo("AA");
+
+        verify(client).getEstruturaByUsuarioIdAndAtivo(1);
+    }
+
+    @Test
+    public void getEstruturaByUsuarioIdAndAtivo_deveRetornarNull_quandoApiIndisponivel() {
+        doThrow(RuntimeException.class)
+            .when(client)
+            .getEstruturaByUsuarioIdAndAtivo(1);
+
+        assertThat(service.getEstruturaByUsuarioIdAndAtivo(1))
+            .isEqualTo(null);
+
+        verify(client).getEstruturaByUsuarioIdAndAtivo(1);
+    }
+
+    @Test
+    public void getEstruturaByUsuarioId_deveRetornarEstrutura_quandoUsuarioIdForFornecido() {
+        when(client.getEstruturaByUsuarioId(1))
+            .thenReturn("AA");
+
+        assertThat(service.getEstruturaByUsuarioId(1))
+            .isEqualTo("AA");
+
+        verify(client).getEstruturaByUsuarioId(1);
+    }
+
+    @Test
+    public void getEstruturaByUsuarioId_deveRetornarNull_quandoApiIndisponivel() {
+        doThrow(RuntimeException.class)
+            .when(client)
+            .getEstruturaByUsuarioId(1);
+
+        assertThat(service.getEstruturaByUsuarioId(1))
+            .isEqualTo(null);
+
+        verify(client).getEstruturaByUsuarioId(1);
+    }
+
+    @Test
+    public void getEstruturaByAgenteAutorizadoId_deveRetornarEstrutura_quandoUsuarioIdForFornecido() {
+        when(client.getEstruturaByAgenteAutorizadoId(1))
+            .thenReturn("AA");
+
+        assertThat(service.getEstruturaByAgenteAutorizadoId(1))
+            .isEqualTo(Optional.of("AA"));
+
+        verify(client).getEstruturaByAgenteAutorizadoId(1);
+    }
+
+    @Test
+    public void getEstruturaByAgenteAutorizadoId_deveRetornarVazio_quandoApiIndisponivel() {
+        doThrow(RuntimeException.class)
+            .when(client)
+            .getEstruturaByAgenteAutorizadoId(1);
+
+        assertThat(service.getEstruturaByAgenteAutorizadoId(1))
+            .isEqualTo(Optional.empty());
+
+        verify(client).getEstruturaByAgenteAutorizadoId(1);
+    }
+
+    @Test
+    public void existeAaAtivoBySocioEmail_deveRetornarTrue_quandoUsuarioEmailForFornecido() {
+        when(client.existeAaAtivoBySocioEmail("usuario@xbrain.com.br"))
+            .thenReturn(true);
+
+        assertThat(service.existeAaAtivoBySocioEmail("usuario@xbrain.com.br"))
+            .isEqualTo(true);
+
+        verify(client).existeAaAtivoBySocioEmail("usuario@xbrain.com.br");
+    }
+
+    @Test
+    public void existeAaAtivoBySocioEmail_deveRetornarFalse_quandoUsuarioEmailForFornecido() {
+        when(client.existeAaAtivoBySocioEmail("usuario@xbrain.com.br"))
+            .thenReturn(false);
+
+        assertThat(service.existeAaAtivoBySocioEmail("usuario@xbrain.com.br"))
+            .isEqualTo(false);
+
+        verify(client).existeAaAtivoBySocioEmail("usuario@xbrain.com.br");
+    }
+
+    @Test
+    public void existeAaAtivoBySocioEmail_deveRetornarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .existeAaAtivoBySocioEmail("usuario@xbrain.com.br");
+
+        assertThatThrownBy(() -> service.existeAaAtivoBySocioEmail("usuario@xbrain.com.br"))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#019 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).existeAaAtivoBySocioEmail("usuario@xbrain.com.br");
+    }
+
+    @Test
+    public void existeAaAtivoByUsuarioId_deveRetornarTrue_quandoUsuarioEmailForFornecido() {
+        when(client.existeAaAtivoByUsuarioId(1))
+            .thenReturn(true);
+
+        assertThat(service.existeAaAtivoByUsuarioId(1))
+            .isEqualTo(true);
+
+        verify(client).existeAaAtivoByUsuarioId(1);
+    }
+
+    @Test
+    public void existeAaAtivoByUsuarioId_deveRetornarFalse_quandoUsuarioEmailForFornecido() {
+        when(client.existeAaAtivoByUsuarioId(1))
+            .thenReturn(false);
+
+        assertThat(service.existeAaAtivoByUsuarioId(1))
+            .isEqualTo(false);
+
+        verify(client).existeAaAtivoByUsuarioId(1);
+    }
+
+    @Test
+    public void existeAaAtivoByUsuarioId_deveRetornarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .existeAaAtivoByUsuarioId(1);
+
+        assertThatThrownBy(() -> service.existeAaAtivoByUsuarioId(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#019 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).existeAaAtivoByUsuarioId(1);
+    }
+
+    @Test
+    public void getAasPermitidos_deveRetornarListaIdsAasPermitidos_quandoUsuarioIdForFornecido() {
+        when(client.getAasPermitidos(1))
+            .thenReturn(List.of(1, 2));
+
+        assertThat(service.getAasPermitidos(1))
+            .isEqualTo(List.of(1, 2));
+
+        verify(client).getAasPermitidos(1);
+    }
+
+    @Test
+    public void getAasPermitidos_deveRetornarVazio_quandoApiIndisponivel() {
+        doThrow(RuntimeException.class)
+            .when(client)
+            .getAasPermitidos(1);
+
+        assertThat(service.getAasPermitidos(1))
+            .isEqualTo(List.of());
+
+        verify(client).getAasPermitidos(1);
+    }
+
+    @Test
+    public void getAgentesAutorizadosPermitidos_deveRetornarListaIdsAasPermitidos_quandoCodigoNivelForAgenteAutorizado() {
+        when(client.getAasPermitidos(1))
+            .thenReturn(List.of(1, 2));
+
+        var usuario = umUsuarioSocioPrincipalEAa();
+
+        assertThat(service.getAgentesAutorizadosPermitidos(usuario))
+            .isEqualTo(List.of(1, 2));
+
+        verify(client).getAasPermitidos(1);
+    }
+
+    @Test
+    public void getAgentesAutorizadosPermitidos_deveRetornarListaVazia_quandoCodigoNivelNaoForAgenteAutorizado() {
+        var usuario = umUsuarioSocioPrincipalEAa();
+        usuario.getCargo().getNivel().setCodigo(CodigoNivel.MSO);
+
+        assertThat(service.getAgentesAutorizadosPermitidos(usuario))
+            .isEqualTo(List.of());
+
+        verify(client, never()).getAasPermitidos(1);
+    }
+
+    @Test
+    public void getIdUsuariosPorAa_deveRetornarListaIdUsuariosPorAa_quandoCnpjForFornecido() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+        when(client.getAaByCpnj(request))
+            .thenReturn(umAgenteAutorizadoResponse());
+
+        when(client.getUsuariosByAaId(10, true))
+            .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse()));
+
+        assertThat(service.getIdUsuariosPorAa("78.620.184/0001-80", true))
+            .isEqualTo(List.of(1));
+
+        verify(client).getAaByCpnj(request);
+        verify(client).getUsuariosByAaId(10, true);
+    }
+
+    @Test
+    public void getIdUsuariosPorAa_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+
+        doThrow(RetryableException.class)
+            .when(client)
+            .getAaByCpnj(request);
+
+        assertThatThrownBy(() -> service.getIdUsuariosPorAa("78.620.184/0001-80", true))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#002 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getAaByCpnj(request);
+    }
+
+    @Test
+    public void getIdUsuariosPorAa_deveLancarIntegracaoException_quandoErroNaApi() {
+        var request = Map.of("cnpj", "78.620.184/0001-80");
+
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getAaByCpnj(request);
+
+        assertThatThrownBy(() -> service.getIdUsuariosPorAa("78.620.184/0001-80", true))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getAaByCpnj(request);
+    }
+
+    @Test
+    public void getUsuariosByAaId_deveRetornarListaUsuarioAgenteAutorizadoResponse_quandoAaIdForFornecido() {
+        when(client.getUsuariosByAaId(1, true))
+            .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse()));
+
+        assertThat(service.getUsuariosByAaId(1, true))
+            .extracting("id", "nome", "email", "equipeVendaId", "agenteAutorizadoId")
+            .containsExactly(tuple(1, "TESTE", "TESTE@XBRAIN.COM.BR", 1, 1));
+
+        verify(client).getUsuariosByAaId(1, true);
+    }
+
+    @Test
+    public void getUsuariosByAaId_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getUsuariosByAaId(1, true);
+
+        assertThatThrownBy(() -> service.getUsuariosByAaId(1, true))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#003 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getUsuariosByAaId(1, true);
+    }
+
+    @Test
+    public void getUsuariosByAaId_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getUsuariosByAaId(1, true);
+
+        assertThatThrownBy(() -> service.getUsuariosByAaId(1, true))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getUsuariosByAaId(1, true);
+    }
+
+    @Test
+    public void getUsuariosIdsByAaId_deveRetornarListaUsuarioIds_quandoAaIdForFornecido() {
+        when(client.getUsuariosByAaId(1, true))
+            .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse()));
+
+        assertThat(service.getUsuariosIdsByAaId(1, true))
+            .isEqualTo(List.of(1));
+
+        verify(client).getUsuariosByAaId(1, true);
+    }
+
+    @Test
+    public void getAgenteAutorizadosUsuarioDtosByUsuarioIds_deveRetornarListaAgenteAutorizadoUsuarioDto_quandoRequestFornecido() {
+        var request = umUsuarioRequest();
+        var response = umAgenteAutorizadoUsuarioDto();
+
+        when(client.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request))
+            .thenReturn(List.of(response));
+
+        assertThat(service.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request))
+            .extracting("usuarioId", "cnpj", "razaoSocial")
+            .containsExactly(tuple(2, "78300110000166", "Razao Social"));
+
+        verify(client).getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+    }
+
+    @Test
+    public void getAgenteAutorizadosUsuarioDtosByUsuarioIds_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        var request = umUsuarioRequest();
+
+        doThrow(RetryableException.class)
+            .when(client)
+            .getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+
+        assertThatThrownBy(() -> service.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#033 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+    }
+
+    @Test
+    public void getAgenteAutorizadosUsuarioDtosByUsuarioIds_deveLancarIntegracaoException_quandoErroNaApi() {
+        var request = umUsuarioRequest();
+
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+
+        assertThatThrownBy(() -> service.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+    }
+
     private AgenteAutorizadoResponse umAgenteAutorizadoResponse() {
         return AgenteAutorizadoResponse.builder()
             .id("10")
@@ -487,6 +1005,20 @@ public class AgenteAutorizadoServiceTest {
             .agenteAutorizadoId(1)
             .email("TESTE@XBRAIN.COM.BR")
             .equipeVendaId(1)
+            .build();
+    }
+
+    private EmpresaResponse umaEmpresaResponse() {
+        var empresaResponse = new EmpresaResponse();
+        empresaResponse.setId(1);
+        empresaResponse.setNome("LTDA");
+        empresaResponse.setCodigo(CodigoEmpresa.NET);
+        return empresaResponse;
+    }
+
+    private UsuarioRequest umUsuarioRequest() {
+        return UsuarioRequest.builder()
+            .usuarioIds(List.of(1, 2, 3))
             .build();
     }
 }
