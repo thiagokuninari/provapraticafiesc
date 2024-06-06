@@ -77,7 +77,6 @@ app-config:
   url-origin-cors: http://localhost
   upload-foto-usuario: public/desenvolvimento/autenticacao/usuario/foto/
   url-foto-usuario: ${app-config.minio.public}/desenvolvimento/autenticacao/usuario/foto/
-  dominios-social-hub:
 
   minio:
     url: http://192.168.50.6:9000
