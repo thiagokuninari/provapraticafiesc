@@ -334,7 +334,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
     }
 
     @Test
@@ -342,7 +342,7 @@ public class UsuarioGerenciaControllerTest {
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveBackoffice_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
         mvc.perform(post(API_URI_BACKOFFICE)
-                .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
+                .content(convertObjectToJsonBytes(new UsuarioBackofficeRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(6)))
@@ -451,7 +451,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
-    public void save_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
+    public void saveBackoffice_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
         var usuario = umUsuarioDtoBackoffice();
 
         mvc.perform(post(API_URI_BACKOFFICE)
@@ -465,10 +465,151 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void save_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+    public void saveBackoffice_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
         var usuario = umUsuarioDtoBackoffice();
 
         mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarUsuarioSalvo_quandoNivelForBackoffice() {
+        var usuario = umUsuarioBriefingDto();
+
+        mvc.perform(post(API_URI + "/briefing")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).salvarUsuarioBriefing(UsuarioBriefingRequest.of(usuario));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(new UsuarioBriefingRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo cpf é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo nascimento é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo unidadeNegocioId é obrigatório.",
+                "O campo empresasId é obrigatório.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoNomeEstiverComSizeMaiorQue80() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setNome("um exemplo de nome grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoEmailEstiverComSizeMaiorQue80() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setEmail("um exemplo de email grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo email precisa ter entre 0 e 80 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoTelefoneEstiverComSizeMaiorQue100() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setTelefone("um exemplo de telefone grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo telefone precisa ter entre 0 e 100 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoCpfEstiverComSizeMaiorQue14() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setCpf("123456781234567812");
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo cpf precisa ter entre 0 e 14 caracteres.",
+                "O campo cpf não é um cpf válido.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoRgEstiverComSizeMaiorQue25() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setRg("12345678912345678912345566788951");
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo rg precisa ter entre 0 e 25 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void saveBriefing_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+        var usuario = umUsuarioBriefingDto();
+
+        mvc.perform(post(API_URI + "/briefing")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isUnauthorized());
@@ -1636,14 +1777,27 @@ public class UsuarioGerenciaControllerTest {
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
 
-    private UsuarioBackofficeDto umUsuarioDtoBackoffice() {
-        var usuario = new UsuarioBackofficeDto();
+    private UsuarioBackofficeRequest umUsuarioDtoBackoffice() {
+        var usuario = new UsuarioBackofficeRequest();
         usuario.setNome("USUARIO BACKOFFICE");
         usuario.setCargoId(110);
         usuario.setEmail("usuarioBackoffice@gmail.com");
         usuario.setDepartamentoId(69);
         usuario.setCpf("870.371.018-18");
         usuario.setNascimento(LocalDate.of(2000, 1, 1));
+        return usuario;
+    }
+
+    private UsuarioBriefingRequest umUsuarioBriefingDto() {
+        var usuario = new UsuarioBriefingRequest();
+        usuario.setNome("USUARIO BRIEFING");
+        usuario.setCpf("870.371.018-18");
+        usuario.setEmail("briefing@gmail.com");
+        usuario.setNascimento(LocalDate.of(2000, 1, 1));
+        usuario.setCargoId(110);
+        usuario.setDepartamentoId(69);
+        usuario.setUnidadeNegocioId(1);
+        usuario.setEmpresasId(singletonList(4));
         return usuario;
     }
 

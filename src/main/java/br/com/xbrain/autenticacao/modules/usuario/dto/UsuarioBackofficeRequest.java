@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Data
-public class UsuarioBackofficeDto {
+public class UsuarioBackofficeRequest {
 
     private Integer id;
     @NotNull
@@ -46,7 +46,7 @@ public class UsuarioBackofficeDto {
     private Integer departamentoId;
     private Integer organizacaoId;
 
-    public static Usuario of(UsuarioBackofficeDto usuarioBackoffice) {
+    public static Usuario of(UsuarioBackofficeRequest usuarioBackoffice) {
         var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioBackoffice, usuario);
         Optional.ofNullable(usuarioBackoffice.getOrganizacaoId())

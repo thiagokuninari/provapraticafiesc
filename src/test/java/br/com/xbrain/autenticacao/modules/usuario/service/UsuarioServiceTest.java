@@ -104,6 +104,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.li
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
@@ -1532,6 +1536,66 @@ public class UsuarioServiceTest {
             .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
     }
 
+    @Test
+    public void salvarUsuarioBriefing_deveSalvar() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        service.salvarUsuarioBriefing(umUsuarioBriefing());
+        verify(notificacaoService, atLeastOnce())
+            .enviarEmailDadosDeAcesso(argThat(arg -> arg.getNome().equals("Briefing")), anyString());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveRemoverCaracteresEspeciais() {
+        var usaurio = umUsuarioBriefing();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        assertThat(usaurio)
+            .extracting("cpf")
+            .containsExactly("097.238.645-92");
+
+        service.salvarUsuarioBriefing(usaurio);
+
+        verify(repository, times(1)).save(usuarioCaptor.capture());
+        assertThat(usuarioCaptor.getValue())
+            .extracting("cpf")
+            .containsExactly("09723864592");
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoCpfExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("CPF já cadastrado.");
+
+        verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(repository, never()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(repository, never()).save(anyIterable());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoEmailExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("Email já cadastrado.");
+
+        verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(repository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(repository, never()).save(anyIterable());
+    }
+
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             Usuario.builder()
@@ -1919,6 +1983,20 @@ public class UsuarioServiceTest {
             .telefone("43995565661")
             .hierarquiasId(List.of())
             .usuariosHierarquia(new HashSet<>())
+            .build();
+    }
+
+    private Usuario umUsuarioBriefing() {
+        return Usuario.builder()
+            .nome("Briefing")
+            .cpf("097.238.645-92")
+            .email("briefing@teste.com")
+            .telefone("14999999999")
+            .hierarquiasId(List.of())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(new Cargo(1234))
+            .departamento(new Departamento(12345))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(1))
             .build();
     }
 
@@ -4243,16 +4321,6 @@ public class UsuarioServiceTest {
         ReflectionTestUtils.setField(service, "applicationEventPublisher", applicationEventPublisher);
     }
 
-    @TestConfiguration
-    static class MockitoPublisherConfiguration {
-
-        @Bean
-        @Primary
-        static ApplicationEventPublisher publisher() {
-            return mock(ApplicationEventPublisher.class);
-        }
-    }
-
     @Test
     public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
         assertThat(service.getCanaisPermitidosParaOrganizacao())
@@ -5294,5 +5362,15 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
     }
 }

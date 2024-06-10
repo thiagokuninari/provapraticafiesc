@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +29,13 @@ public class UsuarioGerenciaController {
     }
 
     @PostMapping("backoffice")
-    public Usuario save(@RequestBody @Validated UsuarioBackofficeDto usuario) {
-        return service.salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+    public UsuarioResponse saveBackoffice(@RequestBody @Valid UsuarioBackofficeRequest usuario) {
+        return service.salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
+    }
+
+    @PostMapping("briefing")
+    public UsuarioResponse saveBriefing(@RequestBody @Valid UsuarioBriefingRequest usuario) {
+        return service.salvarUsuarioBriefing(UsuarioBriefingRequest.of(usuario));
     }
 
     @PutMapping
