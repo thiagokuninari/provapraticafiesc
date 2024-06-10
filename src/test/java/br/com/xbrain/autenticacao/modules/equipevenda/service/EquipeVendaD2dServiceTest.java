@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import feign.RetryableException;
 import org.junit.Test;
@@ -80,5 +81,27 @@ public class EquipeVendaD2dServiceTest {
             .containsExactly(1, 3);
 
         verify(equipeVendaD2dClient, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(123456));
+    }
+
+    @Test
+    public void getUsuariosDaEquipe_deveRetornarListaIdsDeUsuarioDaEquipe_quandoUsuarioTiverEquipe() {
+        when(equipeVendaD2dClient.getUsuariosDaEquipe(any()))
+            .thenReturn(List.of(umUsuarioResponse(100),
+                umUsuarioResponse(111),
+                umUsuarioResponse(104),
+                umUsuarioResponse(115)));
+
+        assertThat(equipeVendaD2dService.getUsuariosDaEquipe(List.of(123456)))
+            .hasSize(4)
+            .containsExactly(100, 111, 104, 115);
+
+        verify(equipeVendaD2dClient, times(1)).getUsuariosDaEquipe(any());
+    }
+
+    private SelectResponse umUsuarioResponse(int id) {
+        return SelectResponse.builder()
+            .value(id)
+            .label("usuario " + id)
+            .build();
     }
 }
