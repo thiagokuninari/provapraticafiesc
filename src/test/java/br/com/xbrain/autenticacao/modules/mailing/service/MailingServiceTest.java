@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.mailing.client.MailingClient;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,10 +14,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Date;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MailingServiceTest {
@@ -55,5 +55,39 @@ public class MailingServiceTest {
 
         assertThat(service.countQuantidadeAgendamentosProprietariosDoUsuario(1, ECanal.ATIVO_PROPRIO))
             .isEqualTo(1);
+    }
+
+    @Test
+    public void countQuantidadeAgendamentosProprietariosDoUsuario_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .countQuantidadeAgendamentosProprietariosDoUsuario(1, ECanal.AGENTE_AUTORIZADO);
+
+        assertThatThrownBy(() -> service.countQuantidadeAgendamentosProprietariosDoUsuario(1, ECanal.AGENTE_AUTORIZADO))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).countQuantidadeAgendamentosProprietariosDoUsuario(1, ECanal.AGENTE_AUTORIZADO);
+    }
+
+    @Test
+    public void flushCacheFeriadosMailing_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .cleanCacheFeriados();
+
+        assertThatThrownBy(() -> service.flushCacheFeriadosMailing())
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#042 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).cleanCacheFeriados();
+    }
+
+    @Test
+    public void flushCacheFeriadosMailing_usuarioDtoVendas_seSolicitado() {
+        doNothing().when(client).cleanCacheFeriados();
+
+        service.flushCacheFeriadosMailing();
+
+        verify(client).cleanCacheFeriados();
     }
 }
