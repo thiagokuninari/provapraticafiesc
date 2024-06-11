@@ -711,6 +711,32 @@ public class OrganizacaoEmpresaServiceTest {
         verify(organizacaoEmpresaRepository).findByPredicate(any(Predicate.class));
     }
 
+    @Test
+    public void getById_deveLancarException_quandoNaoExistirOrganizacaoEmpresa() {
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.getById(1))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository).findById(1);
+    }
+
+    @Test
+    public void getById_deveRetornarOrganizacoesFiltradas_quandoParametroCodigoNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
+
+        when(organizacaoEmpresaRepository.findById(1))
+            .thenReturn(Optional.ofNullable(umaOrganizacaoEmpresa()));
+
+        assertThat(service.getById(1))
+            .extracting("id", "nome", "canal", "codigo", "situacao")
+            .containsExactly(1, "Teste AA", null, "codigo", A);
+
+        verify(organizacaoEmpresaRepository).findById(1);
+    }
+
     private UsuarioAutenticado umUsuarioBackoffice() {
         return UsuarioAutenticado.builder()
             .nome("Backoffice")
