@@ -47,7 +47,7 @@ public class NotificacaoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void adicionarConfiguracao_deveRetornarOk_quandoUsuarioAutenticado() {
+    public void save_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(post(API_NOTIFICACAO.concat("/boas-vindas-agente-autorizado"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
