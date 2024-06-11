@@ -429,11 +429,7 @@ public class UsuarioTest {
 
     @Test
     public void isTecnico_deveRetornarFalse_quandoCargoForNull() {
-        var usuario = Usuario
-            .builder()
-            .cargo(null)
-            .build();
-        assertThat(usuario.isTecnico()).isFalse();
+        assertThat(new Usuario().isTecnico()).isFalse();
     }
 
     @Test
