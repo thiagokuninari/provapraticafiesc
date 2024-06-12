@@ -58,7 +58,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -229,12 +228,6 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
-
-    @Before
-    public void setUp() {
-        ReflectionTestUtils.setField(service, "dominiosPermitidos",
-            new HashSet<>(Arrays.asList("EMAILPERMITIDO.COM.BR")));
-    }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1349,9 +1342,8 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoMercadoDesenvolvimento() {
         var usuario = umUsuarioBackoffice();
-        usuario.setEmail("teste@emailpermitido.com.br");
         usuario.setId(1);
         usuario.setUsuarioCadastro(new Usuario(1));
         usuario.setCargo(Cargo.builder()
@@ -1387,9 +1379,9 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailInvalido() {
+    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoNaoMercadoDesenvolvimento() {
         var usuario = umUsuarioBackoffice();
-        usuario.setEmail("teste@Naoemailpermitido.com.br");
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
         usuario.setId(1);
         usuario.setUsuarioCadastro(new Usuario(1));
         usuario.setCargo(Cargo.builder()
@@ -1982,6 +1974,7 @@ public class UsuarioServiceTest {
             .email("usuario@teste.com")
             .telefone("43995565661")
             .hierarquiasId(List.of())
+            .territorioMercadoDesenvolvimentoId(1)
             .usuariosHierarquia(new HashSet<>())
             .build();
     }
@@ -4825,13 +4818,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValidoEPermissaoTrue() {
-        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoMercadoDesenvolvimentoPresente() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
-        when(repository.findById(eq(2)))
+        when(repository.findById(2))
             .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
@@ -4851,14 +4844,14 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoDominioEmailInvalido() {
-        var usuario = umUsuarioSocialHub("teste@emailnaopermitido.com.br");
+    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoMercadoDesenvolvimentoNaoPresente() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", null, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
 
-        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.findById(2)).thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
         doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
@@ -4871,6 +4864,58 @@ public class UsuarioServiceTest {
         verify(permissaoEspecialService, never()).save(anyList());
         verify(usuarioMqSender, never())
             .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
+    }
+
+    @Test
+    public void save_deveRemoverPermissaoSocialHub_quandoMsoOuOperacaoSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, MSO);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository).deletarPermissaoEspecialBy(List.of(ROLE_SHB), List.of(usuario.getId()));
+    }
+
+    @Test
+    public void save_naoDeveRemoverPermissaoSocialHub_quandoOutroNivelSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository, never()).deletarPermissaoEspecialBy(anyList(), anyList());
     }
 
     @Test

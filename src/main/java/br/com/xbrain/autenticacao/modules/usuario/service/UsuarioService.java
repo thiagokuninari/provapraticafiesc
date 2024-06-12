@@ -269,8 +269,6 @@ public class UsuarioService {
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
-    @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
-    private Set<String> dominiosPermitidos;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -3207,16 +3205,24 @@ public class UsuarioService {
     }
 
     private void gerenciarPermissaoSocialHub(Usuario usuario) {
-        var email = usuario.getEmail();
-        var dominio = extractDominio(email);
+        var mercadoDesenvolvimento = usuario.getTerritorioMercadoDesenvolvimentoIdOrNull();
 
-        if (this.isDominioPermitido(dominio)) {
-            this.adicionarPermissaoSocialHub(usuario);
+        if (mercadoDesenvolvimento != null) {
+            adicionarPermissaoSocialHub(usuario);
+        } else if (isNivelMercadoDesenvolvimento(usuario)) {
+            removerPermissaoSocialHub(usuario);
         }
     }
 
-    private boolean isDominioPermitido(String dominio) {
-        return dominiosPermitidos.contains(dominio);
+    private boolean isNivelMercadoDesenvolvimento(Usuario usuario) {
+        var nivelCodigo = usuario.getNivelCodigo();
+        return CodigoNivel.MSO == nivelCodigo || CodigoNivel.OPERACAO == nivelCodigo;
+    }
+
+    private void removerPermissaoSocialHub(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
+        }
     }
 
     private void enviarDadosAtualizacaoParaSocialHub(Usuario usuario) {
@@ -3230,14 +3236,6 @@ public class UsuarioService {
         var cargoUsuario = cargoService.findByUsuarioId(usuario.getId());
         usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais,
             cargoUsuario.getNome()));
-    }
-
-    private String extractDominio(String email) {
-        int atIndex = email.lastIndexOf("@");
-        if (atIndex != -1) {
-            return email.substring(atIndex + 1);
-        }
-        return "";
     }
 
     private void adicionarPermissaoSocialHub(Usuario usuario) {

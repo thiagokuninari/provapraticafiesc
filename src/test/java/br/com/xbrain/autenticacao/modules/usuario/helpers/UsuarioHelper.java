@@ -808,7 +808,7 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario umUsuarioSocialHub(String email) {
+    public static Usuario umUsuarioSocialHub(String email, Integer mercadoDesenvolvimentoId, CodigoNivel codigoNivel) {
         return Usuario.builder()
             .id(1)
             .cpf("097.238.645-92")
@@ -818,7 +818,7 @@ public class UsuarioHelper {
             .usuariosHierarquia(new HashSet<>())
             .usuarioCadastro(new Usuario(1))
             .hierarquiasId(List.of(2))
-            .territorioMercadoDesenvolvimentoId(1)
+            .territorioMercadoDesenvolvimentoId(mercadoDesenvolvimentoId)
             .canais(Set.of(ECanal.INTERNET))
             .departamento(Departamento.builder().id(1).nome("teste").build())
             .cargo(Cargo.builder()
@@ -826,7 +826,7 @@ public class UsuarioHelper {
                 .codigo(OPERACAO_TELEVENDAS)
                 .nivel(Nivel.builder()
                     .id(1)
-                    .codigo(CodigoNivel.XBRAIN)
+                    .codigo(codigoNivel)
                     .build())
                 .build())
             .build();
