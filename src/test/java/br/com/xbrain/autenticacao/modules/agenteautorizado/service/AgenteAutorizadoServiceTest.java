@@ -118,6 +118,31 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
+    public void findAgentesAutorizadosByUsuariosIds_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true));
+
+        assertThatThrownBy(() -> service.findAgentesAutorizadosByUsuariosIds(List.of(1), true))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#044 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+
+        verify(client).findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true));
+    }
+
+    @Test
+    public void findAgentesAutorizadosByUsuariosIds_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true));
+
+        assertThatThrownBy(() -> service.findAgentesAutorizadosByUsuariosIds(List.of(1), true))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true));
+    }
+
+    @Test
     public void getUsuariosAaAtivoComVendedoresD2D_deveRetornarListaUsuarioAgenteAutorizadoResponse_quandoSolicitado() {
         doReturn(usuariosDoAa1300ComEquipesDeVendas())
             .when(client)
