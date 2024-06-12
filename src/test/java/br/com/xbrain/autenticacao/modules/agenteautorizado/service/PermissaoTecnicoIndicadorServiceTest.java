@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class PermissaoTecnicoIndicadorServiceTest {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122, 22257);
 
     @InjectMocks
     private PermissaoTecnicoIndicadorService service;
