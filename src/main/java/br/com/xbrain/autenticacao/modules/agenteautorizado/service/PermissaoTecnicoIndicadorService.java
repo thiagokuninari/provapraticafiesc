@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class PermissaoTecnicoIndicadorService {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122, 22257);
     private static final List<CodigoCargo> LISTA_CARGOS_TECNICO_INDICADOR = List.of(
         AGENTE_AUTORIZADO_ACEITE,
         AGENTE_AUTORIZADO_APRENDIZ,
