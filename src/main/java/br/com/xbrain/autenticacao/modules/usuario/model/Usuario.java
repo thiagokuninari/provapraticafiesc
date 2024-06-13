@@ -755,6 +755,6 @@ public class Usuario {
     }
 
     public boolean isTecnico() {
-        return cargo != null && getCargosTecnicos().contains(cargo.getCodigo());
+        return getCargoCodigo() != null && getCargosTecnicos().contains(getCargoCodigo());
     }
 }

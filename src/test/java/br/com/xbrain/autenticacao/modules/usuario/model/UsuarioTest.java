@@ -427,6 +427,20 @@ public class UsuarioTest {
         assertThat(umUsuarioComCargo(VENDEDOR_OPERACAO).isTecnico()).isFalse();
     }
 
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoCargoForNull() {
+        assertThat(new Usuario().isTecnico()).isFalse();
+    }
+
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoCodigoCargoForNull() {
+        var usuario = Usuario
+            .builder()
+            .cargo(umCargo(null))
+            .build();
+        assertThat(usuario.isTecnico()).isFalse();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()
