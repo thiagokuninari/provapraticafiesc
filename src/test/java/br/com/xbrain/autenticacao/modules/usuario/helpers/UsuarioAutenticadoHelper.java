@@ -78,6 +78,7 @@ public class UsuarioAutenticadoHelper {
     public static UsuarioAutenticado umUsuarioAutenticadoNivelAa() {
         return UsuarioAutenticado.builder()
             .id(101)
+            .nivelId(1)
             .nivelCodigo(CodigoNivel.AGENTE_AUTORIZADO.name())
             .organizacaoId(8)
             .cargoId(47)

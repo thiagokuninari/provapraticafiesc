@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.enums;
 
+import java.util.List;
+
 public enum CodigoNivel {
     AGENTE_AUTORIZADO,
     AGENTE_AUTORIZADO_NACIONAL,
@@ -24,5 +26,13 @@ public enum CodigoNivel {
     GERADOR_LEADS,
     FEEDER,
     COBRANCA,
-    BACKOFFICE_SUPORTE_VENDAS
+    BACKOFFICE_SUPORTE_VENDAS;
+
+    public static boolean isNivelObirgatorioDadosNetSales(CodigoNivel codigoNivel) {
+        var niveisObrigatorios = List.of(AGENTE_AUTORIZADO_NACIONAL, OPERACAO, VAREJO, ATP, LOJAS, RECEPTIVO,
+            RECEPTIVO_SEGMENTADO, ATIVO_LOCAL_PROPRIO, ATIVO_LOCAL_TERCEIRO, ATIVO_RENTABILIZACAO,
+            ATIVO_LOCAL_COLABORADOR, ATIVO_NACIONAL_TERCEIRO, ATIVO_NACIONAL_TERCEIRO_SEGMENTADO, OUVIDORIA, COBRANCA);
+
+        return niveisObrigatorios.contains(codigoNivel);
+    }
 }

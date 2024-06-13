@@ -136,6 +136,10 @@ public class UsuarioHelper {
             .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
             .usuariosHierarquia(new HashSet<>())
             .situacao(A)
+            .loginNetSales("login123")
+            .canalNetSales("UM CANAL NETSALES")
+            .codigoEquipeVendaNetSales("123")
+            .nomeEquipeVendaNetSales("EQUIPE DE VENDA NETSALES")
             .build();
     }
 
@@ -239,6 +243,7 @@ public class UsuarioHelper {
                 .nivel(Nivel
                     .builder()
                     .id(2)
+                    .codigo(MSO)
                     .build())
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))

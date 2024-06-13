@@ -93,6 +93,7 @@ public class Usuario {
     @Column(name = "ORGAO_EXPEDIDOR", length = 30)
     private String orgaoExpedidor;
 
+    //Dados envolvendo valores NetSales sao orbigatorios para os casos isNivelObirgatorioDadosNetSales()
     @Size(max = 120)
     @Column(name = "LOGIN_NET_SALES", length = 120)
     private String loginNetSales;
