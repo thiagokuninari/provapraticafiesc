@@ -427,6 +427,95 @@ public class UsuarioTest {
         assertThat(umUsuarioComCargo(VENDEDOR_OPERACAO).isTecnico()).isFalse();
     }
 
+    @Test
+    public void hasNotDadosNetSales_deveRetornarFalse_quandoUsuarioPossuirDadosNetSales() {
+        assertThat(umUsuarioComDadosNetSales().hasNotDadosNetSales()).isFalse();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirLoginNetSalesNull() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setLoginNetSales(null);
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirLoginNetSalesEmpty() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setLoginNetSales("");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirLoginNetSalesBlank() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setLoginNetSales(" ");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesNull() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCanalNetSales(null);
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesEmpty() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCanalNetSales("");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesBlank() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCanalNetSales(" ");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirNomeEquipeVendaNetSalesNull() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setNomeEquipeVendaNetSales(null);
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirNomeEquipeVendaNetSalesEmpty() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setNomeEquipeVendaNetSales("");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirNomeEquipeVendaNetSalesBlank() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setNomeEquipeVendaNetSales(" ");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCodigoEquipeVendaNetSalesNull() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCodigoEquipeVendaNetSales(null);
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCodigoEquipeVendaNetSalesEmpty() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCodigoEquipeVendaNetSales("");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCodigoEquipeVendaNetSalesBlank() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCodigoEquipeVendaNetSales(" ");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

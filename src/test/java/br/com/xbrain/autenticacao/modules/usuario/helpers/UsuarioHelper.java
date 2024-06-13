@@ -110,6 +110,15 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuarioComDadosNetSales() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSales("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .build();
+    }
+
     public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
                                                        Integer subCanalId,
                                                        ETipoCanal codigoSubCanal) {
