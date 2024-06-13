@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.util.StreamUtils;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
@@ -756,5 +757,13 @@ public class Usuario {
 
     public boolean isTecnico() {
         return getCargoCodigo() != null && getCargosTecnicos().contains(getCargoCodigo());
+    }
+
+    public boolean isOperadorSuporteVendas() {
+        return OPERADOR_SUPORTE_VENDAS.equals(getCargoCodigo());
+    }
+
+    public Integer getOrganizacaoId() {
+        return StreamUtils.mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
     }
 }

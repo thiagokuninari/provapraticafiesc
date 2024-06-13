@@ -44,6 +44,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -93,6 +94,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -269,6 +271,8 @@ public class UsuarioService {
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Autowired
+    private SuporteVendasService suporteVendasService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -778,14 +782,14 @@ public class UsuarioService {
 
     public UsuarioResponse salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
+        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
-        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
-        var enviarEmail = usuario.isNovoCadastro();
+        desvincularGruposByUsuario(usuario);
         repository.save(usuario);
 
         processarUsuarioParaSocialHub(usuario);
-        enviarEmailDadosAcesso(usuario, enviarEmail);
+        enviarEmailDadosAcesso(usuario, usuario.isNovoCadastro());
         return UsuarioResponse.of(usuario);
     }
 
@@ -799,13 +803,27 @@ public class UsuarioService {
         return UsuarioResponse.of(usuario);
     }
 
-    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+    private void validarOrganizacaoEmpresa(Usuario usuario) {
         if (usuario.getOrganizacaoEmpresa() != null) {
             var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
             if (!organizacaoEmpresa.isAtivo()) {
                 throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
             }
         }
+    }
+
+    public void desvincularGruposByUsuario(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
+                suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
+            }
+        }
+    }
+
+    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
+        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
+            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {
@@ -1071,7 +1089,7 @@ public class UsuarioService {
 
     private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
         if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
-            validarOrganizacaoEmpresaInativa(usuario);
+            validarOrganizacaoEmpresa(usuario);
         }
     }
 
