@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.Audited;
@@ -22,7 +23,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -93,7 +93,7 @@ public class Usuario {
     @Column(name = "ORGAO_EXPEDIDOR", length = 30)
     private String orgaoExpedidor;
 
-    //Dados envolvendo valores NetSales sao orbigatorios para os casos isNivelObirgatorioDadosNetSales()
+    //O conjunto de dados netsales so serao obrigatorios para os casos isNivelObrigatorioDadosNetSales
     @Size(max = 120)
     @Column(name = "LOGIN_NET_SALES", length = 120)
     private String loginNetSales;
@@ -757,5 +757,12 @@ public class Usuario {
 
     public boolean isTecnico() {
         return cargo != null && getCargosTecnicos().contains(cargo.getCodigo());
+    }
+
+    public boolean hasNotDadosNetSales() {
+        return StringUtils.isBlank(loginNetSales)
+            || StringUtils.isBlank(canalNetSales)
+            || StringUtils.isBlank(nomeEquipeVendaNetSales)
+            || StringUtils.isBlank(codigoEquipeVendaNetSales);
     }
 }

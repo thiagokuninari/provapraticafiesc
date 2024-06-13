@@ -593,7 +593,6 @@ public class UsuarioServiceTest {
             .cargo(Cargo.builder()
                 .id(6)
                 .codigo(DIRETOR_OPERACAO)
-                .nivel(umNivelAa())
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
@@ -901,78 +900,137 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveLancarExcecao_quandoEmailConterCedilha() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("emailç@gmail.com")))
+        var usuario = Usuario.builder().email("emailç@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailConterAcento() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("émail@gmail.com")))
+        var usuario = Usuario.builder().email("émail@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailInvertidoAsOrdens() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("email.com@gmail")))
+        var usuario = Usuario.builder().email("email.com@gmail").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemArroba() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("emailgmail.com")))
+        var usuario = Usuario.builder().email("emailgmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailComDoisArrobas() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("email@@gmail.com")))
+        var usuario = Usuario.builder().email("email@@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemPonto() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("email@gmailcom")))
+        var usuario = Usuario.builder().email("email@gmailcom").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisPonto() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("email@gmail.")))
+        var usuario = Usuario.builder().email("email@gmail.").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterEntreArrobaEPonto() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("email@.com")))
+        var usuario = Usuario.builder().email("email@.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterAntesPonto() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail(".com")))
+        var usuario = Usuario.builder().email(".com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterAntesArroba() {
-        assertThatThrownBy(() -> service.save(umUsuarioComEmail("@gmail.com")))
+        var usuario = Usuario.builder().email("@gmail.com").build();
+
+        doReturn(umUsuarioAutenticadoNivelAa())
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThatThrownBy(() -> service.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
     }
 
     @Test
     public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisArroba() {
-        var usuario = umUsuarioCompleto();
-        usuario.setEmail("email");
+        var usuario = Usuario.builder().email("email@").build();
 
         doReturn(umUsuarioAutenticadoNivelAa())
             .when(autenticacaoService)
@@ -995,8 +1053,7 @@ public class UsuarioServiceTest {
             "]colchete@gmail.com", "?interrogacao@gmail.com");
 
         emailsComCaracteresEspeciais.forEach(email -> {
-            var usuario = umUsuarioCompleto();
-            usuario.setEmail(email);
+                var usuario = Usuario.builder().email(email).build();
                 assertThatThrownBy(() -> service.save(usuario)).hasMessage("Email inválido.");
             }
         );
@@ -1447,7 +1504,6 @@ public class UsuarioServiceTest {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
                 .id(22)
-                .nivel(umNivelAa())
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
@@ -1855,7 +1911,7 @@ public class UsuarioServiceTest {
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
             .nome("Backoffice")
-            .cargo(umCargoBackoffice())
+            .cargo(new Cargo(110))
             .departamento(new Departamento(69))
             .organizacaoEmpresa(new OrganizacaoEmpresa(5))
             .cpf("097.238.645-92")
@@ -1863,18 +1919,6 @@ public class UsuarioServiceTest {
             .telefone("43995565661")
             .hierarquiasId(List.of())
             .usuariosHierarquia(new HashSet<>())
-            .build();
-    }
-
-    private Cargo umCargoBackoffice() {
-        var nivel = Nivel.builder()
-            .id(1)
-            .codigo(BACKOFFICE)
-            .build();
-        return Cargo.builder()
-            .nivel(nivel)
-            .id(110)
-            .codigo(BACKOFFICE_GERENTE)
             .build();
     }
 
@@ -2498,7 +2542,7 @@ public class UsuarioServiceTest {
             .loginNetSales("UM LOGIN NETSALES")
             .cargo(Cargo.builder()
                 .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
-                .nivel(Nivel.builder().id(1).codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
+                .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
                 .build())
             .cpf("123.456.887-91")
             .situacao(A)
@@ -5273,12 +5317,5 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
-    }
-
-    private Usuario umUsuarioComEmail(String email) {
-        return Usuario.builder()
-            .email(email)
-            .cargo(umCargo(1, AGENTE_AUTORIZADO_SOCIO))
-            .build();
     }
 }

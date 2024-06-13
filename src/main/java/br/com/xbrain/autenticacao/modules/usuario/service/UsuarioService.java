@@ -96,7 +96,7 @@ import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObirgatorioDadosNetSales;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObrigatorioDadosNetSales;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
@@ -453,9 +453,7 @@ public class UsuarioService {
     }
 
     private void validarNivelDadosObrigatoriosNetSales(Usuario usuario) {
-        if (isNivelObirgatorioDadosNetSales(usuario.getNivelCodigo())
-            && (isEmpty(usuario.getCanalNetSales()) || isEmpty(usuario.getNomeEquipeVendaNetSales())
-            || isEmpty(usuario.getCodigoEquipeVendaNetSales()) || isEmpty(usuario.getLoginNetSales()))) {
+        if (isNivelObrigatorioDadosNetSales(usuario.getNivelCodigo()) && usuario.hasNotDadosNetSales()) {
             throw new ValidacaoException(MSG_ERRO_DADOS_NETSALES_OBRIGATORIOS);
         }
     }

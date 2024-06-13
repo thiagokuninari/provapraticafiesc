@@ -21,7 +21,6 @@ public class CargoHelper {
             .builder()
             .id(id)
             .codigo(codigoCargo)
-            .nivel(NivelHelper.umNivelMso())
             .build();
     }
 
