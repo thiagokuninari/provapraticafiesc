@@ -24,7 +24,7 @@ public class FeriadoTest {
             .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "cidade.id", "tipoFeriado", "situacao",
                 "feriadoPai.id", "feriadoNacional")
             .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), 1111,
-                1, null, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
     }
 
     @Test
@@ -43,7 +43,7 @@ public class FeriadoTest {
             .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "cidade.id", "tipoFeriado", "situacao",
                 "feriadoPai.id", "feriadoNacional", "dataCadastro")
             .containsExactlyInAnyOrder(123, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), 1111,
-                1, null, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F,
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F,
                 LocalDateTime.of(2018, 11, 11, 11, 11, 11));
     }
 
@@ -96,6 +96,7 @@ public class FeriadoTest {
             .nome("FERIADO ESTADUAL")
             .tipoFeriado(ETipoFeriado.ESTADUAL)
             .estadoId(1)
+            .cidadeId(1)
             .dataFeriado("12/07/2019")
             .build();
     }

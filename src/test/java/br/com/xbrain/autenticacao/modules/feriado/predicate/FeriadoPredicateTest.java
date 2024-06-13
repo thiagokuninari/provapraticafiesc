@@ -58,6 +58,30 @@ public class FeriadoPredicateTest {
     }
 
     @Test
+    public void comCidadeOuEstado_deveMontarPredicateComEstado_quandoCidadeIdForNull() {
+        assertThat(new FeriadoPredicate().comCidadeOuEstado(null, 1).build())
+            .isEqualTo(new BooleanBuilder(
+                feriado.uf.id.eq(1)
+                    .or(feriado.feriadoNacional.eq(Eboolean.V))));
+    }
+
+    @Test
+    public void comCidadeOuEstado_deveMontarPredicateComCidade_quandoInformarCidadeIdEEstadoId() {
+        assertThat(new FeriadoPredicate().comCidadeOuEstado(1, 2).build())
+            .isEqualTo(new BooleanBuilder(
+                feriado.cidade.id.eq(1)
+                    .or(feriado.feriadoNacional.eq(Eboolean.V))
+                    .or(feriado.uf.id.eq(2)
+                        .and(feriado.tipoFeriado.eq(ETipoFeriado.ESTADUAL)))));
+    }
+
+    @Test
+    public void comCidadeOuEstado_naoDeveMontarPredicateComCidade_quandoCidadeIdEEstadoIdForNull() {
+        assertThat(new FeriadoPredicate().comCidadeOuEstado(null, null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
     public void comCidade_deveMontarPredicate_quandoInformarCidadeIdEEstadoId() {
         assertThat(new FeriadoPredicate().comCidade(1, 2).build())
             .isEqualTo(new BooleanBuilder(
