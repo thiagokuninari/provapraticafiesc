@@ -779,10 +779,11 @@ public class UsuarioService {
         validar(usuario);
         tratarCadastroUsuario(usuario);
         desvincularGruposByUsuario(usuario);
+        var isNovoCadastro = usuario.isNovoCadastro();
         repository.save(usuario);
 
         processarUsuarioParaSocialHub(usuario);
-        enviarEmailDadosAcesso(usuario, usuario.isNovoCadastro());
+        enviarEmailDadosAcesso(usuario, isNovoCadastro);
         return usuario;
     }
 
