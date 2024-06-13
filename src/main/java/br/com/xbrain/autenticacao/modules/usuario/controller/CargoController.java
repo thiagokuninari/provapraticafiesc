@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.CargoComNivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import lombok.RequiredArgsConstructor;
@@ -73,8 +72,8 @@ public class CargoController {
         return service.getPermitidosAosComunicados(niveisId);
     }
 
-    @GetMapping("/codigo-cargos")
-    public List<CodigoCargo> getAllCargos() {
+    @GetMapping("codigo-cargos")
+    public List<SelectResponse> getAllCargos() {
         return service.getAllCargos();
     }
 }

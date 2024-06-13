@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -170,7 +169,9 @@ public class CargoService {
         return cargosPermitidos;
     }
 
-    public List<CodigoCargo> getAllCargos() {
-        return Arrays.asList(CodigoCargo.values());
+    public List<SelectResponse> getAllCargos() {
+        return Stream.of(CodigoCargo.values())
+            .map(codigoCargo -> new SelectResponse(codigoCargo, codigoCargo.getDescricao()))
+            .collect(Collectors.toList());
     }
 }

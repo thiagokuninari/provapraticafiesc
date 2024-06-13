@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
 
@@ -248,5 +251,11 @@ public class CargoHelper {
                 .id(4)
                 .build())
             .build();
+    }
+
+    public static List<SelectResponse> umaListaCargoSelectResponse() {
+        return Stream.of(CodigoCargo.values())
+            .map(codigoCargo -> new SelectResponse(codigoCargo, codigoCargo.getDescricao()))
+            .collect(Collectors.toList());
     }
 }
