@@ -725,8 +725,6 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void getById_deveRetornarOrganizacoesFiltradas_quandoParametroCodigoNivel() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
-
         when(organizacaoEmpresaRepository.findById(1))
             .thenReturn(Optional.ofNullable(umaOrganizacaoEmpresa()));
 
