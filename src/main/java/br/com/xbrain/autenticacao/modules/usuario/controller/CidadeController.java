@@ -178,4 +178,9 @@ public class CidadeController {
                                                @RequestParam String distrito) {
         return service.getCidadeDistrito(uf, cidade, distrito);
     }
+
+    @PostMapping("cidade-instalacao-ids")
+    public List<ConfiguracaoCidadeResponse> getCidadesByCidadeInstalacaoIds(@RequestBody List<Integer> cidadeInstalacaoIds) {
+        return service.getCidadesByCidadeInstalacaoIds(cidadeInstalacaoIds);
+    }
 }
