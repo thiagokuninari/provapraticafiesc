@@ -59,6 +59,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutentic
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
+import static helpers.TestBuilders.umSite;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -854,6 +855,58 @@ public class SiteServiceTest {
 
         verify(siteRepository).findById(200);
         verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void getSuperioresDoUsuario_deveRetornarListaUsuarioIds_quandoExistirParaOUsuario() {
+        when(usuarioService.getSuperioresDoUsuario(5))
+            .thenReturn(List.of(
+                UsuarioHierarquiaResponse.builder().id(4).status("ATIVO").build(),
+                UsuarioHierarquiaResponse.builder().id(3).status("ATIVO").build()));
+
+        assertThat(service.getSuperioresDoUsuario(5))
+            .hasSize(2)
+            .isEqualTo(List.of(4, 3));
+    }
+
+    @Test
+    public void inativar_deveInativar_quandoSiteEncontrado() {
+        var site = umSiteCompleto();
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.ofNullable(site));
+
+        assertThat(site.getSituacao()).isEqualTo(ESituacao.A);
+
+        service.inativar(200);
+
+        assertThat(site.getSituacao()).isEqualTo(ESituacao.I);
+    }
+
+    @Test
+    public void inativar_deveLancarException_quandoSiteNaoEncontrado() {
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.inativar(200))
+            .withMessage("Site não encontrado.");
+    }
+
+    @Test
+    public void getSitesPorPermissao_deveRetornarSelectResponseComSites_quandoTiverPermissao() {
+        var usuario = umUsuario(1, COORDENADOR_OPERACAO);
+
+        when(siteRepository.findBySituacaoAtiva(any(Predicate.class)))
+            .thenReturn(umaListaSites());
+
+        assertThat(service.getSitesPorPermissao(usuario))
+            .hasSize(3)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
     }
 
     private Site umReagendamentoConfiguracaoResponse(Integer id) {
