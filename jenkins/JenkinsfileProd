@@ -52,15 +52,17 @@ pipeline {
                        ${DOCKER_PROD} stop ${CONTAINER_NAME}
                        ${DOCKER_PROD} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_PROD} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN"  \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${HARBOR_URL}
+                    ${DOCKER_PROD} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN=${MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       ${HARBOR_URL}
                 '''
             }
         }
@@ -97,17 +99,17 @@ pipeline {
                        ${DOCKER_PROD} stop ${CONTAINER_NAME}
                        ${DOCKER_PROD} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_PROD} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        -e CONFIG_SERVER_TOKEN=${CONFIG_SERVER_TOKEN} \
-                        -e CONFIG_SERVER_URL=${CONFIG_SERVER_URL} \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN"  \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${CURRENT_IMAGE}
+                    ${DOCKER_PROD} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN=${MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       ${CURRENT_IMAGE}
                 '''
             }
         }

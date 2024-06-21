@@ -17,7 +17,8 @@ pipeline {
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
         CURRENT_IMAGE = sh(script: "${DOCKER_HOM} ps -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
-        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} -XX:+UseContainerSupport \
+        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
+                                   -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
                                    -Dcom.sun.management.jmxremote=true \
                                    -Dcom.sun.management.jmxremote.port=9092 \
@@ -60,17 +61,19 @@ pipeline {
                        ${DOCKER_HOM} stop ${CONTAINER_NAME}
                        ${DOCKER_HOM} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_HOM} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN" \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${HARBOR_URL}
+                    ${DOCKER_HOM} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN="{$MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       --memory ${MAX_MEMORY} \
+                       --memory-swap=${MAX_MEMORY} \
+                       ${HARBOR_URL}
                 '''
             }
         }
@@ -107,18 +110,18 @@ pipeline {
                        ${DOCKER_HOM} stop ${CONTAINER_NAME}
                        ${DOCKER_HOM} rm ${CONTAINER_NAME}
                     fi
-                   ${DOCKER_HOM} run -d \
+                    ${DOCKER_HOM} run \
                        --name=${CONTAINER_NAME} \
-                       --restart=unless-stopped -p ${PORT} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN="{$MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
                        --net network_xbrain \
                        --memory ${MAX_MEMORY} \
                        --memory-swap=${MAX_MEMORY} \
-                       -e CONFIG_SERVER_TOKEN=${CONFIG_SERVER_TOKEN} \
-                       -e CONFIG_SERVER_URL=${CONFIG_SERVER_URL} \
-                       -e JAVA_OPTS="${JAVA_OPTS}" \
-                       -e MINIO_TOKEN="$MINIO_TOKEN"  \
-                       -e MINIO_SECRET="$MINIO_SECRET" \
-                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
                        ${CURRENT_IMAGE}
                 '''
             }

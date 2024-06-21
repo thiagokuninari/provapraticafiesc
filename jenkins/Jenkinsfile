@@ -11,7 +11,8 @@ pipeline {
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
-        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} -XX:+UseContainerSupport \
+        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
+                                   -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
                                    -Dcom.sun.management.jmxremote=true \
                                    -Dcom.sun.management.jmxremote.port=9092 \
@@ -75,17 +76,19 @@ pipeline {
                        ${DOCKER_DEV} stop ${CONTAINER_NAME}
                        ${DOCKER_DEV} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_DEV} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN" \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${HARBOR_URL}
+                    ${DOCKER_DEV} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN=${MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       --memory ${MAX_MEMORY} \
+                       --memory-swap=${MAX_MEMORY} \
+                       ${HARBOR_URL}
                 '''
             }
         }
