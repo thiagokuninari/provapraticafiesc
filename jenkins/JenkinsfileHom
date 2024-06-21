@@ -68,7 +68,7 @@ pipeline {
                        -d \
                        -e JAVA_OPTS="${JAVA_OPTS}" \
                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                       -e MINIO_TOKEN="{$MINIO_TOKEN} \
+                       -e MINIO_TOKEN="${MINIO_TOKEN} \
                        -e MINIO_SECRET=${MINIO_SECRET} \
                        --net network_xbrain \
                        --memory ${MAX_MEMORY} \
@@ -117,7 +117,7 @@ pipeline {
                        -d \
                        -e JAVA_OPTS="${JAVA_OPTS}" \
                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                       -e MINIO_TOKEN="{$MINIO_TOKEN} \
+                       -e MINIO_TOKEN="${MINIO_TOKEN} \
                        -e MINIO_SECRET=${MINIO_SECRET} \
                        --net network_xbrain \
                        --memory ${MAX_MEMORY} \
