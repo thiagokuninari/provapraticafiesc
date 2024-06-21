@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import lombok.experimental.UtilityClass;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubcanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 
+@UtilityClass
 public class UsuarioHelper {
 
     public static Usuario umUsuario(Integer id, String nome, ESituacao situacao,
@@ -98,6 +100,18 @@ public class UsuarioHelper {
             .nome("NED STARK")
             .cargo(umCargoAdministrador())
             .subCanais(Set.of(umSubCanal()))
+            .build();
+    }
+
+    public static Usuario umUsuario(CodigoCargo cargo) {
+        return Usuario.builder()
+            .id(3)
+            .situacao(ESituacao.I)
+            .usuarioCadastro(Usuario.builder().id(1).build())
+            .cargo(Cargo.builder()
+                .id(3)
+                .codigo(cargo)
+                .build())
             .build();
     }
 
