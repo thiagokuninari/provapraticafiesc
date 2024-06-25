@@ -1,23 +1,30 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static helpers.GrupoHelper.*;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -32,11 +39,64 @@ public class GrupoServiceTest {
     private GrupoService grupoService;
     @Mock
     private GrupoRepository grupoRepository;
+    @Mock
+    private AutenticacaoService autenticacaoService;
+    @Mock
+    private ParceirosOnlineService parceirosOnlineService;
     private GrupoPredicate predicate;
 
     @Before
     public void setUp() throws Exception {
         predicate = new GrupoPredicate().filtrarPermitidos(USUARIO_ID);
+    }
+
+    @Test
+    public void getAllByRegionalId_deveRetornarListaGrupoDto_quandoUsuarioPossuirPermissao() {
+        var usuario = umUsuarioAutenticadoNivelBackoffice();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuario);
+        var predicateFiltrarPermitidos = new GrupoPredicate().filtrarPermitidos(usuario);
+
+        when(grupoRepository.findAllByRegionalId(REGIONAL_SUL_ID, predicateFiltrarPermitidos.build()))
+            .thenReturn(List.of(umGrupoNorteDoParana()));
+
+        assertThat(grupoService.getAllByRegionalId(REGIONAL_SUL_ID))
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(20, "NORTE DO PARANÁ"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(grupoRepository).findAllByRegionalId(REGIONAL_SUL_ID, predicateFiltrarPermitidos.build());
+    }
+
+    @Test
+    public void getAllAtiva_deveRetornarListaGruposAtivo_quandoSolicitado() {
+        when(grupoRepository.findBySituacao(ESituacao.A, new Sort("nome")))
+            .thenReturn(List.of(umGrupoNordeste(), umGrupoNorteDoParana()));
+
+        assertThat(grupoService.getAllAtiva())
+            .isNotNull()
+            .extracting("id", "nome", "situacao")
+            .containsExactly(tuple(4, "NORDESTE", ESituacao.A),
+                tuple(20, "NORTE DO PARANÁ", ESituacao.A));
+
+        verify(grupoRepository).findBySituacao(ESituacao.A, new Sort("nome"));
+    }
+
+    @Test
+    public void getAtivosParaComunicados_deveRetornarListaGrupo_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        when(parceirosOnlineService.getGrupos(40)).thenReturn(List.of(umGrupoDto(1), umGrupoDto(2)));
+        assertThat(grupoService.getAtivosParaComunicados(40))
+            .isNotNull()
+            .extracting("id", "nome", "situacao")
+            .containsExactly(tuple(1, "GRUPO", ESituacao.A),
+                tuple(2, "GRUPO", ESituacao.A));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(parceirosOnlineService).getGrupos(40);
     }
 
     @Test
@@ -90,5 +150,16 @@ public class GrupoServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> grupoService.findById(1516516))
             .withMessage("Grupo não encontrado.");
+    }
+
+    private GrupoDto umGrupoDto(Integer id) {
+        return GrupoDto.builder()
+            .id(id)
+            .nome("GRUPO")
+            .regional(RegionalDto.builder()
+                .id(2)
+                .build())
+            .situacao(ESituacao.A)
+            .build();
     }
 }
