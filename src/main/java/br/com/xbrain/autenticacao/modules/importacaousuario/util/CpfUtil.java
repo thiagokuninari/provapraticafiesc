@@ -21,10 +21,10 @@ public class CpfUtil {
     }
 
     public static boolean isCpfValido(String cpf) {
-        cpf = cpf.trim().replace(".", "").replace("-", "");
         if (cpf == null || cpf.length() != DIGITO_ONZE) {
             return false;
         }
+        cpf = cpf.trim().replace(".", "").replace("-", "");
 
         for (int j = 0; j < DIGITO_DEZ; j++) {
             if (padLeft(Integer.toString(j), Character.forDigit(j, DIGITO_DEZ))
