@@ -16,6 +16,7 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,8 @@ public class UsuarioResponse {
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
     private ETipoCanal tipoCanal;
+    private Integer organizacaoEmpresaId;
+    private String organizacaoEmpresaNome;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
@@ -92,9 +95,14 @@ public class UsuarioResponse {
                 ? usuario.getCanais() : Collections.emptySet());
             usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
                 ? usuario.getSubCanais().stream()
-                    .map(SubCanalDto::of)
-                    .collect(Collectors.toSet())
+                .map(SubCanalDto::of)
+                .collect(Collectors.toSet())
                 : null);
+            Optional.ofNullable(usuario.getOrganizacaoEmpresa())
+                .ifPresent(organizacaoEmpresa -> {
+                    usuarioResponse.setOrganizacaoEmpresaId(organizacaoEmpresa.getId());
+                    usuarioResponse.setOrganizacaoEmpresaNome(organizacaoEmpresa.getDescricao());
+                });
         }
         return usuarioResponse;
     }
@@ -111,8 +119,8 @@ public class UsuarioResponse {
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
         usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
             ? usuario.getSubCanais().stream()
-                .map(SubCanalDto::of)
-                .collect(Collectors.toSet())
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet())
             : null);
         return usuarioResponse;
     }
