@@ -48,6 +48,7 @@ public class UsuarioResponse {
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
     private ETipoCanal tipoCanal;
+    private LocalDateTime dataSaidaCnpj;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
@@ -87,6 +88,7 @@ public class UsuarioResponse {
             usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
             usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
             usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
+            usuarioResponse.setSituacao(usuario.getSituacao());
             usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
                 ? usuario.getSubCanais().stream()
                     .map(SubCanalDto::of)

@@ -354,6 +354,20 @@ public class UsuarioRepositoryTest {
     @Test
     public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
         assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
-            .containsExactly(219);
+            .containsExactly(219, 220, 221);
+    }
+
+    @Test
+    public void getAllUsuariosDoUsuarioPapIndireto_deveRetornarListaUsuariosComCpfIguais_quandoInformarUsuarioIds() {
+        assertThat(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(220)))
+            .extracting(Usuario::getId, Usuario::getCpf, Usuario::getEmail, Usuario::getNome, Usuario::getSituacao)
+            .containsExactlyInAnyOrder(
+                tuple(220, "1", "USUARIOPAPINDIRETOREMANEJADO@TESTE.COM", "USUARIO PAP INDIRETO REMANEJADO", ESituacao.R),
+                tuple(221, "1", "USUARIOPAPINDIRETO@TESTE.COM", "USUARIO PAP INDIRETO", A));
+    }
+
+    @Test
+    public void getAllUsuariosDoUsuarioPapIndireto_deveRetornarListaVazia_quandoNaoEncontrarUsuario() {
+        assertThat(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(99999))).isEmpty();
     }
 }

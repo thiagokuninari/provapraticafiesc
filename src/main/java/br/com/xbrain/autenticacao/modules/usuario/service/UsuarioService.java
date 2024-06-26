@@ -1013,6 +1013,88 @@ public class UsuarioService {
         validarEmailCadastrado(email, null);
     }
 
+    public List<UsuarioVendasPapIndiretoResponse> findColaboradoresPapIndireto() {
+        var aaUsuariosPapIndireto = agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto();
+        var usuariosIds = aaUsuariosPapIndireto.stream()
+            .map(UsuarioDtoVendas::getId)
+            .collect(toList());
+
+        var usuariosAutenticacao = setarDataSaida(repository.getAllUsuariosDoUsuarioPapIndireto(usuariosIds).stream()
+            .map(UsuarioResponse::of)
+            .collect(toList()));
+
+        usuariosAutenticacao = carregarDadosUsuarioAutenticacaoComAaUsuario(usuariosAutenticacao, aaUsuariosPapIndireto);
+
+        return usuariosAutenticacao
+            .stream()
+            .flatMap(usuario -> aaUsuariosPapIndireto.stream()
+                .filter(aaUsuario -> Objects.equals(usuario.getId(), aaUsuario.getId()))
+                .map(aaUsuario -> UsuarioVendasPapIndiretoResponse.of(usuario, aaUsuario))
+            )
+            .collect(toList());
+    }
+
+    private List<UsuarioResponse> carregarDadosUsuarioAutenticacaoComAaUsuario(List<UsuarioResponse> usuarios,
+                                                                               List<UsuarioDtoVendas> aaUsuarios) {
+        var usuariosNaoRealocados = filtrarPorNaoRealocado(usuarios);
+        usuarios = vincularAaId(usuarios, aaUsuarios);
+        usuarios = atualizarDadosUsuarioRealocado(usuarios, usuariosNaoRealocados);
+
+        return usuarios;
+    }
+
+    private List<UsuarioResponse> setarDataSaida(List<UsuarioResponse> usuarios) {
+        usuarios
+            .stream()
+            .filter(usuario -> Objects.nonNull(usuario.getCpf()))
+            .sorted(Comparator.comparing(UsuarioResponse::getCpf)
+                .thenComparing(UsuarioResponse::getDataCadastro))
+            .reduce((colaboradorAnterior, colaboradorAtual) -> {
+                if (colaboradorAnterior != null
+                    && Objects.equals(colaboradorAtual.getCpf(), colaboradorAnterior.getCpf())) {
+                    colaboradorAnterior.setDataSaidaCnpj(colaboradorAtual.getDataCadastro());
+                }
+                return colaboradorAtual;
+            });
+        return usuarios;
+    }
+
+    private List<UsuarioResponse> filtrarPorNaoRealocado(List<UsuarioResponse> usuarios) {
+        return usuarios.stream()
+            .filter(usuario -> !Objects.equals(usuario.getSituacao(), ESituacao.R))
+            .collect(toList());
+    }
+
+    private List<UsuarioResponse> vincularAaId(List<UsuarioResponse> usuarios, List<UsuarioDtoVendas> aaUsuarios) {
+        return usuarios.stream()
+            .flatMap(usuario -> aaUsuarios.stream()
+                .map(aaUsuario -> {
+                    if (Objects.equals(aaUsuario.getId(), usuario.getId())) {
+                        usuario.setAaId(aaUsuario.getAgenteAutorizadoId());
+                    }
+                    return usuario;
+                }))
+            .distinct()
+            .collect(toList());
+    }
+
+    private List<UsuarioResponse> atualizarDadosUsuarioRealocado(List<UsuarioResponse> usuarios,
+                                                                 List<UsuarioResponse> usuariosNaoRealocados) {
+        return usuarios.stream()
+            .flatMap(usuario -> usuariosNaoRealocados.stream()
+                .map(usuarioNaoRealocado -> {
+                    if (Objects.equals(usuario.getAaId(), usuarioNaoRealocado.getAaId())
+                        && Objects.equals(usuario.getCpf(), usuarioNaoRealocado.getCpf())) {
+                        usuario.setDataSaidaCnpj(null);
+                        usuario.setSituacao(usuarioNaoRealocado.getSituacao());
+
+                    }
+                    return usuario;
+                }))
+            .distinct()
+            .collect(toList());
+    }
+
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {

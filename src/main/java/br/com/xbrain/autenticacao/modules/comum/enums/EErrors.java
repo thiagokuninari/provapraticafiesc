@@ -174,7 +174,9 @@ public enum EErrors {
     ERRO_ATIVAR_USUARIO_AA("#056 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
         "#056 - Ocorreu um erro ao tentar ativar o usuário do agente autorizado."),
     ERRO_INATIVAR_USUARIO_AA("#057 - Ocorreu um erro ao tentar ativar o usuário. Contate o administrador.",
-        "#057 - Ocorreu um erro ao tentar inativar o usuário do agente autorizado.");
+        "#057 - Ocorreu um erro ao tentar inativar o usuário do agente autorizado."),
+    ERRO_BUSCAR_USUARIOS_AA_PAP_INDIRETO("#058 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.",
+        "#058 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto.");
 
     private final String descricao;
     private final String descricaoTecnica;

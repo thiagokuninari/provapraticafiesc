@@ -2245,4 +2245,25 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).findOperadoresBkoCentralizadoByFornecedor(8, false);
     }
+
+    @Test
+    @WithMockUser
+    @SneakyThrows
+    public void findColaboradoresPapIndireto_deveRetornarListaColaboradorPapIndireto_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findColaboradoresPapIndireto();
+    }
+
+    @Test
+    @SneakyThrows
+    public void findColaboradoresPapIndireto_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findColaboradoresPapIndireto();
+    }
 }
