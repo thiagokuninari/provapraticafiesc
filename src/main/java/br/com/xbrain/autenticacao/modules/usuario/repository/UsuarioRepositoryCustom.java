@@ -71,6 +71,8 @@ public interface UsuarioRepositoryCustom {
 
     List<PermissaoEspecial> getUsuariosByPermissaoEspecial(String codigoFuncionalidade);
 
+    List<Integer> getUsuarioIdsByPermissaoEspecial(String codigoFuncionalidade);
+
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
     List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel);

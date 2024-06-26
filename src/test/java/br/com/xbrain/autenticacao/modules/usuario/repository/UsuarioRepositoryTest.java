@@ -401,4 +401,11 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(5))
             .containsExactly(121, 122, 123);
     }
+
+    @Test
+    public void getUsuarioIdsByPermissaoEspecial_deveRetornarListaDeUsuariosId_quandoPossuirUsuariosComPermissao() {
+        assertThat(repository.getUsuarioIdsByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
+            .containsExactly(100)
+            .hasSize(1);
+    }
 }

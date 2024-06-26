@@ -2061,6 +2061,10 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> getUsuariosIdByPermissaoEspecial(String funcionalidade) {
+        return repository.getUsuarioIdsByPermissaoEspecial(funcionalidade);
+    }
+
     @Transactional
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
         var usuario = findComplete(idUsuario);

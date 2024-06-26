@@ -123,6 +123,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceH
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
@@ -5024,6 +5026,33 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.findByCpfAndSituacaoIsNot("123456789", ESituacao.R))
             .withMessage("Usuário não encontrado.");
+    }
+
+    @Test
+    public void getUsuariosIdByPermissaoEspecial_deveRetornarListaVazia_quandoNenhumUsuarioPossuirPermissaoEspecialSolicitada() {
+        var funcionalidade = "SHB_ADMIN";
+
+        when(repository.getUsuarioIdsByPermissaoEspecial(funcionalidade))
+            .thenReturn(Collections.emptyList());
+
+        var resultado = service.getUsuariosIdByPermissaoEspecial(funcionalidade);
+
+        assertTrue(resultado.isEmpty());
+        verify(repository).getUsuarioIdsByPermissaoEspecial(funcionalidade);
+    }
+
+    @Test
+    public void getUsuariosIdByPermissaoEspecial_deveRetornarUsuariosIds_quandoHouverUsuariosComPermissaoEspecialSolicitada() {
+        var funcionalidade = "ADMIN";
+        var usuariosIds = List.of(1, 2);
+
+        when(repository.getUsuarioIdsByPermissaoEspecial(funcionalidade))
+            .thenReturn(usuariosIds);
+
+        var resultado = service.getUsuariosIdByPermissaoEspecial(funcionalidade);
+
+        assertEquals(2, resultado.size());
+        verify(repository).getUsuarioIdsByPermissaoEspecial(funcionalidade);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

@@ -2341,4 +2341,24 @@ public class UsuarioControllerTest {
 
         verifyNoMoreInteractions(usuarioService);
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosIdsByPermissao_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/funcionalidade/role_101"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosIdsByPermissao_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/funcionalidade/role_101"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getUsuariosIdByPermissaoEspecial("role_101");
+    }
 }
