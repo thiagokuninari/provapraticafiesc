@@ -1087,7 +1087,6 @@ public class UsuarioService {
                         && Objects.equals(usuario.getCpf(), usuarioNaoRealocado.getCpf())) {
                         usuario.setDataSaidaCnpj(null);
                         usuario.setSituacao(usuarioNaoRealocado.getSituacao());
-
                     }
                     return usuario;
                 }))

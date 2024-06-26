@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 @Data
@@ -17,7 +15,6 @@ import org.springframework.beans.BeanUtils;
 @AllArgsConstructor
 public class UsuarioVendasPapIndiretoResponse {
 
-    private static final Logger log = LoggerFactory.getLogger(UsuarioVendasPapIndiretoResponse.class);
     private Integer id;
     private Integer usuarioId;
     private String nome;
