@@ -4470,14 +4470,14 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
 
         assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getId, UsuarioVendasPapIndiretoResponse::getUsuarioId,
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
                 UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
                 UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
                 UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactlyInAnyOrder(
-                tuple(1, 1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"),
-                tuple(2, 2, "64.262.572/0001-22", "Razao Social Teste 2", 101,
+                tuple(2, "64.262.572/0001-22", "Razao Social Teste 2", 101,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"));
 
         verify(agenteAutorizadoService)
@@ -4494,16 +4494,16 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(umUsuarioPapIndireto(), umUsuarioPapIndiretoRemanejado()));
 
         assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getId, UsuarioVendasPapIndiretoResponse::getUsuarioId,
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
                 UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
                 UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
                 UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactlyInAnyOrder(
-                tuple(3, 3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
                     "REMANEJADO"),
-                tuple(1, 1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
                     "", "Ativo"));
 
@@ -4528,19 +4528,19 @@ public class UsuarioServiceTest {
                 umUsuarioPapIndiretoRemanejadoParaAntigoAA()));
 
         assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getId, UsuarioVendasPapIndiretoResponse::getUsuarioId,
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
                 UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
                 UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
                 UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactlyInAnyOrder(
-                tuple(3, 3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
                     "", "Ativo"),
-                tuple(1, 1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
                     "REMANEJADO"),
-                tuple(4, 4, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                tuple(4, "64.262.572/0001-23", "Razao Social Teste 3", 103,
                     DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
                     "", "Ativo"));
 

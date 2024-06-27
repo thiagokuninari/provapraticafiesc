@@ -15,13 +15,13 @@ public class UsuarioVendasPapIndiretoResponseTest {
     @Test
     public void of_deveRetornarUsuarioVendasPapIndiretoResponseCadastrado_quandoDataSaidaNula() {
         assertThat(UsuarioVendasPapIndiretoResponse.of(umUsuarioResponse(), umUsuarioDtoVendasPapIndireto()))
-            .extracting(UsuarioVendasPapIndiretoResponse::getId, UsuarioVendasPapIndiretoResponse::getUsuarioId,
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
                 UsuarioVendasPapIndiretoResponse::getNome, UsuarioVendasPapIndiretoResponse::getCpf,
                 UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getCnpjAa,
                 UsuarioVendasPapIndiretoResponse::getRazaoSocialAa, UsuarioVendasPapIndiretoResponse::getDataCadastro,
                 UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactly(
-                1, 1, "UM USUARIO RESPONSE", "111.111.111-11", 100, "64.262.572/0001-21", "Razao Social Teste",
+                1, "UM USUARIO RESPONSE", "111.111.111-11", 100, "64.262.572/0001-21", "Razao Social Teste",
                 DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 12, 1, 0, 0)),
                 "", "Ativo");
     }
@@ -32,13 +32,13 @@ public class UsuarioVendasPapIndiretoResponseTest {
         usuarioAutenticacao.setDataSaidaCnpj(LocalDateTime.of(2019, 12, 1, 0, 0));
 
         assertThat(UsuarioVendasPapIndiretoResponse.of(usuarioAutenticacao, umUsuarioDtoVendasPapIndireto()))
-            .extracting(UsuarioVendasPapIndiretoResponse::getId, UsuarioVendasPapIndiretoResponse::getUsuarioId,
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
                 UsuarioVendasPapIndiretoResponse::getNome, UsuarioVendasPapIndiretoResponse::getCpf,
                 UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getCnpjAa,
                 UsuarioVendasPapIndiretoResponse::getRazaoSocialAa, UsuarioVendasPapIndiretoResponse::getDataCadastro,
                 UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactlyInAnyOrder(
-                1, 1, "UM USUARIO RESPONSE", "111.111.111-11", 100, "64.262.572/0001-21", "Razao Social Teste",
+                1, "UM USUARIO RESPONSE", "111.111.111-11", 100, "64.262.572/0001-21", "Razao Social Teste",
                 DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 12, 1, 0, 0)),
                 DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2019, 12, 1, 0, 0)),
                 "REMANEJADO");
