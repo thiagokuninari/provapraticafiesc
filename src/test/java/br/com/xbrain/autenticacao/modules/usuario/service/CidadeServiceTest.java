@@ -210,6 +210,22 @@ public class CidadeServiceTest {
     }
 
     @Test
+    public void getAllByRegionalIdAndUfId_deveRetornarCidades_quandoRegionalIdEUfIdForemInformados() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1).build());
+        when(cidadeRepository.findAllByRegionalIdAndUfId(anyInt(), anyInt(), any(Predicate.class)))
+            .thenReturn(List.of(
+                Cidade.builder().id(5578).nome("LONDRINA")
+                    .uf(Uf.builder().id(1).nome("PARANA").build())
+                    .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
+
+        assertThat(service.getAllByRegionalIdAndUfId(1027, 1))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(
+                tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
+    }
+
+    @Test
     public void getCidadeDistrito_deveRetornarCidade_quandoExistir() {
         var cidadeDistrito = Cidade.builder().id(30848).nome("SAO LUIZ").fkCidade(5578)
             .uf(Uf.builder().id(1).nome("PARANA").uf("PR").build())
