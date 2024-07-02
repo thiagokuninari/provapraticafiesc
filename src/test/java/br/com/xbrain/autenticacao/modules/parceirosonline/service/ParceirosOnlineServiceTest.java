@@ -160,7 +160,6 @@ public class ParceirosOnlineServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
     }
 
-    //////////
     @Test
     public void getRegionais_deveRetornarListaRegionaisDto_quandoUsuarioConterCanalAgenteAutorizado() {
         when(autenticacaoService.getUsuarioAutenticado())

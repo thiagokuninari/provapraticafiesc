@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -417,6 +419,358 @@ public class UsuarioTest {
         assertEquals(null, result);
     }
 
+    @Test
+    public void from_deveRetonarUsuario_quandoReceberUsuarioDadosAcessoRequest() {
+        assertThat(Usuario.from(umUsuarioDadosAcessoRequest()))
+            .extracting("id", "email")
+            .containsExactly(2245, "email2245@xbrain.com");
+    }
+
+    @Test
+    public void forceLoadCanais_deveRetornarUsuarioComCanaisCarregados_quandoUsuarioPossuiCanais() {
+        assertThat(umUsuarioComCanais().forceLoadCanais())
+            .extracting("id")
+            .containsExactly(1);
+
+    }
+
+    @Test
+    public void configurarRamal_deveSetarRamal_quandoConfiguracaoNaoNull() {
+        var configuracao = new Configuracao();
+        configuracao.setId(1);
+        configuracao.setRamal(8989);
+        var usuario = Usuario
+            .builder()
+            .configuracao(configuracao)
+            .id(1)
+            .build();
+
+        assertThat(usuario.getConfiguracao().getRamal())
+            .isEqualTo(8989);
+
+        usuario.configurarRamal(3333);
+
+        assertThat(usuario.getConfiguracao().getRamal())
+            .isEqualTo(3333);
+    }
+
+    @Test
+    public void tratarEmails_deveTransformarEmUpperCaseERetirarOsEspacosDoEmail_quandoEmailNaoNull() {
+        var usuario = Usuario.builder()
+                .id(1)
+                .nome("Admin")
+                .email("     usuario@xbrain.com.br     ")
+                .build();
+        assertThat(usuario.getEmail()).isEqualTo("     usuario@xbrain.com.br     ");
+
+        usuario.tratarEmails();
+
+        assertThat(usuario.getEmail()).isEqualTo("USUARIO@XBRAIN.COM.BR");
+    }
+
+    @Test
+    public void tratarEmails_deveTransformarEmUpperCaseERetirarOsEspacosEmailEEmail02_quandoEmailEEmail02NaoNull() {
+        var usuario = Usuario.builder()
+            .id(1)
+            .nome("Admin")
+            .email("     usuario@xbrain.com.br     ")
+            .email02("     email02@xbrain.com.br      ")
+            .build();
+        assertThat(usuario.getEmail()).isEqualTo("     usuario@xbrain.com.br     ");
+        assertThat(usuario.getEmail02()).isEqualTo("     email02@xbrain.com.br      ");
+
+        usuario.tratarEmails();
+
+        assertThat(usuario.getEmail()).isEqualTo("USUARIO@XBRAIN.COM.BR");
+        assertThat(usuario.getEmail02()).isEqualTo("EMAIL02@XBRAIN.COM.BR");
+    }
+
+    @Test
+    public void getCargoId_deveRetornarCargoId_quandoCargoNaoNull() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.getCargo().setId(9090);
+
+        assertThat(usuario.getCargoId())
+            .isEqualTo(9090);
+    }
+
+    @Test
+    public void getCargoId_deveRetornarNull_quandoCargoNull() {
+        var usuario = Usuario.builder()
+            .id(1)
+            .nome("Admin")
+            .build();
+
+        assertThat(usuario.getCargoId())
+            .isNull();
+    }
+
+    @Test
+    public void getCargosSuperioresId_deveRetornarCargoId_quandoCargoNaoNull() {
+        var cargo = umCargo(EXECUTIVO);
+        cargo.setId(8787);
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.getCargo().setSuperiores(Set.of(cargo));
+
+        assertThat(usuario.getCargosSuperioresId())
+            .isEqualTo(Set.of(8787));
+    }
+
+    @Test
+    public void getCargosSuperioresId_deveRetornarNull_quandoCargoNull() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.setCargo(null);
+
+        assertThat(usuario.getCargosSuperioresId())
+            .isNull();
+    }
+
+    @Test
+    public void getCodigoCargoByCanais_deveRetornarOperacaoTelevendas_quandoCanalForAtivoProprio() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.setCanais(Set.of(ECanal.ATIVO_PROPRIO));
+
+        assertThat(usuario.getCodigoCargoByCanais())
+            .isEqualTo(Set.of(OPERACAO_TELEVENDAS));
+    }
+
+    @Test
+    public void getCodigoCargoByCanais_deveRetornarOperacaoTelevendasEVendedorOperacao_quandoCanalForMaiorQueUm() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.VAREJO, ECanal.INTERNET));
+
+        assertThat(usuario.getCodigoCargoByCanais())
+            .isEqualTo(Set.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO));
+    }
+
+    @Test
+    public void getCodigoCargoByCanais_deveRetornarVendedorOperacao_quandoCanalForIgualAUmENaoForAtivoProprio() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.setCanais(Set.of(ECanal.VAREJO));
+
+        assertThat(usuario.getCodigoCargoByCanais())
+            .isEqualTo(Set.of(VENDEDOR_OPERACAO));
+    }
+
+    @Test
+    public void getCodigoCargoByCanais_deveRetornarVendedorOperacao_quandoCanalForNull() {
+        var usuario = umUsuarioComCargo(23, EXECUTIVO);
+        usuario.setCanais(null);
+
+        assertThat(usuario.getCodigoCargoByCanais())
+            .isEqualTo(Set.of(VENDEDOR_OPERACAO));
+    }
+
+    @Test
+    public void getNivelId_deveRetornarNivelId_quandoCargoENivelNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(OPERACAO).build());
+
+        assertThat(usuario.getNivelId())
+            .isEqualTo(3434);
+    }
+
+    @Test
+    public void getNivelId_deveRetornarNull_quandoCargoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setCargo(null);
+
+        assertThat(usuario.getNivelId())
+            .isNull();
+    }
+
+    @Test
+    public void getNivelId_deveRetornarNull_quandoNivelNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.getCargo().setNivel(null);
+
+        assertThat(usuario.getNivelId())
+            .isNull();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarTrue_quandoIdENomeECpfEEmailNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setId(null);
+        usuario.setNome(null);
+        usuario.setCpf(null);
+        usuario.setEmail(null);
+
+        assertThat(usuario.isEmpty())
+            .isTrue();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarFalse_quandoIdNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setId(23);
+        usuario.setNome(null);
+        usuario.setCpf(null);
+        usuario.setEmail(null);
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
+    public void hasUsuarioCadastro_deveRetornarTrue_quandoUsuarioCadastroNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setUsuarioCadastro(umUsuarioCadastro());
+
+        assertThat(usuario.hasUsuarioCadastro())
+            .isTrue();
+    }
+
+    @Test
+    public void hasUsuarioCadastro_deveRetornarFalse_quandoUsuarioCadastroNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setUsuarioCadastro(null);
+
+        assertThat(usuario.hasUsuarioCadastro())
+            .isFalse();
+    }
+
+    @Test
+    public void hasConfiguracao_deveRetornarTrue_quandoConfiguracaoNaoNull() {
+        var config = new Configuracao();
+        config.setId(2);
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setConfiguracao(config);
+
+        assertThat(usuario.hasConfiguracao())
+            .isTrue();
+    }
+
+    @Test
+    public void hasConfiguracao_deveRetornarFalse_quandoConfiguracaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setConfiguracao(null);
+
+        assertThat(usuario.hasConfiguracao())
+            .isFalse();
+    }
+
+    @Test
+    public void getTipoFeedersString_deveRetornarListaTipoFeeder_quandoTipoFeederNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setConfiguracao(null);
+        usuario.setTiposFeeder(Set.of(ETipoFeederMso.EMPRESARIAL, ETipoFeederMso.RESIDENCIAL));
+
+        assertThat(usuario.getTipoFeedersString())
+            .isEqualTo(Set.of("EMPRESARIAL", "RESIDENCIAL"));
+    }
+
+    @Test
+    public void isAgenteAutorizado_deveRetornarTrue_quandoCodigoNivelForAgenteAutorizado() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(AGENTE_AUTORIZADO).build());
+
+        assertThat(usuario.isAgenteAutorizado())
+            .isTrue();
+    }
+
+    @Test
+    public void isAgenteAutorizado_deveRetornarFalse_quandoCodigoNivelNaoForAgenteAutorizado() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(XBRAIN).build());
+
+        assertThat(usuario.isAgenteAutorizado())
+            .isFalse();
+    }
+
+    @Test
+    public void isSocioPrincipal_deveRetornarTrue_quandoCodigoNivelForSocioPrincipal() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+
+        assertThat(usuario.isSocioPrincipal())
+            .isTrue();
+    }
+
+    @Test
+    public void isSocioPrincipal_deveRetornarFalse_quandoCodigoNivelNaoForSocioPrincipal() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+
+        assertThat(usuario.isSocioPrincipal())
+            .isFalse();
+    }
+
+    @Test
+    public void isBackoffice_deveRetornarTrue_quandoCodigoNivelForBackoffice() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(BACKOFFICE).build());
+
+        assertThat(usuario.isSocioPrincipal())
+            .isTrue();
+    }
+
+    @Test
+    public void isBackoffice_deveRetornarFalse_quandoCodigoNivelNaoForBackoffice() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(XBRAIN).build());
+
+        assertThat(usuario.isSocioPrincipal())
+            .isFalse();
+    }
+
+    @Test
+    public void convertFrom_deveRetornarListaIds_quandoInformadoUsuarios() {
+        assertThat(Usuario.convertFrom(Set.of(
+            umUsuarioComCargo(23, OPERACAO_TELEVENDAS),
+            umUsuarioComCargo(24, OPERACAO_TELEVENDAS),
+            umUsuarioComCargo(25, OPERACAO_TELEVENDAS)
+        ))).isEqualTo(Set.of(23, 24, 25));
+    }
+
+    @Test
+    public void isCoordenadorOuSupervisorOperacao_deveRetornarTrue_quandoCargoCodigoForCoordenadorOperacao() {
+        var usuario = umUsuarioComCargo(23, COORDENADOR_OPERACAO);
+
+        assertThat(usuario.isCoordenadorOuSupervisorOperacao())
+            .isTrue();
+    }
+
+    @Test
+    public void isCoordenadorOuSupervisorOperacao_deveRetornarTrue_quandoCargoCodigoForSupervisorOperacao() {
+        var usuario = umUsuarioComCargo(23, SUPERVISOR_OPERACAO);
+
+        assertThat(usuario.isCoordenadorOuSupervisorOperacao())
+            .isTrue();
+    }
+
+    @Test
+    public void isCoordenadorOuSupervisorOperacao_deveRetornarFalse_quandoCargoNaoForSupervisorECoordenadorDeOperacao() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+
+        assertThat(usuario.isCoordenadorOuSupervisorOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isNivelVarejo_deveRetornarTrue_quandoNivelCargoForVarejo() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(VAREJO).build());
+        assertThat(usuario.isNivelVarejo())
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelVarejo_deveRetornarFalse_quandoNivelCargoNaoForVarejo() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+        usuario.getCargo().setNivel(Nivel.builder().id(3434).codigo(AGENTE_AUTORIZADO).build());
+        assertThat(usuario.isNivelVarejo())
+            .isFalse();
+    }
+
+    @Test
+    public void numeroTentativasLoginSenhaIncorreta_deveRetornarQuantidadeHistoricoSenhaIncorreta_quandoSolicitado() {
+        var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
+        var senhaIncorreta = UsuarioSenhaIncorretaHistorico.builder().id(1).build();
+        usuario.setHistoricosSenhaIncorretas(List.of(senhaIncorreta, senhaIncorreta, senhaIncorreta));
+
+        assertThat(usuario.numeroTentativasLoginSenhaIncorreta())
+            .isEqualTo(3);
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()
@@ -469,12 +823,27 @@ public class UsuarioTest {
         return usuarioAtivo.build();
     }
 
+    private static Usuario umUsuarioComCanais() {
+        return Usuario
+            .builder()
+            .id(1)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {
         return UsuarioAutenticado
             .builder()
             .id(id)
             .nivelCodigo(codigoNivel.name())
             .usuario(umUsuarioComCargo(codigoCargo))
+            .build();
+    }
+
+    private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
+        return UsuarioDadosAcessoRequest.builder()
+            .usuarioId(2245)
+            .emailNovo("email2245@xbrain.com")
             .build();
     }
 }
