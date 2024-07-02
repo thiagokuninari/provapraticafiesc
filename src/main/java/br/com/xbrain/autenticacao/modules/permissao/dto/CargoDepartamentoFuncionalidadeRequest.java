@@ -1,16 +1,12 @@
 package br.com.xbrain.autenticacao.modules.permissao.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CargoDepartamentoFuncionalidadeRequest {
 
     @NotNull
@@ -19,4 +15,15 @@ public class CargoDepartamentoFuncionalidadeRequest {
     private Integer cargoId;
     @NotEmpty
     private List<Integer> funcionalidadesIds;
+
+    public CargoDepartamentoFuncionalidadeRequest() {
+    }
+
+    public CargoDepartamentoFuncionalidadeRequest(Integer departamentoId,
+                                                  Integer cargoId,
+                                                  List<Integer> funcionalidadesIds) {
+        this.departamentoId = departamentoId;
+        this.cargoId = cargoId;
+        this.funcionalidadesIds = funcionalidadesIds;
+    }
 }
