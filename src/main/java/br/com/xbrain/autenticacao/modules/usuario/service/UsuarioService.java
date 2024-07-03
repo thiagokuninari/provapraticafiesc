@@ -2430,7 +2430,6 @@ public class UsuarioService {
     }
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
-        filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
         var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
@@ -2574,7 +2573,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
-        return repository.findAllIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllIds(usuarioFiltros);
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -2588,7 +2587,7 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
-        return repository.findAllNomesIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllNomesIds(usuarioFiltros);
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {

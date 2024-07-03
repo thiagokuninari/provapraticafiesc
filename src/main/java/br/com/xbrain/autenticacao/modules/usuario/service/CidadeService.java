@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
@@ -27,10 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.config.CacheConfig.CIDADES_DISTRITOS_CACHE_NAME;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static java.util.Objects.nonNull;
 
@@ -44,10 +40,6 @@ public class CidadeService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private CidadeRepository cidadeRepository;
-    @Autowired
-    private ParceirosOnlineService parceirosOnlineService;
-    @Autowired
-    private RegionalService regionalService;
     @Lazy
     @Autowired
     private CidadeService self;
@@ -70,9 +62,8 @@ public class CidadeService {
     }
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
-        return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
-            ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
-            : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
+        return UsuarioCidadeDto.of(cidadeRepository
+            .findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByRegionalIdAndUfId(Integer regionalId, Integer ufId) {
@@ -82,7 +73,7 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getCidadesByRegionalReprocessamento(Integer regionalId) {
         return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByNovaRegionalId(regionalId, new CidadePredicate().build()));
+            cidadeRepository.findAllByRegionalId(regionalId, new CidadePredicate().build()));
     }
 
     public List<UsuarioCidadeDto> getCidadesByRegionalAndUfReprocessamento(Integer regionalId, Integer ufId) {
@@ -94,26 +85,6 @@ public class CidadeService {
         return UsuarioCidadeDto.of(
             cidadeRepository.findAllBySubClusterId(
                 subClusterId,
-                predicateCidadesPermitidas.get()));
-    }
-
-    public List<UsuarioCidadeDto> getAllBySubClustersId(List<Integer> subClustersId) {
-        return UsuarioCidadeDto.of(
-            cidadeRepository.findAllBySubClustersId(
-                subClustersId,
-                predicateCidadesPermitidas.get()));
-    }
-
-    public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
-        return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByGrupoId(
-                grupoId,
-                predicateCidadesPermitidas.get()));
-    }
-
-    public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
-        return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByClusterId(clusterId,
                 predicateCidadesPermitidas.get()));
     }
 
@@ -182,14 +153,6 @@ public class CidadeService {
     public CidadeSiteResponse findCidadeComSiteByUfECidade(String uf, String cidadeNome) {
         return cidadeRepository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
-    }
-
-    public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
-        return Stream.concat(
-                parceirosOnlineService.getCidades(subclusterId).stream(),
-                getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
-            .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
-            .collect(Collectors.toList());
     }
 
     public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {

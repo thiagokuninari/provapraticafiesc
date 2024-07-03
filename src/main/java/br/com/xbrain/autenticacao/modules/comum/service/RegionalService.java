@@ -66,8 +66,4 @@ public class RegionalService {
             .filter(distinctByKey(RegionalDto::getId))
             .collect(Collectors.toList());
     }
-
-    public List<Integer> getNovasRegionaisIds() {
-        return repository.getNovasRegionaisIds();
-    }
 }

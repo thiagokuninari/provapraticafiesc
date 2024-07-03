@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -60,10 +59,6 @@ public class UsuarioServiceTestOracle {
     private UsuarioService service;
     @MockBean
     private AutenticacaoService autenticacaoService;
-    @MockBean
-    private ParceirosOnlineService parceirosOnlineService;
-    @Autowired
-    private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
     @MockBean
@@ -159,10 +154,8 @@ public class UsuarioServiceTestOracle {
             .thenReturn(List.of(111, 104, 115));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .subClusterId(189)
-            .grupoId(20)
-            .regionalId(3)
-            .clusterId(45)
+            .regionalId(1027)
+            .ufId(1)
             .cidadesIds(List.of(5578))
             .build());
 
@@ -193,10 +186,8 @@ public class UsuarioServiceTestOracle {
             .thenReturn(List.of(111, 104, 115));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .subClusterId(189)
-            .grupoId(20)
-            .regionalId(3)
-            .clusterId(45)
+            .regionalId(1027)
+            .ufId(1)
             .cidadesIds(List.of(5578))
             .build());
 

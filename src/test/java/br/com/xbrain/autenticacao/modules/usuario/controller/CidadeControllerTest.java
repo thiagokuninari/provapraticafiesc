@@ -186,46 +186,6 @@ public class CidadeControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getByIdGrupo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/grupo/1")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getByIdGrupo_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/grupo/1")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(cidadeService).getAllByGrupoId(1);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void getByIdCluster_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/cluster/1")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getByIdCluster_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/cluster/1")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(cidadeService).getAllByClusterId(1);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
     public void getByIdSubCluster_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL + "/sub-cluster/1")
                 .accept(MediaType.APPLICATION_JSON))
@@ -241,28 +201,6 @@ public class CidadeControllerTest {
             .andExpect(status().isOk());
 
         verify(cidadeService).getAllBySubClusterId(1);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void getAtivosParaComunicados_deveRetornarOk_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/comunicados")
-                .accept(MediaType.APPLICATION_JSON)
-                .param("subclusterId", "1"))
-            .andExpect(status().isOk());
-
-        verify(cidadeService).getAtivosParaComunicados(1);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void getByIdSubClusters_deveRetornarOk_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/sub-clusters")
-                .param("subclustersId", "1")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
     }
 
     @Test
