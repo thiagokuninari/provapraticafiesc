@@ -125,4 +125,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     List<Usuario> findByOrganizacaoEmpresaIdAndCargo_CodigoIn(Integer organizacaoEmpresaId, List<CodigoCargo> cargos);
 
     List<Usuario> findByOrganizacaoEmpresaId(Integer organizacaoEmpresaId);
+
+    List<Usuario> findByCpfOrEmailAndNotInSituacao(String cpf, String email, List<ESituacao> situacoes);
 }

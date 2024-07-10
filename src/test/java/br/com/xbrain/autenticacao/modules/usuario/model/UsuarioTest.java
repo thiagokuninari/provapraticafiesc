@@ -441,6 +441,42 @@ public class UsuarioTest {
         assertThat(usuario.isTecnico()).isFalse();
     }
 
+    @Test
+    public void isSocioPrincipalOuAceite_deveRetornarTrue_quandoUsuarioForNivelAgenteAutorizadoECargoSocioPrincipal() {
+        assertThat(umUsuarioComCargoENivel(AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO).isSocioPrincipalOuAceite())
+            .isTrue();
+    }
+
+    @Test
+    public void isSocioPrincipalOuAceite_deveRetornarTrue_quandoUsuarioForNivelAgenteAutorizadoECargoAceite() {
+        assertThat(umUsuarioComCargoENivel(AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_ACEITE).isSocioPrincipalOuAceite())
+            .isTrue();
+    }
+
+    @Test
+    public void isSocioPrincipalOuAceite_deveRetornarFalse_quandoUsuarioNaoForNivelAgenteAutorizadoECargoAceite() {
+        assertThat(umUsuarioComCargoENivel(OPERACAO, AGENTE_AUTORIZADO_ACEITE).isSocioPrincipalOuAceite())
+            .isFalse();
+    }
+
+    @Test
+    public void isSocioPrincipalOuAceite_deveRetornarFalse_quandoUsuarioForNivelAgenteAutorizadoENaoForCargoAceiteOuSocio() {
+        assertThat(umUsuarioComCargoENivel(AGENTE_AUTORIZADO, VENDEDOR_OPERACAO).isSocioPrincipalOuAceite())
+            .isFalse();
+    }
+
+    private static Usuario umUsuarioComCargoENivel(CodigoNivel nivelCodigo, CodigoCargo codigoCargo) {
+        return Usuario
+            .builder()
+            .cargo(Cargo.builder()
+                .codigo(codigoCargo)
+                .nivel(Nivel.builder()
+                    .codigo(nivelCodigo)
+                    .build())
+                .build())
+            .build();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

@@ -1468,4 +1468,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(predicate)
             .fetchFirst());
     }
+
+    @Override
+    public List<Usuario> findByCpfOrEmailAndNotInSituacao(String cpf, String email, List<ESituacao> situacoes) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .where(usuario.cpf.eq(cpf).or(usuario.email.equalsIgnoreCase(email))
+                .and(usuario.situacao.notIn(situacoes)))
+            .fetch();
+    }
 }

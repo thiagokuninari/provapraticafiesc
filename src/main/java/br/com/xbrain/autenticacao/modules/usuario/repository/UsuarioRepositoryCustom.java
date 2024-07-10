@@ -206,4 +206,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findByPredicate(Predicate predicate);
 
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
+
+    List<Usuario> findByCpfOrEmailAndNotInSituacao(String cpf, String email, List<ESituacao> situacoes);
 }
