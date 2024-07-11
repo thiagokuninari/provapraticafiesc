@@ -279,7 +279,6 @@ public class CidadeServiceTest {
         verify(cidadeRepository).findAllBySubClusterId(1, predicate);
     }
 
-
     @Test
     public void getAllBySubClustersId_deveRetornarUsuariosCidadeDto_quandoSubClusterIdsForInformado() {
         var usuarioAutenticado = UsuarioAutenticado.builder().id(1).build();

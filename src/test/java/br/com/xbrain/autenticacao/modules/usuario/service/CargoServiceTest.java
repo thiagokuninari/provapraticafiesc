@@ -340,7 +340,6 @@ public class CargoServiceTest {
                 tuple(1004, Set.of(ATIVO_PROPRIO, D2D_PROPRIO)));
     }
 
-
     private Page<Cargo> umaPaginaCargo() {
         var lista = List.of(umCargo(1, "nome 1", ESituacao.A), umCargo(2, "nome 2", ESituacao.A));
 

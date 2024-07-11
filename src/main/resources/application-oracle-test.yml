@@ -9,12 +9,12 @@ spring:
     port: 6379
 
   datasource:
-#    url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
-#    username: AUTENTICACAO_TEST
-#    password: py12nrk7
-    url: jdbc:oracle:thin:@//localhost:49161/xe
-    username: system
-    password: oracle
+    url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
+    username: AUTENTICACAO_TEST
+    password: py12nrk7
+    #url: jdbc:oracle:thin:@//localhost:49161/xe
+    #username: system
+    #password: oracle
 
     driverClassName: oracle.jdbc.OracleDriver
     maximumPoolSize: 2
