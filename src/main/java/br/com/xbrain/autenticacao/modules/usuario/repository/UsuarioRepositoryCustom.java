@@ -207,5 +207,5 @@ public interface UsuarioRepositoryCustom {
 
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
 
-    List<Usuario> findByCpfOrEmailAndNotInSituacao(String cpf, String email, List<ESituacao> situacoes);
+    List<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
 }

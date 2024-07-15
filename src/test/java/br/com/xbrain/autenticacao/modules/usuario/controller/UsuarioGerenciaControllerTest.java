@@ -1723,12 +1723,12 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void validarCpfEmailSocioPrincipal_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get(API_URI + "/socio-principal/existe-cpf-email")
+        mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
             .param("cpf", "42675562700")
             .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).isCpfOuEmailRegistradoComoSocioPrincipalOuAceite(
+        verify(usuarioService).obterIdsSeUsuariosForemSocioOuAceite(
             "42675562700",
             "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
     }
@@ -1737,7 +1737,7 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
     public void validarCpfEmailSocioPrincipal_deveRetornarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(get(API_URI + "/socio-principal/existe-cpf-email")
+        mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
                 .param("cpf", "42675562700")
                 .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
             .andExpect(status().isForbidden());
@@ -1749,7 +1749,7 @@ public class UsuarioGerenciaControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void validarCpfEmailSocioPrincipal_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
-        mvc.perform(get(API_URI + "/socio-principal/existe-cpf-email")
+        mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
                 .param("cpf", "42675562700")
                 .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
             .andExpect(status().isUnauthorized());

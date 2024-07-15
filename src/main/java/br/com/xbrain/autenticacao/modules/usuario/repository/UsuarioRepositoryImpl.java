@@ -1470,7 +1470,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findByCpfOrEmailAndNotInSituacao(String cpf, String email, List<ESituacao> situacoes) {
+    public List<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes) {
         return new JPAQueryFactory(entityManager)
             .select(usuario)
             .from(usuario)

@@ -172,8 +172,8 @@ public class UsuarioGerenciaController {
         service.atualizarEmailSocioInativo(socioPrincipalId);
     }
 
-    @GetMapping("socio-principal/existe-cpf-email")
-    public boolean validarCpfEmailSocioPrincipal(@RequestParam String cpf, @RequestParam String email) {
-        return service.isCpfOuEmailRegistradoComoSocioPrincipalOuAceite(cpf, email);
+    @GetMapping("socio-principal/verificar-cpf-email")
+    public List<Integer> validarCpfEmailSocioPrincipal(@RequestParam String cpf, @RequestParam String email) {
+        return service.obterIdsSeUsuariosForemSocioOuAceite(cpf, email);
     }
 }

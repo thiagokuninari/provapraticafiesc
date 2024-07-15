@@ -5025,115 +5025,101 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void isCpfOuEmailRegistradoComoSocioPrincipalOuAceite_deveRetornarTrue_quandoExistirUsuarioComCargoSocio() {
-        var usuario = umUsuarioCompleto();
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarIds_quandoExistirUsuariosComCargoSocioECargoAceite() {
+        var usuario1 = umUsuarioCompleto();
+        usuario1.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario1.getCargo().setCodigo(AGENTE_AUTORIZADO_ACEITE);
 
-        usuario.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
-        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_SOCIO);
+        var usuario2 = outroUsuarioCompleto();
+        usuario2.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario2.getCargo().setCodigo(AGENTE_AUTORIZADO_SOCIO);
 
         when(repository
-            .findByCpfOrEmailAndNotInSituacao(
+            .findByCpfOrEmailAndSituacaoNotIn(
                 "38957979875",
                 "usuario@xbrain.com.br",
                 List.of(ESituacao.R, ESituacao.P)))
-            .thenReturn(List.of(usuario));
+            .thenReturn(List.of(usuario1, usuario2));
 
-        assertThat(service.isCpfOuEmailRegistradoComoSocioPrincipalOuAceite("38957979875", "usuario@xbrain.com.br"))
-            .isTrue();
+        assertThat(service.obterIdsSeUsuariosForemSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .isEqualTo(List.of(1, 2));
 
-        verify(repository).findByCpfOrEmailAndNotInSituacao(
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
             "38957979875",
             "usuario@xbrain.com.br",
             List.of(ESituacao.R, ESituacao.P));
     }
 
     @Test
-    public void isCpfOuEmailRegistradoComoSocioPrincipalOuAceite_deveRetornarTrue_quandoExistirUsuarioComCargoAceite() {
-        var usuario = umUsuarioCompleto();
-
-        usuario.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
-        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_ACEITE);
-
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarListaVazia_seNaoExistirUsuarioComCpfOuEmailIgual() {
         when(repository
-            .findByCpfOrEmailAndNotInSituacao(
-                "38957979875",
-                "usuario@xbrain.com.br",
-                List.of(ESituacao.R, ESituacao.P)))
-            .thenReturn(List.of(usuario));
-
-        assertThat(service.isCpfOuEmailRegistradoComoSocioPrincipalOuAceite("38957979875", "usuario@xbrain.com.br"))
-            .isTrue();
-
-        verify(repository).findByCpfOrEmailAndNotInSituacao(
-            "38957979875",
-            "usuario@xbrain.com.br",
-            List.of(ESituacao.R, ESituacao.P));
-    }
-
-    @Test
-    public void isCpfOuEmailRegistradoComoSocioPrincipalOuAceite_deveRetornarFalse_seNaoExistirUsuarioComCpfOuEmailIgual() {
-        when(repository
-            .findByCpfOrEmailAndNotInSituacao(
+            .findByCpfOrEmailAndSituacaoNotIn(
                 "38957979875",
                 "usuario@xbrain.com.br",
                 List.of(ESituacao.R, ESituacao.P)))
             .thenReturn(List.of());
 
-        assertThat(service.isCpfOuEmailRegistradoComoSocioPrincipalOuAceite("38957979875", "usuario@xbrain.com.br"))
-            .isFalse();
+        assertThat(service.obterIdsSeUsuariosForemSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .isEqualTo(List.of());
 
-        verify(repository).findByCpfOrEmailAndNotInSituacao(
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
             "38957979875",
             "usuario@xbrain.com.br",
             List.of(ESituacao.R, ESituacao.P));
     }
 
     @Test
-    public void isCpfOuEmailRegistradoComoSocioPrincipalOuAceite_retornaException_seExistirUsuariosQueNaoSaoSociosOuAceite() {
-        var usuario = umUsuarioCompleto();
+    public void obterIdsSeUsuariosForemSocioOuAceite_retornaException_seExistirUsuariosQueNaoSaoSociosOuAceite() {
+        var usuario1 = umUsuarioCompleto();
+        usuario1.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario1.getCargo().setCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR);
 
-        usuario.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
-        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR);
+        var usuario2 = outroUsuarioCompleto();
+        usuario2.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario2.getCargo().setCodigo(AGENTE_AUTORIZADO_VENDEDOR_D2D);
 
         when(repository
-            .findByCpfOrEmailAndNotInSituacao(
+            .findByCpfOrEmailAndSituacaoNotIn(
                 "38957979875",
                 "usuario@xbrain.com.br",
                 List.of(ESituacao.R, ESituacao.P)))
-            .thenReturn(List.of(usuario));
+            .thenReturn(List.of(usuario1, usuario2));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.isCpfOuEmailRegistradoComoSocioPrincipalOuAceite(
+            .isThrownBy(() -> service.obterIdsSeUsuariosForemSocioOuAceite(
                 "38957979875",
                 "usuario@xbrain.com.br"))
-            .withMessage("O usuário já está cadastrado com outro cargo.");
+            .withMessage("Usuário cadastrado com outro cargo.");
 
-        verify(repository).findByCpfOrEmailAndNotInSituacao(
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
             "38957979875",
             "usuario@xbrain.com.br",
             List.of(ESituacao.R, ESituacao.P));
     }
 
     @Test
-    public void isCpfOuEmailRegistradoComoSocioPrincipalOuAceite_deveRetornarException_quandoExistirUsuariosQueNaoSaoNivelAA() {
-        var usuario = umUsuarioCompleto();
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarException_quandoExistirUsuariosQueNaoSaoNivelAA() {
+        var usuario1 = umUsuarioCompleto();
+        usuario1.getCargo().getNivel().setCodigo(OPERACAO);
+        usuario1.getCargo().setCodigo(OPERACAO_TELEVENDAS);
 
-        usuario.getCargo().getNivel().setCodigo(OPERACAO);
-        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR);
+        var usuario2 = outroUsuarioCompleto();
+        usuario2.getCargo().getNivel().setCodigo(MSO);
+        usuario2.getCargo().setCodigo(MSO_CONSULTOR);
 
         when(repository
-            .findByCpfOrEmailAndNotInSituacao(
+            .findByCpfOrEmailAndSituacaoNotIn(
                 "38957979875",
                 "usuario@xbrain.com.br",
                 List.of(ESituacao.R, ESituacao.P)))
-            .thenReturn(List.of(usuario));
+            .thenReturn(List.of(usuario1, usuario2));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service
-                .isCpfOuEmailRegistradoComoSocioPrincipalOuAceite("38957979875", "usuario@xbrain.com.br"))
-            .withMessage("O usuário já está cadastrado com outro cargo.");
+                .obterIdsSeUsuariosForemSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .withMessage("Usuário cadastrado com outro cargo.");
 
-        verify(repository).findByCpfOrEmailAndNotInSituacao(
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
             "38957979875",
             "usuario@xbrain.com.br",
             List.of(ESituacao.R, ESituacao.P));
