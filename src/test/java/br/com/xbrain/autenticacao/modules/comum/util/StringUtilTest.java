@@ -17,6 +17,12 @@ public class StringUtilTest {
     }
 
     @Test
+    public void getOnlyNumbers_deveRetornarStringVazia_quandoStringVazia() {
+        assertThat(StringUtil.getOnlyNumbers(""))
+            .isEqualTo("");
+    }
+
+    @Test
     public void getOnlyNumbers_deveRetornarSomenteNumeros_quandoValorForFornecido() {
         assertThat(StringUtil.getOnlyNumbers("2345Meia78 Tá na hora de tomar sorvete"))
             .isEqualTo("234578");

@@ -19,8 +19,14 @@ public class CnpjUtilTest {
     }
 
     @Test
-    public void formataCnpj_deveRetonarVazio_quandoCnpjNaoForFornecido() {
+    public void formataCnpj_deveRetonarVazio_quandoCnpjForNull() {
         assertThat(CnpjUtil.formataCnpj(null))
+            .isEqualTo("");
+    }
+
+    @Test
+    public void formataCnpj_deveRetonarVazio_quandoCnpjForVazio() {
+        assertThat(CnpjUtil.formataCnpj(""))
             .isEqualTo("");
     }
 }
