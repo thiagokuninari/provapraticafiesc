@@ -85,20 +85,11 @@ public class PlanilhaServiceTest {
             .isInstanceOf(ValidacaoException.class);
     }
 
-    public static MockMultipartFile umMockMultipartFile() throws Exception {
+    private static MockMultipartFile umMockMultipartFile() throws Exception {
         var bytes = readAllBytes(get(requireNonNull(PlanilhaServiceTest.class.getClassLoader()
             .getResource("arquivo_usuario/planilha.xlsx")).getPath()));
 
         return new MockMultipartFile("file", "planilha.xlsx",
             "application/vnd.ms-excel", bytes);
     }
-
-    public static MockMultipartFile umMockMultipartFileErrado() throws Exception {
-        var bytes = readAllBytes(get(requireNonNull(PlanilhaServiceTest.class.getClassLoader()
-            .getResource("feriados/feriados.csv")).getPath()));
-
-        return new MockMultipartFile("file", "feriados.csv",
-            "application/vnd.ms-excel", bytes);
-    }
-
 }
