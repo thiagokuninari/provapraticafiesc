@@ -573,8 +573,7 @@ public class Usuario {
     }
 
     private boolean isAgenteAutorizadoAceite() {
-        return Objects.nonNull(this.cargo)
-            && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_ACEITE);
+        return this.cargo != null && this.cargo.getCodigo() == AGENTE_AUTORIZADO_ACEITE;
     }
 
     public boolean isSocioPrincipal() {

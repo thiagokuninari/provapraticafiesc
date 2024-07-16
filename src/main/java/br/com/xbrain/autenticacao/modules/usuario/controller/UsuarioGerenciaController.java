@@ -173,7 +173,7 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("socio-principal/verificar-cpf-email")
-    public List<Integer> validarCpfEmailSocioPrincipal(@RequestParam String cpf, @RequestParam String email) {
+    public List<Integer> obterIdsSeUsuariosForemSocioOuAceite(@RequestParam String cpf, @RequestParam String email) {
         return service.obterIdsSeUsuariosForemSocioOuAceite(cpf, email);
     }
 }

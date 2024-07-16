@@ -1722,7 +1722,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void validarCpfEmailSocioPrincipal_deveRetornarOk_seUsuarioAutenticado() {
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarOk_seUsuarioAutenticado() {
         mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
             .param("cpf", "42675562700")
             .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
@@ -1736,7 +1736,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
-    public void validarCpfEmailSocioPrincipal_deveRetornarForbidden_seUsuarioSemPermissao() {
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarForbidden_seUsuarioSemPermissao() {
         mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
                 .param("cpf", "42675562700")
                 .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
@@ -1748,7 +1748,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void validarCpfEmailSocioPrincipal_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+    public void obterIdsSeUsuariosForemSocioOuAceite_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(get(API_URI + "/socio-principal/verificar-cpf-email")
                 .param("cpf", "42675562700")
                 .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
