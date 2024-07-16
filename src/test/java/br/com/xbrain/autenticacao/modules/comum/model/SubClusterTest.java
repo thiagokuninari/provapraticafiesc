@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SubClusterTEST {
+public class SubClusterTest {
 
     @Test
     public void getTipo_deveRetornarSubCluster_quandoSolicitado() {
