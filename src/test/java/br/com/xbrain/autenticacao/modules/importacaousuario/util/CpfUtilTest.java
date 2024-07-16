@@ -10,6 +10,8 @@ public class CpfUtilTest {
 
     private static final String CPF_VALIDO = "00011122285";
 
+    private static final String CPF_VALIDO_COM_FORMATACAO = "000.111.222-85";
+
     @Test
     public void formata_deveFormatarCpf_quandoSolicitado() {
         assertThat(CpfUtil.formata(CPF_VALIDO))
@@ -55,6 +57,12 @@ public class CpfUtilTest {
     @Test
     public void isCpfValido_deveRetornarTrue_quandoCpfValido() {
         assertThat(CpfUtil.isCpfValido(CPF_VALIDO))
+            .isTrue();
+    }
+
+    @Test
+    public void isCpfValido_deveRetornarTrue_quandoCpfValidoComFormatacao() {
+        assertThat(CpfUtil.isCpfValido(CPF_VALIDO_COM_FORMATACAO))
             .isTrue();
     }
 }
