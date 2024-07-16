@@ -8,12 +8,13 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -21,13 +22,28 @@ import static org.mockito.Mockito.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @RunWith(MockitoJUnitRunner.class)
-@ActiveProfiles("test")
 public class FeederMqListenerTest {
 
     @InjectMocks
     private FeederMqListener listener;
     @Mock
     private FeederService service;
+    private Logger logger;
+    private ListAppender<ILoggingEvent> listAppender;
+
+    @Before
+    public void setUp() {
+        logger = (Logger) getLogger(FeederMqListener.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+    }
+
+    @After
+    public void cleanUp() {
+        logger.detachAppender(listAppender);
+        listAppender.stop();
+    }
 
     @Test
     public void atualizarPermissaoFeeder_deveAtualizarPermissaoFeeder_quandoSolicitado() {
@@ -39,11 +55,6 @@ public class FeederMqListenerTest {
 
     @Test
     public void atualizarPermissaoFeeder_deveLancarLogDeErro_quandoHouverErro() {
-        var logger = (Logger) getLogger(FeederMqListener.class);
-        var listAppender = new ListAppender<ILoggingEvent>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
         doThrow(RuntimeException.class).when(service).atualizarPermissaoFeeder(umAgenteAutorizadoPermissaoFeederDto());
 
         listener.atualizarPermissaoFeeder(umAgenteAutorizadoPermissaoFeederDto());
@@ -62,11 +73,6 @@ public class FeederMqListenerTest {
 
     @Test
     public void alterarSituacaoUsuarioFeeder_deveLancarLogDeErro_quandoHouverErro() {
-        var logger = (Logger) getLogger(FeederMqListener.class);
-        var listAppender = new ListAppender<ILoggingEvent>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
         doThrow(RuntimeException.class).when(service).alterarSituacaoUsuarioFeeder(umaSituacaoAlteracaoUsuarioFeederDto());
 
         listener.alterarSituacaoUsuarioFeeder(umaSituacaoAlteracaoUsuarioFeederDto());
@@ -85,11 +91,6 @@ public class FeederMqListenerTest {
 
     @Test
     public void limparCpfEAlterarEmailFeeder_deveLancarLogDeErro_quandoHouverErro() {
-        var logger = (Logger) getLogger(FeederMqListener.class);
-        var listAppender = new ListAppender<ILoggingEvent>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
         doThrow(RuntimeException.class).when(service).limparCpfEAlterarEmailUsuarioFeeder(1);
 
         listener.limparCpfEAlterarEmailFeeder(1);
