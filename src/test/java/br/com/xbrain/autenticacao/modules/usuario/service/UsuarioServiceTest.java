@@ -98,7 +98,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGeren
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_SUPORTE_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
@@ -106,10 +105,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.li
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.listaDistritosDeLondrinaECampinaDaLagoaECidadeCampinaDaLagoa;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
@@ -2641,12 +2636,10 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
-                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO,
-                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true))
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true, List.of()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -2657,16 +2650,27 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
-                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO,
-                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false))
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false, List.of()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
                 tuple(1, "NOME UM"));
+    }
+
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarPorCargo_quandoInformarCargos() {
+        doReturn(List.of(umUsuarioAtivo()))
+            .when(repository)
+            .findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE));
+
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false,
+            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE)))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"));
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {
@@ -5472,16 +5476,6 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    @TestConfiguration
-    static class MockitoPublisherConfiguration {
-
-        @Bean
-        @Primary
-        static ApplicationEventPublisher publisher() {
-            return mock(ApplicationEventPublisher.class);
-        }
-    }
-
     private Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
         return Usuario.builder()
             .id(100)
@@ -5492,5 +5486,15 @@ public class UsuarioServiceTest {
                 .build())
             .email("email@google.com")
             .build();
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
     }
 }

@@ -130,10 +130,8 @@ public class UsuarioService {
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
         "Usuário já está cadastrado em outra equipe";
-    private static final List<CodigoCargo> CARGOS_TRATAMENTO_BACKOFFICE
-        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
-        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO,
-        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS);
+    private static final List<CodigoCargo> CARGOS_OPERADORES_BACKOFFICE
+        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
@@ -2703,8 +2701,18 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoId,
-                                                                                     boolean buscarInativos) {
-        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, CARGOS_TRATAMENTO_BACKOFFICE)
+                                                                                     boolean buscarInativos,
+                                                                                     List<CodigoCargo> cargos) {
+        if (!isEmpty(cargos)) {
+            return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, cargos);
+        }
+        return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, CARGOS_OPERADORES_BACKOFFICE);
+    }
+
+    private List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoECargos(Integer organizacaoId,
+                                                                                      boolean buscarInativos,
+                                                                                      List<CodigoCargo> cargos) {
+        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, cargos)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))

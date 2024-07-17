@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static helpers.TestBuilders.umUsuario;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.is;
@@ -1737,7 +1736,7 @@ public class UsuarioControllerTest {
                 .param("buscarInativos", "false"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false, null);
     }
 
     @Test
@@ -1748,7 +1747,21 @@ public class UsuarioControllerTest {
                 .param("organizacaoId", "1"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true, null);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarOk_quandoInformadoCargos() {
+        mvc.perform(get(BASE_URL)
+                .param("organizacaoId", "1")
+                .param("buscarInativos", "false")
+                .param("cargos", "BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false,
+            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE));
     }
 
     @Test
