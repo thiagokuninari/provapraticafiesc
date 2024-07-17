@@ -104,6 +104,18 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
+    public void findAgenteAutorizadoByUsuarioId_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .findAgenteAutorizadoByUsuarioId(1);
+
+        assertThatThrownBy(() -> service.findAgenteAutorizadoByUsuarioId(1))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).findAgenteAutorizadoByUsuarioId(1);
+    }
+
+    @Test
     public void findAgentesAutorizadosByUsuariosIds_deveRetornarTodosAasDosUsuarios_quandoTudoOk() {
         when(client.findAgentesAutorizadosByUsuariosIds(eq(List.of(1)), eq(true)))
             .thenReturn(umaListaDeAgenteAutorizadoResponse());
@@ -341,6 +353,18 @@ public class AgenteAutorizadoServiceTest {
         assertThat(service.getUsuariosAaAtivoSemVendedoresD2D(1))
             .extracting("id", "nome", "agenteAutorizadoId", "email", "equipeVendaId")
             .containsExactly(tuple(1, "TESTE", 1, "TESTE@XBRAIN.COM.BR", 1));
+    }
+
+    @Test
+    public void getUsuariosAaAtivoSemVendedoresD2D_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getUsuariosAaAtivoSemVendedoresD2D(1);
+
+        assertThatThrownBy(() -> service.getUsuariosAaAtivoSemVendedoresD2D(1))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getUsuariosAaAtivoSemVendedoresD2D(1);
     }
 
     @Test
