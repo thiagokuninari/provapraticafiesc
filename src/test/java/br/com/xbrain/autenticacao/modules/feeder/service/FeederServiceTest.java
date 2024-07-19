@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -126,6 +127,20 @@ public class FeederServiceTest {
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
+        verify(usuarioHistoricoService, times(0)).save(anyList());
+    }
+
+    @Test
+    public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciais_quandoUsuariosNaoTerPermissaoFeederResidencial() {
+        var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.EMPRESARIAL);
+        aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
+
+        service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
+
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(List.of(20018, 20101, 20102, 20104), List.of());
         verify(usuarioService, times(1)).salvarPermissoesEspeciais(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
     }
@@ -284,6 +299,28 @@ public class FeederServiceTest {
         var permissoesEsperadas = new ArrayList<Integer>();
         permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_COLABORADORES_AA_RESIDENCIAL);
         permissoesEsperadas.addAll(FUNCIONALIDADES_FEEDER_PARA_AA);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas)))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(eq(umaListaPermissoesFuncionalidadesFeederParaAa(1111)));
+    }
+
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoes_quandoUsuarioForAgenteAutorizado() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
+
+        var permissoesEsperadas = new ArrayList<Integer>();
+        permissoesEsperadas.add(FUNCIONALIDADE_TRABALHAR_ALARME_ID);
+        permissoesEsperadas.add(FUNCIONALIDADE_TRATAR_LEAD_ID);
 
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));

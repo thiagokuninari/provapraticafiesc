@@ -174,7 +174,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void save_deveRetornarUnauthorized_quandoNaoPassarToken() {
+    public void save_deveRetornarUnauthorized_quandoTokenInvalido() {
         mvc.perform(post(URL)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
@@ -185,7 +185,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     @SneakyThrows
-    public void save_deveRetornarForbidden_quandoNaoTiverPermissao() {
+    public void save_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(post(URL)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden())
@@ -197,7 +197,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
-    public void save_deveRetornarBadRequest_quandoDadoObrigatorioNull() {
+    public void save_deveRetornarBadRequest_quandoDadosObrigatoriosNull() {
         mvc.perform(post(URL)
                 .content(convertObjectToJsonBytes(new HorarioAcessoRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -212,7 +212,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
-    public void save_deveRetornarOK_quandoDadoObrigatorioListEmpty() {
+    public void save_deveRetornarOK_quandoDadosObrigatoriosListEmpty() {
         var requestEmpty = umHorarioAcessoRequest();
         requestEmpty.setHorariosAtuacao(List.of());
 
@@ -229,7 +229,7 @@ public class HorarioAcessoControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(roles = {GERENCIAR_HORARIOS_ACESSO})
-    public void save_deveRetornarOK_quandoDadosValidos() {
+    public void save_deveRetornarOk_quandoDadosValidos() {
         when(service.save(umHorarioAcessoRequest())).thenReturn(umHorarioAcesso());
 
         mvc.perform(post(URL)
