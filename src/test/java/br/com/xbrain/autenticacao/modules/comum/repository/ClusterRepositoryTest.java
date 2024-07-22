@@ -25,7 +25,7 @@ public class ClusterRepositoryTest {
     ClusterRepository clusterRepository;
 
     @Test
-    public void findBySituacaoAndGrupoId_deveRetonarClustersOrdenados_quandoSituacaAtivoEGrupoValidos() {
+    public void findBySituacaoAndGrupoId_deveRetonarClustersOrdenados_quandoSituacaAtivoEGrupoValido() {
         assertThat(clusterRepository.findBySituacaoAndGrupoId(A, 1008, new Sort(ASC, "nome")))
             .extracting("id", "nome", "grupo.id", "situacao")
             .containsExactly(tuple(1009, "A NOME CLUSTER", 1008, A),
@@ -35,7 +35,7 @@ public class ClusterRepositoryTest {
     }
 
     @Test
-    public void findBySituacaoAndGrupoId_deveRetonarClustersOrdenados_quandoSituacaInativoEGrupoValidos() {
+    public void findBySituacaoAndGrupoId_deveRetonarClustersOrdenados_quandoSituacaInativoEGrupoValido() {
         assertThat(clusterRepository.findBySituacaoAndGrupoId(I, 1008, new Sort(ASC, "nome")))
             .extracting("id", "nome", "grupo.id", "situacao")
             .containsExactly(tuple(1012, "D NOME CLUSTER", 1008, I));
