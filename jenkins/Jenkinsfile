@@ -11,6 +11,7 @@ pipeline {
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
+        CURRENT_IMAGE = sh(script: "${DOCKER_DEV} ps -a -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
         JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
                                    -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
@@ -105,11 +106,20 @@ pipeline {
                                 script {
                                     error "status container ${output}!"
                                 }
+                            } else {
+                                sh ''' ${DOCKER_DEV} image rm ${CURRENT_IMAGE} '''
                             }
                         }
                     } catch (error) {
                         if (!output.equals("\"healthy\"")) {
                             currentBuild.result = 'UNSTABLE'
+                            sh '''
+                                if ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$" && [ -n "${CURRENT_IMAGE}" ]; then
+                                   ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                else
+                                   ${DOCKER_DEV} image rm ${HARBOR_URL}
+                                fi
+                            '''
                         }
                     }
                 }

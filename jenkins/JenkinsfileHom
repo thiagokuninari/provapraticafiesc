@@ -16,7 +16,7 @@ pipeline {
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
-        CURRENT_IMAGE = sh(script: "${DOCKER_HOM} ps -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
+        CURRENT_IMAGE = sh(script: "${DOCKER_HOM} ps -a -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
         JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
                                    -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
@@ -90,6 +90,8 @@ pipeline {
                                 script {
                                     error "status container ${output}!"
                                 }
+                            } else {
+                                sh ''' ${DOCKER_HOM} image rm ${CURRENT_IMAGE} '''
                             }
                         }
                     } catch (error) {
@@ -106,6 +108,7 @@ pipeline {
             }
             steps('Realizando rollback') {
                 sh '''
+                    ${DOCKER_HOM} image rm ${HARBOR_URL}
                     if ${DOCKER_HOM} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
                        ${DOCKER_HOM} stop ${CONTAINER_NAME}
                        ${DOCKER_HOM} rm ${CONTAINER_NAME}
