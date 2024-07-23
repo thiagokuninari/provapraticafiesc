@@ -3294,24 +3294,21 @@ public class UsuarioService {
                 .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
     }
 
-    private List<Usuario> buscarUsuariosPorCpfOuEmailExcluindoSituacoes(String cpf, String email) {
+    private Optional<Usuario> buscarUsuarioPorCpfOuEmailExcluindoSituacoes(String cpf, String email) {
         return repository.findByCpfOrEmailAndSituacaoNotIn(
             getOnlyNumbers(cpf),
             email,
             List.of(ESituacao.R, ESituacao.P));
     }
 
-    public List<Integer> obterIdsSeUsuariosForemSocioOuAceite(String cpf, String email) {
-        var usuarios = buscarUsuariosPorCpfOuEmailExcluindoSituacoes(cpf, email);
-
-        if (!usuarios.isEmpty()) {
-            for (Usuario usuario : usuarios) {
+    public Integer obterIdSeUsuarioForSocioOuAceite(String cpf, String email) {
+        return buscarUsuarioPorCpfOuEmailExcluindoSituacoes(cpf, email)
+            .map(usuario -> {
                 if (!usuario.isSocioPrincipalOuAceite()) {
                     throw new ValidacaoException("Usuário cadastrado com outro cargo.");
                 }
-            }
-            return usuarios.stream().map(Usuario::getId).collect(toList());
-        }
-        return emptyList();
+                return usuario.getId();
+            })
+            .orElse(null);
     }
 }

@@ -402,47 +402,39 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuarios_seCpfExistirESituacaoNaoForPendenteOuRealocado() {
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seCpfExistirESituacaoNaoForPendenteOuRealocado() {
         assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("00011122233",
-            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P)))
+            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P))).get()
             .extracting("id", "nome", "email", "cpf", "situacao")
-            .containsExactly(tuple(703, "USUARIO 703", "USUARIO_703@TESTE.COM", "00011122233", A),
-                tuple(704, "USUARIO 704", "USUARIO_704@TESTE.COM", "00011122233", A),
-                tuple(705, "USUARIO 705", "USUARIO_705@TESTE.COM", "00011122233", A),
-                tuple(706, "USUARIO 706", "USUARIO_706@TESTE.COM", "00011122233", I),
-                tuple(707, "USUARIO 707", "USUARIO_707@TESTE.COM", "00011122233", I));
+            .containsExactly(703, "USUARIO 703", "USUARIO_703@TESTE.COM", "00011122233", I);
 
     }
 
     @Test
-    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuarios_seEmailExistirESituacaoNaoForPendenteOuRealocado() {
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailExistirESituacaoNaoForPendenteOuRealocado() {
         assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
-            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P)))
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
             .extracting("id", "nome", "email", "cpf", "situacao")
-            .containsExactly(tuple(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A),
-                tuple(711, "USUARIO 711", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A),
-                tuple(712, "USUARIO 712", "USUARIO_XBRAIN@TESTE.COM", "99988877766", I));
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
     }
 
     @Test
-    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuarios_seEmailECpfExistirESituacaoNaoForPendenteOuRealocado() {
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailECpfExistirESituacaoNaoForPendenteOuRealocado() {
         assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("99988877766",
-            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P)))
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
             .extracting("id", "nome", "email", "cpf", "situacao")
-            .containsExactly(tuple(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A),
-                tuple(711, "USUARIO 711", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A),
-                tuple(712, "USUARIO 712", "USUARIO_XBRAIN@TESTE.COM", "99988877766", I));
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
     }
 
     @Test
-    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarLista_seCpfExistirESituacaoForPendenteOuRealocado() {
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seCpfExistirESituacaoForPendenteOuRealocado() {
         assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("11122233344",
             "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P)))
             .isEmpty();
     }
 
     @Test
-    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarLista_seEmailExistirESituacaoForPendenteOuRealocado() {
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seEmailExistirESituacaoForPendenteOuRealocado() {
         assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
             "USUARIO_REALOCADO@TESTE.COM", List.of(R, P)))
             .isEmpty();

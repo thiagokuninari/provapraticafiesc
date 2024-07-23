@@ -126,5 +126,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findByOrganizacaoEmpresaId(Integer organizacaoEmpresaId);
 
-    List<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
+    Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
 }

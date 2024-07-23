@@ -1470,12 +1470,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes) {
-        return new JPAQueryFactory(entityManager)
+    public Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .select(usuario)
             .from(usuario)
             .where(usuario.cpf.eq(cpf).or(usuario.email.equalsIgnoreCase(email))
                 .and(usuario.situacao.notIn(situacoes)))
-            .fetch();
+            .fetchFirst());
     }
 }
