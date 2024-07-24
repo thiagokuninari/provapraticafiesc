@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -60,18 +59,6 @@ public class UsuarioCidadeDto {
             .stream()
             .map(usuarioCidadeResponse -> definirNomeCidadePaiPorCidades(usuarioCidadeResponse, cidades))
             .collect(Collectors.toList());
-    }
-
-    public static UsuarioCidadeDto of(UsuarioCidade usuarioCidade) {
-        return UsuarioCidadeDto.builder()
-            .idCidade(usuarioCidade.getCidade().getId())
-            .nomeCidade(usuarioCidade.getCidade().getNome())
-            .idUf(usuarioCidade.getCidade().getUf().getId())
-            .nomeUf(usuarioCidade.getCidade().getUf().getNome())
-            .idRegional(usuarioCidade.getCidade().getRegional().getId())
-            .nomeRegional(usuarioCidade.getCidade().getRegional().getNome())
-            .fkCidade(usuarioCidade.getCidade().getFkCidade())
-            .build();
     }
 
     public static UsuarioCidadeDto definirNomeCidadePaiPorCidades(UsuarioCidadeDto usuarioCidadeResponse,

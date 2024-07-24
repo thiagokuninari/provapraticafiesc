@@ -2313,4 +2313,28 @@ public class UsuarioControllerTest {
 
         verifyZeroInteractions(usuarioService);
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findCidadesIdByUsuarioId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/usuario-cidades"))
+                .param("usuarioId", "1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findCidadesIdByUsuarioId(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findCidadesIdByUsuarioId_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/usuario-cidades"))
+                .param("usuarioId", "1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService).findCidadesIdByUsuarioId(1);
+    }
 }

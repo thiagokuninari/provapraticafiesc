@@ -609,4 +609,9 @@ public class UsuarioController {
     public UsuarioSubCanalResponse findUsuarioD2dByCpf(@RequestParam String cpf) {
         return usuarioService.findUsuarioD2dByCpf(cpf);
     }
+
+    @GetMapping("usuario-cidades")
+    public List<Integer> findCidadesIdByUsuarioId(@RequestParam Integer usuarioId) {
+        return usuarioService.findCidadesIdByUsuarioId(usuarioId);
+    }
 }

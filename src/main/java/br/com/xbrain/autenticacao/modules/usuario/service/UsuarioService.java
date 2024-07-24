@@ -3074,6 +3074,10 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> findCidadesIdByUsuarioId(Integer usuarioId) {
+        return usuarioCidadeRepository.findCidadesIdByUsuarioId(usuarioId);
+    }
+
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
                                                                 List<Integer> funcionalidades) {
         return funcionalidades.stream()
