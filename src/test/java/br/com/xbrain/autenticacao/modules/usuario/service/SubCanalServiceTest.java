@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
@@ -11,6 +12,8 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanalHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,11 +48,15 @@ public class SubCanalServiceTest {
     @Mock
     private SubCanalRepository subCanalRepository;
     @Mock
+    private SubCanalHistoricoRepository subCanalHistoricoRepository;
+    @Mock
     private UsuarioService usuarioService;
     @Mock
     private AutenticacaoService autenticacaoService;
     @Captor
     private ArgumentCaptor<SubCanal> subCanalArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<SubCanalHistorico> subCanalHistoricoArgumentCaptor;
 
     @Test
     public void getAll_deveRetornarTodosSubCanais_quandoSolicitado() {
@@ -255,9 +262,18 @@ public class SubCanalServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(subCanalRepository).findById(1);
         verify(subCanalRepository).save(subCanalArgumentCaptor.capture());
+        verify(subCanalHistoricoRepository).save(subCanalHistoricoArgumentCaptor.capture());
+
         assertThat(subCanalArgumentCaptor.getValue())
             .extracting("id", "codigo", "nome", "situacao", "novaChecagemCredito", "novaChecagemViabilidade")
             .containsExactly(1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.F, Eboolean.F);
+
+        assertThat(subCanalHistoricoArgumentCaptor.getValue())
+            .extracting("id", "subCanal.id", "codigo", "nome", "situacao", "novaChecagemCreditoAntiga",
+                "novaChecagemViabilidadeAntiga", "novaChecagemCreditoNova", "novaChecagemViabilidadeNova",
+                "acao", "usuarioAcaoId", "usuarioAcaoNome")
+            .containsExactly(null, 1, PAP_PREMIUM, "PAP", ESituacao.I, Eboolean.V, Eboolean.V, Eboolean.F, Eboolean.F,
+                EAcao.ATUALIZACAO, 100, "ADMIN");
     }
 
     @Test

@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorTecnicoService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -38,6 +39,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -57,7 +59,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -91,6 +92,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDA
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGerenciaControllerTest.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -181,6 +183,8 @@ public class UsuarioServiceTest {
     @Mock
     private ColaboradorVendasService colaboradorVendasService;
     @Mock
+    private ColaboradorTecnicoService colaboradorTecnicoService;
+    @Mock
     private CargoService cargoService;
     @Mock
     private SubCanalService subCanalService;
@@ -209,6 +213,8 @@ public class UsuarioServiceTest {
     @Mock
     private MinioFileService minioFileService;
     @Mock
+    private SuporteVendasService suporteVendasService;
+    @Mock
     private MinioClient minioClient;
     @Mock
     private FileService fileService;
@@ -222,12 +228,6 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
-
-    @Before
-    public void setUp() {
-        ReflectionTestUtils.setField(service, "dominiosPermitidos",
-            new HashSet<>(Arrays.asList("EMAILPERMITIDO.COM.BR")));
-    }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1342,9 +1342,8 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailValido() {
+    public void salvarUsuarioBackoffice_deveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoMercadoDesenvolvimento() {
         var usuario = umUsuarioBackoffice();
-        usuario.setEmail("teste@emailpermitido.com.br");
         usuario.setId(1);
         usuario.setUsuarioCadastro(new Usuario(1));
         usuario.setCargo(Cargo.builder()
@@ -1361,9 +1360,8 @@ public class UsuarioServiceTest {
         lenient().when(organizacaoEmpresaService.findById(anyInt()))
             .thenReturn(organizacao);
 
-        doReturn(Optional.of(usuario))
-            .when(repository)
-            .findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findComplete(1);
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
@@ -1380,9 +1378,9 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoDominioEmailInvalido() {
+    public void salvarUsuarioBackoffice_naoDeveAdicionarPermissaoEEnviarDadosParaFilaSocialHub_quandoNaoMercadoDesenvolvimento() {
         var usuario = umUsuarioBackoffice();
-        usuario.setEmail("teste@Naoemailpermitido.com.br");
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
         usuario.setId(1);
         usuario.setUsuarioCadastro(new Usuario(1));
         usuario.setCargo(Cargo.builder()
@@ -1399,9 +1397,8 @@ public class UsuarioServiceTest {
         lenient().when(organizacaoEmpresaService.findById(anyInt()))
             .thenReturn(organizacao);
 
-        doReturn(Optional.of(usuario))
-            .when(repository)
-            .findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findById(1);
+        doReturn(Optional.of(usuario)).when(repository).findComplete(1);
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
@@ -1435,6 +1432,62 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarCargo() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarOrganizacao() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(100, 200);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoGrupo_quandoDadosIdenticos() {
+        var usuarioMock = umUsuarioComCargoEOrganizacao(100, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioMock))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(suporteVendasService);
+    }
+
+    @Test
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
         var usuario = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
@@ -1465,6 +1518,8 @@ public class UsuarioServiceTest {
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(repository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
@@ -1482,6 +1537,8 @@ public class UsuarioServiceTest {
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
         when(repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
             .thenReturn(Optional.of(umUsuario()));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
@@ -1497,6 +1554,8 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
 
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
@@ -1527,6 +1586,66 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveSalvar() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        service.salvarUsuarioBriefing(umUsuarioBriefing());
+        verify(notificacaoService, atLeastOnce())
+            .enviarEmailDadosDeAcesso(argThat(arg -> arg.getNome().equals("Briefing")), anyString());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveRemoverCaracteresEspeciais() {
+        var usaurio = umUsuarioBriefing();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        assertThat(usaurio)
+            .extracting("cpf")
+            .containsExactly("097.238.645-92");
+
+        service.salvarUsuarioBriefing(usaurio);
+
+        verify(repository, times(1)).save(usuarioCaptor.capture());
+        assertThat(usuarioCaptor.getValue())
+            .extracting("cpf")
+            .containsExactly("09723864592");
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoCpfExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findTop1UsuarioByCpfAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("CPF já cadastrado.");
+
+        verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(repository, never()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(repository, never()).save(anyIterable());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_validacaoException_quandoEmailExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any()))
+            .thenReturn(Optional.of(umUsuario()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioBriefing(umUsuarioBriefing()))
+            .withMessage("Email já cadastrado.");
+
+        verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
+        verify(repository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+        verify(repository, never()).save(anyIterable());
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -1818,8 +1937,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorNovaRegionalId() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1828,20 +1946,18 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .regionalId(1027)
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .regionalId(1027)
+                .usuarioService(service)
+                .build()));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorUfId() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1851,20 +1967,18 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .ufId(1)
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .ufId(1)
+                .usuarioService(service)
+                .build()));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarCidadesIds() {
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
-        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
+        when(repository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -1875,14 +1989,13 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "situacao")
             .containsExactly(tuple(1, "TESTE", ESituacao.A));
         verify(repository, times(1)).findAllNomesIds(eq(
-                PublicoAlvoComunicadoFiltros.builder()
-                    .todoCanalAa(false)
-                    .todoCanalD2d(false)
-                    .comUsuariosLogadosHoje(false)
-                    .cidadesIds(List.of(5578))
-                    .usuarioService(service)
-                    .build()),
-            eq(List.of(1027)));
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .cidadesIds(List.of(5578))
+                .usuarioService(service)
+                .build()));
     }
 
     private Usuario umUsuarioAtivo() {
@@ -1915,7 +2028,22 @@ public class UsuarioServiceTest {
             .email("usuario@teste.com")
             .telefone("43995565661")
             .hierarquiasId(List.of())
+            .territorioMercadoDesenvolvimentoId(1)
             .usuariosHierarquia(new HashSet<>())
+            .build();
+    }
+
+    private Usuario umUsuarioBriefing() {
+        return Usuario.builder()
+            .nome("Briefing")
+            .cpf("097.238.645-92")
+            .email("briefing@teste.com")
+            .telefone("14999999999")
+            .hierarquiasId(List.of())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(new Cargo(1234))
+            .departamento(new Departamento(12345))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(1))
             .build();
     }
 
@@ -2511,7 +2639,7 @@ public class UsuarioServiceTest {
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true))
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true, List.of()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -2525,11 +2653,24 @@ public class UsuarioServiceTest {
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false))
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false, List.of()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
                 tuple(1, "NOME UM"));
+    }
+
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarPorCargo_quandoInformarCargos() {
+        doReturn(List.of(umUsuarioAtivo()))
+            .when(repository)
+            .findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE));
+
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false,
+            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE)))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"));
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {
@@ -4175,7 +4316,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+    public void remanejarUsuario_deveRemanejarColaboradorVendasAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
         var usuarioMqRequest = umUsuarioMqRequestCompleto();
         var usuarioDto = umUsuarioDtoParse();
         var usuarioAntigo = umUsuarioConvertFrom();
@@ -4202,20 +4343,42 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(colaboradorVendasService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorTecnicoService);
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarColaboradorTecnicoAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioMqRequestCompleto();
+        var usuarioDto = umUsuarioDtoParse();
+        var usuarioAntigo = umUsuarioConvertFrom();
+        usuarioAntigo.setId(null);
+
+        when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
+        when(cargoRepository.findByCodigo(usuarioMqRequest.getCargo())).thenReturn(umCargoGerente());
+        when(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento())).thenReturn(umDepartamentoAa());
+        when(nivelRepository.findByCodigo(usuarioMqRequest.getNivel())).thenReturn(umNivelAa());
+        when(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()))
+            .thenReturn(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)));
+        when(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa())).thenReturn(List.of(umaEmpresa()));
+        var novoUsuario = umUsuarioConvertFrom();
+        novoUsuario.setCargo(umCargo(1, AGENTE_AUTORIZADO_TECNICO_VENDEDOR));
+        novoUsuario.setUsuariosHierarquia(Set.of());
+        when(repository.save(usuarioAntigo)).thenReturn(novoUsuario);
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        verify(repository).findById(usuarioDto.getId());
+        verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
+        verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
+        verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
+        verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
+        verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
+        verify(colaboradorTecnicoService).atualizarUsuarioRemanejado(any(UsuarioRemanejamentoRequest.class));
+        verifyNoMoreInteractions(colaboradorVendasService);
     }
 
     private void mockApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         ReflectionTestUtils.setField(service, "applicationEventPublisher", applicationEventPublisher);
-    }
-
-    @TestConfiguration
-    static class MockitoPublisherConfiguration {
-
-        @Bean
-        @Primary
-        static ApplicationEventPublisher publisher() {
-            return mock(ApplicationEventPublisher.class);
-        }
     }
 
     @Test
@@ -4722,13 +4885,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoDominioEmailValidoEPermissaoTrue() {
-        var usuario = umUsuarioSocialHub("teste@emailpermitido.com.br");
+    public void save_deveAdicionarPermissaoSocialHubEEnviarDadosParaFilaSocialHub_quandoMercadoDesenvolvimentoPresente() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
-        when(repository.findById(eq(2)))
+        when(repository.findById(2))
             .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
@@ -4748,14 +4911,14 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoDominioEmailInvalido() {
-        var usuario = umUsuarioSocialHub("teste@emailnaopermitido.com.br");
+    public void save_naoDeveAdicionarPermissaoSocialHubENaoEnviarDadosParaFila_quandoMercadoDesenvolvimentoNaoPresente() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", null, XBRAIN);
 
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
 
-        when(repository.findById(eq(2))).thenReturn(Optional.of(usuario));
+        when(repository.findById(2)).thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
         doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
@@ -4768,6 +4931,58 @@ public class UsuarioServiceTest {
         verify(permissaoEspecialService, never()).save(anyList());
         verify(usuarioMqSender, never())
             .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
+    }
+
+    @Test
+    public void save_deveRemoverPermissaoSocialHub_quandoMsoOuOperacaoSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, MSO);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository).deletarPermissaoEspecialBy(List.of(ROLE_SHB), List.of(usuario.getId()));
+    }
+
+    @Test
+    public void save_naoDeveRemoverPermissaoSocialHub_quandoOutroNivelSemTerritorioDesenvolvimento() {
+        var usuario = umUsuarioSocialHub("emailteste@xbrain.com.br", 1, XBRAIN);
+        usuario.setTerritorioMercadoDesenvolvimentoId(null);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findById(1);
+        when(repository.findById(2))
+            .thenReturn(Optional.of(usuario));
+        when(repository.getCanaisByUsuarioIds(anyList()))
+            .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
+        doReturn(umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        when(cargoService.findByUsuarioId(1))
+            .thenReturn(umCargo(1, SUPERVISOR_OPERACAO));
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(usuario.getId(), ROLE_SHB))
+            .thenReturn(true);
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(permissaoEspecialRepository, never()).deletarPermissaoEspecialBy(anyList(), anyList());
     }
 
     @Test
@@ -5259,5 +5474,27 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
+    }
+
+    private Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
+        return Usuario.builder()
+            .id(100)
+            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
+                .id(organizacaoId)
+                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
+                .build())
+            .email("email@google.com")
+            .build();
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
     }
 }

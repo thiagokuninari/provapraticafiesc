@@ -44,7 +44,7 @@ public class UsuarioMqRequest {
     private String exception;
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
-    private Integer colaboradorVendasId;
+    private Integer colaboradorId;
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;

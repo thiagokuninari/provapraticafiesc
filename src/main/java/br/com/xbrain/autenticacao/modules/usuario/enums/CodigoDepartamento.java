@@ -26,5 +26,6 @@ public enum CodigoDepartamento {
     TECNICO,
     CREDITO,
     ANTI_FRAUDE,
-    ENDERECOS
+    ENDERECOS,
+    BRIEFING
 }

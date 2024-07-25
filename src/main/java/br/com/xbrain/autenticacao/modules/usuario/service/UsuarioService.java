@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorTecnicoService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -43,6 +44,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
@@ -92,10 +94,12 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
@@ -259,14 +263,16 @@ public class UsuarioService {
     @Value("${app-config.url-foto-usuario}")
     private String urlDir;
     @Autowired
+    private ColaboradorTecnicoService colaboradorTecnicoService;
+    @Autowired
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
-    @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
-    private Set<String> dominiosPermitidos;
+    @Autowired
+    private SuporteVendasService suporteVendasService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -774,26 +780,51 @@ public class UsuarioService {
             .collect(Collectors.joining(", "));
     }
 
-    public Usuario salvarUsuarioBackoffice(Usuario usuario) {
+    public UsuarioResponse salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
+        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
-        validarOrganizacaoEmpresaInativa(usuario);
+        tratarCadastroUsuario(usuario);
+        desvincularGruposByUsuario(usuario);
+        var isNovoCadastro = usuario.isNovoCadastro();
+        repository.save(usuario);
+
+        processarUsuarioParaSocialHub(usuario);
+        enviarEmailDadosAcesso(usuario, isNovoCadastro);
+        return UsuarioResponse.of(usuario);
+    }
+
+    public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
+        validar(usuario);
         tratarCadastroUsuario(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
-        processarUsuarioParaSocialHub(usuario);
         enviarEmailDadosAcesso(usuario, enviarEmail);
-        return usuario;
+        return UsuarioResponse.of(usuario);
     }
 
-    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+    private void validarOrganizacaoEmpresa(Usuario usuario) {
         if (usuario.getOrganizacaoEmpresa() != null) {
             var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
             if (!organizacaoEmpresa.isAtivo()) {
                 throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
             }
         }
+    }
+
+    public void desvincularGruposByUsuario(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
+                suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
+            }
+        }
+    }
+
+    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
+        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
+            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {
@@ -996,6 +1027,7 @@ public class UsuarioService {
             var usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
                 var usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
+                usuarioDto.setTipoUsuario(SOCIO);
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -1058,7 +1090,7 @@ public class UsuarioService {
 
     private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
         if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
-            validarOrganizacaoEmpresaInativa(usuario);
+            validarOrganizacaoEmpresa(usuario);
         }
     }
 
@@ -1423,7 +1455,12 @@ public class UsuarioService {
         permissaoTecnicoIndicadorService.removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = repository.save(criaNovoUsuarioAPartirDoRemanejado(usuario));
         var remanejamentoRequest = UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId);
-        colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+
+        if (usuarioNovo.isTecnico()) {
+            colaboradorTecnicoService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        } else {
+            colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        }
         log.info("Usuário remanejado com sucesso. Usuário Antigo {} | Usuário Novo {} | Agente Autorizado: {}",
             usuarioMqRequest.getId(), usuarioNovo.getId(), usuarioMqRequest.getAgenteAutorizadoId());
 
@@ -2393,7 +2430,6 @@ public class UsuarioService {
     }
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
-        filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
         var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
@@ -2537,7 +2573,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
-        return repository.findAllIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllIds(usuarioFiltros);
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -2551,7 +2587,7 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
-        return repository.findAllNomesIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllNomesIds(usuarioFiltros);
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
@@ -2665,8 +2701,18 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoId,
-                                                                                     boolean buscarInativos) {
-        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
+                                                                                     boolean buscarInativos,
+                                                                                     List<CodigoCargo> cargos) {
+        if (!isEmpty(cargos)) {
+            return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, cargos);
+        }
+        return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, CARGOS_OPERADORES_BACKOFFICE);
+    }
+
+    private List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoECargos(Integer organizacaoId,
+                                                                                      boolean buscarInativos,
+                                                                                      List<CodigoCargo> cargos) {
+        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, cargos)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
@@ -3187,16 +3233,24 @@ public class UsuarioService {
     }
 
     private void gerenciarPermissaoSocialHub(Usuario usuario) {
-        var email = usuario.getEmail();
-        var dominio = extractDominio(email);
+        var mercadoDesenvolvimento = usuario.getTerritorioMercadoDesenvolvimentoIdOrNull();
 
-        if (this.isDominioPermitido(dominio)) {
-            this.adicionarPermissaoSocialHub(usuario);
+        if (mercadoDesenvolvimento != null) {
+            adicionarPermissaoSocialHub(usuario);
+        } else if (isNivelMercadoDesenvolvimento(usuario)) {
+            removerPermissaoSocialHub(usuario);
         }
     }
 
-    private boolean isDominioPermitido(String dominio) {
-        return dominiosPermitidos.contains(dominio);
+    private boolean isNivelMercadoDesenvolvimento(Usuario usuario) {
+        var nivelCodigo = usuario.getNivelCodigo();
+        return CodigoNivel.MSO == nivelCodigo || CodigoNivel.OPERACAO == nivelCodigo;
+    }
+
+    private void removerPermissaoSocialHub(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
+        }
     }
 
     private void enviarDadosAtualizacaoParaSocialHub(Usuario usuario) {
@@ -3210,14 +3264,6 @@ public class UsuarioService {
         var cargoUsuario = cargoService.findByUsuarioId(usuario.getId());
         usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais,
             cargoUsuario.getNome()));
-    }
-
-    private String extractDominio(String email) {
-        int atIndex = email.lastIndexOf("@");
-        if (atIndex != -1) {
-            return email.substring(atIndex + 1);
-        }
-        return "";
     }
 
     private void adicionarPermissaoSocialHub(Usuario usuario) {

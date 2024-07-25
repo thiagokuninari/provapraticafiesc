@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasServiceTest.umaEquipeVendaDto;
+import static br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.helper.EquipeVendasHelper.umaEquipeVendaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static org.assertj.core.api.Assertions.assertThat;

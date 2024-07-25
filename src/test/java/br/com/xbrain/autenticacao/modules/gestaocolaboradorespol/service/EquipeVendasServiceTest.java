@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.helper.EquipeVendasHelper.umaEquipeVendaDto;
+import static br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.helper.EquipeVendasHelper.umaEquipeVendasSupervisionadasResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -123,23 +125,5 @@ public class EquipeVendasServiceTest {
         assertThat(service.getByUsuario(1)).isNull();
 
         verify(client).getByUsuario(1);
-    }
-
-    public static EquipeVendasSupervisionadasResponse umaEquipeVendasSupervisionadasResponse() {
-        return EquipeVendasSupervisionadasResponse
-            .builder()
-            .id(1)
-            .canalVenda("D2D")
-            .descricao("Equipe Teste")
-            .build();
-    }
-
-    public static EquipeVendaDto umaEquipeVendaDto() {
-        return EquipeVendaDto
-            .builder()
-            .id(1)
-            .canalVenda("TELEVENDAS")
-            .descricao("Equipe Teste 2")
-            .build();
     }
 }

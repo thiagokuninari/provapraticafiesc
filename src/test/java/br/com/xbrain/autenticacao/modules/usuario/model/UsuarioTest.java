@@ -773,6 +773,30 @@ public class UsuarioTest {
             .isEqualTo(3);
     }
 
+    @Test
+    public void isTecnico_deveRetornarTrue_quandoForCargoTecnico() {
+        assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_TECNICO_GERENTE).isTecnico()).isTrue();
+    }
+
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoNaoForCargoTecnico() {
+        assertThat(umUsuarioComCargo(VENDEDOR_OPERACAO).isTecnico()).isFalse();
+    }
+
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoCargoForNull() {
+        assertThat(new Usuario().isTecnico()).isFalse();
+    }
+
+    @Test
+    public void isTecnico_deveRetornarFalse_quandoCodigoCargoForNull() {
+        var usuario = Usuario
+            .builder()
+            .cargo(umCargo(null))
+            .build();
+        assertThat(usuario.isTecnico()).isFalse();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

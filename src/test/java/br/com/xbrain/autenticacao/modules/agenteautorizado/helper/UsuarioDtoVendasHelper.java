@@ -26,13 +26,9 @@ public class UsuarioDtoVendasHelper {
             .cargosIds(List.of(7, 8))
             .cidadesIds(List.of(9, 10))
             .niveisIds(List.of(11, 12))
-            .clusterId(13)
-            .grupoId(14)
             .regionalId(15)
-            .subClusterId(16)
             .ufId(17)
             .usuariosFiltradosPorCidadePol(List.of(18, 19))
-            .novasRegionaisIds(List.of(20, 21))
             .usuarioAutenticado(umUsuarioAutenticadoNivelAa())
             .comUsuariosLogadosHoje(true)
             .build();

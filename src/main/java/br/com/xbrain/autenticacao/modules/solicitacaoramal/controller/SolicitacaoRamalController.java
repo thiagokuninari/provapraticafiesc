@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceAa;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -14,10 +16,11 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "api/solicitacao-ramal")
+@RequestMapping("api/solicitacao-ramal")
 public class SolicitacaoRamalController {
 
     private final SolicitacaoRamalService solicitacaoRamalService;
+    private final SolicitacaoRamalServiceAa solicitacaoRamalServiceAa;
 
     @GetMapping("dados-canal")
     public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
@@ -78,5 +81,15 @@ public class SolicitacaoRamalController {
     @PutMapping("calcular-data-finalizacao")
     public void calcularDataFinalizacao(SolicitacaoRamalFiltros filtros) {
         solicitacaoRamalService.calcularDataFinalizacao(filtros);
+    }
+
+    @GetMapping("{agenteAutorizadoId}/ramais-aa-disponiveis")
+    public Integer getRamaisDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+        return solicitacaoRamalServiceAa.getRamaisDisponiveis(agenteAutorizadoId);
+    }
+
+    @GetMapping("{agenteAutorizadoId}/colaboradores-aa-disponivel")
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosByAgenteAutorizadoId(@PathVariable Integer agenteAutorizadoId) {
+        return solicitacaoRamalServiceAa.getUsuariosAtivosByAgenteAutorizadoId(agenteAutorizadoId);
     }
 }

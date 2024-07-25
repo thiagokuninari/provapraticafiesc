@@ -87,13 +87,18 @@ public class SolicitacaoRamalServiceAaTest {
     @Test
     public void save_deveSalvarUmaSolicitacaoRamal_quandoDadosValidos() {
         ReflectionTestUtils.setField(service, "destinatarios", "teste");
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(autenticacaoService.getUsuarioId()).thenReturn(1);
-        when(agenteAutorizadoService.getAaById(7129)).thenReturn(criaAa());
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioId())
+            .thenReturn(1);
+        when(agenteAutorizadoService.getAaById(7129))
+            .thenReturn(criaAa());
         when(dataHoraAtual.getDataHora())
             .thenReturn(LocalDateTime.of(2023, 11, 27, 10, 0));
-        when(repository.save(any(SolicitacaoRamal.class))).thenReturn(umaSolicitacaoRamal(1));
-        when(agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(7129))
+        when(repository.save(any(SolicitacaoRamal.class)))
+            .thenReturn(umaSolicitacaoRamal(1));
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(7129))
             .thenReturn(umaListaUsuarioResponse());
 
         service.save(criaSolicitacaoRamal(null, 7129));
@@ -110,7 +115,8 @@ public class SolicitacaoRamalServiceAaTest {
         var usuario = umUsuarioAutenticado();
         usuario.setPermissoes(List.of());
 
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuario);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuario);
 
         assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
                 service.save(criaSolicitacaoRamal(null, 7129)))
@@ -129,7 +135,8 @@ public class SolicitacaoRamalServiceAaTest {
             .convertFrom(criaSolicitacaoRamal(null, 7129), 1,
                 LocalDateTime.of(2023, 11, 27, 10, 0), criaAa());
 
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
         when(repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(7129))
             .thenReturn(List.of(umaSolicitacaoRamal(1)));
 
@@ -150,7 +157,8 @@ public class SolicitacaoRamalServiceAaTest {
         request.setAgenteAutorizadoId(null);
         request.setCanal(ECanal.AGENTE_AUTORIZADO);
 
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
 
         assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
                 service.save(request))
@@ -188,7 +196,8 @@ public class SolicitacaoRamalServiceAaTest {
             .thenReturn(UsuarioAutenticado.builder().id(1)
                 .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20015.getRole()))).build());
 
-        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(solicitacaoRamal))
             .withMessage("Sem autorização para fazer uma solicitação para este canal.");
 
         verify(autenticacaoService).getUsuarioAutenticado();
@@ -196,12 +205,35 @@ public class SolicitacaoRamalServiceAaTest {
     }
 
     @Test
+    public void save_deveLancarException_seExcedeuLimiteDeSolicitacoesDeRamal() {
+        ReflectionTestUtils.setField(service, "destinatarios", "teste");
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(7129))
+            .thenReturn(umaListaUsuarioResponse());
+        when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 7129))
+            .thenReturn(umListRamalResponse());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(criaSolicitacaoRamal(null, 7129)))
+            .withMessage("Não é possível salvar a solicitação de ramal, pois excedeu o limite.");
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(7129);
+        verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 7129);
+    }
+
+    @Test
     public void getDadosAdicionais_deveChamarClientPeloAgenteAutorizadoId() {
-        when(agenteAutorizadoService.getAaById(1)).thenReturn(umAgenteAutorizado());
-        when(callService.obterNomeTelefoniaPorId(1)).thenReturn(umaTelefonia());
+        when(agenteAutorizadoService.getAaById(1))
+            .thenReturn(umAgenteAutorizado());
+        when(callService.obterNomeTelefoniaPorId(1))
+            .thenReturn(umaTelefonia());
         when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
             .thenReturn(List.of());
-        when(socioService.findSocioPrincipalByAaId(1)).thenReturn(umSocioPrincipal());
+        when(socioService.findSocioPrincipalByAaId(1))
+            .thenReturn(umSocioPrincipal());
 
         service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
 
@@ -214,10 +246,14 @@ public class SolicitacaoRamalServiceAaTest {
 
     @Test
     public void update_deveAtualizarSolicitacaoAa_quandoTodosOsDadosPreenchidosCorretamente() {
-        when(solicitacaoRamalService.findById(1)).thenReturn(umaSolicitacaoRamal(1));
-        when(autenticacaoService.getUsuarioId()).thenReturn(1);
-        when(agenteAutorizadoService.getAaById(7129)).thenReturn(umAgenteAutorizadoResponse());
-        when(repository.save(umaSolicitacaoRamal(1))).thenReturn(umaSolicitacaoRamal(1));
+        when(solicitacaoRamalService.findById(1))
+            .thenReturn(umaSolicitacaoRamal(1));
+        when(autenticacaoService.getUsuarioId())
+            .thenReturn(1);
+        when(agenteAutorizadoService.getAaById(7129))
+            .thenReturn(umAgenteAutorizadoResponse());
+        when(repository.save(umaSolicitacaoRamal(1)))
+            .thenReturn(umaSolicitacaoRamal(1));
 
         var solicitacao = SolicitacaoRamalResponse.convertFrom(umaSolicitacaoRamal(1));
 
@@ -232,10 +268,14 @@ public class SolicitacaoRamalServiceAaTest {
 
     @Test
     public void verificaPermissaoSobreOAgenteAutorizado_deveVerificarPermissao_quandoAaExistir() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(autenticacaoService.getUsuarioId()).thenReturn(1);
-        when(usuarioService.findComplete(1)).thenReturn(umUsuario());
-        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(umUsuario())).thenReturn(List.of(1));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioId())
+            .thenReturn(1);
+        when(usuarioService.findComplete(1))
+            .thenReturn(umUsuario());
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(umUsuario()))
+            .thenReturn(List.of(1));
 
         assertThatCode(() -> service.verificaPermissaoSobreOAgenteAutorizado(1))
             .doesNotThrowAnyException();
@@ -244,5 +284,87 @@ public class SolicitacaoRamalServiceAaTest {
         verify(autenticacaoService).getUsuarioId();
         verify(usuarioService).findComplete(1);
         verify(agenteAutorizadoService).getAgentesAutorizadosPermitidos(umUsuario());
+    }
+
+    @Test
+    public void getRamaisDisponiveis_deveRetornarRamaisDisponiveisParaUso_quandoSolicitado() {
+        when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1))
+            .thenReturn(List.of(umRamalResponse(1)));
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+
+        assertThat(service.getRamaisDisponiveis(1)).isEqualTo(1);
+
+        verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getRamaisDisponiveis_deveRetornarZero_seUsuariosERamaisTiveremOMesmoValor() {
+        when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1))
+            .thenReturn(umListRamalResponse());
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+
+        assertThat(service.getRamaisDisponiveis(1)).isEqualTo(0);
+
+        verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getRamaisDisponiveis_deveRetornarZero_seRamaisForMaiorQueUsuarios() {
+        when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1))
+            .thenReturn(List.of(
+                umRamalResponse(1),
+                umRamalResponse(2),
+                umRamalResponse(3)));
+
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+
+        assertThat(service.getRamaisDisponiveis(1)).isEqualTo(0);
+
+        verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_deveRetornarAasDisponiveis_quandoSolicitado() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "TESTE"),
+                tuple(2, "TESTE"));
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_naoDeveRetornarUsuariosRepetidos_seIdsIguais() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of(
+                umUsuarioAgenteAutorizadoResponse(1),
+                umUsuarioAgenteAutorizadoResponse(1)));
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "TESTE"));
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getUsuariosAtivosByAgenteAutorizadoId_deveRetornarListaVazia_seUsuariosNaoEncontrados() {
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of());
+
+        assertThat(service.getUsuariosAtivosByAgenteAutorizadoId(1)).isEmpty();
+
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
     }
 }

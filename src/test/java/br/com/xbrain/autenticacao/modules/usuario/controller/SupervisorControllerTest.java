@@ -120,7 +120,7 @@ public class SupervisorControllerTest {
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
-        mvc.perform(get("/api/supervisor/por-area-atuacao/SUBCLUSTER/1")
+        mvc.perform(get("/api/supervisor/por-area-atuacao/UF/1")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -135,7 +135,7 @@ public class SupervisorControllerTest {
             .thenReturn(singletonList(
                 UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
-        mvc.perform(get("/api/supervisor/lideres-por-area-atuacao/SUBCLUSTER/1")
+        mvc.perform(get("/api/supervisor/lideres-por-area-atuacao/UF/1")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))

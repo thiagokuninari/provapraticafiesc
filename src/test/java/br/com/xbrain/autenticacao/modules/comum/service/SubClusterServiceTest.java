@@ -169,22 +169,6 @@ public class SubClusterServiceTest {
     }
 
     @Test
-    public void getAtivosParaComunicados_deveRetornarListaSubClusterDto_quandoSolicitado() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-
-        when(parceirosOnlineService.getSubclusters(40)).thenReturn(List.of(umSubClusterDto(1), umSubClusterDto(2)));
-        assertThat(subClusterService.getAtivosParaComunicados(40))
-            .isNotNull()
-            .extracting("id", "nome", "situacao")
-            .containsExactly(tuple(1, "SUBCLUSTER", ESituacao.A),
-                tuple(2, "SUBCLUSTER", ESituacao.A));
-
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(parceirosOnlineService).getSubclusters(40);
-    }
-
-    @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarSubCluster_quandoUsuarioPossuirClusterMarilia() {
         when(subClusterRepository.findAllByClusterId(CLUSTER_MARILIA_ID, predicate.build()))
             .thenReturn(List.of(umSubClusterMarilia()));

@@ -84,22 +84,6 @@ public class GrupoServiceTest {
     }
 
     @Test
-    public void getAtivosParaComunicados_deveRetornarListaGrupo_quandoSolicitado() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-
-        when(parceirosOnlineService.getGrupos(40)).thenReturn(List.of(umGrupoDto(1), umGrupoDto(2)));
-        assertThat(grupoService.getAtivosParaComunicados(40))
-            .isNotNull()
-            .extracting("id", "nome", "situacao")
-            .containsExactly(tuple(1, "GRUPO", ESituacao.A),
-                tuple(2, "GRUPO", ESituacao.A));
-
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(parceirosOnlineService).getGrupos(40);
-    }
-
-    @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarGrupo_quandoUsuarioPossuirRegionalSul() {
         when(grupoRepository.findAllByRegionalId(REGIONAL_SUL_ID, predicate.build()))
             .thenReturn(List.of(umGrupoNorteDoParana()));

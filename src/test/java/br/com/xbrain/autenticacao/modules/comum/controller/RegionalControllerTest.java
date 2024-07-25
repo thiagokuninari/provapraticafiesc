@@ -151,26 +151,4 @@ public class RegionalControllerTest {
 
         verify(service, times(1)).findById(1);
     }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void getNovasRegionaisIds_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_REGIONAL + "/novas-regionais-ids")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-
-        verify(service, never()).getNovasRegionaisIds();
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getNovasRegionaisIds_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get(API_REGIONAL + "/novas-regionais-ids")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(service, times(1)).getNovasRegionaisIds();
-    }
 }

@@ -99,11 +99,6 @@ public interface UsuarioRepositoryCustom {
                                                     List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
-    List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                        List<Integer> areasAtuacaoIds,
-                                                        List<CodigoCargo> cargos,
-                                                        Set<ECanal> canais);
-
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
     List<Uf> getUfsUsuario(Integer usuarioId);
@@ -119,9 +114,9 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findAllIds(Predicate predicate);
 
-    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate, List<Integer> novasRegionaisIds);
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
 
-    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro, List<Integer> novasRegionaisIds);
+    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
 
     long deleteUsuarioHierarquia(Integer usuarioId);
 

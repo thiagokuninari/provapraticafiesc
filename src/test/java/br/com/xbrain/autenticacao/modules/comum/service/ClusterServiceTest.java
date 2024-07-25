@@ -86,22 +86,6 @@ public class ClusterServiceTest {
     }
 
     @Test
-    public void getAtivosParaComunicados_deveRetornarListaClustersAtivosOrdenadosPorNome_quandoSolicitado() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-
-        when(parceirosOnlineService.getClusters(40)).thenReturn(List.of(umClusterDto(1), umClusterDto(2)));
-        assertThat(clusterService.getAtivosParaComunicados(40))
-            .isNotNull()
-            .extracting("id", "nome", "situacao")
-            .containsExactly(tuple(1, "CLUSTER", ESituacao.A),
-                tuple(2, "CLUSTER", ESituacao.A));
-
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(parceirosOnlineService).getClusters(40);
-    }
-
-    @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarCluster_quandoUsuarioPossuirGrupoNorteDoParana() {
         when(clusterRepository.findAllByGrupoId(GRUPO_NORTE_PARANA_ID, predicate.build()))
             .thenReturn(List.of(umClusterNorteDoParana()));

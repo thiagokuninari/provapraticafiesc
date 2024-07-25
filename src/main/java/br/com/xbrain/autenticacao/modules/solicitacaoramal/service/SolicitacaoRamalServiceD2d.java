@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 
@@ -42,7 +42,7 @@ import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituaca
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 

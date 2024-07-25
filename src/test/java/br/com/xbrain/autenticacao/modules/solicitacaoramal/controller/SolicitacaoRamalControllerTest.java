@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalA
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceAa;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @Import(OAuth2ResourceConfig.class)
 @WebMvcTest(controllers = SolicitacaoRamalController.class)
-public class    SolicitacaoRamalControllerTest {
+public class SolicitacaoRamalControllerTest {
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
@@ -53,6 +54,8 @@ public class    SolicitacaoRamalControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private UsuarioSubCanalObserver usuarioSubCanalObserver;
+    @MockBean
+    private SolicitacaoRamalServiceAa solicitacaoRamalServiceAa;
 
     @Test
     @SneakyThrows
@@ -448,5 +451,45 @@ public class    SolicitacaoRamalControllerTest {
             .andExpect(status().isOk());
 
         verify(service).calcularDataFinalizacao(new SolicitacaoRamalFiltros());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getRamaisDisponiveis_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/ramais-aa-disponiveis"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(solicitacaoRamalServiceAa, never()).getRamaisDisponiveis(1);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getRamaisDisponiveis_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/ramais-aa-disponiveis"))
+            .andExpect(status().isOk());
+
+        verify(solicitacaoRamalServiceAa).getRamaisDisponiveis(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosByAgenteAutorizadoId_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/colaboradores-aa-disponivel"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(solicitacaoRamalServiceAa, never()).getUsuariosAtivosByAgenteAutorizadoId(1);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosByAgenteAutorizadoId_deveRetornarOk_quandoDadosValidos() {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1/colaboradores-aa-disponivel"))
+            .andExpect(status().isOk());
+
+        verify(solicitacaoRamalServiceAa).getUsuariosAtivosByAgenteAutorizadoId(1);
     }
 }

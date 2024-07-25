@@ -7,29 +7,22 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto.of;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class ClusterService {
 
     @Autowired
     private ClusterRepository repository;
-
     @Autowired
     private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private ParceirosOnlineService parceirosOnlineService;
 
     public List<ClusterDto> getAllByGrupoId(Integer grupoId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -60,13 +53,5 @@ public class ClusterService {
     public ClusterDto findById(Integer clusterId) {
         return of(repository.findById(clusterId)
             .orElseThrow(() -> new ValidacaoException("Cluster não encontrado.")));
-    }
-
-    public List<ClusterDto> getAtivosParaComunicados(Integer grupoId) {
-        return Stream.concat(
-            getAllByGrupoId(grupoId).stream(),
-            parceirosOnlineService.getClusters(grupoId).stream())
-            .filter(distinctByKey(ClusterDto::getId))
-            .collect(Collectors.toList());
     }
 }

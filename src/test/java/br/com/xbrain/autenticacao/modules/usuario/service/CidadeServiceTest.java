@@ -24,7 +24,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.comum.helper.RegionalHelper.listaNovasRegionaisIds;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static org.assertj.core.api.Assertions.*;
@@ -174,35 +173,10 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build(),
-                Cidade.builder().id(4519).nome("FLORIANOPOLIS")
-                    .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build()));
-        when(regionalService.getNovasRegionaisIds())
-            .thenReturn(listaNovasRegionaisIds());
-
-        assertThat(service.getAllByRegionalId(1001))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1001, "RS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1001, "RS")
-            );
-    }
-
-    @Test
-    public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
-            .thenReturn(List.of(
-                Cidade.builder().id(5578).nome("LONDRINA")
-                    .uf(Uf.builder().id(1).nome("PARANA").build())
                     .regional(Regional.builder().id(1027).nome("RPS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
                     .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
-        when(regionalService.getNovasRegionaisIds())
-            .thenReturn(listaNovasRegionaisIds());
         assertThat(service.getAllByRegionalId(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(
@@ -235,14 +209,14 @@ public class CidadeServiceTest {
     public void getCidadesByRegionalReprocessamento_deveRetornarUsuariosCidadeDto_quandoRegionalIdForInformado() {
         var predicate = new CidadePredicate().build();
 
-        when(cidadeRepository.findAllByNovaRegionalId(eq(1027), eq(predicate)))
+        when(cidadeRepository.findAllByRegionalId(eq(1027), eq(predicate)))
             .thenReturn(List.of(umaCidade()));
 
         assertThat(service.getCidadesByRegionalReprocessamento(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
 
-        verify(cidadeRepository).findAllByNovaRegionalId(eq(1027), eq(predicate));
+        verify(cidadeRepository).findAllByRegionalId(eq(1027), eq(predicate));
     }
 
     @Test
@@ -280,46 +254,6 @@ public class CidadeServiceTest {
     }
 
     @Test
-    public void getAllBySubClustersId_deveRetornarUsuariosCidadeDto_quandoSubClusterIdsForInformado() {
-        var usuarioAutenticado = UsuarioAutenticado.builder().id(1).build();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(usuarioAutenticado);
-
-        var predicate = new CidadePredicate().filtrarPermitidos(usuarioAutenticado).build();
-
-        when(cidadeRepository.findAllBySubClustersId(List.of(1, 2), predicate))
-            .thenReturn(List.of(umaCidade()));
-
-        assertThat(service.getAllBySubClustersId(List.of(1, 2)))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
-
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(cidadeRepository).findAllBySubClustersId(List.of(1, 2), predicate);
-    }
-
-    @Test
-    public void getAllByClusterId_deveRetornarUsuariosCidadeDto_quandoClusterIdForInformado() {
-        var usuarioAutenticado = UsuarioAutenticado.builder().id(1).build();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(usuarioAutenticado);
-
-        var predicate = new CidadePredicate().filtrarPermitidos(usuarioAutenticado).build();
-
-        when(cidadeRepository.findAllByClusterId(eq(2), eq(predicate)))
-            .thenReturn(List.of(umaCidade()));
-
-        assertThat(service.getAllByClusterId(2))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
-
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(cidadeRepository).findAllByClusterId(eq(2), eq(predicate));
-    }
-
-    @Test
     public void getAllBySubCluster_deveRetornarCidades_quandoSubClusterIdForInformado() {
         when(cidadeRepository.findBySubCluster(eq(3)))
             .thenReturn(List.of(umaCidade()));
@@ -336,14 +270,13 @@ public class CidadeServiceTest {
         var clusterizacaoDto = new ClusterizacaoDto();
         clusterizacaoDto.setCidadeId(5);
         clusterizacaoDto.setCidadeNome("LONDRINA");
-        clusterizacaoDto.setClusterId(2);
 
         when(cidadeRepository.getClusterizacao(eq(5)))
             .thenReturn(clusterizacaoDto);
 
         assertThat(service.getClusterizacao(5))
-            .extracting("cidadeId", "cidadeNome", "clusterId")
-            .contains(5, "LONDRINA", 2);
+            .extracting("cidadeId", "cidadeNome")
+            .contains(5, "LONDRINA");
 
         verify(cidadeRepository).getClusterizacao(eq(5));
     }

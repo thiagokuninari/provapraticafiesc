@@ -12,8 +12,8 @@ public class AgenteAutorizadoFiltrosTest {
     @Test
     public void of_deveRetornarAgenteAutorizadoFiltros_quandoSolicitado() {
         assertThat(AgenteAutorizadoFiltros.of(umPublicoAlvoComunicadoFiltros()))
-            .extracting("cargoId", "departamentoId", "regionalId", "grupoId", "clusterId",
-                "subClusterId", "ufId", "cidadesIds", "agentesAutorizadosIds")
-            .containsExactly(null, null, 15, 14, 13, 16, 17, List.of(9, 10), List.of(1, 2));
+            .extracting("cargoId", "departamentoId", "regionalId", "ufId", "cidadesIds",
+                "agentesAutorizadosIds")
+            .containsExactly(null, null, 15, 17, List.of(9, 10), List.of(1, 2));
     }
 }

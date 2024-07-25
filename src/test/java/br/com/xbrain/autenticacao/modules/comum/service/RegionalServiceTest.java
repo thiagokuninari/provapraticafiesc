@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class RegionalServiceTest {
 
-    private static final List<Integer> NOVAS_REGIONAIS_IDS = List.of(1025, 1027);
     private static final int USUARIO_ID = 1;
 
     @InjectMocks
@@ -137,13 +136,6 @@ public class RegionalServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> regionalService.findById(16516))
             .withMessage("Regional não encontrada.");
-    }
-
-    @Test
-    public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
-        when(regionalRepository.getNovasRegionaisIds()).thenReturn(NOVAS_REGIONAIS_IDS);
-
-        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(NOVAS_REGIONAIS_IDS);
     }
 
     RegionalDto umRegionalDto() {

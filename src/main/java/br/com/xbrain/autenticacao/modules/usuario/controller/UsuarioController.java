@@ -511,9 +511,10 @@ public class UsuarioController {
     @GetMapping(params = "organizacaoId")
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(
         @RequestParam Integer organizacaoId,
-        @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
+        @RequestParam(required = false, defaultValue = "true") boolean buscarInativos,
+        @RequestParam(required = false) List<CodigoCargo> cargos) {
 
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos);
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos, cargos);
     }
 
     @GetMapping("suporte-vendas/operadores/{organizacaoId}")

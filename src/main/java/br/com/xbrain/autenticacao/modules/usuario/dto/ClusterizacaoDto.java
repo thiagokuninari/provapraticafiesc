@@ -11,12 +11,8 @@ public class ClusterizacaoDto {
 
     private Integer cidadeId;
     private String cidadeNome;
-    private Integer subclusterId;
-    private String subclusterNome;
-    private Integer clusterId;
-    private String clusterNome;
-    private Integer grupoId;
-    private String grupoNome;
+    private Integer ufId;
+    private String ufNome;
     private Integer regionalId;
     private String regionalNome;
 }

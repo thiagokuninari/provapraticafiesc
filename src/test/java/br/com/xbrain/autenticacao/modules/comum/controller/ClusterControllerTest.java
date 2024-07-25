@@ -73,35 +73,6 @@ public class ClusterControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get("/api/clusters/comunicados?grupoId=30")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getAtivosParaComunicados_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get("/api/clusters/comunicados?grupoId=30")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(clusterService).getAtivosParaComunicados(30);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getAtivosParaComunicados_deveRetornarBadRequest_seNaoInformarGrupoId() {
-        mvc.perform(get("/api/clusters/comunicados")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
     public void getAllByGrupoIdAndUsuarioId_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get("/api/clusters/grupo/{grupoId}/usuario/{usuarioId}", 30, 100)
                 .accept(MediaType.APPLICATION_JSON))

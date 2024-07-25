@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import org.junit.Test;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class UsuarioSocialHubRequestMqTest {
     @Test
     public void from_deveCopiarPropriedadesCorretamente_quandoSolicitado() {
         var regionaisIds = List.of(1022);
-        var usuario = umUsuarioSocialHub("teste@teste.com");
+        var usuario = umUsuarioSocialHub("teste@teste.com", 1, CodigoNivel.XBRAIN);
         var request = UsuarioSocialHubRequestMq.from(usuario, regionaisIds, "Diretor");
 
         assertEquals(usuario.getId(), request.getId());
@@ -27,9 +28,8 @@ public class UsuarioSocialHubRequestMqTest {
 
     @Test
     public void from_deveManusearNulosCorretamente_quandoSolicitado() {
-        var usuario = umUsuarioSocialHub("teste@teste.com");
+        var usuario = umUsuarioSocialHub("teste@teste.com", null, CodigoNivel.XBRAIN);
         usuario.setCargo(null);
-        usuario.setTerritorioMercadoDesenvolvimentoId(null);
 
         var request = UsuarioSocialHubRequestMq.from(usuario, List.of(), null);
 

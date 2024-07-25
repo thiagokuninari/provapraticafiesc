@@ -18,7 +18,7 @@ public class UsuarioRemanejamentoRequestTest {
             .extracting(UsuarioRemanejamentoRequest::getUsuarioId, UsuarioRemanejamentoRequest::getUsuarioNome,
                 UsuarioRemanejamentoRequest::getUsuarioEmail, UsuarioRemanejamentoRequest::getUsuarioAntigoId,
                 UsuarioRemanejamentoRequest::getUsuarioSituacao, UsuarioRemanejamentoRequest::getAgenteAutorizadoId,
-                UsuarioRemanejamentoRequest::getColaboradorVendasId
+                UsuarioRemanejamentoRequest::getColaboradorId
             )
             .containsExactly(100, "Thiago", "usuarioteste@gmail.com", 1, ESituacao.A, 5, 6);
     }
@@ -28,7 +28,7 @@ public class UsuarioRemanejamentoRequestTest {
         var usuarioMqRequest = umUsuarioMqRequest();
         assertThat(UsuarioRemanejamentoRequest.of(usuarioMqRequest))
             .extracting(UsuarioRemanejamentoRequest::getUsuarioNome, UsuarioRemanejamentoRequest::getUsuarioEmail,
-                UsuarioRemanejamentoRequest::getColaboradorVendasId, UsuarioRemanejamentoRequest::getAgenteAutorizadoId
+                UsuarioRemanejamentoRequest::getColaboradorId, UsuarioRemanejamentoRequest::getAgenteAutorizadoId
             )
             .containsExactly("Usuário Teste", "usuarioteste@gmail.com", 6, 5);
     }
@@ -39,7 +39,7 @@ public class UsuarioRemanejamentoRequestTest {
             .id(1)
             .nome("Usuário Teste")
             .agenteAutorizadoId(5)
-            .colaboradorVendasId(6)
+            .colaboradorId(6)
             .email("usuarioteste@gmail.com")
             .build();
     }
