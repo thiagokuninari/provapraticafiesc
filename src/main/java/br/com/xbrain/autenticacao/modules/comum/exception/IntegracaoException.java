@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.MessageException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.NestedExceptionUtils;
 
 import java.util.List;
@@ -41,23 +42,28 @@ public class IntegracaoException extends RuntimeException {
 
     public IntegracaoException(HystrixBadRequestException request) {
         if (request instanceof FeignBadResponseWrapper) {
-            String message = tratarException((FeignBadResponseWrapper) request).get(0).getMessage();
+            var message = tratarException((FeignBadResponseWrapper) request).getMessage();
             throw new IntegracaoException(message);
         }
     }
 
-    private List<MessageException> tratarException(FeignBadResponseWrapper request) {
-        List<MessageException> response;
+    private MessageException tratarException(FeignBadResponseWrapper request) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            TypeReference<List<MessageException>> typeReference = new TypeReference<List<MessageException>>() {
+            var mapper = new ObjectMapper();
+            var typeReference = new TypeReference<MessageException>() {
             };
-            response = mapper.readValue(request.getBody(), typeReference);
+            var typeReferenceList = new TypeReference<List<MessageException>>() {
+            };
+
+            if (StringUtils.isNotBlank(request.getBody()) && request.getBody().contains("[")) {
+                return ((List<MessageException>) mapper.readValue(request.getBody(), typeReferenceList)).get(0);
+            }
+
+            return mapper.readValue(request.getBody(), typeReference);
         } catch (Exception ex) {
             throw new IntegracaoException(ex,
-                    IntegracaoException.class.getName(),
-                    EErrors.ERRO_CONVERTER_EXCEPTION);
+                IntegracaoException.class.getName(),
+                EErrors.ERRO_CONVERTER_EXCEPTION);
         }
-        return response;
     }
 }

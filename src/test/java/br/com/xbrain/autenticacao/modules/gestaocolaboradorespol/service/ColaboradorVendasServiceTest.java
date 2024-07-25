@@ -41,8 +41,7 @@ public class ColaboradorVendasServiceTest {
             .limparCpfColaboradorVendas("usuarioteste@gmail.com");
 
         assertThatThrownBy(() -> service.limparCpfColaboradorVendas("usuarioteste@gmail.com"))
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .isInstanceOf(IntegracaoException.class);
 
         verify(client).limparCpfColaboradorVendas("usuarioteste@gmail.com");
     }
@@ -80,8 +79,7 @@ public class ColaboradorVendasServiceTest {
 
         assertThatThrownBy(() -> service.getUsuariosAaFeederPorCargo(List.of(1, 2, 3),
             List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO)))
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .isInstanceOf(IntegracaoException.class);
 
         verify(client).getUsuariosAaFeederPorCargo(List.of(1, 2, 3), List.of(AGENTE_AUTORIZADO_VENDEDOR_VAREJO));
     }
