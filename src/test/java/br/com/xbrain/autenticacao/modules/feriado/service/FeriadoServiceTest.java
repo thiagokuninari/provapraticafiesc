@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
@@ -208,6 +209,25 @@ public class FeriadoServiceTest {
             .isEqualTo(umFeriadoResponse());
 
         verify(repository).findById(1);
+    }
+
+    @Test
+    public void getFeriadoById_retornarFeriadoComCidade_quandoFkCidadeExistir() {
+        var feriado = umFeriado();
+        feriado.getCidade().setFkCidade(1);
+
+        when(repository.findById(1)).thenReturn(Optional.of(feriado));
+        when(cidadeService.getCidadeById(1)).thenReturn(umaCidadeResponse());
+
+        var response = umFeriadoResponse();
+        response.setFkCidade(1);
+        response.setCidadePai("MARINGA");
+
+        assertThat(service.getFeriadoById(1))
+            .isEqualTo(response);
+
+        verify(repository).findById(1);
+        verify(cidadeService).getCidadeById(1);
     }
 
     @Test
@@ -535,5 +555,12 @@ public class FeriadoServiceTest {
         service.flushCacheFeriadoMailing();
 
         verify(mailingService).flushCacheFeriadosMailing();
+    }
+
+    private CidadeResponse umaCidadeResponse() {
+        var cidadeResponse = new CidadeResponse();
+        cidadeResponse.setFkCidade(1);
+        cidadeResponse.setNome("MARINGA");
+        return cidadeResponse;
     }
 }

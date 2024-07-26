@@ -197,6 +197,19 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
+    public void criaHorariosAcesso_deveRetornarException_quandoAlgumErroAoSalvar() {
+        doThrow(new RuntimeException("Error"))
+            .when(atuacaoRepository)
+            .save(any(HorarioAtuacao.class));
+
+        assertThatThrownBy(() -> service.criaHorariosAcesso(umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Error");
+
+        verify(atuacaoRepository).save(any(HorarioAtuacao.class));
+    }
+
+    @Test
     public void getStatus_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)

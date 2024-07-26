@@ -1,8 +1,12 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
+import br.com.xbrain.autenticacao.modules.comum.predicate.RegionalPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.RegionalRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,9 +18,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,6 +34,59 @@ public class RegionalServiceTest {
     private RegionalService regionalService;
     @Mock
     private RegionalRepository regionalRepository;
+    @Mock
+    private AutenticacaoService autenticacaoService;
+
+    @Test
+    public void getAll_deveRetornarListaRegional_quandoUsuarioPossuirPermissao() {
+        var usuario = umUsuarioAutenticadoNivelBackoffice();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuario);
+        var predicateFiltrarPermitidos = new RegionalPredicate().filtrarPermitidos(usuario);
+
+        when(regionalRepository.getAll(predicateFiltrarPermitidos.build()))
+            .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
+
+        assertThat(regionalService.getAll())
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(1025, "RNE"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(regionalRepository).getAll(predicateFiltrarPermitidos.build());
+    }
+
+    @Test
+    public void findAllAtivos_deveRetornarRegionalDtoAtivo_quandoSolicitado() {
+        when(regionalRepository.findAllBySituacaoAndNovaRegional(ESituacao.A, Eboolean.V))
+            .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
+
+        assertThat(regionalService.findAllAtivos())
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(1025, "RNE"));
+
+        verify(regionalRepository).findAllBySituacaoAndNovaRegional(ESituacao.A, Eboolean.V);
+    }
+
+    @Test
+    public void getAtivosParaComunicados_deveRetornarListaRegionalDto_quandoSolicitado() {
+        var usuario = umUsuarioAutenticadoNivelBackoffice();
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuario);
+        var predicateFiltrarPermitidos = new RegionalPredicate().filtrarPermitidos(usuario);
+
+        when(regionalRepository.getAll(predicateFiltrarPermitidos.build()))
+            .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
+        assertThat(regionalService.getAtivosParaComunicados())
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(1025, "RNE"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(regionalRepository).getAll(predicateFiltrarPermitidos.build());
+    }
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionaisSulESp_doUsuarioInformadoPeloParametro() {

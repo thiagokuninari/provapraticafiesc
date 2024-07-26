@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -31,7 +32,8 @@ public class FeriadoImportacaoResponseTest {
             .extracting("id", "nome", "dataFeriado", "dataCadastro", "feriadoNacional", "cidadeId",
                 "cidadeNome", "estadoId", "estadoNome", "tipoFeriado", "motivoNaoImportacao", "feriadoImportadoComSucesso")
             .containsExactlyInAnyOrder(null, "FERIADO NAO IMPORTADO", LocalDate.of(2020, 3, 22),
-                null, null, null, null, 1, "PARANÁ", ETipoFeriado.MUNICIPAL, List.of("Falha ao recuperar Cidade."), Eboolean.F);
+                null, null, 1, "LONDRINA", 1, "PARANÁ", ETipoFeriado.MUNICIPAL, List.of("Falha ao recuperar Cidade."),
+                Eboolean.F);
     }
 
     private Feriado umFeriado() {
@@ -58,6 +60,10 @@ public class FeriadoImportacaoResponseTest {
                 .id(1)
                 .nome("PARANÁ")
                 .uf("PR")
+                .build())
+            .cidade(Cidade.builder()
+                .id(1)
+                .nome("LONDRINA")
                 .build())
             .dataFeriado(LocalDate.of(2020, 3, 22))
             .nome("FERIADO NAO IMPORTADO")

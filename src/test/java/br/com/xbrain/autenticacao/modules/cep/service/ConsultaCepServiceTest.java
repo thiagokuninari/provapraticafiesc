@@ -32,18 +32,6 @@ public class ConsultaCepServiceTest {
     private ConsultaCepClient consultaCepClient;
 
     @Test
-    public void consultarCep_deveRetornarCidadeEUf_quandoEncontrarCep() {
-        when(consultaCepClient.consultarCep(StringUtil.getOnlyNumbers("86023112")))
-            .thenReturn(umConsultaCepResponse());
-        when(cidadeService.findByUfNomeAndCidadeNome("PR", "LONDRINA")).thenReturn(umaCidadeLondrina());
-
-        assertThat(service.consultarCep("86023112")).isEqualTo(umCidadeUfResponse());
-
-        verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
-        verify(cidadeService).findByUfNomeAndCidadeNome("PR", "LONDRINA");
-    }
-
-    @Test
     public void consultarCep_deveLancarException_quandoReceberAlgumErroDoClient() {
         doThrow(RuntimeException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
 
@@ -53,6 +41,18 @@ public class ConsultaCepServiceTest {
 
         verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
         verify(cidadeService, never()).findByUfNomeAndCidadeNome(any(), any());
+    }
+
+    @Test
+    public void consultarCep_deveRetornarCidadeEUf_quandoEncontrarCep() {
+        when(consultaCepClient.consultarCep(StringUtil.getOnlyNumbers("86023112")))
+            .thenReturn(umConsultaCepResponse());
+        when(cidadeService.findByUfNomeAndCidadeNome("PR", "LONDRINA")).thenReturn(umaCidadeLondrina());
+
+        assertThat(service.consultarCep("86023112")).isEqualTo(umCidadeUfResponse());
+
+        verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+        verify(cidadeService).findByUfNomeAndCidadeNome("PR", "LONDRINA");
     }
 
     @Test

@@ -197,6 +197,8 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         verify(permissaoEspecialService, times(1))
             .deletarPermissoesEspeciaisBy(eq(List.of(PERMISSAO_TECNICO_INDICADOR)), eq(List.of(4)));
+        verify(permissaoEspecialService, times(1))
+            .hasPermissaoEspecialAtiva(eq(4), eq(PERMISSAO_TECNICO_INDICADOR));
     }
 
     @Test

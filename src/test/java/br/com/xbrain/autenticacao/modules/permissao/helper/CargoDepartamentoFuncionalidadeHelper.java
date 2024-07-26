@@ -212,4 +212,13 @@ public class CargoDepartamentoFuncionalidadeHelper {
     public static CargoDepartamentoFuncionalidadeRequest funcionalidadesRepetidas() {
         return permissoes(Arrays.asList(12, 13, 16, 17));
     }
+
+    public static CargoDepartamentoFuncionalidade umCargoDepartamentoFuncionalidade(Integer id) {
+        return CargoDepartamentoFuncionalidade.builder()
+            .id(id)
+            .cargo(umCargoVendedorOperacao())
+            .departamento(umDepartamento(3, "Comercial"))
+            .funcionalidade(funcionalidadeRelatorioGerenciamentoOperacional())
+            .build();
+    }
 }
