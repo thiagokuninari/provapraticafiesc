@@ -3074,8 +3074,8 @@ public class UsuarioService {
             .collect(toList());
     }
 
-    public List<Integer> findCidadesIdByUsuarioId(Integer usuarioId) {
-        return usuarioCidadeRepository.findCidadesIdByUsuarioId(usuarioId);
+    public List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(Integer usuarioId) {
+        return usuarioCidadeRepository.findCidadesIdByUsuarioIdComDataBaixaNull(usuarioId);
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,

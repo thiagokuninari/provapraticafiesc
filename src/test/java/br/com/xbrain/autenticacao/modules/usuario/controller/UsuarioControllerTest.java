@@ -2323,7 +2323,7 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findCidadesIdByUsuarioId(1);
+        verify(usuarioService).findCidadesIdByUsuarioIdComDataBaixaNull(1);
     }
 
     @Test
@@ -2335,6 +2335,6 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService).findCidadesIdByUsuarioId(1);
+        verify(usuarioService).findCidadesIdByUsuarioIdComDataBaixaNull(1);
     }
 }

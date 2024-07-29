@@ -611,7 +611,7 @@ public class UsuarioController {
     }
 
     @GetMapping("usuario-cidades")
-    public List<Integer> findCidadesIdByUsuarioId(@RequestParam Integer usuarioId) {
-        return usuarioService.findCidadesIdByUsuarioId(usuarioId);
+    public List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(@RequestParam Integer usuarioId) {
+        return usuarioService.findCidadesIdByUsuarioIdComDataBaixaNull(usuarioId);
     }
 }

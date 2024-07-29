@@ -23,13 +23,26 @@ public class UsuarioCidadeRepositoryTest {
     @Test
     public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(100))
-            .hasSize(5)
-            .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617);
+            .hasSize(6)
+            .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617, 1403);
     }
 
     @Test
     public void findCidadesIdByUsuarioId_deveRetornarUmaListaVazia_quandoNaoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(999))
+            .isEmpty();
+    }
+
+    @Test
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListInteger_quandoEncontrar() {
+        assertThat(repository.findCidadesIdByUsuarioIdComDataBaixaNull(100))
+            .hasSize(5)
+            .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617);
+    }
+
+    @Test
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListaVazia_quandoNaoEncontrar() {
+        assertThat(repository.findCidadesIdByUsuarioIdComDataBaixaNull(999))
             .isEmpty();
     }
 

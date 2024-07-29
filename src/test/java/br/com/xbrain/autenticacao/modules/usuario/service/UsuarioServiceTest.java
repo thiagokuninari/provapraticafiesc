@@ -4209,27 +4209,27 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuarioCidadesIds_deveRetornarListaDeInteger_quandoEncontrar() {
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListaDeInteger_quandoEncontrar() {
         var umaListaIds = List.of(1, 2, 3);
 
         doReturn(umaListaIds)
-            .when(usuarioCidadeRepository).findCidadesIdByUsuarioId(1);
+            .when(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
 
-        assertThat(service.findCidadesIdByUsuarioId(1))
+        assertThat(service.findCidadesIdByUsuarioIdComDataBaixaNull(1))
             .isEqualTo(umaListaIds);
 
-        verify(usuarioCidadeRepository).findCidadesIdByUsuarioId(1);
+        verify(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
     }
 
     @Test
-    public void findUsuarioCidadesIds_deveRetornarListaDeIntegerVazia_quandoNaoEncontrar() {
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListaDeIntegerVazia_quandoNaoEncontrar() {
         doReturn(Collections.emptyList())
-            .when(usuarioCidadeRepository).findCidadesIdByUsuarioId(1);
+            .when(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
 
-        assertThat(service.findCidadesIdByUsuarioId(1))
+        assertThat(service.findCidadesIdByUsuarioIdComDataBaixaNull(1))
             .isEqualTo(Collections.emptyList());
 
-        verify(usuarioCidadeRepository).findCidadesIdByUsuarioId(1);
+        verify(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
     }
 
     @TestConfiguration
