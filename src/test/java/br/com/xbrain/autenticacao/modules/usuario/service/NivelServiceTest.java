@@ -208,7 +208,8 @@ public class NivelServiceTest {
     @Test
     public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
         when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE, CodigoNivel.OPERACAO,
-            CodigoNivel.BACKOFFICE_CENTRALIZADO, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS)))
+            CodigoNivel.BACKOFFICE_CENTRALIZADO, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS,
+            CodigoNivel.BACKOFFICE_QUALIDADE)))
             .thenReturn(umaListaComNiveisReceptivoBkoEOperacao());
 
         assertThat(service.getPermitidosParaOrganizacao())
