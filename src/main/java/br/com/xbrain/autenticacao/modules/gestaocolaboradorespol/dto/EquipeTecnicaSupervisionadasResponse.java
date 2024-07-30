@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EquipeTecnicaSupervisionadasResponse {
 
-    public Integer id;
-    public String descricao;
+    private Integer id;
+    private String descricao;
 }
