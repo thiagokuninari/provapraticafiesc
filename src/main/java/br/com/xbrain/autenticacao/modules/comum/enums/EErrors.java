@@ -183,10 +183,7 @@ public enum EErrors {
         "#059 - Ocorreu um erro ao atualizar configuração do fornecedor"),
     ERRO_ATUALIZAR_EQUIPE_VENDAS_USUARIO(
         "#060 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#060 - Ocorreu um erro ao tentar atualizar o(s) usuário(s) da equipe vendas."),
-    ERRO_ATIVAR_USUARIO_JA_CADASTRADO(
-        "#061 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#061 - Erro ao tentar ativar o usuário: já existe um usuário cadastrado com o mesmo e-mail ou CPF.");
+        "#060 - Ocorreu um erro ao tentar atualizar o(s) usuário(s) da equipe vendas.");
 
     private final String descricao;
     private final String descricaoTecnica;

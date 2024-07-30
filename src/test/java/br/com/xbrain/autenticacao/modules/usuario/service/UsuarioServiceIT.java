@@ -529,7 +529,7 @@ public class UsuarioServiceIT {
             .containsExactly(emailIgual, I);
 
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(241)
             .observacao("ATIVANDO UM USUÁRIO")
@@ -551,7 +551,7 @@ public class UsuarioServiceIT {
             .containsExactly(cpfIgual, I);
 
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(240)
             .observacao("ATIVANDO UM USUÁRIO")

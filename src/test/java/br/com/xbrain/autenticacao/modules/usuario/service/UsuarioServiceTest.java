@@ -568,7 +568,7 @@ public class UsuarioServiceTest {
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
 
         assertThat(usuario.getSituacao()).isEqualTo(ESituacao.I);
     }

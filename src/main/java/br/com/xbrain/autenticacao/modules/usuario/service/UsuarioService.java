@@ -88,14 +88,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_ATIVAR_USUARIO_JA_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1757,7 +1756,7 @@ public class UsuarioService {
             && !usuario.getOrganizacaoEmpresa().isAtivo()) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
         } else if (existeUsuarioCadastradoIgualAtivo(usuario)) {
-            throw new ValidacaoException(ERRO_ATIVAR_USUARIO_JA_CADASTRADO.getDescricao());
+            throw new ValidacaoException("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
         }
 
         repository.save(usuario);
