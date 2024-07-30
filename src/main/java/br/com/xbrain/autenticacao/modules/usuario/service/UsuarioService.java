@@ -88,6 +88,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_ATIVAR_USUARIO_JA_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
@@ -1705,8 +1706,8 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setDataReativacao(LocalDateTime.now());
-        usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
+        usuario.setSituacao(ESituacao.A);
         validarSubcanal(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
@@ -1728,6 +1729,9 @@ public class UsuarioService {
     }
 
     private void validarAtivacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            throw new ValidacaoException("O usuário já está ativo.");
+        }
         var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
         var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
@@ -1752,6 +1756,8 @@ public class UsuarioService {
         } else if (!isEmpty(usuario.getOrganizacaoEmpresa())
             && !usuario.getOrganizacaoEmpresa().isAtivo()) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+        } else if (existeUsuarioCadastradoIgualAtivo(usuario)) {
+            throw new ValidacaoException(ERRO_ATIVAR_USUARIO_JA_CADASTRADO.getDescricao());
         }
 
         repository.save(usuario);
@@ -3301,5 +3307,9 @@ public class UsuarioService {
             .map(SubCanal::getId)
             .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
                 .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
+    }
+
+    private boolean existeUsuarioCadastradoIgualAtivo(Usuario usuario) {
+        return repository.existeByCpfOrEmailAndSituacaoAtivo(usuario.getCpf(), usuario.getEmail());
     }
 }
