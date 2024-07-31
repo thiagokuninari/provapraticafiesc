@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.predicate.UnidadeNegocioPredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,16 @@ public class UnidadeNegocioRepositoryTest {
     @Test
     public void findAll_deveRetornarUnidadesDeNegocioOrdenadasPorNome_quandoSolicitado() {
         assertThat(unidadeNegocioRepository.findAll(new Sort(ASC, "nome")))
+            .extracting("id", "nome", "codigo", "situacao")
+            .containsExactly(
+                tuple(1, "Pessoal", PESSOAL, A),
+                tuple(2, "Residencial e Combos", RESIDENCIAL_COMBOS, A),
+                tuple(3, "Xbrain", XBRAIN, A));
+    }
+
+    @Test
+    public void findAll_deveRetornarUnidadesDeNegocioOrdenadasPorNome_quandoPredicateForFornecido() {
+        assertThat(unidadeNegocioRepository.findAll(new UnidadeNegocioPredicate().build()))
             .extracting("id", "nome", "codigo", "situacao")
             .containsExactly(
                 tuple(1, "Pessoal", PESSOAL, A),

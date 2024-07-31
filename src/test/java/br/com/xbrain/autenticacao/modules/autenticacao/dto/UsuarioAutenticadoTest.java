@@ -1,14 +1,21 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class UsuarioAutenticadoTest {
 
@@ -84,9 +91,10 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isAssistenteOperacao_deveRetornarTrue_seUsuarioAutenticadoForCargoAssistenteOperacao() {
-        assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO)
-            .isAssistenteOperacao())
+        var usuario = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        assertThat(usuario.isAssistenteOperacao())
             .isTrue();
+        assertTrue(usuario.isOperacao());
     }
 
     @Test
@@ -266,9 +274,81 @@ public class UsuarioAutenticadoTest {
     @Test
     public void haveCanalDoorToDoor_deveRetornarFalse_seUsuarioAutenticadoNaoTerCanalD2dProprio() {
         var usuarioAutenticado = umUsuarioSuperiorAtivoLocal();
-        usuarioAutenticado.setUsuario(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)));
+        usuarioAutenticado.setUsuario(umUsuario(null, null, Set.of(ATIVO_PROPRIO)));
         assertThat(usuarioAutenticado
             .haveCanalDoorToDoor())
+            .isFalse();
+    }
+
+    @Test
+    public void hasPermissaoSobreOAgenteAutorizado_deveRetornarException_quandoForAaEForFornecidoListaVazia() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .nivelCodigo("AGENTE_AUTORIZADO")
+            .build();
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> usuario.hasPermissaoSobreOAgenteAutorizado(1, List.of()));
+
+        assertThat(usuario.isAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void hasPermissaoSobreOAgenteAutoarizado_deveRetornarException_quandoAaIdNaoConterNaListaDeAaIds() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .nivelCodigo("AGENTE_AUTORIZADO")
+            .build();
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> usuario.hasPermissaoSobreOAgenteAutorizado(1, List.of(2,3)));
+
+        assertThat(usuario.isAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void hasPermissaoSobreOAgenteAutoarizado_naoDeveRetornarException_quandoForAaEAaIdConterNaListaDeAaIds() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .nivelCodigo("AGENTE_AUTORIZADO")
+            .build();
+
+        assertThatCode(() -> usuario.hasPermissaoSobreOAgenteAutorizado(1, List.of(1, 3)))
+            .doesNotThrowAnyException();
+
+        assertThat(usuario.isAgenteAutorizado()).isTrue();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarTrue_seUsuariooForCargoOperacaoTelevendasECanalAtivoProprio() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
+            .canais(Set.of(ATIVO_PROPRIO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal())
+            .isTrue();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarFalse_seUsuariooForCargoOperacaoTelevendasECanalNaoAtivoProprio() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
+            .canais(Set.of(AGENTE_AUTORIZADO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal())
+            .isFalse();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarFalse_seUsuariooNaoForCargoOperacaoTelevendasECanalAtivoProprio() {
+        var usuario = UsuarioAutenticado.builder()
+            .id(2)
+            .cargoCodigo(CodigoCargo.ASSISTENTE_OPERACAO)
+            .canais(Set.of(ATIVO_PROPRIO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal())
             .isFalse();
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,6 +24,8 @@ public class FeriadoRepositoryIT {
 
     @Autowired
     private FeriadoRepository feriadoRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarTrue_casoSejaFeriadoNacional() {
@@ -156,5 +160,40 @@ public class FeriadoRepositoryIT {
     public void findByCidadeIdAndDataAtual_deveRetornarFalse_quandoNaoHouverFeriadoNoDia() {
         assertThat(feriadoRepository.hasFeriadoByCidadeIdAndDataAtual(3564, LocalDate.of(2023, 10, 27)))
             .isFalse();
+    }
+
+    @Test
+    public void exluirByFeriadoIds_deveMudarSituacaoDosFeriados_quandoIdsFornecidos() {
+        assertThat(feriadoRepository.findById(105).get().getSituacao()).isEqualTo(ESituacaoFeriado.ATIVO);
+        assertThat(feriadoRepository.findById(199).get().getSituacao()).isEqualTo(ESituacaoFeriado.ATIVO);
+
+        feriadoRepository.exluirByFeriadoIds(List.of(105, 199));
+
+        entityManager.clear();
+        assertThat(feriadoRepository.findById(105).get().getSituacao()).isEqualTo(ESituacaoFeriado.EXCLUIDO);
+        assertThat(feriadoRepository.findById(199).get().getSituacao()).isEqualTo(ESituacaoFeriado.EXCLUIDO);
+    }
+
+    @Test
+    public void updateFeriadoNomeEDataByIds_deveMudarNomeEDataDosFeriados_quandoIdsFornecidos() {
+        assertThat(feriadoRepository.findById(108).get())
+            .extracting("id", "nome", "dataFeriado")
+            .containsExactly(108, "Feriado Alisson", LocalDate.of(2019, 9, 23));
+
+        assertThat(feriadoRepository.findById(109).get())
+            .extracting("id", "nome", "dataFeriado")
+            .containsExactly(109, "Feriado Alisson", LocalDate.of(2019, 9, 23));
+
+        feriadoRepository.updateFeriadoNomeEDataByIds(List.of(108, 109), "NOVO NOME DO FERIADO", LocalDate.of(2024, 07, 31));
+
+        entityManager.clear();
+
+        assertThat(feriadoRepository.findById(108).get())
+            .extracting("id", "nome", "dataFeriado")
+            .containsExactly(108, "NOVO NOME DO FERIADO", LocalDate.of(2024, 07, 31));
+
+        assertThat(feriadoRepository.findById(109).get())
+            .extracting("id", "nome", "dataFeriado")
+            .containsExactly(109, "NOVO NOME DO FERIADO", LocalDate.of(2024, 07, 31));
     }
 }

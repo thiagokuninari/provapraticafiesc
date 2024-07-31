@@ -90,6 +90,16 @@ public class FeriadoTest {
         assertThat(umFeriadoNacional().isFeriadoEstadual()).isFalse();
     }
 
+    @Test
+    public void setup_deveRetornarTrue_quandoFeriadoEstadual() {
+        var feriado = umFeriadoNacional();
+        feriado.setNome("nome");
+
+        feriado.setup();
+
+        assertThat(feriado.getNome()).isEqualTo("NOME");
+    }
+
     private FeriadoRequest umFeriadoEstadualRequest(Integer id) {
         return FeriadoRequest.builder()
             .id(id)

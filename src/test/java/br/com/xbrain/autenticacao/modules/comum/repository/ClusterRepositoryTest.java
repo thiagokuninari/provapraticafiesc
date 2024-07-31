@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,16 @@ public class ClusterRepositoryTest {
         assertThat(clusterRepository.findBySituacaoAndGrupoId(I, 1008, new Sort(ASC, "nome")))
             .extracting("id", "nome", "grupo.id", "situacao")
             .containsExactly(tuple(1012, "D NOME CLUSTER", 1008, I));
+
+    }
+
+    @Test
+    public void findAllByGrupoId_deveRetonarClusters_quandoClusterVinculadoAoGrupoESituacaoAtivo() {
+        assertThat(clusterRepository.findAllByGrupoId(1008, new ClusterPredicate().build()))
+            .extracting("id", "nome", "grupo.id", "situacao")
+            .containsExactlyInAnyOrder(tuple(1009, "A NOME CLUSTER", 1008, A),
+                tuple(1010, "C NOME CLUSTER", 1008, A),
+                tuple(1011, "B NOME CLUSTER", 1008, A));
 
     }
 }

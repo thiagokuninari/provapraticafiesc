@@ -82,4 +82,10 @@ public class StringUtilTest {
             .isNotInstanceOf(ValidacaoException.class)
             .isEqualTo("SOCIO.PRINCIPAL.INATIVO@EMPRESA.COM.BR");
     }
+
+    @Test
+    public void getNomeAbreviado_deveRetornarSN_quandoNomeForVazio() {
+        assertThat(StringUtil.getNomeAbreviado(""))
+            .isEqualTo("SN");
+    }
 }

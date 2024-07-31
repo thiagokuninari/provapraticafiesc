@@ -70,5 +70,7 @@ public class EmailResponseErrorHandlerTest {
 
         assertEquals("Erro ao enviar email Status code: 400",
             listAppender.list.get(0).getMessage());
+
+        assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.OK);
     }
 }
