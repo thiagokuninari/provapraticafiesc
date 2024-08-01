@@ -1421,4 +1421,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(predicate)
             .fetchFirst());
     }
+
+    @Override
+    public List<UsuarioNomeResponse> findExecutivosPorCoordenadoresIds(Predicate usuarioPredicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .leftJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(EXECUTIVO)
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO))
+                .and(usuarioPredicate))
+            .fetch();
+    }
 }

@@ -401,4 +401,16 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(5))
             .containsExactly(121, 122, 123);
     }
+
+    @Test
+    public void findExecutivosPorCoordenadoresIds_deveRetornarExecutivosDoCoordenador_quandoSolicitado() {
+        var predicate = new UsuarioPredicate().comExecutivosDosCoordenadores(List.of(109)).build();
+
+        assertThat(repository.findExecutivosPorCoordenadoresIds(predicate))
+            .hasSize(2)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"));
+    }
 }

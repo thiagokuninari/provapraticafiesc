@@ -518,6 +518,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comExecutivosDosCoordenadores(List<Integer> coordenadoresIds) {
+        Optional.ofNullable(coordenadoresIds)
+            .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
+            .map(builder::and);
+        return this;
+    }
+
     public BooleanBuilder build() {
         return this.builder;
     }

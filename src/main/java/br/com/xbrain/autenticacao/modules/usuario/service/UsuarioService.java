@@ -91,10 +91,10 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -117,6 +117,11 @@ import static org.thymeleaf.util.StringUtils.concat;
 @SuppressWarnings({"PMD.TooManyStaticImports", "PMD.UnusedImports", "VariableDeclarationUsageDistance"})
 public class UsuarioService {
 
+    public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR, INTERNET_COORDENADOR);
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR);
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
@@ -143,7 +148,6 @@ public class UsuarioService {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
-    public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
@@ -165,10 +169,6 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
-    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
-        INTERNET_VENDEDOR, INTERNET_COORDENADOR);
-    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
-        INTERNET_VENDEDOR);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser ativado pois o fornecedor está inativo.";
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
@@ -273,6 +273,14 @@ public class UsuarioService {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Autowired
     private SuporteVendasService suporteVendasService;
+
+    private static String verificarSituacao(String nome, ESituacao situacao) {
+        return ESituacao.I == situacao
+            ? nome.concat(" (INATIVO)")
+            : ESituacao.R == situacao
+            ? nome.concat(" (REALOCADO)")
+            : nome;
+    }
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -1473,8 +1481,8 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado
             .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
-            .getSenha());
+                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
+                .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");
@@ -2883,14 +2891,6 @@ public class UsuarioService {
         return repository.findAllUsuariosReceptivosIdsByOrganizacaoId(id);
     }
 
-    private static String verificarSituacao(String nome, ESituacao situacao) {
-        return ESituacao.I == situacao
-            ? nome.concat(" (INATIVO)")
-            : ESituacao.R == situacao
-            ? nome.concat(" (REALOCADO)")
-            : nome;
-    }
-
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
@@ -3301,5 +3301,11 @@ public class UsuarioService {
             .map(SubCanal::getId)
             .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
                 .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
+    }
+
+    public List<UsuarioNomeResponse> getExecutivosPorCoordenadoresIds(List<Integer> coordenadoresIds) {
+        var usuarioPredicate = new UsuarioPredicate()
+            .comExecutivosDosCoordenadores(coordenadoresIds);
+        return repository.findExecutivosPorCoordenadoresIds(usuarioPredicate.build());
     }
 }

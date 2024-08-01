@@ -239,10 +239,10 @@ public class UsuarioController {
     public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
 
         return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+            .stream()
+            .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     @GetMapping(params = "email")
@@ -614,5 +614,10 @@ public class UsuarioController {
     @GetMapping("d2d")
     public UsuarioSubCanalResponse findUsuarioD2dByCpf(@RequestParam String cpf) {
         return usuarioService.findUsuarioD2dByCpf(cpf);
+    }
+
+    @GetMapping("executivos-hierarquia")
+    public List<UsuarioNomeResponse> getExecutivosPorCoodenadoresIds(@RequestParam List<Integer> coordenadoresIds) {
+        return usuarioService.getExecutivosPorCoordenadoresIds(coordenadoresIds);
     }
 }

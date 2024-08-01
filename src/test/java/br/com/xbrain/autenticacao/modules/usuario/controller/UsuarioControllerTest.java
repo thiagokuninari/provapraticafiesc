@@ -39,6 +39,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static helpers.TestBuilders.umUsuario;
+import static helpers.TestBuilders.umUsuarioNomeResponse;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -2353,5 +2354,30 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getExecutivosPorCoodenadoresIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/executivos-hierarquia")
+            .param("coordenadoresIds", "1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getExecutivosPorCoodenadoresIds_deveRetornarExecutivos_quandoUsuarioAutenticado() {
+        when(usuarioService.getExecutivosPorCoordenadoresIds(List.of(1)))
+            .thenReturn(List.of(umUsuarioNomeResponse(1, "Thiago", A)));
+
+        mvc.perform(get(BASE_URL + "/executivos-hierarquia")
+            .param("coordenadoresIds", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Thiago")));
+
+        verify(usuarioService).getExecutivosPorCoordenadoresIds(List.of(1));
     }
 }

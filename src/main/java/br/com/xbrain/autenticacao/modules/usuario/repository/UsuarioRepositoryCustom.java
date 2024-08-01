@@ -201,4 +201,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findByPredicate(Predicate predicate);
 
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
+
+    List<UsuarioNomeResponse> findExecutivosPorCoordenadoresIds(Predicate usuarioPredicate);
 }

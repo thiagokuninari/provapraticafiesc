@@ -116,6 +116,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
+import static helpers.TestBuilders.umUsuarioNomeResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
@@ -5026,6 +5027,22 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.findByCpfAndSituacaoIsNot("123456789", ESituacao.R))
             .withMessage("Usuário não encontrado.");
+    }
+
+    @Test
+    public void getExecutivosPorCoordenadoresIds_deveRetornarListaUsuarioResponseNome_quandoSolicitado() {
+        var predicate = new UsuarioPredicate().comExecutivosDosCoordenadores(List.of(1)).build();
+
+        doReturn(List.of(umUsuarioNomeResponse(1, "Thiago", A)))
+            .when(repository)
+            .findExecutivosPorCoordenadoresIds(predicate);
+
+        assertThat(service.getExecutivosPorCoordenadoresIds(List.of(1)))
+            .hasSize(1)
+            .extracting("id", "nome")
+            .containsExactly(tuple(1, "Thiago"));
+
+        verify(repository).findExecutivosPorCoordenadoresIds(predicate);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
