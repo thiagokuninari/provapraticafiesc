@@ -15,10 +15,6 @@ public class CargoDepartamentoFuncionalidadePredicate {
         this.builder = new BooleanBuilder();
     }
 
-    public CargoDepartamentoFuncionalidadePredicate(BooleanBuilder builder) {
-        this.builder = builder;
-    }
-
     public CargoDepartamentoFuncionalidadePredicate comDepartamento(Integer departamentoId) {
         if (departamentoId != null) {
             builder.and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamentoId));

@@ -48,4 +48,16 @@ public class PermissaoEspecialTest {
         assertThat(permissaoEspecial.getUsuarioBaixa().getId()).isEqualTo(2);
         assertThat(permissaoEspecial.getDataBaixa()).isNotNull();
     }
+
+    @Test
+    public void prePersist_deveRetonarValorNaDataDeCadastro_quandoSolicitado() {
+        var permissaoEspecial = PermissaoEspecial.of(89, 4006, null);
+        permissaoEspecial.setUsuarioBaixa(Usuario.builder().id(454545).build());
+        permissaoEspecial.setDataCadastro(null);
+        assertThat(permissaoEspecial.getDataCadastro()).isNull();
+
+        permissaoEspecial.prePersist();
+
+        assertThat(permissaoEspecial.getDataCadastro()).isNotNull();
+    }
 }
