@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -8,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
@@ -863,6 +866,110 @@ public class UsuarioHelper {
             .usuarioNome("NAKANO")
             .trocaDeSubCanal(true)
             .trocaDeNome(false)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndireto() {
+        return Usuario.builder()
+            .id(1)
+            .nome("UM USUARIO PAP INDIRETO")
+            .email("umusuariopapindireto@net.com.br")
+            .cpf("111.111.111-11")
+            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
+            .situacao(A)
+            .build();
+    }
+
+    public static Usuario umOutroUsuarioPapIndireto() {
+        return Usuario.builder()
+            .id(2)
+            .nome("UM OUTRO USUARIO PAP INDIRETO")
+            .email("umoutrousuariopapindireto@net.com.br")
+            .cpf("222.222.222-22")
+            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
+            .situacao(A)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndiretoRemanejado() {
+        return Usuario.builder()
+            .id(3)
+            .nome("UM USUARIO PAP INDIRETO REMANEJADO")
+            .email("umusuariopapindiretoremanejado@net.com.br")
+            .cpf("111.111.111-11")
+            .dataCadastro(LocalDateTime.of(2017, 01, 01, 15, 00, 00))
+            .situacao(R)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndiretoRemanejadoParaAntigoAA() {
+        return Usuario.builder()
+            .id(4)
+            .nome("UM USUARIO PAP INDIRETO REMANEJADO PARA ANTIGO AA")
+            .email("umusuariopapindireto@net.com.br")
+            .cpf("111.111.111-11")
+            .dataCadastro(LocalDateTime.of(2020, 01, 01, 15, 00, 00))
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndireto() {
+        return UsuarioDtoVendas.builder()
+            .id(1)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO")
+            .email("umusuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-21")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste")
+            .agenteAutorizadoId(100)
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umOutroUsuarioDtoVendasPapIndireto() {
+        return UsuarioDtoVendas.builder()
+            .id(2)
+            .nome("UM OUTRO USUARIO DTO VENDAS PAP INDIRETO")
+            .email("umoutrousuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-22")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 2")
+            .agenteAutorizadoId(101)
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndiretoRemanejado() {
+        return UsuarioDtoVendas.builder()
+            .id(3)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO REMANEJADO")
+            .email("umusuariopapindiretoremanejado@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-23")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 3")
+            .agenteAutorizadoId(103)
+            .situacao(R)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndiretoRemanejadoParaAntigoAA() {
+        return UsuarioDtoVendas.builder()
+            .id(4)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO REMANEJADO PARA ANTIGO AA")
+            .email("umusuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-23")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 3")
+            .agenteAutorizadoId(103)
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioResponse umUsuarioResponse() {
+        return UsuarioResponse
+            .builder()
+            .id(1)
+            .aaId(100)
+            .nome("UM USUARIO RESPONSE")
+            .dataCadastro(LocalDateTime.of(2018, 12, 1, 0, 0))
+            .cpf("111.111.111-11")
+            .situacao(A)
             .build();
     }
 }

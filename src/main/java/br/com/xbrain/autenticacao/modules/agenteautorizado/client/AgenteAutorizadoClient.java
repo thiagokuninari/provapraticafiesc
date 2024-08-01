@@ -109,4 +109,7 @@ public interface AgenteAutorizadoClient {
     void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
                                              @RequestParam("emailInativo") String emailInativo,
                                              @PathVariable("socioPrincipalId") Integer socioPrincipalId);
+
+    @GetMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/obter-aas-pap-indireto")
+    List<UsuarioDtoVendas> findUsuariosAgentesAutorizadosPapIndireto();
 }

@@ -422,6 +422,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
+    public List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(
+                usuario.cpf.in(
+                        select(usuario.cpf)
+                            .from(usuario)
+                            .where(usuario.id.in(usuariosIds))
+                    ))
+            .orderBy(usuario.cpf.desc())
+            .orderBy(usuario.dataCadastro.desc())
+            .fetch();
+    }
+
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(usuario)

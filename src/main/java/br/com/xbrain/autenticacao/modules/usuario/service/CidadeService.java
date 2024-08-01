@@ -319,4 +319,11 @@ public class CidadeService {
             .map(CidadeResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
+
+    public List<ConfiguracaoCidadeResponse> getCidadesByCidadeInstalacaoIds(List<Integer> cidadeInstalacaoIds) {
+        return cidadeRepository.findAllByPredicate(new CidadePredicate().comCidadesId(cidadeInstalacaoIds).build())
+            .stream()
+            .map(ConfiguracaoCidadeResponse::of)
+            .collect(Collectors.toList());
+    }
 }

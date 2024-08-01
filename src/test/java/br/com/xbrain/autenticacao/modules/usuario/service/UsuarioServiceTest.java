@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.service.MinioFileService;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -91,6 +92,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
@@ -4819,6 +4821,96 @@ public class UsuarioServiceTest {
             .save(eq(umSocioPrincipalComEmailAtualizado));
         verify(agenteAutorizadoService, times(1))
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
+    }
+
+    @Test
+    public void findColaboradoresPapIndireto_deveRetornarListaUsuariosVendasPapIndiretoResponse_quandoSolicitado() {
+        var dataCadastro = LocalDateTime.of(2018, 01, 01, 15, 00, 00);
+
+        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
+            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(),umOutroUsuarioDtoVendasPapIndireto()));
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+            .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
+
+        assertThat(service.findColaboradoresPapIndireto())
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
+                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
+                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
+                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
+            .containsExactlyInAnyOrder(
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"),
+                tuple(2, "64.262.572/0001-22", "Razao Social Teste 2", 101,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"));
+
+        verify(agenteAutorizadoService)
+            .findUsuariosAgentesAutorizadosPapIndireto();
+        verify(repository)
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,2));
+    }
+
+    @Test
+    public void findColaboradoresPapIndireto_deveRetornarListaUsuariosPapIndiretoResponseComDataSaida_quandoUsuarioRemanejado() {
+        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
+            .thenReturn(List.of(umUsuarioDtoVendasPapIndireto(), umUsuarioDtoVendasPapIndiretoRemanejado()));
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3)))
+            .thenReturn(List.of(umUsuarioPapIndireto(), umUsuarioPapIndiretoRemanejado()));
+
+        assertThat(service.findColaboradoresPapIndireto())
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
+                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
+                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
+                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
+            .containsExactlyInAnyOrder(
+                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
+                    "REMANEJADO"),
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
+                    "", "Ativo"));
+
+        verify(agenteAutorizadoService)
+            .findUsuariosAgentesAutorizadosPapIndireto();
+        verify(repository)
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3));
+    }
+
+    @Test
+    public void findColaboradoresPapIndireto_deveRetornarListaUsuariosPapIndiretoResponse_quandoUsuarioRemanejadoParaAntigoAA() {
+        var umUsuarioPapIndiretoRemanejado = umUsuarioPapIndireto();
+        var umUsuarioDtoPapIndiretoRemanejado = umUsuarioDtoVendasPapIndireto();
+        umUsuarioPapIndiretoRemanejado.setSituacao(R);
+        umUsuarioDtoPapIndiretoRemanejado.setSituacao(R);
+
+        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
+            .thenReturn(List.of(umUsuarioDtoPapIndiretoRemanejado, umUsuarioDtoVendasPapIndiretoRemanejado(),
+                umUsuarioDtoVendasPapIndiretoRemanejadoParaAntigoAA()));
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3, 4)))
+            .thenReturn(List.of(umUsuarioPapIndiretoRemanejado, umUsuarioPapIndiretoRemanejado(),
+                umUsuarioPapIndiretoRemanejadoParaAntigoAA()));
+
+        assertThat(service.findColaboradoresPapIndireto())
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
+                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
+                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
+                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
+            .containsExactlyInAnyOrder(
+                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
+                    "", "Ativo"),
+                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
+                    "REMANEJADO"),
+                tuple(4, "64.262.572/0001-23", "Razao Social Teste 3", 103,
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
+                    "", "Ativo"));
+
+        verify(agenteAutorizadoService)
+            .findUsuariosAgentesAutorizadosPapIndireto();
+        verify(repository)
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3, 4));
     }
 
     private Usuario umSocioPrincipal() {

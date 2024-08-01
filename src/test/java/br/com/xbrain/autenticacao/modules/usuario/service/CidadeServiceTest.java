@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoCidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -713,5 +714,34 @@ public class CidadeServiceTest {
             .uf(Uf.builder().id(1).nome("PARANA").build())
             .regional(Regional.builder().id(1027).nome("RPS").build())
             .build();
+    }
+
+    @Test
+    public void getCidadesByCidadeInstalacaoIds_deveRetornarListaConfiguracaoCidade_quandoChamado() {
+        var cidadesIds = List.of(5578, 3426, 5107);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(List.of(cidadeLondrina(), cidadeMaringa()));
+
+        assertThat(service.getCidadesByCidadeInstalacaoIds(cidadesIds))
+            .extracting(ConfiguracaoCidadeResponse::getId, ConfiguracaoCidadeResponse::getNome,
+                ConfiguracaoCidadeResponse::getUf)
+            .containsExactlyInAnyOrder(tuple(5578, "LONDRINA", "PR"), tuple(3426, "MARINGA", "PR"));
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void getCidadesByCidadeInstalacaoIds_deveRetornarListaVazia_quandoCidadesNaoEncontradas() {
+        var cidadesIds = List.of(123123, 213213);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(List.of());
+
+        assertThat(service.getCidadesByCidadeInstalacaoIds(cidadesIds)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
     }
 }
