@@ -171,7 +171,7 @@ public class UsuarioPredicateTest {
     }
 
     @Test
-    public void comExecutivosDosCoordenadores_naoDeveMontarPredicate_quandoIdsNull() {
+    public void comUsuariosSuperiores_deveMontarPredicate_quandoIdsNaoNull() {
         var predicate = new UsuarioPredicate()
             .comUsuariosSuperiores(null)
             .build();
