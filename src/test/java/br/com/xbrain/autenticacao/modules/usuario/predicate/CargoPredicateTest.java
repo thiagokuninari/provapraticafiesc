@@ -1,8 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
+
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +26,46 @@ public class CargoPredicateTest {
     public void comCanal_deveIgnorarTodosOsRegistros_quandoCanalForNull() {
         var predicate = new CargoPredicate()
             .comCanal(null)
+            .build();
+
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comNome_deveMontarPredicateComNome_QuandoSolicitado() {
+        var predicate = new CargoPredicate()
+            .comNome("nome")
+            .build();
+
+        var expected = new BooleanBuilder(cargo.nome.likeIgnoreCase("%" + "nome" + "%"));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comNome_deveIgnorarTodosOsRegistros_quandoCanalForNull() {
+        var predicate = new CargoPredicate()
+            .comNome(null)
+            .build();
+
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void ouComCodigos_deveMontarPredicateComCodigos_QuandoSolicitado() {
+        var predicate = new CargoPredicate()
+            .ouComCodigos(List.of(CodigoCargo.INTERNET_BACKOFFICE))
+            .build();
+
+        var expected = new BooleanBuilder(cargo.codigo.in(CodigoCargo.INTERNET_BACKOFFICE));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void ouComCodigos_deveIgnorarTodosOsRegistros_quandoCanalForNull() {
+        var predicate = new CargoPredicate()
+            .ouComCodigos(null)
             .build();
 
         var expected = new BooleanBuilder();

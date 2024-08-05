@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
@@ -88,6 +89,18 @@ public class ConfiguracaoAgendaRealPredicateTest {
     @Test
     public void comSituacao_naoDeveMontarPredicate_quandoNaoPassarSituacao() {
         assertThat(new ConfiguracaoAgendaRealPredicate().comSituacao(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void comTipoConfiguracao_deveMontarPredicate_quandoPassarTipoConfiguracao() {
+        assertThat(new ConfiguracaoAgendaRealPredicate().comTipoConfiguracao(ETipoConfiguracao.NIVEL).build())
+            .isEqualTo(new BooleanBuilder(configuracaoAgendaReal.tipoConfiguracao.eq(ETipoConfiguracao.NIVEL)));
+    }
+
+    @Test
+    public void comTipoConfiguracao_naoDeveMontarPredicate_quandoNaoPassarTipoConfiguracao() {
+        assertThat(new ConfiguracaoAgendaRealPredicate().comTipoConfiguracao(null).build())
             .isEqualTo(new BooleanBuilder());
     }
 }

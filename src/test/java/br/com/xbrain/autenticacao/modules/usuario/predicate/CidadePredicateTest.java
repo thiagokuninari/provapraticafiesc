@@ -153,4 +153,23 @@ public class CidadePredicateTest {
             .boxed()
             .collect(Collectors.toList());
     }
+
+    @Test
+    public void comCodigosIbge_deveMontarPredicateComCodigosIbge_quandoSolicitado() {
+        var predicate = new CidadePredicate()
+            .comCodigosIbge(List.of("ibge")).build();
+
+        assertThat(predicate)
+            .isEqualTo(new BooleanBuilder().and(cidade.codigoIbge.in("ibge")));
+    }
+
+    @Test
+    public void comCodigosIbge_deveIgnorarTodosOsRegistros_quandoCodigosIbgeForVazio() {
+        var predicate = new CidadePredicate()
+            .comCodigosIbge(List.of())
+            .build();
+
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
 }
