@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umDtoNovoSocioPrincipal;
 import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umaListaPermissoesEspeciaisFuncFeederEAcompIndTecVend;
@@ -123,6 +125,41 @@ public class PermissaoEspecialServiceTest {
             .isFalse();
 
         verify(repository).existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(1), eq(1000));
+    }
+
+    @Test
+    public void remover_deveSetarUsuarioBaixaEDataBaixa_quandoRequisicaoBemSucedida() {
+        var permissao = new PermissaoEspecial();
+        when(autenticacaoService.getUsuarioId()).thenReturn(9090);
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2))
+            .thenReturn(Optional.of(permissao));
+        when(repository.save(any(PermissaoEspecial.class))).thenReturn(permissao);
+
+        assertThat(permissao.getDataBaixa()).isNull();
+        assertThat(permissao.getUsuarioBaixa()).isNull();
+
+        service.remover(1, 2);
+
+        assertThat(permissao.getDataBaixa()).isNotNull();
+        assertThat(permissao.getUsuarioBaixa().getId()).isEqualTo(9090);
+
+        verify(autenticacaoService).getUsuarioId();
+        verify(repository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2);
+        verify(repository).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    public void remover_deveLancarException_quandoPermissaoNaoEncontrada() {
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2))
+            .thenReturn(Optional.empty());
+
+        assertThatCode(() -> service.remover(1, 2))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Permissão Especial não encontrada.");
+
+        verify(autenticacaoService, never()).getUsuarioId();
+        verify(repository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2);
+        verify(repository, never()).save(any(PermissaoEspecial.class));
     }
 
     @Test

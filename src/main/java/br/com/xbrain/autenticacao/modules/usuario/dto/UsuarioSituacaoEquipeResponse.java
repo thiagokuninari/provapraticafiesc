@@ -18,8 +18,4 @@ public class UsuarioSituacaoEquipeResponse {
     private ESituacao situacaoUsuario;
     private Integer equipeVendasId;
 
-    public boolean isAtivo() {
-        return ESituacao.A.equals(situacaoUsuario);
-    }
-
 }
