@@ -5031,7 +5031,11 @@ public class UsuarioServiceTest {
 
     @Test
     public void getExecutivosPorCoordenadoresIds_deveRetornarListaUsuarioResponseNome_quandoSolicitado() {
-        var predicate = new UsuarioPredicate().comExecutivosDosCoordenadores(List.of(1)).build();
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(List.of(1))
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO)
+            .build();
 
         doReturn(List.of(umUsuarioNomeResponse(1, "Thiago", A)))
             .when(repository)

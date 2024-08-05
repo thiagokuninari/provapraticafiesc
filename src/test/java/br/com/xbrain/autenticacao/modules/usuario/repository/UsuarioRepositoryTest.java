@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -34,7 +35,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENT
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -404,7 +404,10 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findExecutivosPorCoordenadoresIds_deveRetornarExecutivosDoCoordenador_quandoSolicitado() {
-        var predicate = new UsuarioPredicate().comExecutivosDosCoordenadores(List.of(109)).build();
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(List.of(109))
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO).build();
 
         assertThat(repository.findExecutivosPorCoordenadoresIds(predicate))
             .hasSize(2)

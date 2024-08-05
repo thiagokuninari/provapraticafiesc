@@ -3305,7 +3305,9 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getExecutivosPorCoordenadoresIds(List<Integer> coordenadoresIds) {
         var usuarioPredicate = new UsuarioPredicate()
-            .comExecutivosDosCoordenadores(coordenadoresIds);
+            .comUsuariosSuperiores(coordenadoresIds)
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO);
         return repository.findExecutivosPorCoordenadoresIds(usuarioPredicate.build());
     }
 }

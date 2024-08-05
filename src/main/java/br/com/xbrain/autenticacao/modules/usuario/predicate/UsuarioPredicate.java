@@ -518,8 +518,8 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comExecutivosDosCoordenadores(List<Integer> coordenadoresIds) {
-        Optional.ofNullable(coordenadoresIds)
+    public UsuarioPredicate comUsuariosSuperiores(List<Integer> usuariosIds) {
+        Optional.ofNullable(usuariosIds)
             .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
             .map(builder::and);
         return this;
