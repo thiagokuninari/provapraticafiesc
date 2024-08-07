@@ -20,7 +20,7 @@ public class UsuarioResponseTest {
     }
 
     @Test
-    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seCanaisForInformado() {
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seCanaisForemInformados() {
         var usuario = umUsuario();
         usuario.setCanais(Set.of(AGENTE_AUTORIZADO));
 
@@ -31,7 +31,7 @@ public class UsuarioResponseTest {
     }
 
     @Test
-    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seSubCanaisForInformado() {
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seSubCanaisForemInformados() {
         var usuario = umUsuario();
         usuario.setSubCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
 
