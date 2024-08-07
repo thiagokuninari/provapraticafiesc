@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 
 @DataJpaTest
@@ -92,7 +92,7 @@ public class SiteRepositoryTest {
     public void ignoraSite_deveIgnorarSitePorId() {
         var sitesComSiteIgnorado = repository.findAll(new SitePredicate().ignorarSite(100).build());
         Assertions.assertThat(sitesComSiteIgnorado).extracting(Site::getId, Site::getNome)
-            .doesNotContain(Tuple.tuple(100, "São Paulo"));
+            .doesNotContain(tuple(100, "São Paulo"));
     }
 
     @Test
@@ -197,6 +197,22 @@ public class SiteRepositoryTest {
             .isNotEmpty();
         assertThat(atual.get())
             .isEqualToComparingFieldByField(esperado);
+    }
+
+    @Test
+    public void findAllByPredicate_deveRetornarListaSitesOrdenadosPorId_quandoEncontrado() {
+        var site = repository.findAllByPredicate(new CidadePredicate().build());
+
+        assertThat(site)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "São Paulo"),
+                tuple(101, "Rio Branco"),
+                tuple(102, "Manaus"),
+                tuple(103, "Site Inativo"),
+                tuple(105, "Site inativo 2"),
+                tuple(110, "Rio Branco"),
+                tuple(111, "Manaus"));
     }
 
     private Predicate umSitePredicate(ESituacao situacao, List<Integer> cidadeIds, Integer id) {

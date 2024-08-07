@@ -6,11 +6,13 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.groups.Tuple;
@@ -21,15 +23,20 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.*;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao.ESCRITORIO;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHelper.umUsuarioGerenteOperacao;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHistoricoHelper.umaListaSolicitacaoRamalHistorico;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SolicitacaoRamalHelper.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -51,6 +58,23 @@ public class SolicitacaoRamalServiceTest {
     private SolicitacaoRamalServiceD2d serviceD2d;
     @Mock
     private ApplicationContext context;
+    @Mock
+    private SolicitacaoRamalHistoricoService historicoService;
+    @Mock
+    private EmailService emailService;
+
+    @Test
+    public void getAllHistoricoBySolicitacaoId_deveRetornarListaSolicitacaoRamalHistoricoResponse_seHouverRegistros() {
+        when(historicoRepository.findAllBySolicitacaoRamalId(1))
+            .thenReturn(umaListaSolicitacaoRamalHistorico());
+
+        assertThat(service.getAllHistoricoBySolicitacaoId(1))
+            .extracting("id", "usuarioSolicitante", "situacao")
+            .containsExactly(tuple(1, "nome do usuario", CONCLUIDO),
+                tuple(1, "nome do usuario", CONCLUIDO));
+
+        verify(historicoRepository).findAllBySolicitacaoRamalId(1);
+    }
 
     @Test
     public void calcularDataFinalizacao_deveSetarADataFinalizacao_seHouverRegistros() {
@@ -107,8 +131,8 @@ public class SolicitacaoRamalServiceTest {
 
         var filtros = new SolicitacaoRamalFiltros();
         filtros.setAgenteAutorizadoId(1);
-        filtros.setSituacao(ESituacaoSolicitacao.PENDENTE);
-        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
+        filtros.setSituacao(PENDENTE);
+        filtros.setCanal(AGENTE_AUTORIZADO);
 
         var response = service.getAll(new PageRequest(), filtros);
 
@@ -116,13 +140,13 @@ public class SolicitacaoRamalServiceTest {
             .extracting("id", "canal", "dataCadastro",
                 "situacao", "agenteAutorizadoId").containsExactly(
 
-                Tuple.tuple(1, ECanal.AGENTE_AUTORIZADO,
+                tuple(1, AGENTE_AUTORIZADO,
                     LocalDateTime.of(2022, 02, 10, 10, 00, 00),
-                    ESituacaoSolicitacao.PENDENTE, 1),
+                    PENDENTE, 1),
 
-                Tuple.tuple(2, ECanal.AGENTE_AUTORIZADO,
+                tuple(2, AGENTE_AUTORIZADO,
                     LocalDateTime.of(2022, 02, 10, 10, 00, 00),
-                    ESituacaoSolicitacao.PENDENTE, 1)
+                    PENDENTE, 1)
             );
     }
 
@@ -162,7 +186,7 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void save_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
         var request = criaSolicitacaoRamal(1, null);
-        request.setCanal(ECanal.AGENTE_AUTORIZADO);
+        request.setCanal(AGENTE_AUTORIZADO);
         when(serviceAa.save(request)).thenReturn(umaSolicitacaoRamalResponseAa(1));
 
         when(context.getBean(SolicitacaoRamalServiceAa.class)).thenReturn(serviceAa);
@@ -190,13 +214,13 @@ public class SolicitacaoRamalServiceTest {
     public void getDadosAdicionais_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
         when(context.getBean(SolicitacaoRamalServiceAa.class)).thenReturn(serviceAa);
 
-        when(serviceAa.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1)))
+        when(serviceAa.getDadosAdicionais(umFiltrosSolicitacao(AGENTE_AUTORIZADO, null, 1)))
             .thenReturn(dadosAdicionaisResponse());
 
-        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
+        service.getDadosAdicionais(umFiltrosSolicitacao(AGENTE_AUTORIZADO, null, 1));
 
         verify(serviceAa, times(1))
-            .getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
+            .getDadosAdicionais(umFiltrosSolicitacao(AGENTE_AUTORIZADO, null, 1));
     }
 
     @Test
@@ -215,7 +239,7 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void update_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
         var request = criaSolicitacaoRamal(1, 2);
-        request.setCanal(ECanal.AGENTE_AUTORIZADO);
+        request.setCanal(AGENTE_AUTORIZADO);
         when(serviceAa.update(request)).thenReturn(umaSolicitacaoRamalResponseAa(1));
         when(context.getBean(SolicitacaoRamalServiceAa.class)).thenReturn(serviceAa);
 
@@ -239,7 +263,7 @@ public class SolicitacaoRamalServiceTest {
     @Test
     public void getAllGerenciaDeveMandarParaServiceAa_seCanalforAgenteAutorizado() {
         var filtros = umaSolicitacaoFiltros();
-        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
+        filtros.setCanal(AGENTE_AUTORIZADO);
         when(serviceAa.getAllGerencia(new PageRequest(), filtros)).thenReturn(umaPageResponseAa());
         when(context.getBean(SolicitacaoRamalServiceAa.class)).thenReturn(serviceAa);
 
@@ -261,6 +285,69 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
+    public void atualizarStatus_deveAtualizarStatus_quandoSolicitacaoBemSucedida() {
+        var solicitacao = umaSolicitacaoRamal(1);
+
+        when(repository.findById(1))
+            .thenReturn(Optional.of(solicitacao));
+
+        when(repository.save(solicitacao))
+            .thenReturn(solicitacao);
+
+        assertThat(solicitacao.getSituacao()).isEqualTo(PENDENTE);
+
+        assertThat(service.atualizarStatus(umaSolicitacaoRamalAtualizarStatusRequest(EM_ANDAMENTO)))
+            .extracting( "tipoImplantacao", "situacao")
+            .containsExactly("ESCRITÓRIO", EM_ANDAMENTO);
+
+        verify(historicoService).save(any(SolicitacaoRamalHistorico.class));
+        verify(repository).findById(1);
+        verify(repository).save(solicitacao);
+    }
+
+    @Test
+    public void getSolicitacaoById_deveRetornarSolicitacaoRamalResponse_quandoEncontrado() {
+        var solicitacao = umaSolicitacaoRamal(1);
+        when(repository.findById(1))
+            .thenReturn(Optional.of(solicitacao));
+
+        assertThat(service.getSolicitacaoById(1))
+            .extracting("id", "canal", "situacao", "solicitante", "agenteAutorizadoId")
+            .containsExactly(1, AGENTE_AUTORIZADO, PENDENTE, "teste", 1);
+
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void getColaboradoresBySolicitacaoId_deveRetornarListaSolicitacaoRamalResponse_quandoEncontrado() {
+        var solicitacao = umaSolicitacaoRamal(1);
+        solicitacao.getUsuariosSolicitados().get(0)
+            .setCargo(Cargo.builder().nome("nome do cargo").build());
+        solicitacao.getUsuariosSolicitados().get(0).setNome("nome");
+
+        when(repository.findBySolicitacaoId(1))
+            .thenReturn(Optional.of(solicitacao));
+
+        assertThat(service.getColaboradoresBySolicitacaoId(1))
+            .extracting("id", "nome", "cargo")
+            .containsExactly(Tuple.tuple(1, "nome", "nome do cargo"));
+
+        verify(repository).findBySolicitacaoId(1);
+    }
+
+    @Test
+    public void getColaboradoresBySolicitacaoId_deveRetornarException_quandoSolicitacaoRamalNaoEncontrado() {
+        when(repository.findBySolicitacaoId(1))
+            .thenReturn(Optional.empty());
+
+        assertThatCode(() -> service.getColaboradoresBySolicitacaoId(1))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Solicitação não encontrada.");
+
+        verify(repository).findBySolicitacaoId(1);
+    }
+
+    @Test
     public void remover_deveDeletarSolicitacaoRamal_seSolicitacaoRamalComStatusPendente() {
         when(repository.findById(1)).thenReturn(Optional.of(umaSolicitacaoRamal(1)));
 
@@ -278,7 +365,7 @@ public class SolicitacaoRamalServiceTest {
     @Test(expected = ValidacaoException.class)
     public void remover_deveRetornarValidacaoException_seSolicitacaoRamalComStatusDiferenteDePendente() {
         var solicitacaoRamalEmAndamento = umaSolicitacaoRamal(1);
-        solicitacaoRamalEmAndamento.setSituacao(ESituacaoSolicitacao.EM_ANDAMENTO);
+        solicitacaoRamalEmAndamento.setSituacao(EM_ANDAMENTO);
 
         when(repository.findById(1)).thenReturn(Optional.of(solicitacaoRamalEmAndamento));
 
@@ -286,5 +373,46 @@ public class SolicitacaoRamalServiceTest {
 
         verify(historicoRepository, never()).deleteAll(1);
         verify(repository, never()).delete(solicitacaoRamalEmAndamento);
+    }
+
+    @Test
+    public void getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse_deveRetornarSolicitacoesRamal_seSolicitado() {
+        when(repository.findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull())
+            .thenReturn(umaListaSolicitacaoRamal());
+
+        assertThat(service.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse())
+            .extracting("id", "situacao", "canal", "agenteAutorizadoId", "usuario.id", "tipoImplantacao")
+                .containsExactly(Tuple.tuple(1, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO),
+                    Tuple.tuple(2, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO));;
+
+        verify(repository).findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
+    }
+
+    @Test
+    public void enviarEmailSolicitacoesQueVaoExpirar_deveEnviarEmailAosDestinatariosSemAVirgula_quandoSolicitado() {
+        ReflectionTestUtils.setField(service, "destinatarios", "teste,");
+        when(repository.findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull())
+            .thenReturn(umaListaSolicitacaoRamal());
+
+        assertThat(service.enviarEmailSolicitacoesQueVaoExpirar())
+            .extracting("id", "situacao", "canal", "agenteAutorizadoId", "usuario.id", "tipoImplantacao")
+            .containsExactly(Tuple.tuple(1, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO),
+                Tuple.tuple(2, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO));;
+
+        verify(repository).findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
+    }
+
+    @Test
+    public void enviarEmailSolicitacoesQueVaoExpirar_deveEnviarEmail_quandoSolicitado() {
+        ReflectionTestUtils.setField(service, "destinatarios", "teste");
+        when(repository.findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull())
+            .thenReturn(umaListaSolicitacaoRamal());
+
+        assertThat(service.enviarEmailSolicitacoesQueVaoExpirar())
+            .extracting("id", "situacao", "canal", "agenteAutorizadoId", "usuario.id", "tipoImplantacao")
+            .containsExactly(Tuple.tuple(1, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO),
+                Tuple.tuple(2, PENDENTE, AGENTE_AUTORIZADO, 1, 1, ESCRITORIO));;
+
+        verify(repository).findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
     }
 }

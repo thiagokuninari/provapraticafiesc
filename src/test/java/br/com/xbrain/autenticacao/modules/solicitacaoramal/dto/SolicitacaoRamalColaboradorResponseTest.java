@@ -15,6 +15,15 @@ public class SolicitacaoRamalColaboradorResponseTest {
             .containsExactly(2, "nome", "nome do cargo");
     }
 
+    @Test
+    public void convertFrom_deveRetornarSolicitacaoRamalColaboradorResponseComCargoVazio_quandoCargoUsuarioNull() {
+        var usuario = umUsuario();
+        usuario.setCargo(null);
+        assertThat(SolicitacaoRamalColaboradorResponse.convertFrom(usuario))
+            .extracting("id", "nome", "cargo")
+            .containsExactly(2, "nome", "");
+    }
+
     private Usuario umUsuario() {
         return Usuario.builder()
             .id(2)
