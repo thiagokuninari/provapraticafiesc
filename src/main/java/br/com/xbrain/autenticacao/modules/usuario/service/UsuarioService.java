@@ -273,6 +273,8 @@ public class UsuarioService {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Autowired
     private SuporteVendasService suporteVendasService;
+    @Autowired
+    private SubNivelService subNivelService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -603,12 +605,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
-        var request = UsuarioDto.convertFrom(usuario);
+    public UsuarioDto save(UsuarioDto usuarioDto, MultipartFile foto) {
+        var usuario = UsuarioDto.convertFrom(usuarioDto);
         if (!isEmpty(foto)) {
-            fileService.salvarArquivo(request, foto);
+            fileService.salvarArquivo(usuario, foto);
         }
-        return save(request);
+        vincularSubniveis(usuario, usuarioDto);
+        return save(usuario);
     }
 
     @Transactional
@@ -647,12 +650,30 @@ public class UsuarioService {
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
         permissaoTecnicoIndicadorService
             .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+        this.removerPermissoesEspeciaisMsoBySubnivel(usuario);
+    }
+
+    private void removerPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
+        if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(usuario.getSubNivelFuncionalidadesIds(),
+                List.of(usuario.getId()));
+        }
     }
 
     private void adicionarPermissoes(Usuario usuario) {
         subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
         subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
         feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
+        this.adicionarPermissoesEspeciaisMsoBySubnivel(usuario);
+    }
+
+    private void adicionarPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
+        if (usuario.isIdNivelMso() && !usuario.getSubNiveis().isEmpty()) {
+            var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
+                usuario.getUsuarioCadastro().getId(), usuario.getSubNivelFuncionalidadesIds());
+
+            this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
+        }
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {
@@ -701,6 +722,12 @@ public class UsuarioService {
         var result = equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(usuarioAnterior.getId());
         if (!result.isEmpty()) {
             throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
+        }
+    }
+
+    private void vincularSubniveis(Usuario usuario, UsuarioDto usuarioDto) {
+        if (!usuarioDto.getSubNiveisIds().isEmpty()) {
+            usuario.setSubNiveis(new HashSet<>(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds())));
         }
     }
 
@@ -1473,8 +1500,8 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado
             .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
-            .getSenha());
+                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
+                .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");

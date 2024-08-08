@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioDto implements Serializable {
 
@@ -110,6 +110,7 @@ public class UsuarioDto implements Serializable {
     private Set<ETipoFeederMso> tiposFeeder;
     private Integer territorioMercadoDesenvolvimentoId;
     private ETipoUsuario tipoUsuario;
+    private List<Integer> subNiveisIds;
 
     public UsuarioDto(Integer id) {
         this.id = id;

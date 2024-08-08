@@ -288,6 +288,16 @@ public class Usuario {
     @Column(name = "FK_TERRITORIO_MERCADO_DESEN")
     private Integer territorioMercadoDesenvolvimentoId;
 
+    @NotAudited
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "USUARIO_SUBNIVEL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))})
+    private Set<SubNivel> subNiveis;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -765,5 +775,11 @@ public class Usuario {
 
     public Integer getOrganizacaoId() {
         return StreamUtils.mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
+    }
+
+    public List<Integer> getSubNivelFuncionalidadesIds() {
+        return this.getSubNiveis().stream()
+            .flatMap(subnivel -> subnivel.getFuncionalidadesIds().stream())
+            .collect(Collectors.toList());
     }
 }

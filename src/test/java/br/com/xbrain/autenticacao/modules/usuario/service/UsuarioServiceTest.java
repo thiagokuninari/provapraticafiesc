@@ -34,6 +34,8 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
+import br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper;
+import br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -53,6 +55,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMq
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -61,10 +64,7 @@ import helpers.TestBuilders;
 import io.minio.MinioClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
@@ -93,6 +93,8 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.umaFuncionalidadeBko;
+import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umaPermissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.controller.UsuarioGerenciaControllerTest.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -115,6 +117,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioXBrain;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -228,6 +231,8 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Mock
+    private SubNivelService subNivelService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -3304,6 +3309,50 @@ public class UsuarioServiceTest {
 
         var usuarioDto = (UsuarioDto) service.save(vendedor);
         assertThat(usuarioDto.getHierarquiasId()).isEqualTo(List.of(100));
+    }
+
+    @Test
+    public void save_deveAdicionarSubNiveisESalvarPermissoesEspeciais_quandoRequestConterSubNiveisIdsECadastroMso() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(null);
+        var subniveis = umaListaDeSubniveisComUmSubNivel();
+
+        when(subNivelService.findByIdIn(List.of(1))).thenReturn(subniveis);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 1))
+            .thenReturn(Optional.empty());
+        when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
+            Usuario usuarioArgumento = invocation.getArgument(0);
+            usuarioArgumento.setId(1);
+            return usuarioArgumento;
+        });
+
+        var data = LocalDateTime.of(2024,8, 7, 10, 30, 0);
+        try (var localDateMock = mockStatic(LocalDateTime.class)) {
+            localDateMock.when(LocalDateTime::now).thenReturn(data);
+
+            assertThatCode(() -> service.save(usuarioDto, null))
+                .doesNotThrowAnyException();
+
+            verify(repository).saveAndFlush(any(Usuario.class));
+            verify(subNivelService).findByIdIn(List.of(1));
+            verify(permissaoEspecialRepository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 1);
+            verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+            verify(repository, times(2)).save(usuarioCaptor.capture());
+
+            var usuarioSalvo = usuarioCaptor.getValue();
+            assertThat(usuarioSalvo)
+                .extracting(Usuario::getId, Usuario::getSubNiveis, Usuario::getSubNivelFuncionalidadesIds)
+                .containsExactly(1, Set.copyOf(subniveis), List.of(1));
+
+            var permissoesSalvas = permissaoEspecialCaptor.getValue();
+            assertThat(permissoesSalvas)
+                .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                    permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                    permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId(),
+                    PermissaoEspecial::getDataCadastro)
+                .containsExactly(
+                    tuple(1, 1, 1, LocalDateTime.now()));
+        }
     }
 
     @Test

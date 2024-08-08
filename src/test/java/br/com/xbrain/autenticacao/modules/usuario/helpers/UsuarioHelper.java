@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -22,6 +23,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.umaFuncionalidadeBko;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
@@ -195,6 +197,19 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static UsuarioDto umUsuarioMsoBackofficeDto(Integer usuarioId) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .nome("MSO BACKOFFICE")
+            .cpf("873.616.099-70")
+            .email("MSOBACKOFFICE@TESTE.COM.BR")
+            .nivelId(2)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .subNiveisIds(List.of(1))
+            .build();
+    }
+
     public static UsuarioDto umUsuarioFeederDto(Integer usuarioId, String usuarioEmail) {
         return UsuarioDto.builder()
             .id(usuarioId)
@@ -243,6 +258,7 @@ public class UsuarioHelper {
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .situacao(ESituacao.A)
+            .subNiveis(new HashSet<>())
             .build();
     }
 
@@ -864,5 +880,19 @@ public class UsuarioHelper {
             .trocaDeSubCanal(true)
             .trocaDeNome(false)
             .build();
+    }
+
+    public static SubNivel umSubNivel(Integer id, String codigo, String descricao, Set<Funcionalidade> funcionalidades) {
+        return SubNivel.builder()
+            .id(id)
+            .codigo(codigo)
+            .descricao(descricao)
+            .funcionalidades(funcionalidades)
+            .build();
+    }
+
+    public static List<SubNivel> umaListaDeSubniveisComUmSubNivel() {
+        return List.of(umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+            Set.of(umaFuncionalidadeBko(1, "Teste 1"))));
     }
 }
