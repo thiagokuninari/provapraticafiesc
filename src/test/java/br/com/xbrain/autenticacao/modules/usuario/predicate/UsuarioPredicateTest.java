@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import org.junit.Test;
@@ -21,7 +20,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsuarioPredicateTest {
-
 
     @Test
     public void excluiIds_deveRetornarPredicate_quandoIdsForFornecido() {
