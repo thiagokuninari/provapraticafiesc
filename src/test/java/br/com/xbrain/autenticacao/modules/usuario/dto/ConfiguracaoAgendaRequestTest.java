@@ -4,12 +4,14 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
 import org.junit.Test;
 
 import javax.validation.ConstraintViolationException;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.umaConfiguracaoAgendaRequest;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.umaConstraintViolation;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 public class ConfiguracaoAgendaRequestTest {
@@ -26,6 +28,8 @@ public class ConfiguracaoAgendaRequestTest {
             .isInstanceOf(ConstraintViolationException.class)
             .extracting("constraintViolations").hasSize(1).first()
             .hasToString(violations.toString());
+
+        assertThat(request.getTipoConfiguracao()).isNotEqualTo(ETipoConfiguracao.PADRAO);
     }
 
     @Test

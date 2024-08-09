@@ -172,6 +172,36 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    public void getByUsuarioId_deveRetornarUnauthorized_quandoUserNaoForAdmin() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .header("Authorization",
+                    getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getSubCanalByUsuarioId(any());
+    }
+
+    @Test
+    public void getByUsuarioId_deveRetornarUnauthorized_quandoNaoHouverUsuarioLogado() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getSubCanalByUsuarioId(1);
+    }
+
+    @Test
+    public void getByUsuarioId_deveRetornarOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(subCanalService).getSubCanalByUsuarioId(1);
+    }
+
+    @Test
     public void editar_deveEditarSubCanal_quandoOk() throws Exception {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
 
@@ -324,5 +354,35 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Erro, subcanal não encontrado.")));
         verify(subCanalService).isNovaChecagemViabilidadeD2d(eq(1));
+    }
+
+    @Test
+    public void getHistorico_deveRetornarUnauthorized_quandoUserNaoForAdmin() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .header("Authorization",
+                    getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    public void getHistorico_deveRetornarUnauthorized_quandoNaoHouverUsuarioLogado() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    public void getHistorico_deveRetornarOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(subCanalService).getHistorico(1, new PageRequest());
     }
 }
