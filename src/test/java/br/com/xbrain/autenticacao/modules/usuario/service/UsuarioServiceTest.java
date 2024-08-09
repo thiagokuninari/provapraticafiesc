@@ -3344,7 +3344,6 @@ public class UsuarioServiceTest {
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
             .containsExactly(
                 tuple(1, 1, 1));
-
     }
 
     @Test
@@ -3371,7 +3370,6 @@ public class UsuarioServiceTest {
         assertThat(usuarioSalvo)
             .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(1, null);
-
     }
 
     @Test
@@ -3412,7 +3410,6 @@ public class UsuarioServiceTest {
             .containsExactly(
                 tuple(2, 23, 1),
                 tuple(3, 23, 1));
-
     }
 
     @Test
@@ -3444,7 +3441,6 @@ public class UsuarioServiceTest {
         assertThat(usuarioSalvo)
             .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(23, null);
-
     }
 
     @Test
@@ -3486,7 +3482,6 @@ public class UsuarioServiceTest {
             .containsExactly(
                 tuple(2, 23, 1),
                 tuple(3, 23, 1));
-
     }
 
     @Test
