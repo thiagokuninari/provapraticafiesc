@@ -91,10 +91,10 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -655,7 +655,7 @@ public class UsuarioService {
 
     private void removerPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(usuario.getSubNivelFuncionalidadesIds(),
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(subNivelService.getFuncionalidadesIds(),
                 List.of(usuario.getId()));
         }
     }
@@ -668,9 +668,9 @@ public class UsuarioService {
     }
 
     private void adicionarPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
-        if (usuario.isIdNivelMso() && !usuario.getSubNiveis().isEmpty()) {
+        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
             var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
-                usuario.getUsuarioCadastro().getId(), usuario.getSubNivelFuncionalidadesIds());
+                usuario.getUsuarioCadastro().getId(), subNivelService.getSubNivelFuncionalidadesIds(usuario.getSubNiveis()));
 
             this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
         }
@@ -726,8 +726,8 @@ public class UsuarioService {
     }
 
     private void vincularSubniveis(Usuario usuario, UsuarioDto usuarioDto) {
-        if (!usuarioDto.getSubNiveisIds().isEmpty()) {
-            usuario.setSubNiveis(new HashSet<>(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds())));
+        if (!isEmpty(usuarioDto.getSubNiveisIds())) {
+            usuario.setSubNiveis(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds()));
         }
     }
 

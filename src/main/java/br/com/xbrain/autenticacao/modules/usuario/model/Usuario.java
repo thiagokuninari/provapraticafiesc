@@ -776,10 +776,4 @@ public class Usuario {
     public Integer getOrganizacaoId() {
         return StreamUtils.mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
     }
-
-    public List<Integer> getSubNivelFuncionalidadesIds() {
-        return this.getSubNiveis().stream()
-            .flatMap(subnivel -> subnivel.getFuncionalidadesIds().stream())
-            .collect(Collectors.toList());
-    }
 }
