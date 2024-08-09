@@ -110,7 +110,7 @@ public class UsuarioDto implements Serializable {
     private Set<ETipoFeederMso> tiposFeeder;
     private Integer territorioMercadoDesenvolvimentoId;
     private ETipoUsuario tipoUsuario;
-    private Set<Integer> subNiveisIds;
+    private Set<Integer> subniveisIds;
 
     public UsuarioDto(Integer id) {
         this.id = id;

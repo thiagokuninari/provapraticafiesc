@@ -274,7 +274,7 @@ public class UsuarioService {
     @Autowired
     private SuporteVendasService suporteVendasService;
     @Autowired
-    private SubNivelService subNivelService;
+    private SubnivelService subnivelService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -655,7 +655,7 @@ public class UsuarioService {
 
     private void removerPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(subNivelService.getFuncionalidadesIds(),
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(subnivelService.getFuncionalidadesIds(),
                 List.of(usuario.getId()));
         }
     }
@@ -668,9 +668,9 @@ public class UsuarioService {
     }
 
     private void adicionarPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
-        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
+        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubniveis())) {
             var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
-                usuario.getUsuarioCadastro().getId(), subNivelService.getSubNivelFuncionalidadesIds(usuario.getSubNiveis()));
+                usuario.getUsuarioCadastro().getId(), subnivelService.getSubnivelFuncionalidadesIds(usuario.getSubniveis()));
 
             this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
         }
@@ -726,8 +726,8 @@ public class UsuarioService {
     }
 
     private void vincularSubniveis(Usuario usuario, UsuarioDto usuarioDto) {
-        if (!isEmpty(usuarioDto.getSubNiveisIds())) {
-            usuario.setSubNiveis(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds()));
+        if (!isEmpty(usuarioDto.getSubniveisIds())) {
+            usuario.setSubniveis(subnivelService.findByIdIn(usuarioDto.getSubniveisIds()));
         }
     }
 

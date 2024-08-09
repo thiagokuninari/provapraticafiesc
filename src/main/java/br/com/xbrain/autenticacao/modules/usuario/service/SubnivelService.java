@@ -2,8 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubNivel;
-import br.com.xbrain.autenticacao.modules.usuario.repository.SubNivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Subnivel;
+import br.com.xbrain.autenticacao.modules.usuario.repository.SubnivelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,26 +14,26 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SubNivelService {
+public class SubnivelService {
 
-    private final SubNivelRepository repository;
+    private final SubnivelRepository repository;
 
-    public List<SelectResponse> getSubNiveisSelect(Integer nivelId) {
+    public List<SelectResponse> getSubniveisSelect(Integer nivelId) {
         return repository.findByNivelIdAndSituacao(nivelId, ESituacao.A).stream()
-            .map(subNivel -> SelectResponse.of(subNivel.getId(), subNivel.getNome()))
+            .map(subnivel -> SelectResponse.of(subnivel.getId(), subnivel.getNome()))
             .collect(Collectors.toList());
     }
 
     public List<Integer> getFuncionalidadesIds() {
-        return this.getSubNivelFuncionalidadesIds(repository.findAll());
+        return this.getSubnivelFuncionalidadesIds(repository.findAll());
     }
 
-    public Set<SubNivel> findByIdIn(Set<Integer> subNiveisIds) {
+    public Set<Subnivel> findByIdIn(Set<Integer> subNiveisIds) {
         return repository.findByIdIn(subNiveisIds);
     }
 
-    public List<Integer> getSubNivelFuncionalidadesIds(Collection<SubNivel> subNiveis) {
-        return subNiveis.stream()
+    public List<Integer> getSubnivelFuncionalidadesIds(Collection<Subnivel> subniveis) {
+        return subniveis.stream()
             .flatMap(subnivel -> subnivel.getFuncionalidadesIds().stream())
             .collect(Collectors.toList());
     }

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "SUB_NIVEL")
-public class SubNivel {
+public class Subnivel {
 
     @Id
     @GeneratedValue(generator = "SEQ_SUB_NIVEL", strategy = GenerationType.SEQUENCE)

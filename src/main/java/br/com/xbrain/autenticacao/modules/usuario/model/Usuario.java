@@ -296,7 +296,7 @@ public class Usuario {
             foreignKey = @ForeignKey(name = "FK_USUARIO"))}, inverseJoinColumns = {
         @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))})
-    private Set<SubNivel> subNiveis;
+    private Set<Subnivel> subniveis;
 
     public Usuario(Integer id) {
         this.id = id;
