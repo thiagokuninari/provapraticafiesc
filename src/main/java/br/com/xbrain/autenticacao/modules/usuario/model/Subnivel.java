@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
 import java.util.List;
@@ -40,8 +38,6 @@ public class Subnivel {
         foreignKey = @ForeignKey(name = "FK_NIVEL"))
     private Nivel nivel;
 
-    @NotAudited
-    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "FUNCIONALIDADE_SUBNIVEL", joinColumns = {
         @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
