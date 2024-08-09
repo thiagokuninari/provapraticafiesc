@@ -5,14 +5,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = InativarColaboradorMqSender.class)
 public class InativarColaboradorMqSenderTest {
@@ -26,6 +24,6 @@ public class InativarColaboradorMqSenderTest {
     public void sendSuccess_deveEnviarParaFila_seNaoOcorrerErro() {
         var dto = new ColaboradorInativacaoPolRequest();
         mqSender.sendSuccess(dto);
-        verify(rabbitTemplate).convertAndSend("inativar-colaborador-pol.queue", dto);
+        verify(rabbitTemplate).convertAndSend("${app-config.queue.inativar-colaborador-pol}", dto);
     }
 }

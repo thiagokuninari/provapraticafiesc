@@ -5,14 +5,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = UsuarioEquipeVendaMqSender.class)
 public class UsuarioEquipeVendaMqSenderTest {
@@ -26,6 +24,6 @@ public class UsuarioEquipeVendaMqSenderTest {
     public void sendInativar_deveEnviarParaFila_seNaoOcorrerErro() {
         var dto = new UsuarioEquipeVendasDto(1, "nome", "cargo");
         mqSender.sendInativar(dto);
-        verify(rabbitTemplate).convertAndSend("inativar-usuario-equipe-venda.queue", dto);
+        verify(rabbitTemplate).convertAndSend("${app-config.queue.inativar-usuario-equipe-venda}", dto);
     }
 }
