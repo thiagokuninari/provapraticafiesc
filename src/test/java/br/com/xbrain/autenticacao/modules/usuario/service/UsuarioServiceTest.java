@@ -4063,11 +4063,15 @@ public class UsuarioServiceTest {
             .id(1)
             .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
             .build();
+        var umNivel = Nivel.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO)
+            .build();
 
         when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
             .thenReturn(umCargo);
         when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
-        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivel);
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
@@ -4076,10 +4080,13 @@ public class UsuarioServiceTest {
             .id(1)
             .email("EMAIL@TEST.COM")
             .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .nivel(AGENTE_AUTORIZADO)
             .situacao(ESituacao.A)
             .tecnicoIndicador(true)
             .build();
         var expectedDto = umUsuarioDtoSender();
+        expectedDto.setNivelId(1);
+        expectedDto.setNivelCodigo(AGENTE_AUTORIZADO);
 
         service.saveFromQueue(usuarioMqRequest);
 
@@ -4096,11 +4103,15 @@ public class UsuarioServiceTest {
             .id(1)
             .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
             .build();
+        var umNivel = Nivel.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO)
+            .build();
 
         when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
             .thenReturn(umCargo);
         when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
-        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivel);
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
@@ -4111,6 +4122,8 @@ public class UsuarioServiceTest {
         expectedDto.setHierarquiasId(null);
         expectedDto.setTiposFeeder(null);
         expectedDto.setSubCanaisId(null);
+        expectedDto.setNivelId(1);
+        expectedDto.setNivelCodigo(AGENTE_AUTORIZADO);
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
             .email("EMAIL@TEST.COM")
@@ -5078,6 +5091,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_deveLancarException_quandoUsuarioDadosNetSalesObrigatoriosInvalidos() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umUsuarioSemLoginNetSales(1)))
+            .withMessage("Dados NetSales precisam ser preenchidos");
+    }
+
+    @Test
     public void findByIdComAa_deveLancarException_quandoUsuarioNaoEncontrado() {
         when(repository.findById(1)).thenReturn(Optional.empty());
 
@@ -5295,6 +5315,9 @@ public class UsuarioServiceTest {
                 .builder()
                 .nome("EMPRESA UM")
                 .build()))
+            .nomeEquipeVendaNetSales("UMA EQUIPE DE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("123")
+            .canalNetSales("CANAL NETSALES")
             .build();
 
         usuario.setCidades(

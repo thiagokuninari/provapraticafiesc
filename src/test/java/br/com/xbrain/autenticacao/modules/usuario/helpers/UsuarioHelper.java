@@ -113,6 +113,15 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuarioComDadosNetSales() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSales("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .build();
+    }
+
     public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
                                                        Integer subCanalId,
                                                        ETipoCanal codigoSubCanal) {
@@ -139,6 +148,10 @@ public class UsuarioHelper {
             .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
             .usuariosHierarquia(new HashSet<>())
             .situacao(A)
+            .loginNetSales("login123")
+            .canalNetSales("UM CANAL NETSALES")
+            .codigoEquipeVendaNetSales("123")
+            .nomeEquipeVendaNetSales("EQUIPE DE VENDA NETSALES")
             .build();
     }
 
@@ -242,6 +255,7 @@ public class UsuarioHelper {
                 .nivel(Nivel
                     .builder()
                     .id(2)
+                    .codigo(MSO)
                     .build())
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))

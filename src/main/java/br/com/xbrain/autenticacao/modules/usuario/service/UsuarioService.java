@@ -98,6 +98,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObrigatorioDadosNetSales;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
@@ -126,6 +127,7 @@ public class UsuarioService {
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO =
         "Não é possível remover o canal Agente Autorizado, pois o usuário possui vínculo com o(s) AA(s): %s.";
+    private static final String MSG_ERRO_DADOS_NETSALES_OBRIGATORIOS = "Dados NetSales precisam ser preenchidos";
     private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE =
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
@@ -450,6 +452,12 @@ public class UsuarioService {
         var usuarios = repository.findAll(filtro.toPredicate().build());
         return StreamSupport.stream(usuarios.spliterator(), false)
             .map(UsuarioConsultaDto::convertFrom).collect(toList());
+    }
+
+    private void validarNivelDadosObrigatoriosNetSales(Usuario usuario) {
+        if (isNivelObrigatorioDadosNetSales(usuario.getNivelCodigo()) && usuario.hasNotDadosNetSales()) {
+            throw new ValidacaoException(MSG_ERRO_DADOS_NETSALES_OBRIGATORIOS);
+        }
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {
@@ -1158,6 +1166,7 @@ public class UsuarioService {
     }
 
     private void validar(Usuario usuario) {
+        validarNivelDadosObrigatoriosNetSales(usuario);
         validarSupervisorNaHierarquia(usuario);
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
@@ -1737,6 +1746,7 @@ public class UsuarioService {
     private void configurarNivel(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
         var nivel = nivelRepository.findByCodigo(usuarioMqRequest.getNivel());
         usuarioDto.setNivelId(nivel.getId());
+        usuarioDto.setNivelCodigo(nivel.getCodigo());
     }
 
     private void configurarUnidadesNegocio(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
