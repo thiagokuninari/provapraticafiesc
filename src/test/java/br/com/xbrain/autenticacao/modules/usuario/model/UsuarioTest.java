@@ -797,6 +797,30 @@ public class UsuarioTest {
         assertThat(usuario.isTecnico()).isFalse();
     }
 
+    @Test
+    public void getSubniveisIds_deveRetornarNull_quandoSubNiveisForVazio() {
+        var usuario = Usuario.builder()
+            .subniveis(Set.of())
+            .build();
+
+        assertThat(usuario.getSubniveisIds()).isNull();
+    }
+
+    @Test
+    public void getSubniveisIds_deveRetornarNull_quandoSubNiveisForNull() {
+        var usuario = new Usuario();
+        assertThat(usuario.getSubniveisIds()).isNull();
+    }
+
+    @Test
+    public void getSubniveisIds_deveRetornarSetDeSubniveisIds_quandoUsuarioPossuirSubniveis() {
+        var usuario = Usuario.builder()
+            .subniveis(umSetDeSubniveis())
+            .build();
+
+        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of(2, 3));
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

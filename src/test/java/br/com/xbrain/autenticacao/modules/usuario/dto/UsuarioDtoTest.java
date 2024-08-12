@@ -231,6 +231,23 @@ public class UsuarioDtoTest {
     }
 
     @Test
+    public void of_deveRetornarSubniveisIds_quandoUsuarioPossuirSubnivel() {
+        var usuario = umUsuarioMso();
+        usuario.setSubniveis(umSetDeSubniveis());
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubniveisIds)
+            .isEqualTo(Set.of(2, 3));
+    }
+
+    @Test
+    public void of_naoDeveRetornarSubniveisIds_quandoUsuarioNaoPossuirSubnivel() {
+        var usuario = umUsuarioMso();
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubniveisIds)
+            .isNull();
+    }
+
+    @Test
     public void convertFrom_deveRetornarUsuario_quandoSolicitado() {
         var atual = UsuarioDto.convertFrom(umUsuarioCompletoDto());
 
