@@ -782,6 +782,6 @@ public class Usuario {
             ? this.subniveis.stream()
             .map(Subnivel::getId)
             .collect(Collectors.toSet())
-            : null;
+            : Set.of();
     }
 }

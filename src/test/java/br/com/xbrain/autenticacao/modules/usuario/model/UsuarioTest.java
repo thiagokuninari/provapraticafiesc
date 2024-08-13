@@ -798,18 +798,18 @@ public class UsuarioTest {
     }
 
     @Test
-    public void getSubniveisIds_deveRetornarNull_quandoSubNiveisForVazio() {
+    public void getSubniveisIds_deveRetornarNull_quandoSubniveisForVazio() {
         var usuario = Usuario.builder()
             .subniveis(Set.of())
             .build();
 
-        assertThat(usuario.getSubniveisIds()).isNull();
+        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of());
     }
 
     @Test
-    public void getSubniveisIds_deveRetornarNull_quandoSubNiveisForNull() {
+    public void getSubniveisIds_deveRetornarNull_quandoSubniveisForNull() {
         var usuario = new Usuario();
-        assertThat(usuario.getSubniveisIds()).isNull();
+        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of());
     }
 
     @Test
