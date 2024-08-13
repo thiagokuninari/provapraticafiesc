@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -28,7 +29,8 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class PermissaoTecnicoIndicadorService {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
+    private static final Integer PERMISSAO_TRABALHAR_INDICACAO = 253;
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(22122);
     private static final List<CodigoCargo> LISTA_CARGOS_TECNICO_INDICADOR = List.of(
         AGENTE_AUTORIZADO_ACEITE,
         AGENTE_AUTORIZADO_APRENDIZ,
@@ -51,6 +53,35 @@ public class PermissaoTecnicoIndicadorService {
         AGENTE_AUTORIZADO_TECNICO_GERENTE,
         AGENTE_AUTORIZADO_TECNICO_SEGMENTADO,
         AGENTE_AUTORIZADO_TECNICO_SUPERVISOR,
+        AGENTE_AUTORIZADO_TECNICO_VENDEDOR,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS_RECEPTIVO,
+        AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TEMP,
+        AGENTE_AUTORIZADO_VENDEDOR_D2D,
+        AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO,
+        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
+        AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS_RECEPTIVO,
+        AGENTE_AUTORIZADO_VENDEDOR_TEMP);
+
+    private static final List<CodigoCargo> LISTA_CARGOS_TRABALHAR_TECNICO_INDICADOR = List.of(
+        AGENTE_AUTORIZADO_ACEITE,
+        AGENTE_AUTORIZADO_APRENDIZ,
+        AGENTE_AUTORIZADO_ASSISTENTE,
+        AGENTE_AUTORIZADO_BACKOFFICE_D2D,
+        AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
+        AGENTE_AUTORIZADO_BACKOFFICE_TEMP,
+        AGENTE_AUTORIZADO_COORDENADOR,
+        AGENTE_AUTORIZADO_EMPRESARIO,
+        AGENTE_AUTORIZADO_GERENTE,
+        AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
+        AGENTE_AUTORIZADO_GERENTE_TEMP,
+        AGENTE_AUTORIZADO_SOCIO,
+        AGENTE_AUTORIZADO_SOCIO_SECUNDARIO,
+        AGENTE_AUTORIZADO_TECNICO_COORDENADOR,
+        AGENTE_AUTORIZADO_TECNICO_GERENTE,
+        AGENTE_AUTORIZADO_TECNICO_SEGMENTADO,
         AGENTE_AUTORIZADO_TECNICO_VENDEDOR,
         AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
         AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS,
@@ -85,6 +116,10 @@ public class PermissaoTecnicoIndicadorService {
             log.info("Adicionando permissão de Técnico Indicador para usuário novo com id {}.", usuarioDto.getId());
             var permissoes = PermissaoEspecial.of(
                 usuarioDto.getId(), PERMISSOES_TECNICO_INDICADOR, usuarioDto.getUsuarioCadastroId());
+            if (LISTA_CARGOS_TRABALHAR_TECNICO_INDICADOR.contains(usuarioMqRequest.getCargo())) {
+                permissoes.add(PermissaoEspecial.of(
+                    usuarioDto.getId(), PERMISSAO_TRABALHAR_INDICACAO, usuarioDto.getUsuarioCadastroId()));
+            }
             salvarPermissoesEspeciais(permissoes);
             log.info("Permissões adicionadas com sucesso.");
         }
@@ -136,7 +171,9 @@ public class PermissaoTecnicoIndicadorService {
     }
 
     public boolean validarUsuarioComPermissaoTecnicoIndicador(Integer usuarioId) {
-        return permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, PERMISSOES_TECNICO_INDICADOR);
+        var permissoes = new ArrayList<>(PERMISSOES_TECNICO_INDICADOR);
+        permissoes.add(PERMISSAO_TRABALHAR_INDICACAO);
+        return permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, permissoes);
     }
 
     private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
@@ -147,7 +184,9 @@ public class PermissaoTecnicoIndicadorService {
 
     private void removerPermissaoDosUsuarios(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(PERMISSOES_TECNICO_INDICADOR, usuariosIds);
+            var permissoes = new ArrayList<>(PERMISSOES_TECNICO_INDICADOR);
+            permissoes.add(PERMISSAO_TRABALHAR_INDICACAO);
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(permissoes, usuariosIds);
         }
     }
 }

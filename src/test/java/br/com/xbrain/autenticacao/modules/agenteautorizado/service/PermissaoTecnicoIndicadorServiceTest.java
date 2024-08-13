@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class PermissaoTecnicoIndicadorServiceTest {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122);
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(22122, 253);
 
     @InjectMocks
     private PermissaoTecnicoIndicadorService service;
@@ -132,7 +132,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
     }
 
     @Test
-    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarPermissao_seUsuarioForNovoCadastro() {
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarTodasAsPermissoes_seUsuarioPossuirCargo() {
         var request = UsuarioMqRequest.builder()
             .tecnicoIndicador(true)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
@@ -141,7 +141,21 @@ public class PermissaoTecnicoIndicadorServiceTest {
 
         service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
-        verify(permissaoEspecialService, times(1)).save(anyList());
+        verify(permissaoEspecialService).save(PermissaoEspecial.of(4, List.of(22122, 253), null));
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissaoDeTrabalhar_seUsuarioAnalista() {
+        var request = UsuarioMqRequest.builder()
+            .id(4)
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
+
+        verify(permissaoEspecialService).save(PermissaoEspecial.of(4, List.of(22122), null));
     }
 
     @Test

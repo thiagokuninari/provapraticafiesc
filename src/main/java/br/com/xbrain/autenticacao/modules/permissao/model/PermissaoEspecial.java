@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -42,6 +39,7 @@ public class PermissaoEspecial {
     private Funcionalidade funcionalidade;
 
     @NotNull
+    @EqualsAndHashCode.Exclude
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
