@@ -298,6 +298,7 @@ public class UsuarioHelper {
             .recuperarSenhaTentativa(0)
             .tiposFeeder(Set.of())
             .subCanaisId(Set.of())
+            .subniveisIds(Set.of())
             .build();
     }
 

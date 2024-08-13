@@ -225,6 +225,7 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .subCanaisId(Set.of())
             .territorioMercadoDesenvolvimentoId(10)
+            .subniveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -244,7 +245,7 @@ public class UsuarioDtoTest {
         var usuario = umUsuarioMso();
         assertThat(UsuarioDto.of(usuario))
             .extracting(UsuarioDto::getSubniveisIds)
-            .isNull();
+            .isEqualTo(Set.of());
     }
 
     @Test
@@ -466,6 +467,7 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .permiteEditarCompleto(true)
             .subCanaisId(Set.of())
+            .subniveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
