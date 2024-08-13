@@ -59,6 +59,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -87,6 +88,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -2165,7 +2167,7 @@ public class UsuarioServiceTest {
                     CodigoUnidadeNegocio.RESIDENCIAL_COMBOS))
                 .codigoCargo(CodigoCargo.SUPERVISOR_OPERACAO)
                 .codigoDepartamento(CodigoDepartamento.COMERCIAL)
-                .codigoEmpresas(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
+                .codigoEmpresas(List.of(CLARO_RESIDENCIAL))
                 .codigoNivel(OPERACAO)
                 .nomeNivel("OPERACAO")
                 .cpf("097.238.645-92")
@@ -2262,8 +2264,8 @@ public class UsuarioServiceTest {
     private Empresa umaEmpresa() {
         return Empresa.builder()
             .id(1)
-            .codigo(CodigoEmpresa.CLARO_RESIDENCIAL)
-            .nome(CodigoEmpresa.CLARO_RESIDENCIAL.name())
+            .codigo(CLARO_RESIDENCIAL)
+            .nome(CLARO_RESIDENCIAL.name())
             .build();
     }
 
@@ -2457,6 +2459,30 @@ public class UsuarioServiceTest {
             .findAll(any(Predicate.class), any(PageRequest.class));
         verify(repository)
             .getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_BACKOFFICE, INTERNET_VENDEDOR, INTERNET_COORDENADOR));
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoUsuarioForAssistenteOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticado(3000, OPERACAO.toString(), INTERNET_SUPERVISOR);
+        usuarioAutenticado.setCanais(Set.of(ECanal.INTERNET));
+        usuarioAutenticado.setOrganizacaoId(1);
+        usuarioAutenticado.setNivelCodigo("OPERACAO");
+        usuarioAutenticado.setCargoCodigo(ASSISTENTE_OPERACAO);
+
+        doReturn(usuarioAutenticado)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(umaPageUsuario(new PageRequest(), List.of(umUsuarioVendedorInternet())))
+            .when(repository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
+
+        assertThat(service.getAll(new PageRequest(), new UsuarioFiltros()))
+            .isNotEmpty();
+
+        verify(autenticacaoService, times(2))
+            .getUsuarioAutenticado();
+        verify(repository)
+            .findAll(any(Predicate.class), any(PageRequest.class));
     }
 
     @Test
@@ -5006,6 +5032,193 @@ public class UsuarioServiceTest {
             .containsExactly("NOME UM", "111.111.111-11");
 
         verify(repository).findById(1);
+    }
+
+    @Test
+    public void getUsuarioById_deveLancarException_quandoUsuarioNaoEncontrado() {
+        when(repository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.getUsuarioById(1))
+            .withMessage("Usuario não encontrado.");
+
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void getUsuarioById_deveRetornarUmUsuarioSemPermissaoParaEditar_seUsuarioNaoForEquipeVendasENaoForXbrain() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, "OPERACAO", VENDEDOR_RECEPTIVO, AUT_VISUALIZAR_GERAL);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        var usuario = umUsuarioCompleto();
+        when(repository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(service.getUsuarioById(1))
+            .extracting("nome", "cpf", "permiteEditarCompleto")
+            .containsExactly("NOME UM", "111.111.111-11", false);
+        assertThat(usuarioAutenticado.isUsuarioEquipeVendas()).isFalse();
+        assertThat(usuarioAutenticado.isXbrain()).isFalse();
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void getUsuarioById_deveRetornarUmUsuarioComPermissaoParaEditar_seUsuarioForEquipeVendasEVendedorOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, "OPERACAO", VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        var usuario = umUsuarioCompleto();
+        usuario.getCargo().setCodigo(VENDEDOR_OPERACAO);
+        when(repository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(service.getUsuarioById(1))
+            .extracting("nome", "cpf", "permiteEditarCompleto")
+            .containsExactly("NOME UM", "111.111.111-11", true);
+
+        assertThat(usuarioAutenticado.isUsuarioEquipeVendas()).isTrue();
+        assertThat(usuario.getCargoCodigo()).isEqualTo(VENDEDOR_OPERACAO);
+        assertThat(usuarioAutenticado.isSupervisorOperacao()).isFalse();
+        assertThat(usuarioAutenticado.isXbrain()).isFalse();
+
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void getUsuarioById_deveRetornarUmUsuarioComPermissaoParaEditar_seUsuarioForNivelXbrain() {
+        var usuarioAutenticado = umUsuarioAutenticado(1, "OPERACAO", AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
+        usuarioAutenticado.setNivelCodigo("XBRAIN");
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        var usuario = umUsuarioCompleto();
+        usuario.getCargo().setCodigo(VENDEDOR_OPERACAO);
+        when(repository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(service.getUsuarioById(1))
+            .extracting("nome", "cpf", "permiteEditarCompleto")
+            .containsExactly("NOME UM", "111.111.111-11", true);
+        assertThat(usuarioAutenticado.isUsuarioEquipeVendas()).isFalse();
+        assertThat(usuarioAutenticado.isXbrain()).isTrue();
+        assertThat(usuario.getCargoCodigo()).isEqualTo(VENDEDOR_OPERACAO);
+        assertThat(usuarioAutenticado.isSupervisorOperacao()).isFalse();
+
+        verify(repository).findById(1);
+    }
+
+    @Test
+    public void findEmpresasDoUsuario_deveRetornarListaEmpresaResponseDoUsuario_quandoEncontrado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setEmpresas(List.of(umaEmpresa()));
+        when(repository.findComplete(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(service.findEmpresasDoUsuario(1))
+            .extracting("id", "nome", "codigo")
+            .containsExactly(Tuple.tuple(1, "CLARO_RESIDENCIAL", CLARO_RESIDENCIAL));
+
+        verify(repository).findComplete(1);
+    }
+
+    @Test
+    public void findEmpresasDoUsuario_deveRetornarException_quandoUsuarioNaoEncontrado() {
+        when(repository.findComplete(1)).thenReturn(Optional.empty());
+
+        assertThatCode(() -> service.findEmpresasDoUsuario(1))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Usuário não encontrado.");
+
+        verify(repository).findComplete(1);
+    }
+
+    @Test
+    public void saveUsuarioConfiguracao_deveSalvarUsuarioDtoERemoverCaracteresDoCpf_quandoConfiguracaoNull() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(1, "OPERACAO",
+            AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL));
+
+        var usuario = umUsuarioCompleto();
+        usuario.setCpf("111....1111....111...--.11");
+        when(repository.findComplete(1)).thenReturn(Optional.of(usuario));
+
+        when(repository.save(usuario)).thenReturn(usuario);
+        var request = new UsuarioConfiguracaoSaveDto();
+        request.setUsuarioId(1);
+        request.setRamal(567);
+
+        assertThat(service.saveUsuarioConfiguracao(request))
+            .extracting("id", "cpf", "nome", "email")
+            .containsExactly(1, "111111111111", "NOME UM", "email@email.com");
+
+        assertThat(usuario.getConfiguracao().getUsuario().getId()).isEqualTo(1);
+        assertThat(usuario.getConfiguracao().getRamal()).isEqualTo(567);
+
+        verify(repository).save(usuario);
+        verify(repository).findComplete(1);
+        verify(autenticacaoService).getUsuarioAutenticado();
+    }
+
+    @Test
+    public void saveUsuarioConfiguracao_deveSalvarUsuarioDtoEAdcionarRamalNoUsuario_quandoConfiguracaoNaoNull() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(1, "OPERACAO",
+            AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL));
+
+        var usuario = umUsuarioCompleto();
+        usuario.setCpf("111....1111....111...--.11");
+
+        when(repository.findComplete(1)).thenReturn(Optional.of(usuario));
+
+        when(repository.save(usuario)).thenReturn(usuario);
+        var request = new UsuarioConfiguracaoSaveDto();
+        request.setUsuarioId(1);
+        request.setRamal(234);
+
+        var config = new Configuracao();
+        usuario.setConfiguracao(config);
+
+        assertThat(usuario.getConfiguracao().getRamal()).isNull();
+
+        assertThat(service.saveUsuarioConfiguracao(request))
+            .extracting("id", "cpf", "nome", "email")
+            .containsExactly(1, "111111111111", "NOME UM", "email@email.com");
+
+        assertThat(usuario.getConfiguracao().getRamal()).isEqualTo(234);
+
+        verify(repository).save(usuario);
+        verify(repository).findComplete(1);
+        verify(autenticacaoService).getUsuarioAutenticado();
+    }
+
+    @Test
+    public void getIdDosUsuariosSubordinadosDoPol_deveRetornarListaVazia_quandoUsuarioNaoTerCanalAA() {
+        var usuario = umUsuarioAutenticadoCanalInternet(SUPERVISOR_OPERACAO);
+        assertThat(service.getIdDosUsuariosSubordinadosDoPol(usuario))
+            .isEmpty();
+
+        verify(agenteAutorizadoService, never()).getIdsUsuariosSubordinados(anyBoolean());
+        verify(repository, never()).getUsuariosSubordinados(anyInt());
+    }
+
+    @Test
+    public void getIdDosUsuariosSubordinadosDoPol_deveRetornarListaVazia_quandoUsuarioTerPErmissaoVisiaulizarGeral() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelAa();
+        var usuario = Usuario.builder().canais(Set.of(ECanal.AGENTE_AUTORIZADO)).build();
+        usuarioAutenticado.setUsuario(usuario);
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())));
+
+        assertThat(service.getIdDosUsuariosSubordinadosDoPol(usuarioAutenticado))
+            .isEmpty();
+
+        verify(agenteAutorizadoService, never()).getIdsUsuariosSubordinados(anyBoolean());
+        verify(repository, never()).getUsuariosSubordinados(anyInt());
+    }
+
+    @Test
+    public void getIdDosUsuariosSubordinadosDoPol_deveRetornarListaDeIds_quandoUsuarioTerPErmissaoVisiaulizarGeral() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelAa();
+        var usuario = Usuario.builder().canais(Set.of(ECanal.AGENTE_AUTORIZADO)).build();
+        usuarioAutenticado.setUsuario(usuario);
+
+        when(agenteAutorizadoService.getIdsUsuariosSubordinados(false)).thenReturn(Set.of(1, 2, 3));
+        when(repository.getUsuariosSubordinados(101)).thenReturn(List.of(4, 5, 6));
+
+        assertThat(service.getIdDosUsuariosSubordinadosDoPol(usuarioAutenticado))
+            .containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
+
+        verify(agenteAutorizadoService).getIdsUsuariosSubordinados(false);
+        verify(repository).getUsuariosSubordinados(101);
     }
 
     @Test

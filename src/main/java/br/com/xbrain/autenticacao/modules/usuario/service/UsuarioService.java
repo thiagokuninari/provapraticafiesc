@@ -941,13 +941,6 @@ public class UsuarioService {
         usuario.setAlterarSenha(Eboolean.V);
     }
 
-    public void salvarUsuarioRealocado(Usuario usuario) {
-        var usuarioARealocar = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
-        usuarioARealocar.setSituacao(ESituacao.R);
-        repository.save(usuarioARealocar);
-    }
-
     private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
         return usuario.isNovoCadastro()
             ? ESituacao.A
