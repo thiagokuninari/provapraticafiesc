@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PermissaoTecnicoIndicadorServiceTest {
 
-    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(253, 22122, 22257, 22127);
+    private static final List<Integer> PERMISSOES_TECNICO_INDICADOR = List.of(22122, 22257, 22127, 253);
 
     @InjectMocks
     private PermissaoTecnicoIndicadorService service;
@@ -72,7 +72,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
                 permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
-            .containsExactly(tuple(3, 253, 1),
+            .containsExactly(
                 tuple(3, 22122, 1),
                 tuple(3, 22257, 1));
     }
@@ -103,10 +103,11 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
                 permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
-            .containsExactly(tuple(3, 253, 1),
+            .containsExactly(
                 tuple(3, 22122, 1),
                 tuple(3, 22257, 1),
-                tuple(3, 22127, 1));
+                tuple(3, 22127, 1),
+                tuple(3, 253, 1));
     }
 
     @Test
@@ -205,9 +206,10 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
                 permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
-            .containsExactly(tuple(4, 253, 2),
+            .containsExactly(
                 tuple(4, 22122, 2),
-                tuple(4, 22257, 2));
+                tuple(4, 22257, 2),
+                tuple(4, 253, 2));
     }
 
     @Test
@@ -274,8 +276,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
                 permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
-            .containsExactly(tuple(4, 253, 4444),
-                tuple(4, 22122, 4444),
+            .containsExactly(tuple(4, 22122, 4444),
                 tuple(4, 22257, 4444),
                 tuple(4, 22127, 4444));
     }
@@ -300,9 +301,10 @@ public class PermissaoTecnicoIndicadorServiceTest {
             .extracting(permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
                 permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
                 permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
-            .containsExactly(tuple(4, 253, 4444),
+            .containsExactly(
                 tuple(4, 22122, 4444),
-                tuple(4, 22257, 4444));
+                tuple(4, 22257, 4444),
+                tuple(4, 253, 4444));
     }
 
     @Test
