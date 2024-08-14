@@ -422,6 +422,15 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoFeederParaUsuarioNovoMso_naoDeveSalvarPermissoes_quandoUsuarioNaoForMso() {
+        service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioOuvidoria());
+
+        verify(usuarioRepository, never()).findById(eq(150016));
+        verify(usuarioService, never()).getPermissoesEspeciaisDoUsuario(eq(150016), eq(101112), eq(List.of()));
+        verify(usuarioService, never()).salvarPermissoesEspeciais(eq(List.of()));
+    }
+
+    @Test
     @SuppressWarnings("LineLength")
     public void removerPermissaoFeederUsuarioAtualizadoMso_deveRemoverPermissoesResidencialEEmpresarial_quandoAtualizarUsuarioMso() {
         service.removerPermissaoFeederUsuarioAtualizadoMso(umUsuarioMso(Set.of(EMPRESARIAL, RESIDENCIAL)));

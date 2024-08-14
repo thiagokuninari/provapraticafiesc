@@ -16,22 +16,29 @@ import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.ESTADUAL;
+import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.NACIONAL;
 import static br.com.xbrain.autenticacao.modules.feriado.helper.FeriadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioAgenteAutorizado;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FeriadoServiceTest {
@@ -245,7 +252,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoEstadoNaoForNullEFeriadoNacional() {
+    public void salvarFeriado_deveLancarException_quandoEstadoNaoForNullEFeriadoNacional() {
         var request = umFeriadoRequest();
         request.setEstadoId(1);
 
@@ -257,7 +264,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoCidadeNaoForNullEFeriadoNacional() {
+    public void salvarFeriado_deveLancarException_quandoCidadeNaoForNullEFeriadoNacional() {
         var request = umFeriadoRequest();
         request.setCidadeId(1);
 
@@ -269,9 +276,9 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoEstadoForNullEFeriadoEstadual() {
+    public void salvarFeriado_deveLancarException_quandoEstadoForNullEFeriadoEstadual() {
         var request = umFeriadoRequest();
-        request.setTipoFeriado(ETipoFeriado.ESTADUAL);
+        request.setTipoFeriado(ESTADUAL);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarFeriado(request))
@@ -281,9 +288,9 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoCidadeNaoForNullEFeriadoEstadual() {
+    public void salvarFeriado_deveLancarException_quandoCidadeNaoForNullEFeriadoEstadual() {
         var request = umFeriadoRequest();
-        request.setTipoFeriado(ETipoFeriado.ESTADUAL);
+        request.setTipoFeriado(ESTADUAL);
         request.setEstadoId(1);
         request.setCidadeId(1);
 
@@ -295,7 +302,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoEstadoForNullEFeriadoMunicipal() {
+    public void salvarFeriado_deveLancarException_quandoEstadoForNullEFeriadoMunicipal() {
         var request = umFeriadoRequest();
         request.setTipoFeriado(ETipoFeriado.MUNICIPAL);
         request.setCidadeId(1);
@@ -308,7 +315,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoCidadeForNullEFeriadoMunicipal() {
+    public void salvarFeriado_deveLancarException_quandoCidadeForNullEFeriadoMunicipal() {
         var request = umFeriadoRequest();
         request.setTipoFeriado(ETipoFeriado.MUNICIPAL);
         request.setEstadoId(1);
@@ -321,7 +328,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void salvarFeriado_deveLancharException_quandoFeriadoJaCadastrado() {
+    public void salvarFeriado_deveLancarException_quandoFeriadoJaCadastrado() {
         when(repository.findByPredicate(any())).thenReturn(Optional.of(umFeriado()));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -347,6 +354,76 @@ public class FeriadoServiceTest {
     }
 
     @Test
+    public void salvarFeriadoImportado_deveSalvarFeriados_quandoFeriadoEstadualEUploadAsyncTrue() {
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+
+        ReflectionTestUtils.setField(service, "uploadAsync", true);
+        when(repository.save(feriado)).thenReturn(feriado);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
+
+        assertThat(service.salvarFeriadoImportado(umFeriadoImportacao()))
+            .isEqualTo(umFeriado());
+
+        verify(repository).save(umFeriado());
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(historicoService).salvarHistorico(umFeriado(), "IMPORTADO",
+            umUsuarioAgenteAutorizado());
+    }
+
+    @Test
+    public void salvarFeriadoImportado_deveSalvarFeriadosELancarLogDeErro_quandoDerErroAoSalvarFeriadoParaCidadesDoEstado() {
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+
+        var logger = (Logger) getLogger(FeriadoService.class);
+        var listAppender = new ListAppender<ILoggingEvent>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        ReflectionTestUtils.setField(service, "uploadAsync", true);
+        doThrow(RuntimeException.class)
+            .when(cidadeService)
+            .getAllCidadeByUf(1);
+
+        when(repository.save(feriado)).thenReturn(feriado);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
+
+        assertThat(service.salvarFeriadoImportado(umFeriadoImportacao()))
+            .isEqualTo(umFeriado());
+
+        assertEquals("Erro ao salvar o feriado estadual para as cidades do estado, feriadoPaiId: null",
+            listAppender.list.get(0).getMessage());
+
+        listAppender.stop();
+
+        verify(repository).save(umFeriado());
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(historicoService).salvarHistorico(umFeriado(), "IMPORTADO",
+            umUsuarioAgenteAutorizado());
+        verify(cidadeService).getAllCidadeByUf(1);
+    }
+
+    @Test
+    public void salvarFeriadoImportado_deveSalvarFeriados_quandoFeriadoEstadualEUploadAsyncFalse() {
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+
+        ReflectionTestUtils.setField(service, "uploadAsync", false);
+        when(repository.save(feriado)).thenReturn(feriado);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
+
+        assertThat(service.salvarFeriadoImportado(umFeriadoImportacao()))
+            .isEqualTo(umFeriado());
+
+        verify(repository).save(umFeriado());
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(historicoService).salvarHistorico(umFeriado(), "IMPORTADO",
+            umUsuarioAgenteAutorizado());
+        verify(cidadeService).getAllCidadeByUf(1);
+    }
+
+    @Test
     public void editarFeriado_deveEditarFeriado_quandoDadosValidos() {
         var request = umFeriadoRequest();
         request.setId(1);
@@ -366,7 +443,87 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoEstadoNaoForNullEFeriadoNacional() {
+    public void editarFeriado_deveEditarFeriado_quandoDadosTipoFeriadoEstadual() {
+        var request = umFeriadoRequest();
+        request.setId(1);
+        request.setTipoFeriado(ESTADUAL);
+        request.setEstadoId(3);
+
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+        feriado.setId(1);
+
+        var feriadoPai = umFeriado("FERIADO PAI");
+        feriadoPai.setSituacao(ESituacaoFeriado.ATIVO);
+
+        when(repository.findById(1)).thenReturn(Optional.of(feriado));
+        when(repository.save(feriado)).thenReturn(feriado);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
+
+        assertThat(service.editarFeriado(request))
+            .extracting("nome", "cidadeId", "cidadeNome", "tipoFeriado")
+            .containsExactly("FERIADO TESTE", 1, "LONDRINA", ESTADUAL);
+
+        verify(repository).findById(1);
+        verify(repository).save(feriado);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(historicoService).salvarHistorico(feriado, "EDITADO",
+            umUsuarioAgenteAutorizado());
+        verify(cidadeService).getAllCidadeByUf(1);
+    }
+
+    @Test
+    public void editarFeriado_deveEditarFeriado_quandoUfDaRequestDiferenteDoFeriadoEncontrado() {
+        var request = umFeriadoRequest();
+        request.setId(1);
+        request.setTipoFeriado(ESTADUAL);
+        request.setEstadoId(3);
+
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+        feriado.setId(1);
+        feriado.getUf().setId(3);
+
+        var feriadoPai = umFeriado("FERIADO PAI");
+        feriadoPai.setSituacao(ESituacaoFeriado.ATIVO);
+
+        when(repository.findById(1)).thenReturn(Optional.of(feriado));
+        when(repository.save(feriado)).thenReturn(feriado);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
+
+        assertThat(service.editarFeriado(request))
+            .extracting("nome", "cidadeId", "cidadeNome", "tipoFeriado")
+            .containsExactly("FERIADO TESTE", 1, "LONDRINA", ESTADUAL);
+
+        verify(repository).findById(1);
+        verify(repository).save(feriado);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(historicoService).salvarHistorico(feriado, "EDITADO",
+            umUsuarioAgenteAutorizado());
+    }
+
+    @Test
+    public void editarFeriado_deveLancarException_quandoDadosTipoFeriadoNaRequestForDiferenteDoFeriadoEncontrado() {
+        var request = umFeriadoRequest();
+        request.setId(1);
+        request.setTipoFeriado(NACIONAL);
+        var feriado = umFeriado();
+        feriado.setTipoFeriado(ESTADUAL);
+
+        when(repository.findById(1)).thenReturn(Optional.of(feriado));
+
+        assertThatCode(() -> service.editarFeriado(request))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Não é permitido editar o Tipo do Feriado.");
+
+        verify(repository).findById(1);
+        verify(repository, never()).save(feriado);
+        verify(historicoService, never()).salvarHistorico(feriado, "EDITADO",
+            umUsuarioAgenteAutorizado());
+    }
+
+    @Test
+    public void editarFeriado_deveLancarException_quandoEstadoNaoForNullEFeriadoNacional() {
         var request = umFeriadoRequest();
         request.setEstadoId(1);
 
@@ -378,7 +535,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoCidadeNaoForNullEFeriadoNacional() {
+    public void editarFeriado_deveLancarException_quandoCidadeNaoForNullEFeriadoNacional() {
         var request = umFeriadoRequest();
         request.setCidadeId(1);
 
@@ -390,9 +547,9 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoEstadoForNullEFeriadoEstadual() {
+    public void editarFeriado_deveLancarException_quandoEstadoForNullEFeriadoEstadual() {
         var request = umFeriadoRequest();
-        request.setTipoFeriado(ETipoFeriado.ESTADUAL);
+        request.setTipoFeriado(ESTADUAL);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.editarFeriado(request))
@@ -402,9 +559,9 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoCidadeNaoForNullEFeriadoEstadual() {
+    public void editarFeriado_deveLancarException_quandoCidadeNaoForNullEFeriadoEstadual() {
         var request = umFeriadoRequest();
-        request.setTipoFeriado(ETipoFeriado.ESTADUAL);
+        request.setTipoFeriado(ESTADUAL);
         request.setEstadoId(1);
         request.setCidadeId(1);
 
@@ -416,7 +573,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoEstadoForNullEFeriadoMunicipal() {
+    public void editarFeriado_deveLancarException_quandoEstadoForNullEFeriadoMunicipal() {
         var request = umFeriadoRequest();
         request.setTipoFeriado(ETipoFeriado.MUNICIPAL);
         request.setCidadeId(1);
@@ -429,7 +586,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoCidadeForNullEFeriadoMunicipal() {
+    public void editarFeriado_deveLancarException_quandoCidadeForNullEFeriadoMunicipal() {
         var request = umFeriadoRequest();
         request.setTipoFeriado(ETipoFeriado.MUNICIPAL);
         request.setEstadoId(1);
@@ -442,7 +599,7 @@ public class FeriadoServiceTest {
     }
 
     @Test
-    public void editarFeriado_deveLancharException_quandoFeriadoJaCadastrado() {
+    public void editarFeriado_deveLancarException_quandoFeriadoJaCadastrado() {
         when(repository.findByPredicate(any())).thenReturn(Optional.of(umFeriado()));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -541,6 +698,32 @@ public class FeriadoServiceTest {
             .isEqualTo(List.of(umFeriadoMesAnoResponse()));
 
         verify(repository).buscarTotalDeFeriadosPorMesAno();
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarTrue_quandoTiverFeriadoNaCidade() {
+        var data = LocalDate.of(2024, 9,8);
+        when(dataHoraAtual.getData()).thenReturn(data);
+        when(repository.hasFeriadoByCidadeIdAndDataAtual(1, data))
+            .thenReturn(true);
+
+        assertThat(service.isFeriadoComCidadeId(1))
+            .isTrue();
+
+        verify(repository).hasFeriadoByCidadeIdAndDataAtual(1, data);
+    }
+
+    @Test
+    public void isFeriadoComCidadeId_deveRetornarFalse_quandoNaoTiverFeriadoNaCidade() {
+        var data = LocalDate.of(2024, 9,8);
+        when(dataHoraAtual.getData()).thenReturn(data);
+        when(repository.hasFeriadoByCidadeIdAndDataAtual(1, data))
+            .thenReturn(false);
+
+        assertThat(service.isFeriadoComCidadeId(1))
+            .isFalse();
+
+        verify(repository).hasFeriadoByCidadeIdAndDataAtual(1, data);
     }
 
     @Test
