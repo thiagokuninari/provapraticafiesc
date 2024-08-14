@@ -4287,6 +4287,7 @@ public class UsuarioServiceTest {
         expectedDto.setHierarquiasId(null);
         expectedDto.setTiposFeeder(null);
         expectedDto.setSubCanaisId(null);
+        expectedDto.setSubniveisIds(null);
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
             .email("EMAIL@TEST.COM")
