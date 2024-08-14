@@ -429,11 +429,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuario.cpf.in(
                 select(usuario.cpf)
                     .from(usuario)
-                    .where(getPartitionPredicate(usuariosIds, usuario.id)),
-                usuario.cpf
+                    .where(getPartitionPredicate(usuariosIds, usuario.id))
             ))
-            .orderBy(usuario.cpf.desc())
-            .orderBy(usuario.dataCadastro.desc())
             .fetch();
     }
 

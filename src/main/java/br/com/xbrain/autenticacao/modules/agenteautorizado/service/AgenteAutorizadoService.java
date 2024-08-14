@@ -353,16 +353,4 @@ public class AgenteAutorizadoService {
                 EErrors.ERRO_INATIVAR_USUARIO_AA);
         }
     }
-
-    public List<UsuarioDtoVendas> findUsuariosAgentesAutorizadosPapIndireto() {
-        try {
-            return client.findUsuariosAgentesAutorizadosPapIndireto();
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_BUSCAR_USUARIOS_AA_PAP_INDIRETO);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
 }

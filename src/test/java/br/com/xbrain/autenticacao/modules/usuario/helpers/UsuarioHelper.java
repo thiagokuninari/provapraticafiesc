@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -869,28 +868,6 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario umUsuarioPapIndireto() {
-        return Usuario.builder()
-            .id(1)
-            .nome("UM USUARIO PAP INDIRETO")
-            .email("umusuariopapindireto@net.com.br")
-            .cpf("111.111.111-11")
-            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
-            .situacao(A)
-            .build();
-    }
-
-    public static Usuario umOutroUsuarioPapIndireto() {
-        return Usuario.builder()
-            .id(2)
-            .nome("UM OUTRO USUARIO PAP INDIRETO")
-            .email("umoutrousuariopapindireto@net.com.br")
-            .cpf("222.222.222-22")
-            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
-            .situacao(A)
-            .build();
-    }
-
     public static Usuario umUsuarioPapIndiretoRemanejado() {
         return Usuario.builder()
             .id(3)
@@ -961,14 +938,26 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static UsuarioResponse umUsuarioResponse() {
-        return UsuarioResponse
+    public static Usuario umUsuarioPapIndireto() {
+        return Usuario
             .builder()
             .id(1)
-            .aaId(100)
+            .agenteAutorizadoId(100)
             .nome("UM USUARIO RESPONSE")
-            .dataCadastro(LocalDateTime.of(2018, 12, 1, 0, 0))
+            .dataCadastro(LocalDateTime.of(2018, 01, 1, 15, 0))
             .cpf("111.111.111-11")
+            .situacao(A)
+            .build();
+    }
+
+    public static Usuario umOutroUsuarioPapIndireto() {
+        return Usuario.builder()
+            .id(2)
+            .agenteAutorizadoId(101)
+            .nome("UM OUTRO USUARIO PAP INDIRETO")
+            .email("umoutrousuariopapindireto@net.com.br")
+            .cpf("222.222.222-22")
+            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
             .situacao(A)
             .build();
     }
