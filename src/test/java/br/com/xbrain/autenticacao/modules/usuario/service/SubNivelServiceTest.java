@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.Subnivel;
-import br.com.xbrain.autenticacao.modules.usuario.repository.SubnivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubNivel;
+import br.com.xbrain.autenticacao.modules.usuario.repository.SubNivelRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,18 +20,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SubnivelServiceTest {
+public class SubNivelServiceTest {
 
     @InjectMocks
-    private SubnivelService service;
+    private SubNivelService service;
     @Mock
-    private SubnivelRepository repository;
+    private SubNivelRepository repository;
 
     @Test
-    public void getSubniveisSelect_deveRetornarListaDeSelectResponse_quandoSolicitado() {
-        when(repository.findByNivelIdAndSituacao(1, A)).thenReturn(umaListaDeSubniveis());
+    public void getSubNiveisSelect_deveRetornarListaDeSelectResponse_quandoSolicitado() {
+        when(repository.findByNivelIdAndSituacao(1, A)).thenReturn(umaListaDeSubNiveis());
 
-        assertThat(service.getSubniveisSelect(1))
+        assertThat(service.getSubNiveisSelect(1))
             .extracting(SelectResponse::getValue, SelectResponse::getLabel)
             .containsExactly(tuple(1, "BACKOFFICE"),
                 tuple(2, "BACKOFFICE CENTRALIZADO"),
@@ -43,7 +43,7 @@ public class SubnivelServiceTest {
 
     @Test
     public void getFuncionalidadesIds_deveRetornarListaDeFuncionalidadesIds_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(umaListaDeSubniveis());
+        when(repository.findAll()).thenReturn(umaListaDeSubNiveis());
 
         assertThat(service.getFuncionalidadesIds())
             .isEqualTo(List.of(1, 2, 3, 4));
@@ -53,24 +53,24 @@ public class SubnivelServiceTest {
 
     @Test
     public void findByIdIn_deveRetornarSetDeSubniveis_quandoSolicitado() {
-        when(repository.findByIdIn(Set.of(1))).thenReturn(umSetDeSubniveisComUmSubnivel());
+        when(repository.findByIdIn(Set.of(1))).thenReturn(umSetDeSubNiveisComUmSubNivel());
 
         assertThat(service.findByIdIn(Set.of(1)))
-            .extracting(Subnivel::getId, Subnivel::getNome)
+            .extracting(SubNivel::getId, SubNivel::getNome)
             .containsExactly(tuple(1, "BACKOFFICE"));
 
         verify(repository).findByIdIn(Set.of(1));
     }
 
     @Test
-    public void getSubnivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmaLista() {
-        assertThat(service.getSubnivelFuncionalidadesIds(umaListaDeSubniveis()))
+    public void getSubNivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmaLista() {
+        assertThat(service.getSubNivelFuncionalidadesIds(umaListaDeSubNiveis()))
             .isEqualTo(List.of(1, 2, 3, 4));
     }
 
     @Test
-    public void getSubnivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmSet() {
-        assertThat(service.getSubnivelFuncionalidadesIds(umSetDeSubniveis()))
+    public void getSubNivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmSet() {
+        assertThat(service.getSubNivelFuncionalidadesIds(umSetDeSubNiveis()))
             .containsExactlyInAnyOrder(2, 3);
     }
 }

@@ -274,7 +274,7 @@ public class UsuarioService {
     @Autowired
     private SuporteVendasService suporteVendasService;
     @Autowired
-    private SubnivelService subnivelService;
+    private SubNivelService subNivelService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
@@ -610,7 +610,7 @@ public class UsuarioService {
         if (!isEmpty(foto)) {
             fileService.salvarArquivo(usuario, foto);
         }
-        vincularSubniveis(usuario, usuarioDto);
+        vincularSubNiveis(usuario, usuarioDto);
         return save(usuario);
     }
 
@@ -650,12 +650,12 @@ public class UsuarioService {
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
         permissaoTecnicoIndicadorService
             .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
-        this.removerPermissoesEspeciaisMsoBySubnivel(usuario);
+        this.removerPermissoesEspeciaisMsoBySubNivel(usuario);
     }
 
-    private void removerPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
+    private void removerPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(subnivelService.getFuncionalidadesIds(),
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(subNivelService.getFuncionalidadesIds(),
                 List.of(usuario.getId()));
         }
     }
@@ -664,13 +664,13 @@ public class UsuarioService {
         subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
         subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
         feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
-        this.adicionarPermissoesEspeciaisMsoBySubnivel(usuario);
+        this.adicionarPermissoesEspeciaisMsoBySubNivel(usuario);
     }
 
-    private void adicionarPermissoesEspeciaisMsoBySubnivel(Usuario usuario) {
-        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubniveis())) {
+    private void adicionarPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
+        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
             var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
-                usuario.getUsuarioCadastro().getId(), subnivelService.getSubnivelFuncionalidadesIds(usuario.getSubniveis()));
+                usuario.getUsuarioCadastro().getId(), subNivelService.getSubNivelFuncionalidadesIds(usuario.getSubNiveis()));
 
             this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
         }
@@ -725,9 +725,9 @@ public class UsuarioService {
         }
     }
 
-    private void vincularSubniveis(Usuario usuario, UsuarioDto usuarioDto) {
-        if (!isEmpty(usuarioDto.getSubniveisIds())) {
-            usuario.setSubniveis(subnivelService.findByIdIn(usuarioDto.getSubniveisIds()));
+    private void vincularSubNiveis(Usuario usuario, UsuarioDto usuarioDto) {
+        if (!isEmpty(usuarioDto.getSubNiveisIds())) {
+            usuario.setSubNiveis(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds()));
         }
     }
 

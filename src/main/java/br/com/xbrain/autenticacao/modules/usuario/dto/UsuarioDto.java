@@ -110,7 +110,7 @@ public class UsuarioDto implements Serializable {
     private Set<ETipoFeederMso> tiposFeeder;
     private Integer territorioMercadoDesenvolvimentoId;
     private ETipoUsuario tipoUsuario;
-    private Set<Integer> subniveisIds;
+    private Set<Integer> subNiveisIds;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -164,7 +164,7 @@ public class UsuarioDto implements Serializable {
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
         usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
-        usuarioDto.setSubniveisIds(usuario.getSubniveisIds());
+        usuarioDto.setSubNiveisIds(usuario.getSubNiveisIds());
         return usuarioDto;
     }
 

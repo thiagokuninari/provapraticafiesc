@@ -798,27 +798,27 @@ public class UsuarioTest {
     }
 
     @Test
-    public void getSubniveisIds_deveRetornarNull_quandoSubniveisForVazio() {
+    public void getSubNiveisIds_deveRetornarSetVazio_quandoSubNiveisForVazio() {
         var usuario = Usuario.builder()
-            .subniveis(Set.of())
+            .subNiveis(Set.of())
             .build();
 
-        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of());
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of());
     }
 
     @Test
-    public void getSubniveisIds_deveRetornarNull_quandoSubniveisForNull() {
+    public void getSubNiveisIds_deveRetornarSetVazio_quandoSubNiveisForNull() {
         var usuario = new Usuario();
-        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of());
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of());
     }
 
     @Test
-    public void getSubniveisIds_deveRetornarSetDeSubniveisIds_quandoUsuarioPossuirSubniveis() {
+    public void getSubNiveisIds_deveRetornarSetDeSubNiveisIds_quandoUsuarioPossuirSubNiveis() {
         var usuario = Usuario.builder()
-            .subniveis(umSetDeSubniveis())
+            .subNiveis(umSetDeSubNiveis())
             .build();
 
-        assertThat(usuario.getSubniveisIds()).isEqualTo(Set.of(2, 3));
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of(2, 3));
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {

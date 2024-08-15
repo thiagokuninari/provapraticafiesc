@@ -2,8 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Subnivel;
-import br.com.xbrain.autenticacao.modules.usuario.repository.SubnivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubNivel;
+import br.com.xbrain.autenticacao.modules.usuario.repository.SubNivelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,27 +14,27 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SubnivelService {
+public class SubNivelService {
 
-    private final SubnivelRepository repository;
+    private final SubNivelRepository repository;
 
-    public List<SelectResponse> getSubniveisSelect(Integer nivelId) {
+    public List<SelectResponse> getSubNiveisSelect(Integer nivelId) {
         return repository.findByNivelIdAndSituacao(nivelId, ESituacao.A).stream()
-            .map(subnivel -> SelectResponse.of(subnivel.getId(), subnivel.getNome()))
+            .map(subNivel -> SelectResponse.of(subNivel.getId(), subNivel.getNome()))
             .collect(Collectors.toList());
     }
 
     public List<Integer> getFuncionalidadesIds() {
-        return this.getSubnivelFuncionalidadesIds(repository.findAll());
+        return this.getSubNivelFuncionalidadesIds(repository.findAll());
     }
 
-    public Set<Subnivel> findByIdIn(Set<Integer> subNiveisIds) {
+    public Set<SubNivel> findByIdIn(Set<Integer> subNiveisIds) {
         return repository.findByIdIn(subNiveisIds);
     }
 
-    public List<Integer> getSubnivelFuncionalidadesIds(Collection<Subnivel> subniveis) {
-        return subniveis.stream()
-            .flatMap(subnivel -> subnivel.getFuncionalidadesIds().stream())
+    public List<Integer> getSubNivelFuncionalidadesIds(Collection<SubNivel> subNiveis) {
+        return subNiveis.stream()
+            .flatMap(subNivel -> subNivel.getFuncionalidadesIds().stream())
             .collect(Collectors.toList());
     }
 }

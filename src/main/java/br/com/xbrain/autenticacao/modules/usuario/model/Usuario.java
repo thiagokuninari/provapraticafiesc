@@ -296,7 +296,7 @@ public class Usuario {
             foreignKey = @ForeignKey(name = "FK_USUARIO"))}, inverseJoinColumns = {
         @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))})
-    private Set<Subnivel> subniveis;
+    private Set<SubNivel> subNiveis;
 
     public Usuario(Integer id) {
         this.id = id;
@@ -339,6 +339,7 @@ public class Usuario {
         departamento.getId();
         canais.size();
         Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
+        Optional.ofNullable(subNiveis).ifPresent(Set::size);
         return this;
     }
 
@@ -777,10 +778,10 @@ public class Usuario {
         return StreamUtils.mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
     }
 
-    public Set<Integer> getSubniveisIds() {
-        return !ObjectUtils.isEmpty(this.subniveis)
-            ? this.subniveis.stream()
-            .map(Subnivel::getId)
+    public Set<Integer> getSubNiveisIds() {
+        return !ObjectUtils.isEmpty(this.subNiveis)
+            ? this.subNiveis.stream()
+            .map(SubNivel::getId)
             .collect(Collectors.toSet())
             : Set.of();
     }

@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
-import br.com.xbrain.autenticacao.modules.usuario.service.SubnivelService;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubNivelService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,25 +27,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @Import(OAuth2ResourceConfig.class)
-@WebMvcTest(SubnivelController.class)
+@WebMvcTest(SubNivelController.class)
 @MockBeans({
     @MockBean(TokenStore.class),
     @MockBean(EquipeVendaD2dService.class),
     @MockBean(UsuarioSubCanalObserver.class),
 })
-public class SubnivelControllerTest {
+public class SubNivelControllerTest {
 
     private static final String URL = "/api/sub-niveis";
 
     @Autowired
     private MockMvc mvc;
     @MockBean
-    private SubnivelService service;
+    private SubNivelService service;
 
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getSubniveisSelect_deveRetornarUnauthorized_quandoUsuarioAutenticado() {
+    public void getSubNiveisSelect_deveRetornarUnauthorized_quandoUsuarioAutenticado() {
         mvc.perform(get(URL.concat("/select")))
             .andExpect(status().isUnauthorized());
 
@@ -55,18 +55,18 @@ public class SubnivelControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void getSubniveisSelect_deveRetornarOk_quandoUsuarioAutenticado() {
+    public void getSubNiveisSelect_deveRetornarOk_quandoUsuarioAutenticado() {
         mvc.perform(get(URL.concat("/select"))
                 .param("nivelId", "1"))
             .andExpect(status().isOk());
 
-        verify(service).getSubniveisSelect(1);
+        verify(service).getSubNiveisSelect(1);
     }
 
     @Test
     @SneakyThrows
     @WithMockUser
-    public void getSubniveisSelect_deveRetornarBadRequest_quandoNaoReceberNivelId() {
+    public void getSubNiveisSelect_deveRetornarBadRequest_quandoNaoReceberNivelId() {
         mvc.perform(get(URL.concat("/select")))
             .andExpect(status().isBadRequest());
 

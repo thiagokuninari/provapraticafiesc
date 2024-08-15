@@ -206,7 +206,7 @@ public class UsuarioHelper {
             .nivelId(2)
             .organizacaoId(1)
             .usuarioCadastroId(1)
-            .subniveisIds(Set.of(1))
+            .subNiveisIds(Set.of(1))
             .build();
     }
 
@@ -258,7 +258,7 @@ public class UsuarioHelper {
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .situacao(ESituacao.A)
-            .subniveis(new HashSet<>())
+            .subNiveis(new HashSet<>())
             .build();
     }
 
@@ -298,7 +298,7 @@ public class UsuarioHelper {
             .recuperarSenhaTentativa(0)
             .tiposFeeder(Set.of())
             .subCanaisId(Set.of())
-            .subniveisIds(Set.of())
+            .subNiveisIds(Set.of())
             .build();
     }
 
@@ -883,8 +883,8 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Subnivel umSubnivel(Integer id, String codigo, String nome, Set<Funcionalidade> funcionalidades) {
-        return Subnivel.builder()
+    public static SubNivel umSubNivel(Integer id, String codigo, String nome, Set<Funcionalidade> funcionalidades) {
+        return SubNivel.builder()
             .id(id)
             .codigo(codigo)
             .nome(nome)
@@ -892,29 +892,29 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Set<Subnivel> umSetDeSubniveisComUmSubnivel() {
-        return Set.of(umSubnivel(1, "BACKOFFICE", "BACKOFFICE",
+    public static Set<SubNivel> umSetDeSubNiveisComUmSubNivel() {
+        return Set.of(umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
             Set.of(umaFuncionalidadeBko(1, "Teste 1"))));
     }
 
-    public static Set<Subnivel> umSetDeSubniveis() {
+    public static Set<SubNivel> umSetDeSubNiveis() {
         return  Set.of(
-            umSubnivel(2, "BACKOFFICE_CENTRALIZADO","BACKOFFICE CENTRALIZADO",
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO","BACKOFFICE CENTRALIZADO",
                 Set.of(umaFuncionalidadeBko(2, "Teste 2"))),
-            umSubnivel(3, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+            umSubNivel(3, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
                 Set.of(umaFuncionalidadeBko(3, "Teste 3")))
         );
     }
 
-    public static List<Subnivel> umaListaDeSubniveis() {
+    public static List<SubNivel> umaListaDeSubNiveis() {
         return  List.of(
-            umSubnivel(1, "BACKOFFICE", "BACKOFFICE",
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
                 Set.of(umaFuncionalidadeBko(1, "Teste 1"))),
-            umSubnivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
                 Set.of(umaFuncionalidadeBko(2, "Teste 2"))),
-            umSubnivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
                 Set.of(umaFuncionalidadeBko(3, "Teste 1"))),
-            umSubnivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
                 Set.of(umaFuncionalidadeBko(4, "Teste 3")))
         );
     }

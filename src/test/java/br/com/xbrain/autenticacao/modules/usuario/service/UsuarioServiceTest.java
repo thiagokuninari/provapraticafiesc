@@ -230,7 +230,7 @@ public class UsuarioServiceTest {
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Mock
-    private SubnivelService subnivelService;
+    private SubNivelService subNivelService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -3310,13 +3310,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveAdicionarSubniveisESalvarPermissoesEspeciais_quandoRequestConterSubniveisIdsECadastroMso() {
+    public void save_deveAdicionarSubNiveisESalvarPermissoesEspeciais_quandoRequestConterSubNiveisIdsECadastroMso() {
         var usuarioDto = umUsuarioMsoBackofficeDto(null);
-        var subniveis = umSetDeSubniveisComUmSubnivel();
+        var subniveis = umSetDeSubNiveisComUmSubNivel();
 
-        when(subnivelService.findByIdIn(Set.of(1))).thenReturn(subniveis);
+        when(subNivelService.findByIdIn(Set.of(1))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subnivelService.getSubnivelFuncionalidadesIds(anySet())).thenReturn(List.of(1));
+        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(1));
         when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
             Usuario usuarioArgumento = invocation.getArgument(0);
             usuarioArgumento.setId(1);
@@ -3326,7 +3326,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).saveAndFlush(any(Usuario.class));
-        verify(subnivelService).findByIdIn(Set.of(1));
+        verify(subNivelService).findByIdIn(Set.of(1));
         verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
         verify(repository, times(2)).save(usuarioCaptor.capture());
         verify(permissaoEspecialService).hasPermissaoEspecialAtiva(1, 30000);
@@ -3334,7 +3334,7 @@ public class UsuarioServiceTest {
 
         var usuarioSalvo = usuarioCaptor.getValue();
         assertThat(usuarioSalvo)
-            .extracting(Usuario::getId, Usuario::getSubniveis)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(1, subniveis);
 
         var permissoesSalvas = permissaoEspecialCaptor.getValue();
@@ -3349,7 +3349,7 @@ public class UsuarioServiceTest {
     @Test
     public void save_naoDeveAdicionarSubNiveisENaoDeveSalvarPermissoesEspeciais_quandoRequestNaoConterSubNiveisIdsECadastroMso() {
         var usuarioDto = umUsuarioMsoBackofficeDto(null);
-        usuarioDto.setSubniveisIds(Set.of());
+        usuarioDto.setSubNiveisIds(Set.of());
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
@@ -3363,43 +3363,43 @@ public class UsuarioServiceTest {
         verify(repository).saveAndFlush(any(Usuario.class));
         verify(repository, times(2)).save(usuarioCaptor.capture());
         verify(permissaoEspecialService).hasPermissaoEspecialAtiva(1, 30000);
-        verifyZeroInteractions(subnivelService);
+        verifyZeroInteractions(subNivelService);
         verifyNoMoreInteractions(permissaoEspecialService);
 
         var usuarioSalvo = usuarioCaptor.getValue();
         assertThat(usuarioSalvo)
-            .extracting(Usuario::getId, Usuario::getSubniveis)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(1, null);
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_deveAdicionarOsSubNiveisEAsPermissoesEspeciais_quandoForEditarMsoEAdicionarAlgumSubnivelSemOUsuarioPossuirAlgumAnteriormente() {
+    public void save_deveAdicionarOsSubNiveisEAsPermissoesEspeciais_quandoForEditarMsoEAdicionarAlgumSubNivelSemOUsuarioPossuirAlgumAnteriormente() {
         var usuarioDto = umUsuarioMsoBackofficeDto(23);
-        usuarioDto.setSubniveisIds(Set.of(2, 3));
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
         usuarioDto.setSituacao(A);
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
-        var subniveis = umSetDeSubniveis();
+        var subniveis = umSetDeSubNiveis();
 
-        when(subnivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
-        when(subnivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subnivelService.getSubnivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
+        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
         verify(repository).saveAndFlush(any(Usuario.class));
-        verify(subnivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
         verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
         verify(repository, times(2)).save(usuarioCaptor.capture());
 
         var usuarioSalvo = usuarioCaptor.getValue();
         assertThat(usuarioSalvo)
-            .extracting(Usuario::getId, Usuario::getSubniveis)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(23, subniveis);
 
         var permissoesSalvas = permissaoEspecialCaptor.getValue();
@@ -3414,14 +3414,14 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_deveRemoverPermissoesEspeciaisENaoDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioMsoParaRemoverSubnivel() {
+    public void save_deveRemoverPermissoesEspeciaisENaoDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioMsoParaRemoverSubNivel() {
         var usuarioDto = umUsuarioMsoBackofficeDto(23);
-        usuarioDto.setSubniveisIds(null);
+        usuarioDto.setSubNiveisIds(null);
         usuarioDto.setSituacao(A);
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
 
-        when(subnivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
 
@@ -3429,49 +3429,49 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(5)).findById(23);
-        verify(subnivelService).getFuncionalidadesIds();
+        verify(subNivelService).getFuncionalidadesIds();
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
         verify(repository, times(2)).save(usuarioCaptor.capture());
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
         verifyZeroInteractions(permissaoEspecialRepository);
-        verifyNoMoreInteractions(subnivelService);
+        verifyNoMoreInteractions(subNivelService);
 
         var usuarioSalvo = usuarioCaptor.getValue();
         assertThat(usuarioSalvo)
-            .extracting(Usuario::getId, Usuario::getSubniveis)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(23, null);
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_deveAlterarOsSubNiveisEAlterarAsPermissoesEspeciais_quandoForEditarMsoERequestConterSubNiveisIdsDiferentesDosSubniveisAnterioresDoUsuario() {
+    public void save_deveAlterarOsSubNiveisEAlterarAsPermissoesEspeciais_quandoForEditarMsoERequestConterSubNiveisIdsDiferentesDosSubNiveisAnterioresDoUsuario() {
         var usuarioDto = umUsuarioMsoBackofficeDto(23);
-        usuarioDto.setSubniveisIds(Set.of(2, 3));
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
         usuarioDto.setSituacao(A);
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
-        usuarioAntigo.setSubniveis(umSetDeSubniveisComUmSubnivel());
-        var subniveis = umSetDeSubniveis();
+        usuarioAntigo.setSubNiveis(umSetDeSubNiveisComUmSubNivel());
+        var subniveis = umSetDeSubNiveis();
 
-        when(subnivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
-        when(subnivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subnivelService.getSubnivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
+        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
         verify(repository).saveAndFlush(any(Usuario.class));
-        verify(subnivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
         verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
         verify(repository, times(2)).save(usuarioCaptor.capture());
 
         var usuarioSalvo = usuarioCaptor.getValue();
         assertThat(usuarioSalvo)
-            .extracting(Usuario::getId, Usuario::getSubniveis)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(23, subniveis);
 
         var permissoesSalvas = permissaoEspecialCaptor.getValue();
@@ -4287,7 +4287,7 @@ public class UsuarioServiceTest {
         expectedDto.setHierarquiasId(null);
         expectedDto.setTiposFeeder(null);
         expectedDto.setSubCanaisId(null);
-        expectedDto.setSubniveisIds(null);
+        expectedDto.setSubNiveisIds(null);
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
             .email("EMAIL@TEST.COM")
