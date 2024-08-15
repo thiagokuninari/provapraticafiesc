@@ -453,4 +453,28 @@ public class UsuarioRepositoryTest {
             "USUARIO_REALOCADO@TESTE.COM", List.of(R, P)))
             .isEmpty();
     }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarTrue_quandoEmailJaExistirEUsuarioAtivo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("00011122233", "ADMIN@XBRAIN.COM.BR"))
+            .isTrue();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarTrue_quandoECpfJaExistirEUsuarioAtivo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("0", "ADMIN@XBRAIN.COM.B"))
+            .isTrue();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarFalse_quandoEmailECpfNaoExistirIgual() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("99011122233", "QUALQUERVALOR@GMAIL.COM"))
+            .isFalse();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarFalse_quandoEmailJaExistirEUsuarioInativo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("99011122233", "JOAO@GMAIL.COM"))
+            .isFalse();
+    }
 }

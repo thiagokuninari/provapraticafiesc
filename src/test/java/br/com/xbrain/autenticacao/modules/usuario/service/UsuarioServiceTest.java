@@ -91,6 +91,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
@@ -318,8 +319,10 @@ public class UsuarioServiceTest {
         doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .when(usuarioHistoricoService)
             .findMotivoInativacaoByUsuarioId(1);
+        var usuario = umUsuarioSocioPrincipalEAa();
+        usuario.setSituacao(I);
 
-        doReturn(Optional.of(umUsuarioSocioPrincipalEAa()))
+        doReturn(Optional.of(usuario))
             .when(repository)
             .findComplete(anyInt());
 
@@ -337,7 +340,10 @@ public class UsuarioServiceTest {
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        doReturn(Optional.of(outroUsuarioCompleto()))
+        var usuario = outroUsuarioCompleto();
+        usuario.setSituacao(I);
+
+        doReturn(Optional.of(usuario))
             .when(repository)
             .findComplete(anyInt());
 
@@ -530,6 +536,66 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
             .withMessage("O usuário não pode ser ativado pois o fornecedor está inativo.");
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioJaAtivo() {
+        var usuario = umUsuarioCompleto(ESituacao.A, OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
+            .withMessage("O usuário já está ativo.");
+
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioIgualEAtivoJaCadastrado() {
+        var usuario = umUsuarioCompleto(ESituacao.I, OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        when(repository.existeByCpfOrEmailAndSituacaoAtivo("111.111.111-11", "email@email.com"))
+            .thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.ativar(umUsuarioAtivacaoDto()))
+            .withMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
+
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.I);
+    }
+
+    @Test
+    public void ativar_deveAtivar_quandoUsuarioIgualNaoExistir() {
+        var usuario = umUsuarioCompleto(ESituacao.I, OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        when(repository.existeByCpfOrEmailAndSituacaoAtivo("111.111.111-11", "email@email.com"))
+            .thenReturn(false);
+
+        service.ativar(umUsuarioAtivacaoDto());
+
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
     }
 
     @Test

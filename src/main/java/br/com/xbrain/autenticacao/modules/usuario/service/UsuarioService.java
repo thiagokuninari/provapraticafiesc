@@ -91,10 +91,10 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1796,8 +1796,8 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setDataReativacao(LocalDateTime.now());
-        usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
+        usuario.setSituacao(ESituacao.A);
         validarSubcanal(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
@@ -1819,6 +1819,9 @@ public class UsuarioService {
     }
 
     private void validarAtivacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            throw new ValidacaoException("O usuário já está ativo.");
+        }
         var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
         var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
@@ -1843,6 +1846,8 @@ public class UsuarioService {
         } else if (!isEmpty(usuario.getOrganizacaoEmpresa())
             && !usuario.getOrganizacaoEmpresa().isAtivo()) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+        } else if (existeUsuarioCadastradoIgualAtivo(usuario)) {
+            throw new ValidacaoException("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
         }
 
         repository.save(usuario);
@@ -3410,5 +3415,9 @@ public class UsuarioService {
                 return usuario.getId();
             })
             .orElse(null);
+    }
+
+    private boolean existeUsuarioCadastradoIgualAtivo(Usuario usuario) {
+        return repository.existeByCpfOrEmailAndSituacaoAtivo(usuario.getCpf(), usuario.getEmail());
     }
 }

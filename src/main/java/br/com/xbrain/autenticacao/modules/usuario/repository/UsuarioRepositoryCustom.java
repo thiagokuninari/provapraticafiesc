@@ -205,4 +205,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds);
 
     Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
+
+    boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email);
 }

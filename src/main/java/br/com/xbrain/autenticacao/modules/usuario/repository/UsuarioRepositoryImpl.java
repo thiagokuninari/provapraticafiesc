@@ -1445,4 +1445,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuario.situacao.notIn(situacoes)))
             .fetchFirst());
     }
+
+    @Override
+    public boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email) {
+        return new JPAQueryFactory(entityManager)
+            .selectOne()
+            .from(usuario)
+            .where(usuario.cpf.eq(cpf).or(usuario.email.equalsIgnoreCase(email))
+                .and(usuario.situacao.eq(A)))
+            .fetchFirst() != null;
+    }
 }

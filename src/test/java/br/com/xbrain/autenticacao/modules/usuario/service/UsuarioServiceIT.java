@@ -440,7 +440,7 @@ public class UsuarioServiceIT {
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
             .extracting("id", "nome", "email", "cpf", "situacao")
-            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
+            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "55146494150", ESituacao.A);
         assertThat(usuarioLocalizado.getHistoricos())
             .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
             .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
@@ -494,6 +494,67 @@ public class UsuarioServiceIT {
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(243)
             .observacao("Teste ativar")
+            .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioJaAtivo() {
+        var usuarioLocalizado = usuarioRepository.findById(247).get();
+        assertThat(usuarioLocalizado.getSituacao())
+            .isEqualTo(A);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("O usuário já está ativo.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(247)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
+
+        assertThat(usuarioLocalizado.getSituacao())
+            .isEqualTo(A);
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioComEmailIgualAtivoJaCadastrado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var emailIgual = "VENDEDOR_OPERACAO_2@GMAIL.COM";
+        var usuarioLocalizado1 = usuarioRepository.findById(239).get();
+        assertThat(usuarioLocalizado1).extracting("email", "situacao")
+            .containsExactly(emailIgual, A);
+
+        var usuarioLocalizado2 = usuarioRepository.findById(241).get();
+        assertThat(usuarioLocalizado2).extracting("email", "situacao")
+            .containsExactly(emailIgual, I);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(241)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioComCpfIgualAtivoJaCadastrado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var cpfIgual = "77552837209";
+        var usuarioLocalizado1 = usuarioRepository.findById(238).get();
+        assertThat(usuarioLocalizado1).extracting("cpf", "situacao")
+            .containsExactly(cpfIgual, A);
+
+        var usuarioLocalizado2 = usuarioRepository.findById(240).get();
+        assertThat(usuarioLocalizado2).extracting("cpf", "situacao")
+            .containsExactly(cpfIgual, I);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(240)
+            .observacao("ATIVANDO UM USUÁRIO")
             .build());
     }
 
@@ -1575,7 +1636,6 @@ public class UsuarioServiceIT {
             .containsExactlyInAnyOrder(
                 tuple(369, "MARIA AUGUSTA"),
                 tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3"),
                 tuple(116, "ALBERTO PEREIRA"),
                 tuple(149, "USUARIO INFERIOR"),
                 tuple(117, "ROBERTO ALMEIDA"),
