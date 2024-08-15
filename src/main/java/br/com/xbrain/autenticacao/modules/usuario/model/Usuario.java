@@ -573,9 +573,17 @@ public class Usuario {
             && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
+    private boolean isAgenteAutorizadoAceite() {
+        return this.cargo != null && this.cargo.getCodigo() == AGENTE_AUTORIZADO_ACEITE;
+    }
+
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
             && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
+    }
+
+    public boolean isSocioPrincipalOuAceite() {
+        return isAgenteAutorizado() && (isSocioPrincipal() || isAgenteAutorizadoAceite());
     }
 
     public boolean isBackoffice() {

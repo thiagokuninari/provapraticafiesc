@@ -203,4 +203,6 @@ public interface UsuarioRepositoryCustom {
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
 
     List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds);
+
+    Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
 }

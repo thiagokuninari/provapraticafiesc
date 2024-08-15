@@ -3393,4 +3393,22 @@ public class UsuarioService {
             .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
                 .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
     }
+
+    private Optional<Usuario> buscarUsuarioPorCpfOuEmailExcluindoSituacoes(String cpf, String email) {
+        return repository.findByCpfOrEmailAndSituacaoNotIn(
+            getOnlyNumbers(cpf),
+            email,
+            List.of(ESituacao.R, ESituacao.P));
+    }
+
+    public Integer obterIdSeUsuarioForSocioOuAceite(String cpf, String email) {
+        return buscarUsuarioPorCpfOuEmailExcluindoSituacoes(cpf, email)
+            .map(usuario -> {
+                if (!usuario.isSocioPrincipalOuAceite()) {
+                    throw new ValidacaoException("Usuário cadastrado com outro cargo.");
+                }
+                return usuario.getId();
+            })
+            .orElse(null);
+    }
 }

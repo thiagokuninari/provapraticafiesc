@@ -107,6 +107,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.li
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
@@ -5138,6 +5140,95 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.findByCpfAndSituacaoIsNot("123456789", ESituacao.R))
             .withMessage("Usuário não encontrado.");
+    }
+
+    @Test
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarId_quandoExistirUsuariosComCargoSocioECargoAceite() {
+        var usuario = umUsuarioCompleto();
+        usuario.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_ACEITE);
+
+        when(repository
+            .findByCpfOrEmailAndSituacaoNotIn(
+                "38957979875",
+                "usuario@xbrain.com.br",
+                List.of(ESituacao.R, ESituacao.P)))
+            .thenReturn(Optional.of(usuario));
+
+        assertThat(service.obterIdSeUsuarioForSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .isEqualTo(1);
+
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
+            "38957979875",
+            "usuario@xbrain.com.br",
+            List.of(ESituacao.R, ESituacao.P));
+    }
+
+    @Test
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarNull_seNaoExistirUsuarioComCpfOuEmailIgual() {
+        when(repository
+            .findByCpfOrEmailAndSituacaoNotIn(
+                "38957979875",
+                "usuario@xbrain.com.br",
+                List.of(ESituacao.R, ESituacao.P)))
+            .thenReturn(Optional.empty());
+
+        assertThat(service.obterIdSeUsuarioForSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .isNull();
+
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
+            "38957979875",
+            "usuario@xbrain.com.br",
+            List.of(ESituacao.R, ESituacao.P));
+    }
+
+    @Test
+    public void obterIdSeUsuarioForSocioOuAceite_retornaException_seExistirUsuarioQueNaoEhSociosOuAceite() {
+        var usuario = umUsuarioCompleto();
+        usuario.getCargo().getNivel().setCodigo(AGENTE_AUTORIZADO);
+        usuario.getCargo().setCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR);
+
+        when(repository
+            .findByCpfOrEmailAndSituacaoNotIn(
+                "38957979875",
+                "usuario@xbrain.com.br",
+                List.of(ESituacao.R, ESituacao.P)))
+            .thenReturn(Optional.of(usuario));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.obterIdSeUsuarioForSocioOuAceite(
+                "38957979875",
+                "usuario@xbrain.com.br"))
+            .withMessage("Usuário cadastrado com outro cargo.");
+
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
+            "38957979875",
+            "usuario@xbrain.com.br",
+            List.of(ESituacao.R, ESituacao.P));
+    }
+
+    @Test
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarException_quandoExistirUsuarioQueNaoEhNivelAA() {
+        var usuario = umUsuarioCompleto();
+        usuario.getCargo().getNivel().setCodigo(OPERACAO);
+        usuario.getCargo().setCodigo(OPERACAO_TELEVENDAS);
+
+        when(repository
+            .findByCpfOrEmailAndSituacaoNotIn(
+                "38957979875",
+                "usuario@xbrain.com.br",
+                List.of(ESituacao.R, ESituacao.P)))
+            .thenReturn(Optional.of(usuario));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service
+                .obterIdSeUsuarioForSocioOuAceite("38957979875", "usuario@xbrain.com.br"))
+            .withMessage("Usuário cadastrado com outro cargo.");
+
+        verify(repository).findByCpfOrEmailAndSituacaoNotIn(
+            "38957979875",
+            "usuario@xbrain.com.br",
+            List.of(ESituacao.R, ESituacao.P));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

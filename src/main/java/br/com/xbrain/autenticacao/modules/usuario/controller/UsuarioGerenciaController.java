@@ -171,4 +171,9 @@ public class UsuarioGerenciaController {
     public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
         service.atualizarEmailSocioInativo(socioPrincipalId);
     }
+
+    @GetMapping("socio-principal/verificar-cpf-email")
+    public Integer obterIdSeUsuarioForSocioOuAceite(@RequestParam String cpf, @RequestParam String email) {
+        return service.obterIdSeUsuarioForSocioOuAceite(cpf, email);
+    }
 }

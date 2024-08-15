@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
@@ -34,7 +34,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENT
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -373,7 +372,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findByIdInAndCargoInAndSituacaoNot_deveRetornarUsuariosNaoRealocados_quandoInformarIdsAndCargosAndSituacao() {
         var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
-        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), ESituacao.R))
+        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), R))
             .extracting("id", "nome", "email")
             .containsExactly(
                 Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
@@ -414,5 +413,44 @@ public class UsuarioRepositoryTest {
     public void findAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarUsuariosIdsPorOrganizacao_quandoSolicitado() {
         assertThat(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(5))
             .containsExactly(121, 122, 123);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seCpfExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("00011122233",
+            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(703, "USUARIO 703", "USUARIO_703@TESTE.COM", "00011122233", I);
+
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailECpfExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("99988877766",
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seCpfExistirESituacaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("11122233344",
+            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P)))
+            .isEmpty();
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seEmailExistirESituacaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
+            "USUARIO_REALOCADO@TESTE.COM", List.of(R, P)))
+            .isEmpty();
     }
 }
