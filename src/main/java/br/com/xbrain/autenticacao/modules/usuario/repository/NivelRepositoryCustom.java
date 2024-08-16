@@ -8,4 +8,6 @@ import java.util.List;
 public interface NivelRepositoryCustom {
 
     List<Nivel> getAll(Predicate predicate);
+
+    List<Nivel> getNiveisConfiguracoesTratativas();
 }

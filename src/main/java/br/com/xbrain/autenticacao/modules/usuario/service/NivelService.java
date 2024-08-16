@@ -77,4 +77,10 @@ public class NivelService {
             .map(NivelResponse::of)
             .collect(Collectors.toList());
     }
+
+    public List<NivelResponse> getNiveisConfiguracoesTratativas() {
+        return nivelRepository.getNiveisConfiguracoesTratativas().stream()
+            .map(NivelResponse::of)
+            .collect(Collectors.toList());
+    }
 }
