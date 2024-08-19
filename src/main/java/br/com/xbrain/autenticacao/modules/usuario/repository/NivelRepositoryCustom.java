@@ -9,5 +9,5 @@ public interface NivelRepositoryCustom {
 
     List<Nivel> getAll(Predicate predicate);
 
-    List<Nivel> getNiveisConfiguracoesTratativas();
+    List<Nivel> getNiveisConfiguracoesTratativas(List<Integer> funcionalidadesIds);
 }

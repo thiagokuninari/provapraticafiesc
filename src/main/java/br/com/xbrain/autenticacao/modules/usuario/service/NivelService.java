@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
 @Service
@@ -79,7 +80,7 @@ public class NivelService {
     }
 
     public List<NivelResponse> getNiveisConfiguracoesTratativas() {
-        return nivelRepository.getNiveisConfiguracoesTratativas().stream()
+        return nivelRepository.getNiveisConfiguracoesTratativas(LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS).stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());
     }

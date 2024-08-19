@@ -8,7 +8,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_VDS_CRIAR_TRATATIVAS;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
@@ -26,13 +25,13 @@ public class NivelRepositoryImpl extends CustomRepository<Nivel> implements Nive
     }
 
     @Override
-    public List<Nivel> getNiveisConfiguracoesTratativas() {
+    public List<Nivel> getNiveisConfiguracoesTratativas(List<Integer> funcionalidadesIds) {
         return new JPAQueryFactory(entityManager)
             .select(cargoDepartamentoFuncionalidade.cargo.nivel)
             .from(cargoDepartamentoFuncionalidade)
             .join(cargoDepartamentoFuncionalidade.cargo, cargo)
             .join(cargo.nivel, nivel)
-            .where(cargoDepartamentoFuncionalidade.funcionalidade.id.eq(ROLE_VDS_CRIAR_TRATATIVAS)
+            .where(cargoDepartamentoFuncionalidade.funcionalidade.id.in(funcionalidadesIds)
                 .and(nivel.situacao.eq(ESituacao.A)))
             .distinct()
             .fetch();

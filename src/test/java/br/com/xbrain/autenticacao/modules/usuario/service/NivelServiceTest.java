@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -13,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.NivelPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -237,20 +234,26 @@ public class NivelServiceTest {
 
     @Test
     public void getNiveisConfiguracoesTratativas_deveRetornarNiveisParaConfiguracoesTratativas_quandoChamado() {
-        when(nivelRepository.getNiveisConfiguracoesTratativas())
+        var funcionalideAbrirTratativasVendas = 3052;
+        var funcionalidadeAbrirTratativasBko = 16106;
+
+        when(nivelRepository.getNiveisConfiguracoesTratativas(
+            List.of(funcionalideAbrirTratativasVendas, funcionalidadeAbrirTratativasBko)))
             .thenReturn(umaListaNivel());
 
         assertThat(service.getNiveisConfiguracoesTratativas())
             .extracting("id", "nome", "codigo")
             .containsExactly(
                 tuple(1, "RECEPTIVO", "RECEPTIVO"),
-                tuple(2, "LOJAS", "LOJAS"));
+                tuple(2, "LOJAS", "LOJAS"),
+                tuple(3, "BACKOFFICE CENTRALIZADO", "BACKOFFICE_CENTRALIZADO"));
     }
 
     private List<Nivel> umaListaNivel() {
         return List.of(
             Nivel.builder().id(1).nome("Receptivo").codigo(CodigoNivel.RECEPTIVO).build(),
-            Nivel.builder().id(2).nome("Lojas").codigo(CodigoNivel.LOJAS).build());
+            Nivel.builder().id(2).nome("Lojas").codigo(CodigoNivel.LOJAS).build(),
+            Nivel.builder().id(3).nome("Backoffice Centralizado").codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO).build());
     }
 
     private NivelPredicate getPredicate(UsuarioAutenticado usuarioAutenticado) {
