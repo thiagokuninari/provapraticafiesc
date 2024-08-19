@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
@@ -26,6 +27,8 @@ public class NivelService {
     private NivelRepository nivelRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
 
     public List<Nivel> getAll() {
         return nivelRepository.getAll(
@@ -80,7 +83,8 @@ public class NivelService {
     }
 
     public List<NivelResponse> getNiveisConfiguracoesTratativas() {
-        return nivelRepository.getNiveisConfiguracoesTratativas(LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS).stream()
+        return cargoDepartamentoFuncionalidadeRepository.getNiveisByFuncionalidades(
+            LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS).stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());
     }

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -35,6 +36,8 @@ public class NivelServiceTest {
     private AutenticacaoService autenticacaoService;
     @Mock
     private NivelRepository nivelRepository;
+    @Mock
+    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
 
     @Test
     public void getPermitidosPorNivel_deveRetornarXbrain_quandoOUsuarioForXbrain() {
@@ -237,7 +240,7 @@ public class NivelServiceTest {
         var funcionalideAbrirTratativasVendas = 3052;
         var funcionalidadeAbrirTratativasBko = 16106;
 
-        when(nivelRepository.getNiveisConfiguracoesTratativas(
+        when(cargoDepartamentoFuncionalidadeRepository.getNiveisByFuncionalidades(
             List.of(funcionalideAbrirTratativasVendas, funcionalidadeAbrirTratativasBko)))
             .thenReturn(umaListaNivel());
 
