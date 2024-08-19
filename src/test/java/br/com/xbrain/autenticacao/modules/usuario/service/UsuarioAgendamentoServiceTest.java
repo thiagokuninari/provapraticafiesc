@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeV
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDisponivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -404,6 +406,39 @@ public class UsuarioAgendamentoServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioService, never()).findPermissoesByUsuario(any(Usuario.class));
         verify(equipeVendasService, never()).getEquipesPorSupervisor(anyInt());
+    }
+
+    @SuppressWarnings("LineLength")
+    @Test
+    public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarUsuariosDaEquipeVenda_seExistirUsuarioDtoEForCargosHibridos() {
+        var usuariodto = UsuarioDto.builder().id(9991).cargoCodigo(AGENTE_AUTORIZADO_GERENTE).build();
+        when(usuarioService.getUsuarioById(9991)).thenReturn(usuariodto);
+        var resultMap = new HashMap<Integer, Integer>();
+        resultMap.put(9991, 999);
+        var usuarioIds = List.of(9991, 9992, 9993, 9994, 9995);
+        when(usuarioService.getUsuariosAtivosByIds(usuarioIds)).thenReturn(List.of(9991));
+        when(usuarioService.findPermissoesByUsuario(any(Usuario.class))).thenReturn(umaPermissaoVisualizarGeral());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
+        when(equipeVendasService.getEquipesPorSupervisor(135)).thenReturn(List.of(umaEquipeDeVendas()));
+        when(equipeVendasService.getByUsuario(9991)).thenReturn(umaEquipeVendasDto());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(List.of(9991))).thenReturn(resultMap);
+
+        assertThat(service.recuperarUsuariosDisponiveisParaDistribuicao(999))
+            .hasSize(1)
+            .extracting(
+                UsuarioDisponivelResponse::getId,
+                UsuarioDisponivelResponse::getNome
+            )
+            .contains(
+                tuple(9991, "USUARIO 1 DO AA 999")
+            );
+
+        verify(agenteAutorizadoService).getUsuariosByAaId(999, true);
+        verify(usuarioService).getUsuariosAtivosByIds(usuarioIds);
+        verify(equipeVendasService).getUsuarioEEquipeByUsuarioIds(List.of(9991));
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioService).findPermissoesByUsuario(any(Usuario.class));
+        verify(equipeVendasService).getEquipesPorSupervisor(135);
     }
 
 }

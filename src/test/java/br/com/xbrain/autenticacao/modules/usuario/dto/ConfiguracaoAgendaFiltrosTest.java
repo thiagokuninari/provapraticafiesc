@@ -20,4 +20,17 @@ public class ConfiguracaoAgendaFiltrosTest {
                 + "configuracaoAgendaReal.tipoConfiguracao = NIVEL && "
                 + "configuracaoAgendaReal.situacao = A");
     }
+
+    @Test
+    public void toPredicate_deveRetornarConfiguracaoAgendaPredicate_quandoTipoConfiguracaoForPadrao() {
+        var config = new ConfiguracaoAgendaFiltros();
+        config.setQtdHorasAdicionais(1);
+        config.setTipoConfiguracao(ETipoConfiguracao.PADRAO);
+        config.setSituacao(ESituacao.A);
+
+        assertThat(config.toPredicate().build().toString())
+            .hasToString("configuracaoAgendaReal.qtdHorasAdicionais = 1 && "
+                + "configuracaoAgendaReal.tipoConfiguracao = PADRAO && "
+                + "configuracaoAgendaReal.situacao = A");
+    }
 }

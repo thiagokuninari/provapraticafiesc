@@ -237,6 +237,20 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
+    public void getStatus_deveRetornarTrue_quandoNaoForOperadorTelevendasAtivoLocal() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isTrue();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository, never()).findBySiteId(100);
+        verify(siteService, never()).getSitesPorPermissao(umUsuarioOperadorTelevendas());
+        verify(siteService, never()).findById(100);
+        verify(dataHoraAtual, never()).getDataHora();
+        verify(atuacaoRepository, never()).findByHorarioAcessoId(1);
+    }
+
+    @Test
     public void getStatus_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(repository.findBySiteId(100)).thenReturn(Optional.of(umHorarioAcesso()));

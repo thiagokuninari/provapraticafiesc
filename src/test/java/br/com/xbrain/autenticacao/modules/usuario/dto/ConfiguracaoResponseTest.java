@@ -15,6 +15,15 @@ public class ConfiguracaoResponseTest {
             .containsExactly(23, 33, 43);
     }
 
+    @Test
+    public void convertFrom_deveRetornarConfiguracaoResponse_quandoNaoTiverUsuario() {
+        var config = umaConfiguracao();
+        config.setUsuario(null);
+        assertThat(ConfiguracaoResponse.convertFrom(config))
+            .extracting("id", "ramal", "usuarioId")
+            .containsExactly(23, 33, null);
+    }
+
     private Configuracao umaConfiguracao() {
         var configuracao = new Configuracao();
         configuracao.setId(23);

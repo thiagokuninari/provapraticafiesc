@@ -111,6 +111,29 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
+    public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoEmailNaoExistir() {
+        ReflectionTestUtils.setField(service, "dataHoraInativarUsuario", "2021-05-30T00:00:00.000");
+        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0)))
+            .thenReturn(List.of(umUsuarioDto(1), umUsuarioFeederDto(3, null)));
+        when(usuarioRepository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0)))
+            .thenReturn(List.of(umUsuarioDto(2), umUsuarioFeederDto(2, null)));
+
+        assertThat(service.inativarUsuariosSemAcesso("TESTE"))
+            .isEqualTo(4);
+
+        verify(usuarioRepository).findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0));
+        verify(usuarioRepository).findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0));
+        verify(usuarioRepository).atualizarParaSituacaoInativo(1);
+        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(anyInt(), eq("TESTE"));
+        verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
+        verify(inativarUsuarioFeederMqSender, never()).sendSuccess(anyString());
+    }
+
+    @Test
     public void deletarHistoricoUsuarioAcesso_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("XBRAIN"));
 

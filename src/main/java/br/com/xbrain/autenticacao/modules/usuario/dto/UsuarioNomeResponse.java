@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
@@ -34,14 +33,6 @@ public class UsuarioNomeResponse {
         this.id = id;
         this.nome = nome;
         this.situacao = situacao;
-    }
-
-    public static UsuarioNomeResponse of(Usuario usuario) {
-        return UsuarioNomeResponse.builder()
-            .id(usuario.getId())
-            .nome(usuario.getNome())
-            .situacao(usuario.getSituacao())
-            .build();
     }
 
     public static UsuarioNomeResponse of(UsuarioEquipeDto usuarioEquipeDto) {

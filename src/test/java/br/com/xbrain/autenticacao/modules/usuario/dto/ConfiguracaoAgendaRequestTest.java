@@ -75,10 +75,34 @@ public class ConfiguracaoAgendaRequestTest {
     }
 
     @Test
+    public void aplicarValidacoes_naoDeveLancarException_quandoTipoConfiguracaoForPadrao() {
+        var request = umaConfiguracaoAgendaRequest(ETipoCanal.PAP);
+        request.setTipoConfiguracao(ETipoConfiguracao.PADRAO);
+        request.setSubcanalId(null);
+
+        assertThatCode(request::aplicarValidacoes)
+            .doesNotThrowAnyException();
+    }
+
+    @Test
     public void validarNivelOperacao_deveLancarException_quandoNivelOperacao() {
         assertThatCode(() -> umaConfiguracaoAgendaRequest(CodigoNivel.OPERACAO).validarNivelOperacao())
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Não é possível criar configurações para esse nível, "
                 + "por favor selecione um canal ou subcanal.");
+    }
+
+    @Test
+    public void validarNivelOperacao_naoDeveLancarException_quandoNivelNaoForOperacao() {
+        assertThatCode(() -> umaConfiguracaoAgendaRequest(CodigoNivel.AGENTE_AUTORIZADO).validarNivelOperacao())
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void validarNivelOperacao_naoDeveLancarException_quandoTipoConfiguracaoNaoForNivel() {
+        var config = umaConfiguracaoAgendaRequest(CodigoNivel.OPERACAO);
+        config.setTipoConfiguracao(ETipoConfiguracao.PADRAO);
+        assertThatCode(() -> config.validarNivelOperacao())
+            .doesNotThrowAnyException();
     }
 }

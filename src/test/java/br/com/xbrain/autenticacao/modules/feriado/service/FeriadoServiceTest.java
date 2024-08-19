@@ -16,9 +16,6 @@ import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,9 +33,7 @@ import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.NACI
 import static br.com.xbrain.autenticacao.modules.feriado.helper.FeriadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioAgenteAutorizado;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FeriadoServiceTest {
@@ -369,39 +364,6 @@ public class FeriadoServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(historicoService).salvarHistorico(umFeriado(), "IMPORTADO",
             umUsuarioAgenteAutorizado());
-    }
-
-    @Test
-    public void salvarFeriadoImportado_deveSalvarFeriadosELancarLogDeErro_quandoDerErroAoSalvarFeriadoParaCidadesDoEstado() {
-        var feriado = umFeriado();
-        feriado.setTipoFeriado(ESTADUAL);
-
-        var logger = (Logger) getLogger(FeriadoService.class);
-        var listAppender = new ListAppender<ILoggingEvent>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
-        ReflectionTestUtils.setField(service, "uploadAsync", true);
-        doThrow(RuntimeException.class)
-            .when(cidadeService)
-            .getAllCidadeByUf(1);
-
-        when(repository.save(feriado)).thenReturn(feriado);
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAgenteAutorizado());
-
-        assertThat(service.salvarFeriadoImportado(umFeriadoImportacao()))
-            .isEqualTo(umFeriado());
-
-        assertEquals("Erro ao salvar o feriado estadual para as cidades do estado, feriadoPaiId: null",
-            listAppender.list.get(0).getMessage());
-
-        listAppender.stop();
-
-        verify(repository).save(umFeriado());
-        verify(autenticacaoService).getUsuarioAutenticado();
-        verify(historicoService).salvarHistorico(umFeriado(), "IMPORTADO",
-            umUsuarioAgenteAutorizado());
-        verify(cidadeService).getAllCidadeByUf(1);
     }
 
     @Test

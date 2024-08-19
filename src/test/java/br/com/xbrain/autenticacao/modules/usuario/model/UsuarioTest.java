@@ -829,7 +829,6 @@ public class UsuarioTest {
         assertThat(usuario.isOperadorTelevendasAtivoLocal()).isFalse();
     }
 
-
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

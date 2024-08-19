@@ -215,6 +215,16 @@ public class EquipeVendaD2dServiceTest {
     }
 
     @Test
+    public void getEquipeVendasBySupervisorId_naoDevelancarException_seIdInformado() {
+        when(equipeVendaD2dClient.getEquipeVendaBySupervisorId(1))
+            .thenReturn(List.of(1));
+
+        equipeVendaD2dService.getEquipeVendasBySupervisorId(1);
+
+        verify(equipeVendaD2dClient).getEquipeVendaBySupervisorId(1);
+    }
+
+    @Test
     public void getEquipeVendasBySupervisorId_lancaIntegracaoException_seApiNaoDisponivel() {
         when(equipeVendaD2dClient.getEquipeVendaBySupervisorId(anyInt()))
             .thenThrow(new RetryableException("Connection refused (Connection refused)", new Date()));

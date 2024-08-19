@@ -92,6 +92,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umDocumentoPng;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
@@ -626,6 +627,48 @@ public class UsuarioServiceTest {
         usuario.setNome("Usuario Teste");
 
         assertThatCode(() -> service.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveSalvarUsuario_quandoExistirArquivo() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            10,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+
+        var usuarioDto = umUsuarioDtoSender();
+        var file = umDocumentoPng();
+
+        when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> service.save(usuarioDto, file))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(2)).save(usuario);
+        verify(repository, times(5)).findById(eq(1));
+        verify(fileService).salvarArquivo(usuario, file);
+    }
+
+    @Test
+    public void save_deveSalvarUsuario_quandoNaoExistirArquivo() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            10,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
+
+        var usuarioDto = umUsuarioDtoSender();
+        var file = umDocumentoPng();
+
+        when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(2)).save(usuario);
+        verify(repository, times(5)).findById(eq(1));
+        verify(fileService, never()).salvarArquivo(usuario, file);
     }
 
     @Test
