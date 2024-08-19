@@ -3312,11 +3312,12 @@ public class UsuarioServiceTest {
     @Test
     public void save_deveAdicionarSubNiveisESalvarPermissoesEspeciais_quandoRequestConterSubNiveisIdsECadastroMso() {
         var usuarioDto = umUsuarioMsoBackofficeDto(null);
+        usuarioDto.setCargoId(22);
         var subniveis = umSetDeSubNiveisComUmSubNivel();
 
         when(subNivelService.findByIdIn(Set.of(1))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(1));
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(1));
         when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
             Usuario usuarioArgumento = invocation.getArgument(0);
             usuarioArgumento.setId(1);
@@ -3378,6 +3379,7 @@ public class UsuarioServiceTest {
         var usuarioDto = umUsuarioMsoBackofficeDto(23);
         usuarioDto.setSubNiveisIds(Set.of(2, 3));
         usuarioDto.setSituacao(A);
+        usuarioDto.setCargoId(20);
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
         var subniveis = umSetDeSubNiveis();
@@ -3386,7 +3388,7 @@ public class UsuarioServiceTest {
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
@@ -3449,6 +3451,7 @@ public class UsuarioServiceTest {
         var usuarioDto = umUsuarioMsoBackofficeDto(23);
         usuarioDto.setSubNiveisIds(Set.of(2, 3));
         usuarioDto.setSituacao(A);
+        usuarioDto.setCargoId(23);
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
         usuarioAntigo.setSubNiveis(umSetDeSubNiveisComUmSubNivel());
@@ -3458,7 +3461,7 @@ public class UsuarioServiceTest {
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
-        when(subNivelService.getSubNivelFuncionalidadesIds(anySet())).thenReturn(List.of(2, 3));
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();

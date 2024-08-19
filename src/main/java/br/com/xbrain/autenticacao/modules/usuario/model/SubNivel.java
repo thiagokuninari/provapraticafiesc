@@ -38,16 +38,21 @@ public class SubNivel {
         foreignKey = @ForeignKey(name = "FK_NIVEL"))
     private Nivel nivel;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "FUNCIONALIDADE_SUBNIVEL", joinColumns = {
-        @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))}, inverseJoinColumns = {
-        @JoinColumn(name = "FK_FUNCIONALIDADE", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FUNCIONALIDADE"))})
-    private Set<Funcionalidade> funcionalidades;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "subNivel")
+    private Set<CargoFuncionalidadeSubNivel> cargoFuncionalidadeSubNiveis;
 
     public List<Integer> getFuncionalidadesIds() {
-        return this.funcionalidades.stream()
+        return this.cargoFuncionalidadeSubNiveis.stream()
+            .map(CargoFuncionalidadeSubNivel::getFuncionalidade)
+            .map(Funcionalidade::getId)
+            .collect(Collectors.toList());
+    }
+
+    public List<Integer> getFuncionalidadesIdsByCargoId(Integer cargoId) {
+        return this.cargoFuncionalidadeSubNiveis.stream()
+            .filter(cargoFuncionalidadeSubNivel -> cargoFuncionalidadeSubNivel.getCargo() == null
+                || cargoFuncionalidadeSubNivel.getCargo().getId().equals(cargoId))
+            .map(CargoFuncionalidadeSubNivel::getFuncionalidade)
             .map(Funcionalidade::getId)
             .collect(Collectors.toList());
     }

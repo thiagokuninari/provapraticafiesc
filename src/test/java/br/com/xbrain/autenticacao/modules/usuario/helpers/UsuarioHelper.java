@@ -883,39 +883,63 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static SubNivel umSubNivel(Integer id, String codigo, String nome, Set<Funcionalidade> funcionalidades) {
+    public static SubNivel umSubNivel(Integer id, String codigo, String nome,
+                                      Set<CargoFuncionalidadeSubNivel> cargoFuncionalidadeSubNivels) {
         return SubNivel.builder()
             .id(id)
             .codigo(codigo)
             .nome(nome)
-            .funcionalidades(funcionalidades)
+            .cargoFuncionalidadeSubNiveis(cargoFuncionalidadeSubNivels)
             .build();
     }
 
     public static Set<SubNivel> umSetDeSubNiveisComUmSubNivel() {
         return Set.of(umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
-            Set.of(umaFuncionalidadeBko(1, "Teste 1"))));
+            Set.of(umCargoFuncionalidadeSubNivel(1, null, umaFuncionalidadeBko(1, "Teste 1"))))
+        );
     }
 
     public static Set<SubNivel> umSetDeSubNiveis() {
         return  Set.of(
             umSubNivel(2, "BACKOFFICE_CENTRALIZADO","BACKOFFICE CENTRALIZADO",
-                Set.of(umaFuncionalidadeBko(2, "Teste 2"))),
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
             umSubNivel(3, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
-                Set.of(umaFuncionalidadeBko(3, "Teste 3")))
+                Set.of(umCargoFuncionalidadeSubNivel(3, null, umaFuncionalidadeBko(3, "Teste 3"))))
         );
     }
 
     public static List<SubNivel> umaListaDeSubNiveis() {
         return  List.of(
             umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
-                Set.of(umaFuncionalidadeBko(1, "Teste 1"))),
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
             umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
-                Set.of(umaFuncionalidadeBko(2, "Teste 2"))),
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
             umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
-                Set.of(umaFuncionalidadeBko(3, "Teste 1"))),
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoAnalista(), umaFuncionalidadeBko(3, "Teste 3")))),
             umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
-                Set.of(umaFuncionalidadeBko(4, "Teste 3")))
+                Set.of(umCargoFuncionalidadeSubNivel(4, null, umaFuncionalidadeBko(4, "Teste 4"))))
         );
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveisComCargo() {
+        return  Set.of(
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, umCargoMsoAnalista(), umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoConsultor(), umaFuncionalidadeBko(3, "Teste 3")))),
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(4, umCargoMsoAnalista(), umaFuncionalidadeBko(4, "Teste 4"))))
+        );
+    }
+
+    public static CargoFuncionalidadeSubNivel umCargoFuncionalidadeSubNivel(Integer id, Cargo cargo,
+                                                                            Funcionalidade funcionalidade) {
+        return CargoFuncionalidadeSubNivel.builder()
+            .id(id)
+            .cargo(cargo)
+            .funcionalidade(funcionalidade)
+            .build();
     }
 }

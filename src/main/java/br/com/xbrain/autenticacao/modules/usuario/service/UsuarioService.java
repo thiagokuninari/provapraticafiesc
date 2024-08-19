@@ -670,7 +670,8 @@ public class UsuarioService {
     private void adicionarPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
         if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
             var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
-                usuario.getUsuarioCadastro().getId(), subNivelService.getSubNivelFuncionalidadesIds(usuario.getSubNiveis()));
+                usuario.getUsuarioCadastro().getId(),
+                subNivelService.getSubNivelFuncionalidadesIdsByCargo(usuario.getSubNiveis(), usuario.getCargoId()));
 
             this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
         }

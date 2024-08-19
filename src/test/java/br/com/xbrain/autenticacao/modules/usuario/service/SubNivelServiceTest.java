@@ -63,14 +63,18 @@ public class SubNivelServiceTest {
     }
 
     @Test
-    public void getSubNivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmaLista() {
-        assertThat(service.getSubNivelFuncionalidadesIds(umaListaDeSubNiveis()))
-            .isEqualTo(List.of(1, 2, 3, 4));
+    public void getFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitado() {
+        when(repository.findAll()).thenReturn(umaListaDeSubNiveis());
+        assertThat(service.getFuncionalidadesIds())
+            .containsExactlyInAnyOrder(1, 2, 3, 4);
     }
 
     @Test
-    public void getSubNivelFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitadoComUmSet() {
-        assertThat(service.getSubNivelFuncionalidadesIds(umSetDeSubNiveis()))
-            .containsExactlyInAnyOrder(2, 3);
+    public void getSubNivelFuncionalidadesIdsByCargo_deveRetornarListaDeIds_quandoSolicitadoComCargoCorrespondente() {
+        assertThat(service.getSubNivelFuncionalidadesIdsByCargo(umSetDeSubNiveisComCargo(), 22))
+            .containsExactlyInAnyOrder(1, 3);
+
+        assertThat(service.getSubNivelFuncionalidadesIdsByCargo(umSetDeSubNiveisComCargo(), 20))
+            .containsExactlyInAnyOrder(2, 4);
     }
 }

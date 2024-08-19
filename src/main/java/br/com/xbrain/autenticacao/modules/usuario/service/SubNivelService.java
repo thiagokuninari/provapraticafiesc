@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.SubNivelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,16 +24,18 @@ public class SubNivelService {
     }
 
     public List<Integer> getFuncionalidadesIds() {
-        return this.getSubNivelFuncionalidadesIds(repository.findAll());
+        return repository.findAll().stream()
+            .flatMap(subNivel -> subNivel.getFuncionalidadesIds().stream())
+            .collect(Collectors.toList());
     }
 
     public Set<SubNivel> findByIdIn(Set<Integer> subNiveisIds) {
         return repository.findByIdIn(subNiveisIds);
     }
 
-    public List<Integer> getSubNivelFuncionalidadesIds(Collection<SubNivel> subNiveis) {
+    public List<Integer> getSubNivelFuncionalidadesIdsByCargo(Set<SubNivel> subNiveis, Integer cargoId) {
         return subNiveis.stream()
-            .flatMap(subNivel -> subNivel.getFuncionalidadesIds().stream())
+            .flatMap(subNivel -> subNivel.getFuncionalidadesIdsByCargoId(cargoId).stream())
             .collect(Collectors.toList());
     }
 }
