@@ -69,7 +69,7 @@ app-config:
     comunicados:
       url: http://172.10.10.53:8053
     claro-indico:
-      url: http://172.10.10.55:8055
+      url: http://claro-indico-api-prod:8055
     gestao:
       url: http://172.10.10.71:8091
     notificacao:
