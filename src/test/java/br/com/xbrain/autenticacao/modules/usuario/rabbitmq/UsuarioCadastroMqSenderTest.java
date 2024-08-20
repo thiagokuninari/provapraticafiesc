@@ -63,4 +63,11 @@ public class UsuarioCadastroMqSenderTest {
         mqSender.enviarDadosUsuarioParaSocialHub(request);
         verify(rabbitTemplate).convertAndSend("${app-config.queue.usuario-atualizacao-social-hub}", request);
     }
+
+    @Test
+    public void sendRemanejamentoWithFailure_deveEnviarParaFila_seNaoOcorrerErro() {
+        var request = new UsuarioMqRequest();
+        mqSender.sendRemanejamentoWithFailure(request);
+        verify(rabbitTemplate).convertAndSend("${app-config.queue.usuario-remanejar-pol-failure}", request);
+    }
 }

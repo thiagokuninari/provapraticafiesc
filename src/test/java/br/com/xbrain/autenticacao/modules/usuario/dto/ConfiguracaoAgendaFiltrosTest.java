@@ -33,4 +33,16 @@ public class ConfiguracaoAgendaFiltrosTest {
                 + "configuracaoAgendaReal.tipoConfiguracao = PADRAO && "
                 + "configuracaoAgendaReal.situacao = A");
     }
+
+    @Test
+    public void toPredicate_deveRetornarConfiguracaoAgendaPredicate_quandoTipoConfiguracaoNull() {
+        var config = new ConfiguracaoAgendaFiltros();
+        config.setQtdHorasAdicionais(1);
+        config.setTipoConfiguracao(null);
+        config.setSituacao(ESituacao.A);
+
+        assertThat(config.toPredicate().build().toString())
+            .hasToString("configuracaoAgendaReal.qtdHorasAdicionais = 1 && "
+                + "configuracaoAgendaReal.situacao = A");
+    }
 }

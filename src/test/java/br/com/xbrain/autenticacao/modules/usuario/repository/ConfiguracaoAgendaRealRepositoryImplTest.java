@@ -90,4 +90,52 @@ public class ConfiguracaoAgendaRealRepositoryImplTest {
             .startsWith(umaConfiguracaoAgendaPadrao())
             .endsWith(umaConfiguracaoAgendaUltimaOrdemDesc());
     }
+
+    @Test
+    public void existsByNivel_deveRetornarTrue_quandoNivelEncontradoETipoConfiguracaoForNivel() {
+        assertThat(repository.existsByNivel(CodigoNivel.RECEPTIVO))
+            .isTrue();
+    }
+
+    @Test
+    public void existsByNivel_deveRetornarFalse_quandoNivelNaoEncontradoETipoConfiguracaoForNivel() {
+        assertThat(repository.existsByNivel(CodigoNivel.OPERACAO))
+            .isFalse();
+    }
+
+    @Test
+    public void existsByCanal_deveRetornarTrue_quandoCanalEncontradoETipoConfiguracaoForCanal() {
+        assertThat(repository.existsByCanal(ECanal.AGENTE_AUTORIZADO))
+            .isTrue();
+    }
+
+    @Test
+    public void existsByCanal_deveRetornarFalse_quandoCanalNaoEncontradoETipoConfiguracaoForCanal() {
+        assertThat(repository.existsByCanal(ECanal.D2D_PROPRIO))
+            .isFalse();
+    }
+
+    @Test
+    public void existsBySubcanalId_deveRetornarTrue_quandoSubCanalEncontradoETipoConfiguracaoForSubCanal() {
+        assertThat(repository.existsBySubcanalId(1))
+            .isTrue();
+    }
+
+    @Test
+    public void existsBySubcanalId_deveRetornarFalse_quandoSubCanalNaoEncontradoETipoConfiguracaoForSubCanal() {
+        assertThat(repository.existsBySubcanalId(2345))
+            .isFalse();
+    }
+
+    @Test
+    public void existsByEstruturaAa_deveRetornarTrue_quandoEstruturaEncontradoETipoConfiguracaoForEstrutura() {
+        assertThat(repository.existsByEstruturaAa("AGENTE_AUTORIZADO"))
+            .isTrue();
+    }
+
+    @Test
+    public void existsByEstruturaAa_deveRetornarFalse_quandoEstruturaNaoEncontradoETipoConfiguracaoForEstrutura() {
+        assertThat(repository.existsByEstruturaAa("OPERACAO"))
+            .isFalse();
+    }
 }

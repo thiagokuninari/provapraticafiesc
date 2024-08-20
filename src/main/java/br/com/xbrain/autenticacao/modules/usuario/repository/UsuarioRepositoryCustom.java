@@ -25,8 +25,6 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmail(String email);
 
-    Optional<Usuario> findUsuarioByEmail(String email);
-
     Optional<Usuario> findComplete(Integer id);
 
     Optional<List<Cidade>> findComCidade(Integer id);

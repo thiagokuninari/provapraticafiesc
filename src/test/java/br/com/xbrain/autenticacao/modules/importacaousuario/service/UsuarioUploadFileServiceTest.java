@@ -12,6 +12,9 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -31,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil.CELULA_NACIMENTO;
+import static br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil.CELULA_NOME;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoReceptivo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoComercial;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
@@ -42,6 +47,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioUploadFileServiceTest {
@@ -276,6 +282,109 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
+    public void buildUsuario_deveRetornarMotivoNaoImportacao_quandoNomeDoUsuarioVazio() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+        var linha = umaLinha(3);
+        linha.getCell(CELULA_NOME).setCellValue("");
+
+        var result = usuarioUploadFileService.buildUsuario(linha, "102030", false);
+
+        assertThat(result.getMotivoNaoImportacao())
+            .isEqualTo(List.of(
+                "Usuário está com nome inválido",
+                "Usuário está com departamento inválido"));
+
+        assertThat(result)
+            .extracting("nome", "cpf", "email", "telefone", "situacao", "cargo.nome")
+            .contains("", "70159931479", "n.adriana.lbezerra@aec.com.br",
+                "51991301817", ESituacao.A, "Vendedor Receptivo");
+    }
+
+    @Test
+    public void buildUsuario_deveRetornarMotivoNaoImportacao_quandoNascimentoVazio() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+        var linha = umaLinha(3);
+        linha.getCell(CELULA_NACIMENTO).setCellValue("");
+
+        var result = usuarioUploadFileService.buildUsuario(linha, "102030", false);
+
+        assertThat(result.getMotivoNaoImportacao())
+            .isEqualTo(List.of(
+                "Usuário está com departamento inválido",
+                "Usuário está com nascimento inválido"));
+
+        assertThat(result)
+            .extracting("nascimento", "nome", "cpf", "email", "telefone", "situacao", "cargo.nome")
+            .contains("ADRIANA DE LIMA BEZERRA", "70159931479", "n.adriana.lbezerra@aec.com.br",
+                "51991301817", ESituacao.A, "Vendedor Receptivo");
+    }
+
+    @Test
+    public void buildUsuario_deveRetornarMotivoNaoImportacaoELogDeErro_quandoNivelNaoEncontrado() {
+        doThrow(IllegalArgumentException.class)
+            .when(nivelRepository)
+            .findByCodigo(any());
+
+        var logger = (Logger) getLogger(UsuarioUploadFileService.class);
+        var listAppender = new ListAppender<ILoggingEvent>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        var result = usuarioUploadFileService.buildUsuario(umaLinha(3), "102030", false);
+
+        assertThat(result.getMotivoNaoImportacao())
+            .isEqualTo(List.of(
+                "Falha ao recuperar cargo/nível",
+                "Usuário está com departamento inválido",
+                "Usuário está com cargo inválido"));
+
+        assertThat(result)
+            .extracting("nivel", "cargo", "nome", "cpf", "email")
+            .contains(null, null, "ADRIANA DE LIMA BEZERRA", "70159931479", "n.adriana.lbezerra@aec.com.br");
+
+        assertEquals("Erro ao recuperar nivel.",
+            listAppender.list.get(0).getMessage());
+
+        verify(nivelRepository).findByCodigo(any());
+        verify(departamentoRepository, never()).findByCodigoAndNivelId(any(), any());
+    }
+
+    @Test
+    public void buildUsuario_deveRetornarMotivoNaoImportacaoELogDeErro_quandoNaoConseguirTratarData() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+
+        var logger = (Logger) getLogger(UsuarioUploadFileService.class);
+        var listAppender = new ListAppender<ILoggingEvent>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        var linha = umaLinha(3);
+        linha.getCell(CELULA_NACIMENTO).setCellValue("");
+
+        var result = usuarioUploadFileService.buildUsuario(linha, "102030", false);
+
+        assertThat(result.getMotivoNaoImportacao())
+            .isEqualTo(List.of(
+                "Usuário está com departamento inválido",
+                "Usuário está com cargo inválido",
+                "Usuário está com nascimento inválido"));
+
+        assertThat(result)
+            .extracting("nome", "cpf", "email")
+            .contains("ADRIANA DE LIMA BEZERRA", "70159931479", "n.adriana.lbezerra@aec.com.br");
+
+        assertEquals("Erro ao tratar data.",
+            listAppender.list.get(0).getMessage());
+
+        verify(nivelRepository).findByCodigo(any());
+        verify(departamentoRepository).findByCodigoAndNivelId(any(), any());
+    }
+
+    @Test
     public void validarCargo_deveRetornarErro_seCargoInvalido() {
         var usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
@@ -320,6 +429,36 @@ public class UsuarioUploadFileServiceTest {
                 new UsuarioImportacaoRequest(false, false));
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(eq(umUsuarioSalvo()), any());
+    }
+
+    @Test
+    public void processarUsuarios_naoDeveEnviarEmail_quandoForSenhaPadrao() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(departamentoRepository.findByCodigoAndNivelId(any(), any()))
+            .thenReturn(Optional.of(umDepartamentoComercial()));
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(umUsuarioSalvo());
+
+        usuarioUploadFileService.processarUsuarios(umaLinha(4),
+            new UsuarioImportacaoRequest(true, false));
+
+        verify(notificacaoService, never()).enviarEmailDadosDeAcesso(eq(umUsuarioSalvo()), any());
+    }
+
+    @Test
+    public void processarUsuarios_naoDeveEnviarEmail_quandoUsuarioVazio() {
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivelReceptivo());
+        when(departamentoRepository.findByCodigoAndNivelId(any(), any()))
+            .thenReturn(Optional.of(umDepartamentoComercial()));
+        when(cargoRepository.findFirstByNomeIgnoreCaseAndNivelId(anyString(), anyInt()))
+            .thenReturn(Optional.of(umCargoReceptivo()));
+
+        usuarioUploadFileService.processarUsuarios(umaLinha(4),
+            new UsuarioImportacaoRequest(false, false));
+
+        verify(notificacaoService, never()).enviarEmailDadosDeAcesso(eq(umUsuarioSalvo()), any());
+        verify(usuarioRepository).save(any(Usuario.class));
     }
 
     @Test
