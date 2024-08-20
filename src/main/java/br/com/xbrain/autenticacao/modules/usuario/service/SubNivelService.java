@@ -23,10 +23,8 @@ public class SubNivelService {
             .collect(Collectors.toList());
     }
 
-    public List<Integer> getFuncionalidadesIds() {
-        return repository.findAll().stream()
-            .flatMap(subNivel -> subNivel.getFuncionalidadesIds().stream())
-            .collect(Collectors.toList());
+    public List<Integer> getFuncionalidadesIdsByNivel(Integer nivelId) {
+        return repository.findFuncionalidadesIdsByNivelId(nivelId);
     }
 
     public Set<SubNivel> findByIdIn(Set<Integer> subNiveisIds) {

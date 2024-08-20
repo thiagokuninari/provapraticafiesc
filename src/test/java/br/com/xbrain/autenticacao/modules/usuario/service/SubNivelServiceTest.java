@@ -42,13 +42,13 @@ public class SubNivelServiceTest {
     }
 
     @Test
-    public void getFuncionalidadesIds_deveRetornarListaDeFuncionalidadesIds_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(umaListaDeSubNiveis());
+    public void getFuncionalidadesIdsByNivel_deveRetornarListaDeFuncionalidadesIds_ByNivel_quandoSolicitado() {
+        when(repository.findFuncionalidadesIdsByNivelId(2)).thenReturn(List.of(1, 2, 3, 4));
 
-        assertThat(service.getFuncionalidadesIds())
+        assertThat(service.getFuncionalidadesIdsByNivel(2))
             .isEqualTo(List.of(1, 2, 3, 4));
 
-        verify(repository).findAll();
+        verify(repository).findFuncionalidadesIdsByNivelId(2);
     }
 
     @Test
@@ -60,13 +60,6 @@ public class SubNivelServiceTest {
             .containsExactly(tuple(1, "BACKOFFICE"));
 
         verify(repository).findByIdIn(Set.of(1));
-    }
-
-    @Test
-    public void getFuncionalidadesIds_deveRetornarListaDeIds_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(umaListaDeSubNiveis());
-        assertThat(service.getFuncionalidadesIds())
-            .containsExactlyInAnyOrder(1, 2, 3, 4);
     }
 
     @Test

@@ -650,13 +650,13 @@ public class UsuarioService {
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
         permissaoTecnicoIndicadorService
             .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
-        this.removerPermissoesEspeciaisMsoBySubNivel(usuario);
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
     }
 
-    private void removerPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
+    private void removerPermissoesEspeciaisSubNivelMsoByNivel(Usuario usuario) {
         if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
-            permissaoEspecialService.deletarPermissoesEspeciaisBy(subNivelService.getFuncionalidadesIds(),
-                List.of(usuario.getId()));
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(
+                subNivelService.getFuncionalidadesIdsByNivel(usuario.getNivelId()), List.of(usuario.getId()));
         }
     }
 

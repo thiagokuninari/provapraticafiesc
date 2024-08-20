@@ -3384,7 +3384,7 @@ public class UsuarioServiceTest {
         usuarioAntigo.setSituacao(A);
         var subniveis = umSetDeSubNiveis();
 
-        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
@@ -3395,6 +3395,7 @@ public class UsuarioServiceTest {
 
         verify(repository).saveAndFlush(any(Usuario.class));
         verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
         verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
         verify(repository, times(2)).save(usuarioCaptor.capture());
@@ -3423,7 +3424,7 @@ public class UsuarioServiceTest {
         var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
         usuarioAntigo.setSituacao(A);
 
-        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
 
@@ -3431,7 +3432,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(5)).findById(23);
-        verify(subNivelService).getFuncionalidadesIds();
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
         verify(repository, times(2)).save(usuarioCaptor.capture());
@@ -3457,7 +3458,7 @@ public class UsuarioServiceTest {
         usuarioAntigo.setSubNiveis(umSetDeSubNiveisComUmSubNivel());
         var subniveis = umSetDeSubNiveis();
 
-        when(subNivelService.getFuncionalidadesIds()).thenReturn(List.of(1, 2, 3));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
@@ -3468,6 +3469,7 @@ public class UsuarioServiceTest {
 
         verify(repository).saveAndFlush(any(Usuario.class));
         verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
         verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
         verify(repository, times(2)).save(usuarioCaptor.capture());

@@ -11,7 +11,7 @@ import java.util.Set;
 
 @Repository
 public interface SubNivelRepository extends JpaRepository<SubNivel, Integer>,
-    QueryDslPredicateExecutor<SubNivel> {
+    QueryDslPredicateExecutor<SubNivel>, SubNivelRepositoryCustom {
 
     List<SubNivel> findByNivelIdAndSituacao(Integer nivelId, ESituacao situacao);
 
