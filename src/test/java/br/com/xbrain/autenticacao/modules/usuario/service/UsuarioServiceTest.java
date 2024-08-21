@@ -1122,7 +1122,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(6)).findById(101112);
+        verify(repository, times(7)).findById(101112);
         verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1140,7 +1140,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(6)).findById(101112);
+        verify(repository, times(7)).findById(101112);
         verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1592,6 +1592,57 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void salvarUsuarioBackoffice_deveRemoverPermissoesEspeciaisMso_quandoUsuarioAnteriorForMso() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setId(23);
+        usuario.setUsuarioCadastro(umUsuario());
+        var usuarioAnterior = umUsuarioMsoConsultor(1, PAP);
+        usuarioAnterior.setSubNiveis(umSetDeSubNiveis());
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+
+        when(organizacaoEmpresaService.findById(anyInt())).thenReturn(organizacao);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(2, 3));
+
+        service.salvarUsuarioBackoffice(usuario);
+
+        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(repository).findComplete(23);
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(2, 3), List.of(23));
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveRemoverPermissoesEspeciaisMso_quandoUsuarioAnteriorNaoForMso() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setId(23);
+        usuario.setUsuarioCadastro(umUsuario());
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+
+        when(organizacaoEmpresaService.findById(anyInt())).thenReturn(organizacao);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findById(23)).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuario));
+
+        service.salvarUsuarioBackoffice(usuario);
+
+        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(repository).findComplete(23);
+        verify(permissaoEspecialService, times(2)).hasPermissaoEspecialAtiva(23, 30000);
+        verify(permissaoEspecialService).save(anyListOf(PermissaoEspecial.class));
+        verifyZeroInteractions(subNivelService);
+        verifyNoMoreInteractions(permissaoEspecialService);
+    }
+
+    @Test
     public void salvarUsuarioBriefing_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelMso());
@@ -1649,6 +1700,39 @@ public class UsuarioServiceTest {
         verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
         verify(repository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
         verify(repository, never()).save(anyIterable());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveRemoverPermissaoEspecialMso_quandoUsuarioAnteriorForMso() {
+        var usuario = umUsuarioBriefing();
+        usuario.setId(23);
+        var usuarioAnterior = umUsuarioMsoConsultor(1, PAP);
+        usuarioAnterior.setSubNiveis(umSetDeSubNiveis());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(2, 3));
+
+        service.salvarUsuarioBriefing(usuario);
+
+        verify(repository, times(3)).findById(23);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(2, 3), List.of(23));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_naoDeveRemoverPermissaoEspecialMso_quandoUsuarioAnteriorNaoForMso() {
+        var usuario = umUsuarioBriefing();
+        usuario.setId(23);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findById(23)).thenReturn(Optional.of(usuario));
+
+        service.salvarUsuarioBriefing(usuario);
+
+        verify(repository, times(3)).findById(23);
+        verifyZeroInteractions(permissaoEspecialService);
+        verifyZeroInteractions(subNivelService);
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -3431,7 +3515,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
-        verify(repository, times(5)).findById(23);
+        verify(repository, times(6)).findById(23);
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3444,6 +3528,85 @@ public class UsuarioServiceTest {
         assertThat(usuarioSalvo)
             .extracting(Usuario::getId, Usuario::getSubNiveis)
             .containsExactly(23, null);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveRemoverPermissoesEspeciaisENaoDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioMsoParaTrocarDeNivelECargo() {
+        var usuarioDto = umUsuarioDtoOuvidoria();
+        usuarioDto.setId(23);
+        usuarioDto.setEmail("teste@teste.com");
+        usuarioDto.setSituacao(A);
+        var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
+        usuarioAntigo.setSituacao(A);
+
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(6)).findById(23);
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
+        verifyZeroInteractions(permissaoEspecialRepository);
+        verifyNoMoreInteractions(subNivelService);
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, null);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveRemoverPermissoesEspeciaisEDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioDeOutroNivelParaMso() {
+        var usuarioAntigo = umUsuario();
+        usuarioAntigo.setId(23);
+        usuarioAntigo.setSituacao(A);
+        var usuarioDto = umUsuarioDtoMso();
+        usuarioDto.setId(23);
+        usuarioDto.setCargoId(20);
+        usuarioDto.setSituacao(A);
+        usuarioDto.setEmail("teste@teste.com");
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
+        var setSubNiveis = umSetDeSubNiveis();
+
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(setSubNiveis);
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(setSubNiveis, 20)).thenReturn(List.of(2, 3));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(6)).findById(23);
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialRepository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(23, 2);
+        verify(permissaoEspecialRepository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(23, 3);
+        verify(subNivelService).getSubNivelFuncionalidadesIdsByCargo(setSubNiveis, 20);
+        verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, setSubNiveis);
+
+        var permissoesEspeciaisSalvas = permissaoEspecialCaptor.getValue();
+        assertThat(permissoesEspeciaisSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(
+                tuple(2, 23, 1),
+                tuple(3, 23, 1));
     }
 
     @Test
@@ -4459,7 +4622,7 @@ public class UsuarioServiceTest {
 
         service.updateFromQueue(usuarioMqRequest);
 
-        verify(repository, times(6)).findById(usuarioDto.getId());
+        verify(repository, times(7)).findById(usuarioDto.getId());
         verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
         verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
         verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());

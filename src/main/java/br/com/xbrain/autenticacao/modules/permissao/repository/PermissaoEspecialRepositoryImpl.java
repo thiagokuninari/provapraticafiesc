@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoE
     }
 
     @Override
+    @Transactional
     public void deletarPermissaoEspecialBy(List<Integer> funcionalidadeIds, List<Integer> usuarioIds) {
         new JPAQueryFactory(entityManager)
             .delete(permissaoEspecial)

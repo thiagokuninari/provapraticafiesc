@@ -654,9 +654,17 @@ public class UsuarioService {
     }
 
     private void removerPermissoesEspeciaisSubNivelMsoByNivel(Usuario usuario) {
-        if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
+        if (!usuario.isNovoCadastro()) {
+            repository.findById(usuario.getId())
+                .ifPresent(this::deletarPermissoesEspeciaisMso);
+        }
+    }
+
+    private void deletarPermissoesEspeciaisMso(Usuario usuarioAntigo) {
+        if (usuarioAntigo.isIdNivelMso()) {
             permissaoEspecialService.deletarPermissoesEspeciaisBy(
-                subNivelService.getFuncionalidadesIdsByNivel(usuario.getNivelId()), List.of(usuario.getId()));
+                subNivelService.getFuncionalidadesIdsByNivel(usuarioAntigo.getNivelId()),
+                List.of(usuarioAntigo.getId()));
         }
     }
 
@@ -813,7 +821,7 @@ public class UsuarioService {
         validarOrganizacaoEmpresa(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
-        desvincularGruposByUsuario(usuario);
+        tratarUsuarioAntigo(usuario);
         var isNovoCadastro = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -822,9 +830,18 @@ public class UsuarioService {
         return UsuarioResponse.of(usuario);
     }
 
+    private void tratarUsuarioAntigo(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            desvincularGruposByUsuario(usuario, usuarioAntigo);
+            deletarPermissoesEspeciaisMso(usuarioAntigo);
+        }
+    }
+
     public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
         validar(usuario);
         tratarCadastroUsuario(usuario);
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -841,12 +858,9 @@ public class UsuarioService {
         }
     }
 
-    public void desvincularGruposByUsuario(Usuario usuario) {
-        if (!usuario.isNovoCadastro()) {
-            var usuarioAntigo = findCompleteById(usuario.getId());
-            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
-                suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
-            }
+    private void desvincularGruposByUsuario(Usuario usuario, Usuario usuarioAntigo) {
+        if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
+            suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
         }
     }
 

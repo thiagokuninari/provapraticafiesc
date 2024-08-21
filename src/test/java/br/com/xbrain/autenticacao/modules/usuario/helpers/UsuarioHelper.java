@@ -146,8 +146,8 @@ public class UsuarioHelper {
             .id(23)
             .cargo(Cargo.builder()
                 .codigo(MSO_CONSULTOR)
-                .nivel(Nivel
-                    .builder()
+                .nivel(Nivel.builder()
+                    .id(2)
                     .codigo(MSO)
                     .situacao(ESituacao.A)
                     .nome("MSO")
