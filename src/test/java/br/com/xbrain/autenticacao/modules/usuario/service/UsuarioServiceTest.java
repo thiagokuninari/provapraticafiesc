@@ -1435,7 +1435,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarCargo() {
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoForAlteracaoDeUsuario() {
         var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
         var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
         when(autenticacaoService.getUsuarioAutenticado())
@@ -1450,44 +1450,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
             .doesNotThrowAnyException();
 
-        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
-    }
-
-    @Test
-    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarOrganizacao() {
-        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
-        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(100, 200);
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(repository.findComplete(anyInt()))
-            .thenReturn(Optional.of(usuarioAntigoMock));
-        when(repository.findById(anyInt()))
-            .thenReturn(Optional.of(usuarioAntigoMock));
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
-
-        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
-            .doesNotThrowAnyException();
-
-        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
-    }
-
-    @Test
-    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoGrupo_quandoDadosIdenticos() {
-        var usuarioMock = umUsuarioComCargoEOrganizacao(100, 100);
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(repository.findComplete(anyInt()))
-            .thenReturn(Optional.of(usuarioMock));
-        when(repository.findById(anyInt()))
-            .thenReturn(Optional.of(usuarioMock));
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
-
-        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioMock))
-            .doesNotThrowAnyException();
-
-        verifyZeroInteractions(suporteVendasService);
+        verify(suporteVendasService).desvincularGruposByUsuario(usuarioAntigoMock, usuarioNovoMock);
     }
 
     @Test
@@ -5821,18 +5784,6 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
-    }
-
-    private Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
-        return Usuario.builder()
-            .id(100)
-            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
-            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
-                .id(organizacaoId)
-                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
-                .build())
-            .email("email@google.com")
-            .build();
     }
 
     @TestConfiguration

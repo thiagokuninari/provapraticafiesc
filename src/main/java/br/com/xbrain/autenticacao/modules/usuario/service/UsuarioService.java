@@ -91,7 +91,6 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
@@ -833,7 +832,7 @@ public class UsuarioService {
     private void tratarUsuarioAntigo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             var usuarioAntigo = findCompleteById(usuario.getId());
-            desvincularGruposByUsuario(usuario, usuarioAntigo);
+            suporteVendasService.desvincularGruposByUsuario(usuarioAntigo, usuario);
             deletarPermissoesEspeciaisMso(usuarioAntigo);
         }
     }
@@ -856,17 +855,6 @@ public class UsuarioService {
                 throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
             }
         }
-    }
-
-    private void desvincularGruposByUsuario(Usuario usuario, Usuario usuarioAntigo) {
-        if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
-            suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
-        }
-    }
-
-    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
-            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {

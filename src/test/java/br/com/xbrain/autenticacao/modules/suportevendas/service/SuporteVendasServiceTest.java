@@ -9,8 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoAnalistaOperacao;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioComCargoEOrganizacao;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -23,20 +24,62 @@ public class SuporteVendasServiceTest {
     private SuporteVendasClient client;
 
     @Test
-    public void desvincularGruposByUsuarioId_deveChamarClient_quandoNaoOcorrerErro() {
-        assertThatCode(() -> service.desvincularGruposByUsuarioId(10))
+    public void desvincularGruposByUsuario_deveChamarClient_quandoNaoOcorrerErroEUsuarioSuporteVendasETiverAlteracaoNoCargo() {
+        var usuarioAntigo = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovo = umUsuarioComCargoEOrganizacao(200, 100);
+
+        assertThatCode(() -> service.desvincularGruposByUsuario(usuarioAntigo, usuarioNovo))
             .doesNotThrowAnyException();
 
-        verify(client).desvincularGruposByUsuarioId(10);
+        verify(client).desvincularGruposByUsuarioId(100);
     }
 
     @Test
-    public void desvincularGruposByUsuarioId_deveLancarException_quandoClientRetornarErro() {
+    public void desvincularGruposByUsuario_deveLancarException_quandoClientRetornarErro() {
+        var usuarioAntigo = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovo = umUsuarioComCargoEOrganizacao(100, 200);
+
         doThrow(new RetryableException("", null))
             .when(client).desvincularGruposByUsuarioId(anyInt());
 
-        assertThatCode(() -> service.desvincularGruposByUsuarioId(10))
+        assertThatCode(() -> service.desvincularGruposByUsuario(usuarioAntigo, usuarioNovo))
             .isInstanceOf(IntegracaoException.class)
             .hasMessage("Ocorreu um erro ao desvincular grupo do usuário no suporte-vendas.");
+    }
+
+    @Test
+    public void desvincularGruposByUsuario_naoDeveChamarClient_quandoUsuarioNaoForSuporteVendas() {
+        var usuarioAntigo = umUsuarioComCargoEOrganizacao(100, 100);
+        usuarioAntigo.setCargo(umCargoAnalistaOperacao());
+        var usuarioNovo = umUsuarioComCargoEOrganizacao(100, 200);
+
+        assertThatCode(() -> service.desvincularGruposByUsuario(usuarioAntigo, usuarioNovo))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(client);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void desvincularGruposByUsuario_naoDeveChamarClient_quandoUsuarioSuporteDeVendasENaoHouverAlteracaoNoCargoNemNaOrganizacao() {
+        var usuarioAntigo = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovo = umUsuarioComCargoEOrganizacao(100, 100);
+
+        assertThatCode(() -> service.desvincularGruposByUsuario(usuarioAntigo, usuarioNovo))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(client);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void desvincularGruposByUsuario_deveChamarClient_quandoNaoOcorrerErroEUsuarioSuporteVendasETiverAlteracaoNaOrganizacao() {
+        var usuarioAntigo = umUsuarioComCargoEOrganizacao(100, 100);
+        var usuarioNovo = umUsuarioComCargoEOrganizacao(100, 200);
+
+        assertThatCode(() -> service.desvincularGruposByUsuario(usuarioAntigo, usuarioNovo))
+            .doesNotThrowAnyException();
+
+        verify(client).desvincularGruposByUsuarioId(100);
     }
 }
