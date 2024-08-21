@@ -40,7 +40,7 @@ app-config:
     extrato-comissao:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
-      url: http://172.10.10.109:8304
+      url: http://funil-prospeccao-api-dev:8304
     localizacao:
       url: http://localizacao-api:8039
     gestao-colaborador-pol:
