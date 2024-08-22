@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -34,6 +35,7 @@ import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -176,5 +178,28 @@ public class CargoControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", not(empty())))
             .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getAllPermitidosAoComunicados_isUnauthorized_quandoNaoInformarAToken() throws Exception {
+        mvc.perform(get(API_CARGO + "/comunicados")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    public void getAllPermitidosAoComunicados_deveRetornarOk_quandoDadosPassadosCorretamente() throws Exception {
+        when(cargoService.getPermitidosAosComunicados(anyList()))
+            .thenReturn(List.of(new SelectResponse("Vendedor", "Xbrain")));
+
+        mvc.perform(get(API_CARGO + "/comunicados?niveisId=1,2,3")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is("Vendedor")))
+            .andExpect(jsonPath("$[0].label", is("Xbrain")));
+
+        verify(cargoService).getPermitidosAosComunicados(anyList());
     }
 }

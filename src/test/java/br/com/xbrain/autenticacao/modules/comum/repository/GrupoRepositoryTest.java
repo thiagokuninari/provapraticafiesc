@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,15 @@ public class GrupoRepositoryTest {
         assertThat(grupoRepository.findBySituacaoAndRegionalId(I, 1004, new Sort(Sort.Direction.ASC, "nome")))
             .extracting("id", "nome", "regional.nome", "regional.id", "situacao")
             .containsExactly(tuple(1008, "GRUPO", "REGIONAL", 1004, I));
+    }
+
+    @Test
+    public void findAllByRegionalId_deveRetonarGrupos_quandoGrupoVinculadoARegionalESituacaoAtivo() {
+        assertThat(grupoRepository.findAllByRegionalId(1004, new GrupoPredicate().build()))
+            .extracting("id", "nome", "regional.nome", "regional.id", "situacao")
+            .containsExactlyInAnyOrder(
+                tuple(1005, "X GRUPO", "REGIONAL", 1004, A),
+                tuple(1006, "A GRUPO", "REGIONAL", 1004, A),
+                tuple(1007, "B GRUPO", "REGIONAL", 1004, A));
     }
 }

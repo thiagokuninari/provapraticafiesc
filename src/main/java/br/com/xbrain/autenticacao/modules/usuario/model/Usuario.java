@@ -586,11 +586,6 @@ public class Usuario {
         return isAgenteAutorizado() && (isSocioPrincipal() || isAgenteAutorizadoAceite());
     }
 
-    public boolean isBackoffice() {
-        return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
-            && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
-    }
-
     public void adicionarHistorico(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();

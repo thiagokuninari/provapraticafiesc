@@ -96,6 +96,23 @@ public class SolicitacaoRamalServiceD2dTest {
     }
 
     @Test
+    public void save_deveSalvarUmaSolicitacaoRamalComDestinatariosSemAVirgula_quandoDadosValidos() {
+        ReflectionTestUtils.setField(service, "destinatarios", ",teste");
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoOperacao());
+        when(autenticacaoService.getUsuarioId()).thenReturn(1);
+        when(dataHoraAtual.getDataHora())
+            .thenReturn(LocalDateTime.of(2023, 11, 13, 10, 0, 0));
+        when(repository.save(umaSolicitacaoRamalCanalD2d())).thenReturn(umaSolicitacaoRamalCanalD2d(1));
+
+        service.save(criaSolicitacaoRamal(null));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(autenticacaoService).getUsuarioId();
+        verify(dataHoraAtual).getDataHora();
+        verify(repository).save(umaSolicitacaoRamalCanalD2d());
+    }
+
+    @Test
     public void save_deveLancarException_quandoCanalD2dComSubCanalNull() {
         var request = criaSolicitacaoRamal(null);
         request.setSubCanalId(null);
@@ -184,6 +201,20 @@ public class SolicitacaoRamalServiceD2dTest {
 
         verify(subCanalService).getSubCanalById(1);
         verify(callService).obterNomeTelefoniaPorId(1);
+        verify(callService).obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1);
+    }
+
+    @Test
+    public void getDadosAdicionais_deveChamarClientPeloSubCanalId_quandoSubCanalCodigoNull() {
+        var subCanal = umSubCanal(1);
+        subCanal.setCodigo(null);
+        when(subCanalService.getSubCanalById(1)).thenReturn(subCanal);
+        when(callService.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
+
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null));
+
+        verify(subCanalService).getSubCanalById(1);
+        verify(callService, never()).obterNomeTelefoniaPorId(1);
         verify(callService).obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1);
     }
 

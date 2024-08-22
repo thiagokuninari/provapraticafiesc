@@ -27,15 +27,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Data
 public class FeriadoRequest {
 
-    private static ValidacaoException EX_ESTADO_OBRIGATORIO =
-        new ValidacaoException("Para este Tipo de Feriado o campo ESTADO é obrigatório.");
-    private static ValidacaoException EX_CIDADE_OBRIGATORIO =
-        new ValidacaoException("Para este Tipo de Feriado o campo CIDADE é obrigatório.");
-    private static ValidacaoException EX_ESTADO_NAO_PERMITIDO =
-        new ValidacaoException("Para este Tipo de Feriado não é permitido cadastrar ESTADO.");
-    private static ValidacaoException EX_CIDADE_NAO_PERMITIDO =
-        new ValidacaoException("Para este Tipo de Feriado não é permitido cadastrar CIDADE.");
-
     private Integer id;
     @NotEmpty
     @Size(max = 255)
@@ -76,10 +67,10 @@ public class FeriadoRequest {
     private void validarDadosDoFeriadoNacioanal() {
         if (isFeriadoNacional()) {
             if (!isEmpty(estadoId)) {
-                throw EX_ESTADO_NAO_PERMITIDO;
+                throw new ValidacaoException("Para este Tipo de Feriado não é permitido cadastrar ESTADO.");
             }
             if (!isEmpty(cidadeId)) {
-                throw EX_CIDADE_NAO_PERMITIDO;
+                throw new ValidacaoException("Para este Tipo de Feriado não é permitido cadastrar CIDADE.");
             }
         }
     }
@@ -87,10 +78,10 @@ public class FeriadoRequest {
     private void validarDadosDoFeriadoEstadual() {
         if (isTipoFeriado(ESTADUAL)) {
             if (isEmpty(estadoId)) {
-                throw EX_ESTADO_OBRIGATORIO;
+                throw new ValidacaoException("Para este Tipo de Feriado o campo ESTADO é obrigatório.");
             }
             if (!isEmpty(cidadeId)) {
-                throw EX_CIDADE_NAO_PERMITIDO;
+                throw new ValidacaoException("Para este Tipo de Feriado não é permitido cadastrar CIDADE.");
             }
         }
     }
@@ -98,10 +89,10 @@ public class FeriadoRequest {
     private void validarDadosDoFeriadoMunicipal() {
         if (isTipoFeriado(MUNICIPAL)) {
             if (isEmpty(estadoId)) {
-                throw EX_ESTADO_OBRIGATORIO;
+                throw new ValidacaoException("Para este Tipo de Feriado o campo ESTADO é obrigatório.");
             }
             if (isEmpty(cidadeId)) {
-                throw EX_CIDADE_OBRIGATORIO;
+                throw new ValidacaoException("Para este Tipo de Feriado o campo CIDADE é obrigatório.");
             }
         }
     }

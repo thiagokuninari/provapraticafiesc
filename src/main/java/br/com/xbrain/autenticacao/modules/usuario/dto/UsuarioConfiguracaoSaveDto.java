@@ -15,9 +15,4 @@ public class UsuarioConfiguracaoSaveDto {
 
     public UsuarioConfiguracaoSaveDto() {
     }
-
-    public UsuarioConfiguracaoSaveDto(Integer usuarioId, Integer ramal) {
-        this.usuarioId = usuarioId;
-        this.ramal = ramal;
-    }
 }

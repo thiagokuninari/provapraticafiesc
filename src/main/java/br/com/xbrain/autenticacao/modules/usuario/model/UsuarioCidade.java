@@ -66,11 +66,4 @@ public class UsuarioCidade {
     public static UsuarioCidade criar(Usuario usuario, Integer idCidade, Integer idUsuarioLogado) {
         return new UsuarioCidade(usuario, idCidade, idUsuarioLogado);
     }
-
-    public String getCidadeIdAsString() {
-        if (this.cidade != null) {
-            return this.cidade.getId().toString();
-        }
-        return null;
-    }
 }

@@ -4,13 +4,11 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -476,5 +474,77 @@ public class UsuarioRepositoryTest {
     public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarFalse_quandoEmailJaExistirEUsuarioInativo() {
         assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("99011122233", "JOAO@GMAIL.COM"))
             .isFalse();
+    }
+
+    @Test
+    public void findComCidade_deveRetonarCidades_quandoUsuarioNaCidadeEncontrado() {
+        assertThat(repository.findComCidade(100))
+            .get()
+            .isEqualTo(List.of(new Cidade(5578), new Cidade(3237), new Cidade(4498), new Cidade(879)));
+    }
+
+    @Test
+    public void getUsuariosFilter_deveRetonarUsuarios_quandoPredicateInformado() {
+        assertThat(repository.getUsuariosFilter(new UsuarioPredicate().comUsuariosIds(List.of(100, 101, 500, 600)).build()))
+            .extracting("id", "nome")
+            .containsExactly(Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(101, "ADMIN"),
+                Tuple.tuple(500, "USUARIO 500"),
+                Tuple.tuple(600, "USUARIO 600"));
+    }
+
+    @Test
+    public void getUsuariosSuperiores_deveRetonarSuperioresDoUsuario_quandoUsuarioEncontrado() {
+        assertThat(repository.getUsuarioSuperiores(115))
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .containsExactly(Tuple.tuple(115, 109),
+                Tuple.tuple(115, 113));
+    }
+
+    @Test
+    public void getUsuariosSuperiores_deveRetonarIdsDosSuperioresDoUsuario_quandoUsuariosEncontrado() {
+        assertThat(repository.getUsuariosSuperioresIds(List.of(107, 108, 114, 115)))
+            .isEqualTo(List.of(109, 109, 109, 109, 113));
+    }
+
+    @Test
+    public void getUsuariosByPermissaoEspecial_deveRetonarPermissaoEspecial_quandoEncontrado() {
+        assertThat(repository.getUsuariosByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
+            .extracting("usuario.id", "funcionalidade.nome", "funcionalidade.role")
+            .containsExactly(Tuple.tuple(100, "Tratar todos os chamados", "CHM_TRATAR_CHAMADO_GERAL"));
+    }
+
+    @Test
+    public void getUsuariosByNivel_deveRetonarUsuarios_quandoNivelEncontrado() {
+        assertThat(repository.getUsuariosByNivel(XBRAIN))
+            .extracting("id", "nome")
+            .containsExactly(
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(101, "ADMIN"),
+                Tuple.tuple(217, "ADMIN"),
+                Tuple.tuple(106, "ALBERTO"),
+                Tuple.tuple(103, "CARLOS"),
+                Tuple.tuple(102, "JOAO"),
+                Tuple.tuple(104, "MARIA"),
+                Tuple.tuple(200, "USUARIO 200"),
+                Tuple.tuple(300, "USUARIO 300"),
+                Tuple.tuple(400, "USUARIO 400"),
+                Tuple.tuple(701, "USUARIO 701"),
+                Tuple.tuple(702, "USUARIO 702"),
+                Tuple.tuple(703, "USUARIO 703"));
+    }
+
+    @Test
+    public void getUsuariosIdsByNivel_deveRetonarIdsDosUsuarios_quandoNivelEncontrado() {
+        assertThat(repository.getUsuariosIdsByNivel(XBRAIN))
+            .isEqualTo(List.of(100, 101, 102, 103, 104, 106, 200, 217, 300, 400, 701, 702, 703));
+    }
+
+    @Test
+    public void findComConfiguracao_deveRetonarUsuario_quandoUsuarioTiverConfiguracao() {
+        assertThat(repository.findComConfiguracao(100))
+            .get()
+            .extracting("id", "nome")
+            .containsExactly(100, "ADMIN");
     }
 }

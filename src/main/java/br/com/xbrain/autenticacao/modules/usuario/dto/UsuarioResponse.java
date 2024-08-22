@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,13 +54,6 @@ public class UsuarioResponse {
         this.id = id;
         this.nome = nome;
         this.codigoCargo = codigoCargo;
-    }
-
-    public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo, Set<SubCanal> subCanais) {
-        this.id = id;
-        this.nome = nome;
-        this.codigoCargo = codigoCargo;
-        this.subCanais = subCanais.stream().map(SubCanalDto::of).collect(Collectors.toSet());
     }
 
     public UsuarioResponse(Integer id, String nome, String email, String nomeCargo, CodigoCargo codigoCargo) {

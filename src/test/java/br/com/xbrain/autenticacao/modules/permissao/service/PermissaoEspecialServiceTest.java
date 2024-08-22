@@ -2,9 +2,11 @@ package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
+import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -19,14 +21,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umDtoNovoSocioPrincipal;
+import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umaListaPermissoesEspeciaisFuncFeederEAcompIndTecVend;
+import static br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService.FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
-import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umDtoNovoSocioPrincipal;
-import static br.com.xbrain.autenticacao.modules.permissao.helpers.PermissaoEspecialHelper.umaListaPermissoesEspeciaisFuncFeederEAcompIndTecVend;
-import static br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService.FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,12 +71,38 @@ public class PermissaoEspecialServiceTest {
     }
 
     @Test
+    public void save_deveChamarRepository_quandoReceberRequest() {
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        var request = PermissaoEspecialRequest.builder()
+            .usuarioId(2424)
+            .funcionalidadesIds(List.of(3, 7))
+            .build();
+
+        service.save(request);
+
+        var captor = ArgumentCaptor.forClass(List.class);
+        verify(repository).save(captor.capture());
+
+        var permissoesSalvas = captor.getValue();
+        assertThat(permissoesSalvas).hasSize(2);
+        assertThat(permissoesSalvas.get(0))
+            .extracting("funcionalidade.id", "usuario.id")
+            .containsExactly(3, 2424);
+
+        assertThat(permissoesSalvas.get(1))
+            .extracting("funcionalidade.id", "usuario.id")
+            .containsExactly(7, 2424);
+
+    }
+
+    @Test
     public void save_deveChamarRepository_quandoReceberLista() {
         var listaPermissoes = List.of(
             new PermissaoEspecial()
         );
-        repository.save(listaPermissoes);
-        verify(repository).save(eq(listaPermissoes));
+        service.save(listaPermissoes);
+        verify(repository).save(listaPermissoes);
     }
 
     @Test
@@ -96,6 +125,41 @@ public class PermissaoEspecialServiceTest {
             .isFalse();
 
         verify(repository).existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(1), eq(1000));
+    }
+
+    @Test
+    public void remover_deveSetarUsuarioBaixaEDataBaixa_quandoRequisicaoBemSucedida() {
+        var permissao = new PermissaoEspecial();
+        when(autenticacaoService.getUsuarioId()).thenReturn(9090);
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2))
+            .thenReturn(Optional.of(permissao));
+        when(repository.save(any(PermissaoEspecial.class))).thenReturn(permissao);
+
+        assertThat(permissao.getDataBaixa()).isNull();
+        assertThat(permissao.getUsuarioBaixa()).isNull();
+
+        service.remover(1, 2);
+
+        assertThat(permissao.getDataBaixa()).isNotNull();
+        assertThat(permissao.getUsuarioBaixa().getId()).isEqualTo(9090);
+
+        verify(autenticacaoService).getUsuarioId();
+        verify(repository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2);
+        verify(repository).save(any(PermissaoEspecial.class));
+    }
+
+    @Test
+    public void remover_deveLancarException_quandoPermissaoNaoEncontrada() {
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2))
+            .thenReturn(Optional.empty());
+
+        assertThatCode(() -> service.remover(1, 2))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Permissão Especial não encontrada.");
+
+        verify(autenticacaoService, never()).getUsuarioId();
+        verify(repository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(1, 2);
+        verify(repository, never()).save(any(PermissaoEspecial.class));
     }
 
     @Test

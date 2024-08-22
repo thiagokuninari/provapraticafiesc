@@ -97,17 +97,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .fetchFirst());
     }
 
-    public Optional<Usuario> findUsuarioByEmail(String email) {
-        return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                )
-                .fetchOne());
-    }
-
     public Optional<Usuario> findComplete(Integer id) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)

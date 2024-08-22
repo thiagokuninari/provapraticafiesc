@@ -57,6 +57,15 @@ public class NivelControllerTest {
     }
 
     @Test
+    @WithMockUser
+    public void getAll_isOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get("/api/niveis")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+        verify(nivelService).getAll();
+    }
+
+    @Test
     @WithAnonymousUser
     public void get_isUnauthorized_quandoNaoInformarAToken() throws Exception {
         mvc.perform(get("/api/niveis")
@@ -78,6 +87,26 @@ public class NivelControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("Nivel")));
+    }
+
+    @Test
+    @WithMockUser
+    public void getNiveisParaComunicados_isOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get("/api/niveis/comunicados")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(nivelService).getPermitidosParaComunicados();
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getNiveisParaComunicados_isUnauthorized_quandoNaoInformarAToken() throws Exception {
+        mvc.perform(get("/api/niveis/comunicados")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(nivelService, never()).getPermitidosParaComunicados();
     }
 
     @Test

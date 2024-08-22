@@ -630,6 +630,22 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void findAllResponsaveisDdd_deveRetornarOk_quandoUsuarioAutenticado() {
+        var listaUsuarioAutoComplete = List.of(UsuarioAutoComplete.builder().value(1).text("nome").build());
+        when(usuarioService.findAllResponsaveisDdd())
+            .thenReturn(listaUsuarioAutoComplete);
+
+        mvc.perform(get(BASE_URL.concat("/responsaveis-ddd")))
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].text", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findAllResponsaveisDdd();
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void vincularUsuariosComSuperior_vincular_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/vincula/hierarquia")))
@@ -2211,6 +2227,35 @@ public class UsuarioControllerTest {
             .nome("Usuario Ativo")
             .email("usuarioativo@email.com")
             .build();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findByCpf_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/cpf")))
+            .andExpect(status().isUnauthorized());
+        verify(usuarioService, never()).findByCpf(anyString());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findByCpf_deveRetornarOk_quandoUsuarioAutenticado() {
+        var usuarioSubCanalNivelResponse = UsuarioSubCanalNivelResponse.builder()
+            .id(1)
+            .nome("nome")
+            .build();
+        when(usuarioService.findByCpf("00590878900"))
+            .thenReturn(usuarioSubCanalNivelResponse);
+
+        mvc.perform(get(BASE_URL.concat("/cpf"))
+                .param("cpf", "00590878900"))
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findByCpf("00590878900");
     }
 
     @Test

@@ -15,6 +15,13 @@ public class UsuarioAcessoResponseTest {
             .containsExactly(3, "NOME USUARIO", "055.787.356-09", "usuario@xbrain.com.br");
     }
 
+    @Test
+    public void of_deveRetornarUsuarioAcessoResponseComCpf_quandoCpfMenorQueOnze() {
+        assertThat(UsuarioAcessoResponse.of(umUsuarioAcesso("9090")))
+            .extracting("id", "nome", "cpf", "email")
+            .containsExactly(3, "NOME USUARIO", "9090", "usuario@xbrain.com.br");
+    }
+
     private UsuarioAcesso umUsuarioAcesso(String cpf) {
         return UsuarioAcesso.builder()
             .usuario(Usuario.builder()

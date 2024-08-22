@@ -65,6 +65,18 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
+    public void buscarTodosUsuariosDosAas_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .buscarTodosUsuariosDosAas(List.of(1, 2), true);
+
+        assertThatThrownBy(() -> service.buscarTodosUsuariosDosAas(List.of(1, 2), true))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).buscarTodosUsuariosDosAas(List.of(1, 2), true);
+    }
+
+    @Test
     public void buscarTodosUsuariosDosAas_usuarioDtoVendas_seSolicitado() {
         when(client.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(false)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));

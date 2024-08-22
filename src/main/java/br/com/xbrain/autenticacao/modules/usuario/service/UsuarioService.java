@@ -48,6 +48,7 @@ import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasSer
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.ValidacaoSubCanalException;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -176,6 +177,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
+    private static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -277,7 +279,7 @@ public class UsuarioService {
     private SuporteVendasService suporteVendasService;
 
     public Usuario findComplete(Integer id) {
-        var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+        var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
         usuario.forceLoad();
 
         return usuario;
@@ -329,7 +331,7 @@ public class UsuarioService {
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         var cidades = repository
             .findComCidade(usuarioId)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
 
         if (!cidades.isEmpty()) {
             var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
@@ -345,7 +347,7 @@ public class UsuarioService {
     }
 
     public Usuario findCompleteById(int id) {
-        return repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+        return repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public Usuario findCompleteByIdComLoginNetSales(int id) {
@@ -357,7 +359,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.of(repository.findByEmail(email)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)));
     }
 
     public UsuarioResponse findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
@@ -947,13 +949,6 @@ public class UsuarioService {
         usuario.setAlterarSenha(Eboolean.V);
     }
 
-    public void salvarUsuarioRealocado(Usuario usuario) {
-        var usuarioARealocar = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
-        usuarioARealocar.setSituacao(ESituacao.R);
-        repository.save(usuarioARealocar);
-    }
-
     private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
         return usuario.isNovoCadastro()
             ? ESituacao.A
@@ -969,7 +964,7 @@ public class UsuarioService {
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
         var usuarioSuperior = repository.findById(idUsuarioSuperior)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
 
         idUsuarioNovo.stream()
             .map(id -> {
@@ -1229,10 +1224,14 @@ public class UsuarioService {
         if (!CollectionUtils.isEmpty(usuario.getSubCanais())) {
             if (usuario.getSubCanais().size() > 1
                 && !CARGOS_COM_MAIS_SUBCANAIS.contains(cargo.getCodigo())) {
-                throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+                throw new ValidacaoException(
+                    "Não é permitido cadastrar mais de um sub-canal para este cargo."
+                );
             }
         } else {
-            throw MSG_ERRO_USUARIO_NAO_POSSUI_SUBCANAIS;
+            throw new ValidacaoException(
+                "Usuário não possui sub-canais, deve ser cadastrado no mínimo um."
+            );
         }
     }
 
@@ -1244,7 +1243,9 @@ public class UsuarioService {
                 .collect(Collectors.toSet());
 
             if (!usuario.hasSubCanaisDaHierarquia(hierarquiaSubCanalIds)) {
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
+                throw new ValidacaoException(
+                    "Usuário não possui sub-canal em comum com usuários da hierarquia."
+                );
             }
         }
     }
@@ -1257,7 +1258,9 @@ public class UsuarioService {
                     getSubordinadosComSubCanaisDiferentes(usuario, subordinadosComSubCanalId);
                 applicationEventPublisher.publishEvent(
                     new UsuarioSubCanalEvent(this, subordinadosComSubCanaisDiferentes));
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS;
+                throw new ValidacaoSubCanalException(
+                    "Usuário não possui sub-canal em comum com usuários subordinados."
+                );
             }
         }
     }
@@ -1563,7 +1566,7 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado
             .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
             .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
@@ -1611,7 +1614,7 @@ public class UsuarioService {
         }
 
         var usuarioCpfAntigo = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
         usuario.removerCaracteresDoCpf();
 
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
@@ -2420,7 +2423,7 @@ public class UsuarioService {
         var emailColaboradores = agenteAutorizadoService.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             var usuario = repository.findByEmail(colaborador)
-                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
             usuario.setSituacao(ESituacao.I);
             usuario.removerCaracteresDoCpf();
             repository.save(usuario);
@@ -2689,7 +2692,7 @@ public class UsuarioService {
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
         var cidades = usuarioCidadeRepository
             .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
-                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")));
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)));
 
         if (cidades.isEmpty()) {
             return List.of();
@@ -2730,7 +2733,7 @@ public class UsuarioService {
     public UsuarioResponse findById(Integer id) {
         return repository.findById(id)
             .map(UsuarioResponse::of)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
@@ -2745,7 +2748,7 @@ public class UsuarioService {
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return Optional.of(Optional.of(repository.findById(usuarioId)
-                    .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")))
+                    .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)))
                 .filter(Usuario::isAtivo)
                 .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
             .map(UsuarioComLoginNetSalesResponse::of)
@@ -2853,7 +2856,7 @@ public class UsuarioService {
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
         return repository.findById(id)
             .map(UrlLojaOnlineResponse::of)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {

@@ -4,9 +4,30 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import org.junit.Test;
 
+import java.time.LocalDate;
+
+import static br.com.xbrain.autenticacao.modules.comum.enums.Eboolean.F;
+import static br.com.xbrain.autenticacao.modules.comum.enums.Eboolean.V;
+import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.MUNICIPAL;
 import static org.assertj.core.api.Assertions.*;
 
 public class FeriadoRequestTest {
+
+    @Test
+    public void convertFrom_deveRetonarFeriadoComFeriadoNacionalFalsoEComNovaCidade_quandoExistirCidadeId() {
+        assertThat(FeriadoRequest.convertFrom(umFeriadoRequest(989898)))
+            .extracting("nome", "dataFeriado", "feriadoNacional", "cidade.id", "tipoFeriado")
+            .containsExactly("FERIADO MUNICIPAL", LocalDate.of(2019, 12, 12), F,
+                989898, MUNICIPAL);
+    }
+
+    @Test
+    public void convertFrom_deveRetonarFeriadoComFeriadoNacionalVerdadeiro_quandoNaoExistirCidadeId() {
+        assertThat(FeriadoRequest.convertFrom(umFeriadoRequest(null)))
+            .extracting("nome", "dataFeriado", "feriadoNacional", "cidade.id", "tipoFeriado")
+            .containsExactly("FERIADO MUNICIPAL", LocalDate.of(2019, 12, 12), V,
+                null, MUNICIPAL);
+    }
 
     @Test
     public void validarDadosObrigatorios_deveLancarException_quandoFeriadoNacionalTiverEstadoId() {
@@ -101,13 +122,13 @@ public class FeriadoRequestTest {
     public void isTipoFeriado_deveRetornarTrue_quandoTipoFeriadoIgualDoRequest() {
         assertThat(umFeriadoNacionalRequest().isTipoFeriado(ETipoFeriado.NACIONAL)).isTrue();
         assertThat(umFeriadoEstadualRequest().isTipoFeriado(ETipoFeriado.ESTADUAL)).isTrue();
-        assertThat(umFeriadoMunicipalRequest().isTipoFeriado(ETipoFeriado.MUNICIPAL)).isTrue();
+        assertThat(umFeriadoMunicipalRequest().isTipoFeriado(MUNICIPAL)).isTrue();
     }
 
     @Test
     public void isTipoFeriado_deveRetornarFalse_quandoTipoFeriadoNaoIgualDoRequest() {
         assertThat(umFeriadoNacionalRequest().isTipoFeriado(ETipoFeriado.ESTADUAL)).isFalse();
-        assertThat(umFeriadoEstadualRequest().isTipoFeriado(ETipoFeriado.MUNICIPAL)).isFalse();
+        assertThat(umFeriadoEstadualRequest().isTipoFeriado(MUNICIPAL)).isFalse();
         assertThat(umFeriadoMunicipalRequest().isTipoFeriado(ETipoFeriado.NACIONAL)).isFalse();
     }
 
@@ -131,9 +152,19 @@ public class FeriadoRequestTest {
     private FeriadoRequest umFeriadoMunicipalRequest() {
         return FeriadoRequest.builder()
             .nome("FERIADO MUNICIPAL")
-            .tipoFeriado(ETipoFeriado.MUNICIPAL)
+            .tipoFeriado(MUNICIPAL)
             .estadoId(1)
             .cidadeId(5543)
+            .dataFeriado("12/12/2019")
+            .build();
+    }
+
+    private FeriadoRequest umFeriadoRequest(Integer cidadeId) {
+        return FeriadoRequest.builder()
+            .nome("FERIADO MUNICIPAL")
+            .tipoFeriado(MUNICIPAL)
+            .estadoId(1)
+            .cidadeId(cidadeId)
             .dataFeriado("12/12/2019")
             .build();
     }

@@ -35,7 +35,4 @@ public class MotivoInativacao {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    public MotivoInativacao(Integer id) {
-        this.id = id;
-    }
 }

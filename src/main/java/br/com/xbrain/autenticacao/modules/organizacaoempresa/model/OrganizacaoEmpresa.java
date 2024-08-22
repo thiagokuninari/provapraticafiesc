@@ -84,11 +84,11 @@ public class OrganizacaoEmpresa {
             .map(nivel -> new NivelResponse(nivel.getId(), nivel.getNome(), nivel.getCodigo().name()));
     }
 
-    public Boolean isAtivo() {
+    public boolean isAtivo() {
         return situacao == ESituacaoOrganizacaoEmpresa.A;
     }
 
-    public Boolean isSuporteVendas() {
+    public boolean isSuporteVendas() {
         return nivel != null
             && nivel.getCodigo() == BACKOFFICE_SUPORTE_VENDAS;
     }

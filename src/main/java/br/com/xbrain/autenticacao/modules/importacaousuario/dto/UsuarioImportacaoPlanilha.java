@@ -83,7 +83,7 @@ public class UsuarioImportacaoPlanilha {
     }
 
     private static boolean isTelefoneCelular(String telefone) {
-        return telefone.replaceAll("[^0-9]", "")
+        return telefone.replaceAll("\\D", "")
             .length() == CELULAR_LENGTH_ONLY_NUMBER;
     }
 }

@@ -19,10 +19,6 @@ public class UsuarioAgenteAutorizadoResponse {
     private Integer equipeVendaId;
     private Integer agenteAutorizadoId;
 
-    public UsuarioAgenteAutorizadoResponse(Integer id) {
-        this.id = id;
-    }
-
     public UsuarioAgenteAutorizadoResponse(Integer id, String nome, Integer equipeVendaId) {
         this.id = id;
         this.nome = nome;

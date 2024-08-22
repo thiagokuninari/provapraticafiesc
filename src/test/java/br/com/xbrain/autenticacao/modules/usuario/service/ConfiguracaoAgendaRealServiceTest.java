@@ -7,10 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaHistoricoResponseTest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoConfiguracao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaReal;
 import br.com.xbrain.autenticacao.modules.usuario.model.ConfiguracaoAgendaRealHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.ConfiguracaoAgendaRealPredicate;
@@ -244,6 +241,25 @@ public class ConfiguracaoAgendaRealServiceTest {
         verify(repository, never()).findQtdHorasAdicionaisBySubcanal(any());
         verify(repository, never()).findQtdHorasAdicionaisByNivel(any());
         verify(aaService, never()).getEstruturaByAgenteAutorizadoId(any());
+    }
+
+    @Test
+    public void getQtdHorasAdicionaisAgendaByUsuario_deveConsultarPelaEstrutura_quandoUsuarioSocioPrincipalConsultar() {
+        var canal = ECanal.AGENTE_AUTORIZADO;
+        var usuario = umUsuarioAutenticado(CodigoNivel.AGENTE_AUTORIZADO);
+        usuario.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuario);
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(canal);
+
+        assertThat(service.getQtdHorasAdicionaisAgendaByUsuario(null, 100))
+            .isEqualTo(24);
+
+        verify(repository, never()).findQtdHorasAdicionaisByEstruturaAa("AGENTE_AUTORIZADO");
+        verify(repository, never()).findQtdHorasAdicionaisByCanal(any());
+        verify(repository, never()).findQtdHorasAdicionaisBySubcanal(any());
+        verify(repository).findQtdHorasAdicionaisByNivel(any());
+        verify(aaService).getEstruturaByAgenteAutorizadoId(any());
     }
 
     @Test

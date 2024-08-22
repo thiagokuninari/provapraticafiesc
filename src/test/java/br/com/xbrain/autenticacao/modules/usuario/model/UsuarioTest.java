@@ -16,6 +16,8 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
@@ -107,7 +109,7 @@ public class UsuarioTest {
     @Test
     public void verificarPermissaoCargoSobreCanais_deveNaoRetornarErro_quandoUsuarioTiverPermissaoDoCargoSobreOCanal() {
         var usuario = umUsuarioComCargo(26, CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO);
-        usuario.getCargo().setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
+        usuario.getCargo().setCanais(Set.of(ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
         usuario.setCanais(Set.of(ECanal.AGENTE_AUTORIZADO));
 
         assertThatCode(usuario::verificarPermissaoCargoSobreCanais).doesNotThrowAnyException();
@@ -116,7 +118,7 @@ public class UsuarioTest {
     @Test
     public void verificarPermissaoCargoSobreCanais_validacaoException_quandoUsuarioTiverPermissaoDoCargoSobreOCanal() {
         var usuario = umUsuarioComCargo(26, CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO);
-        usuario.getCargo().setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO));
+        usuario.getCargo().setCanais(Set.of(ATIVO_PROPRIO, ECanal.D2D_PROPRIO));
         usuario.setCanais(Set.of(ECanal.AGENTE_AUTORIZADO));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -127,7 +129,7 @@ public class UsuarioTest {
     @Test
     public void verificarPermissaoCargoSobreCanais_deveNaoRetornarErro_quandoUsuarioNaoTiverNenhumCanal() {
         var usuario = umUsuarioComCargo(26, CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO);
-        usuario.getCargo().setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
+        usuario.getCargo().setCanais(Set.of(ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
         usuario.setCanais(Set.of());
 
         assertThatCode(usuario::verificarPermissaoCargoSobreCanais).doesNotThrowAnyException();
@@ -136,7 +138,7 @@ public class UsuarioTest {
     @Test
     public void verificarPermissaoCargoSobreCanais_deveNaoRetornarErro_quandoUsuarioTiverCanaisNull() {
         var usuario = umUsuarioComCargo(26, CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO);
-        usuario.getCargo().setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
+        usuario.getCargo().setCanais(Set.of(ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO));
         usuario.setCanais(null);
 
         assertThatCode(usuario::verificarPermissaoCargoSobreCanais).doesNotThrowAnyException();
@@ -161,13 +163,13 @@ public class UsuarioTest {
 
     @Test
     public void isCanalAtivoLocalRemovido_deveRetornarTrue_seCanaisPossuirAtivoProprioMasCanaisNovosForNull() {
-        assertThat(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(null))
+        assertThat(umUsuario(null, null, Set.of(ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(null))
             .isTrue();
     }
 
     @Test
     public void isCanalAtivoLocalRemovido_deveRetornarTrue_seCanaisPossuirAtivoProprioMasCanaisNovosNao() {
-        assertThat(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(Set.of(ECanal.D2D_PROPRIO)))
+        assertThat(umUsuario(null, null, Set.of(ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(Set.of(ECanal.D2D_PROPRIO)))
             .isTrue();
     }
 
@@ -530,7 +532,7 @@ public class UsuarioTest {
     @Test
     public void getCodigoCargoByCanais_deveRetornarOperacaoTelevendas_quandoCanalForAtivoProprio() {
         var usuario = umUsuarioComCargo(23, EXECUTIVO);
-        usuario.setCanais(Set.of(ECanal.ATIVO_PROPRIO));
+        usuario.setCanais(Set.of(ATIVO_PROPRIO));
 
         assertThat(usuario.getCodigoCargoByCanais())
             .isEqualTo(Set.of(OPERACAO_TELEVENDAS));
@@ -539,7 +541,7 @@ public class UsuarioTest {
     @Test
     public void getCodigoCargoByCanais_deveRetornarOperacaoTelevendasEVendedorOperacao_quandoCanalForMaiorQueUm() {
         var usuario = umUsuarioComCargo(23, EXECUTIVO);
-        usuario.setCanais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.VAREJO, ECanal.INTERNET));
+        usuario.setCanais(Set.of(ATIVO_PROPRIO, ECanal.VAREJO, ECanal.INTERNET));
 
         assertThat(usuario.getCodigoCargoByCanais())
             .isEqualTo(Set.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO));
@@ -908,6 +910,36 @@ public class UsuarioTest {
     public void isSocioPrincipalOuAceite_deveRetornarFalse_quandoUsuarioForNivelAgenteAutorizadoENaoForCargoAceiteOuSocio() {
         assertThat(umUsuarioComCargoENivel(AGENTE_AUTORIZADO, VENDEDOR_OPERACAO).isSocioPrincipalOuAceite())
             .isFalse();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarTrue_quandoCargoForOperacaoTelevendasECanalAtivoProprio() {
+        var usuario = Usuario
+            .builder()
+            .cargo(umCargo(OPERACAO_TELEVENDAS))
+            .canais(Set.of(ATIVO_PROPRIO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal()).isTrue();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarFalse_quandoCargoNaoForOperacaoTelevendasECanalAtivoProprio() {
+        var usuario = Usuario
+            .builder()
+            .cargo(umCargo(AGENTE_AUTORIZADO_ACEITE))
+            .canais(Set.of(ATIVO_PROPRIO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal()).isFalse();
+    }
+
+    @Test
+    public void isOperadorTelevendasAtivoLocal_deveRetornarFalse_quandoCargoNaoOperacaoTelevendasENaoForCanalAtivoProprio() {
+        var usuario = Usuario
+            .builder()
+            .cargo(umCargo(OPERACAO_TELEVENDAS))
+            .canais(Set.of(D2D_PROPRIO))
+            .build();
+        assertThat(usuario.isOperadorTelevendasAtivoLocal()).isFalse();
     }
 
     private static Usuario umUsuarioComCargoENivel(CodigoNivel nivelCodigo, CodigoCargo codigoCargo) {

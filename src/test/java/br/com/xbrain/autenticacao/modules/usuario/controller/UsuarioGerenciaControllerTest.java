@@ -44,8 +44,8 @@ import static com.google.common.io.ByteStreams.toByteArray;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -1459,6 +1459,34 @@ public class UsuarioGerenciaControllerTest {
 
         verify(usuarioService)
             .validarSeUsuarioCpfEmailNaoCadastrados(any(UsuarioExistenteValidacaoRequest.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getAllXbrainMsoAtivos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI.concat("/chamados/usuarios-redirecionamento/2")))
+            .andExpect(status().isUnauthorized());
+        verify(usuarioService, never()).getAllXbrainMsoAtivos(anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllXbrainMsoAtivos_deveRetornarOk_quandoUsuarioAutenticado() {
+        var usuarioConsultaDto = new UsuarioConsultaDto();
+        usuarioConsultaDto.setNome("nome");
+        usuarioConsultaDto.setId(1);
+
+        when(usuarioService.getAllXbrainMsoAtivos(2))
+            .thenReturn(List.of(usuarioConsultaDto));
+
+        mvc.perform(get(API_URI.concat("/chamados/usuarios-redirecionamento/2")))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getAllXbrainMsoAtivos(2);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoAgendaRequest;
@@ -15,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,13 +25,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.umaConfiguracaoAgendaHistoricoResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.umaConfiguracaoAgendaRequest;
 import static helpers.TestRequisitionHelper.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -38,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     @MockBean(EquipeVendaD2dService.class),
     @MockBean(SubCanalCustomExceptionHandler.class)})
 @WebMvcTest(controllers = ConfiguracaoAgendaController.class)
-public class ConfiguracaoAgendaRealControllerTest {
+public class ConfiguracaoAgendaControllerTest {
 
     private static final String API_URL = "/api/configuracoes/agenda";
     private static final String PERMISSAO_GERENCIA = "AUT_21615";
@@ -213,5 +221,29 @@ public class ConfiguracaoAgendaRealControllerTest {
     public void getQtdHorasAdicionaisAgendaByUsuario_deveRetornarUnauthorized_quandoNaoAutenticado() {
         isUnauthorized(get(API_URL.concat("/horas-adicionais")), mvc);
         verifyZeroInteractions(service);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findHistoricoByConfiguracaoId_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        isUnauthorized(get(API_URL.concat("/1/historico")), mvc);
+        verifyZeroInteractions(service);
+    }
+
+    @Test
+    @WithMockUser(roles = PERMISSAO_GERENCIA)
+    public void findHistoricoByConfiguracaoId_deveRetornarOk_quandoDadosPassadosCorretamente() throws Exception {
+        var page = new PageImpl<>(List.of(umaConfiguracaoAgendaHistoricoResponse()));
+        when(service.findHistoricoByConfiguracaoId(1, new PageRequest()))
+            .thenReturn(page);
+
+        mvc.perform(get(API_URL.concat("/1/historico"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].acao", is("Cadastrado")))
+            .andExpect(jsonPath("$.content[0].usuarioAcaoId", is(2)))
+            .andExpect(jsonPath("$.content[0].usuarioAcaoNome", is("Thiago")));
+
+        verify(service).findHistoricoByConfiguracaoId(1, new PageRequest());
     }
 }
