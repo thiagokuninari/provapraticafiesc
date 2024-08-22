@@ -87,7 +87,7 @@ public class EmpresaServiceTest {
 
     @Test
     public void findWithoutXbrain_deveRetornarListaEmpresasSemXbrain_quandoSolicitado() {
-        doReturn(List.of(CLARO_MOVEL, CLARO_TV, NET, CLARO_RESIDENCIAL))
+        doReturn(List.of(CLARO_MOVEL, CLARO_TV, NET, CLARO_RESIDENCIAL, XBRAIN))
             .when(empresaRepository)
             .findAll();
 

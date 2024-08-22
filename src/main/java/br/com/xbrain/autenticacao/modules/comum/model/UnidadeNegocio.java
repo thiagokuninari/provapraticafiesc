@@ -43,8 +43,9 @@ public class UnidadeNegocio {
         this.id = id;
     }
 
-    public UnidadeNegocio(Integer id, String nome) {
+    public UnidadeNegocio(Integer id, String nome, CodigoUnidadeNegocio codigo) {
         this.id = id;
         this.nome = nome;
+        this.codigo = codigo;
     }
 }

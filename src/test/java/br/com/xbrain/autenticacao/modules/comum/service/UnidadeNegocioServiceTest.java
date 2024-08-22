@@ -66,7 +66,7 @@ public class UnidadeNegocioServiceTest {
 
     @Test
     public void findWithoutXbrain_deveRetornarListaUnidadesNegocioSemXbrain_quandoSolicitado() {
-        doReturn(List.of(UNIDADE_PESSOAL, UNIDADE_RESIDENCIAL_E_COMBOS, UNIDADE_CLARO_RESIDENCIAL))
+        doReturn(List.of(UNIDADE_PESSOAL, UNIDADE_RESIDENCIAL_E_COMBOS, UNIDADE_CLARO_RESIDENCIAL, UNIDADE_XBRAIN))
             .when(unidadeNegocioRepository)
             .findAll();
 
