@@ -2423,7 +2423,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    @WithMockUser(username = ADMIN, roles = {"POL_GERENCIAR_AA"})
     public void obterIdSeUsuarioForSocioOuAceite_deveRetornarOk_seUsuarioAutenticado() {
         mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
                 .param("cpf", "42675562700")
