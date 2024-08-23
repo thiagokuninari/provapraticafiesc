@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +46,8 @@ public class PermissaoEspecialServiceTest {
     private FeederService feederService;
     @Captor
     private ArgumentCaptor<PermissaoEspecial> permissaoEspecialCaptor;
+    @Mock
+    private UsuarioCadastroMqSender usuarioMqSender;
 
     @Test
     public void processarPermissoesEspeciaisGerentesCoordenadores_deveProcessarPermissoes_seIdNull() {
@@ -230,6 +234,43 @@ public class PermissaoEspecialServiceTest {
             .doesNotThrowAnyException();
 
         verifyZeroInteractions(repository);
+    }
+
+    @Test
+    public void remover_deveEnviarMensagemParaSocialHub_quandoFuncionalidadeIdForAdmSocialHub() {
+        var usuarioId = 1659859;
+        var funcionalidadeId = 30001;
+        var permissaoMock = mock(PermissaoEspecial.class);
+
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId))
+            .thenReturn(Optional.of(permissaoMock));
+
+        when(repository.save(any(PermissaoEspecial.class))).thenReturn(permissaoMock);
+
+        service.remover(usuarioId, funcionalidadeId);
+
+        verify(usuarioMqSender).enviarDadosUsuarioParaSocialHub(argThat(request ->
+            request.getId() == usuarioId && request.isPermissaoAdmSocialRemovida()
+        ));
+
+        verify(repository).save(permissaoMock);
+    }
+
+    @Test
+    public void remover_naoDeveEnviarMensagemParaSocialHub_quandoFuncionalidadeIdNaoForAdmSocialHub() {
+        var usuarioId = 1659859;
+        var funcionalidadeId = 12345;
+        var permissaoMock = mock(PermissaoEspecial.class);
+
+        when(repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId))
+            .thenReturn(Optional.of(permissaoMock));
+
+        when(repository.save(any(PermissaoEspecial.class))).thenReturn(permissaoMock);
+
+        service.remover(usuarioId, funcionalidadeId);
+
+        verify(usuarioMqSender, never()).enviarDadosUsuarioParaSocialHub(any());
+        verify(repository).save(permissaoMock);
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

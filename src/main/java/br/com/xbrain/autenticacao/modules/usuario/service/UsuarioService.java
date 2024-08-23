@@ -3258,7 +3258,7 @@ public class UsuarioService {
         var regionais = regionalService.getRegionalIds(usuario.getId());
         var cargoUsuario = cargoService.findByUsuarioId(usuario.getId());
         usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais,
-            cargoUsuario.getNome()));
+            cargoUsuario.getNome(), false));
     }
 
     private void adicionarPermissaoSocialHub(Usuario usuario) {

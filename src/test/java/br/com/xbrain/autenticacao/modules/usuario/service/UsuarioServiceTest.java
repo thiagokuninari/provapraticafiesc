@@ -1415,7 +1415,7 @@ public class UsuarioServiceTest {
 
         verify(permissaoEspecialService, never()).save(anyList());
         verify(usuarioMqSender, never())
-            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
+            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor", false));
     }
 
     @Test
@@ -4930,7 +4930,7 @@ public class UsuarioServiceTest {
 
         verify(permissaoEspecialService, never()).save(anyList());
         verify(usuarioMqSender, never())
-            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor"));
+            .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, List.of(1022), "Diretor", false));
     }
 
     @Test
