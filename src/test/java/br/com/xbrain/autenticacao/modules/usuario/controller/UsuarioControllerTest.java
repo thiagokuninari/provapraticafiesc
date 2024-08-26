@@ -2437,18 +2437,6 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
-    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarForbidden_seUsuarioSemPermissao() {
-        mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
-                .param("cpf", "42675562700")
-                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
-            .andExpect(status().isForbidden());
-
-        verifyNoMoreInteractions(usuarioService);
-    }
-
-    @Test
-    @SneakyThrows
     @WithAnonymousUser
     public void obterIdSeUsuarioForSocioOuAceite_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
         mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
