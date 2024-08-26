@@ -620,4 +620,9 @@ public class UsuarioController {
     public UsuarioSubCanalResponse findUsuarioD2dByCpf(@RequestParam String cpf) {
         return usuarioService.findUsuarioD2dByCpf(cpf);
     }
+
+    @GetMapping("socio-principal/verificar-cpf-email")
+    public Integer obterIdSeUsuarioForSocioOuAceite(@RequestParam String cpf, @RequestParam String email) {
+        return usuarioService.obterIdSeUsuarioForSocioOuAceite(cpf, email);
+    }
 }

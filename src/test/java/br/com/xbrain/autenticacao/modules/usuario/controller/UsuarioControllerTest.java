@@ -2420,4 +2420,30 @@ public class UsuarioControllerTest {
 
         verify(usuarioService, never()).findColaboradoresPapIndireto();
     }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"POL_GERENCIAR_AA"})
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).obterIdSeUsuarioForSocioOuAceite(
+            "42675562700",
+            "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+        mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
 }
