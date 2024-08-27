@@ -75,6 +75,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
             .antMatchers("/api/usuarios/gerencia/remanejar-usuario")
             .hasAnyRole(CodigoFuncionalidade.POL_GERENCIAR_EQUIPE_VENDA.name(), CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuarios/buscar-emails/**").authenticated()
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())

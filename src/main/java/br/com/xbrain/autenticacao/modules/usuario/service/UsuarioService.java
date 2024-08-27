@@ -3423,4 +3423,10 @@ public class UsuarioService {
     private boolean existeUsuarioCadastradoIgualAtivo(Usuario usuario) {
         return repository.existeByCpfOrEmailAndSituacaoAtivo(usuario.getCpf(), usuario.getEmail());
     }
+
+    public List<String> getEmailsByCargoId(Integer cargoId) {
+        return repository.findByCargo_IdAndSituacao(cargoId, ESituacao.A).stream()
+            .map(Usuario::getEmail)
+            .collect(toList());
+    }
 }

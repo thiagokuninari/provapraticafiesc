@@ -625,4 +625,9 @@ public class UsuarioController {
     public Integer obterIdSeUsuarioForSocioOuAceite(@RequestParam String cpf, @RequestParam String email) {
         return usuarioService.obterIdSeUsuarioForSocioOuAceite(cpf, email);
     }
+
+    @GetMapping("buscar-emails/{cargoId}")
+    List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
+        return usuarioService.getEmailsByCargoId(cargoId);
+    }
 }

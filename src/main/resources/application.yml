@@ -266,6 +266,9 @@ app-config:
     checagem-credito-api:
       client: checagem-credito-api
       secret: ch3c4g3mcr3d1t04p1
+    briefing-api:
+      client: briefing-api
+      secret: br13f1ng4p1
 
   services:
     autenticacao:
