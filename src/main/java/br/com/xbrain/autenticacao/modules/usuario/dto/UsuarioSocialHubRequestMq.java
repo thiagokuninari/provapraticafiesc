@@ -20,14 +20,24 @@ public class UsuarioSocialHubRequestMq {
     private String cargo;
     private List<Integer> regionaisIds;
     private Integer territorioMercadoDesenvolvimentoId;
+    private boolean isPermissaoAdmSocialRemovida;
 
-    public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo) {
+    public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo,
+                                                 boolean isPermissaoAdmSocialRemovida) {
         var request = new UsuarioSocialHubRequestMq();
         BeanUtils.copyProperties(usuario, request);
         request.setCargo(nomeCargo);
         request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
         request.setRegionaisIds(regionaisIds);
         request.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
+        request.setPermissaoAdmSocialRemovida(isPermissaoAdmSocialRemovida);
+        return request;
+    }
+
+    public static UsuarioSocialHubRequestMq from(Integer usuarioId, boolean isPermissaoAdmSocialRemovida) {
+        var request = new UsuarioSocialHubRequestMq();
+        request.setId(usuarioId);
+        request.setPermissaoAdmSocialRemovida(isPermissaoAdmSocialRemovida);
         return request;
     }
 }

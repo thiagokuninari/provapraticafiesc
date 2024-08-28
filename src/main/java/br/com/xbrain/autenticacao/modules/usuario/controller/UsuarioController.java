@@ -335,6 +335,11 @@ public class UsuarioController {
         return usuarioService.getUsuarioByPermissaoEspecial(funcionalidade);
     }
 
+    @GetMapping("funcionalidade/{funcionalidade}")
+    public List<Integer> getUsuariosIdsByPermissao(@PathVariable String funcionalidade) {
+        return usuarioService.getUsuariosIdByPermissaoEspecial(funcionalidade);
+    }
+
     @RequestMapping(value = "/configuracao", method = RequestMethod.GET)
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
         return usuarioService.getConfiguracaoByUsuario();

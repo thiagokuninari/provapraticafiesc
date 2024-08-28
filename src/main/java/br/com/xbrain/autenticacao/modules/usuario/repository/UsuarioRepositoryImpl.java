@@ -586,6 +586,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Integer> getUsuarioIdsByPermissaoEspecial(String codigoFuncionalidade) {
+        return new JPAQueryFactory(entityManager)
+            .select(permissaoEspecial.usuario.id)
+            .from(permissaoEspecial)
+            .innerJoin(permissaoEspecial.funcionalidade)
+            .where(permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade)
+                .and(permissaoEspecial.dataBaixa.isNull()))
+            .fetch();
+    }
+
+    @Override
     public List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel) {
         return new JPAQueryFactory(entityManager)
             .select(usuario)

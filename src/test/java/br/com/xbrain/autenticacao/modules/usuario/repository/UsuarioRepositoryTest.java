@@ -547,4 +547,11 @@ public class UsuarioRepositoryTest {
             .extracting("id", "nome")
             .containsExactly(100, "ADMIN");
     }
+
+    @Test
+    public void getUsuarioIdsByPermissaoEspecial_deveRetornarListaDeUsuariosId_quandoPossuirUsuariosComPermissao() {
+        assertThat(repository.getUsuarioIdsByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
+            .containsExactly(100)
+            .hasSize(1);
+    }
 }
