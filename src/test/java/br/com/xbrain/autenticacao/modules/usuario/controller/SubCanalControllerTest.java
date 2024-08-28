@@ -101,7 +101,7 @@ public class SubCanalControllerTest {
     @Test
     public void getSubCanalCompletById_deveRetornarSubCanal_quandoOk() throws Exception {
         when(subCanalService.getSubCanalCompletById(1)).thenReturn(
-            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V));
+            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V));
 
         mvc.perform(get(API_URI + "/1/detalhar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -138,8 +138,8 @@ public class SubCanalControllerTest {
         var filtros = new SubCanalFiltros();
         when(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .thenReturn(new PageImpl<>(List.of(
-            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F),
-            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V))));
+            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F, Eboolean.F),
+            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V))));
 
         mvc.perform(get(API_URI + "/listar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -241,7 +241,8 @@ public class SubCanalControllerTest {
                 "O campo nome é obrigatório.",
                 "O campo situacao é obrigatório.",
                 "O campo novaChecagemCredito é obrigatório.",
-                "O campo novaChecagemViabilidade é obrigatório.")));
+                "O campo novaChecagemViabilidade é obrigatório.",
+                "O campo realizarEnriquecimentoEnd é obrigatório.")));
 
         verify(subCanalService, never()).editar(any());
     }
@@ -251,6 +252,7 @@ public class SubCanalControllerTest {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
         dto.setNovaChecagemViabilidade(Eboolean.V);
+        dto.setRealizarEnriquecimentoEnd(Eboolean.V);
 
         doThrow(PermissaoException.class).when(subCanalService).editar(dto);
 
