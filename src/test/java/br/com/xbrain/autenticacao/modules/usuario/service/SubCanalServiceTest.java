@@ -342,4 +342,21 @@ public class SubCanalServiceTest {
 
         verify(subCanalRepository).findById(eq(1));
     }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarEBoolean_quandoTudoOk() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.of(umSubCanal()));
+        assertEquals(subCanalService.isRealizarEnriquecimentoEnd(1), Eboolean.F);
+        verify(subCanalRepository).findById(eq(1));
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveNotFoundException_quandoSubCanalNaoEncontrado() {
+        when(subCanalRepository.findById(1)).thenReturn(Optional.empty());
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> subCanalService.isRealizarEnriquecimentoEnd(1))
+            .withMessage("Erro, subcanal não encontrado.");
+
+        verify(subCanalRepository).findById(eq(1));
+    }
 }

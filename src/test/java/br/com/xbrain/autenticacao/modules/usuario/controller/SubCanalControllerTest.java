@@ -387,4 +387,42 @@ public class SubCanalControllerTest {
 
         verify(subCanalService).getHistorico(1, new PageRequest());
     }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarBoolean_quandoOk() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1)).thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Eboolean.V.toString())));
+
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d"))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).isRealizarEnriquecimentoEnd(any());
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
+    }
 }

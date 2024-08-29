@@ -133,4 +133,8 @@ public class SubCanalService {
         return subCanalHistoricoRepository.findBySubCanal_Id(id, pageable)
             .map(SubCanalHistoricoResponse::of);
     }
+
+    public Eboolean isRealizarEnriquecimentoEnd(Integer id) {
+        return findById(id).getRealizarEnriquecimentoEnd();
+    }
 }
