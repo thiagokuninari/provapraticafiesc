@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado.ATIVO;
 import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.ESTADUAL;
 import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.NACIONAL;
 import static br.com.xbrain.autenticacao.modules.feriado.helper.FeriadoHelper.*;
@@ -58,67 +59,72 @@ public class FeriadoServiceTest {
     @Test
     public void consulta_retornarTrue_quandoEncontrarFeriadoHoje() {
         when(repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(), Eboolean.V,
-            ESituacaoFeriado.ATIVO)).thenReturn(Optional.of(umFeriado()));
+            ATIVO)).thenReturn(Optional.of(umFeriado()));
 
         assertThat(service.consulta()).isTrue();
 
         verify(repository).findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(), Eboolean.V,
-            ESituacaoFeriado.ATIVO);
+            ATIVO);
     }
 
     @Test
     public void consulta_retornarFalse_quandoNaoEncontrarFeriadoHoje() {
         when(repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(), Eboolean.V,
-            ESituacaoFeriado.ATIVO)).thenReturn(Optional.empty());
+            ATIVO)).thenReturn(Optional.empty());
 
         assertThat(service.consulta()).isFalse();
 
         verify(repository).findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(), Eboolean.V,
-            ESituacaoFeriado.ATIVO);
+            ATIVO);
     }
 
     @Test
     public void consulta_retornarTrue_quandoEncontrarFeriadoNaDataInformada() {
         when(repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(LocalDate.of(2023, 10, 12),
-            Eboolean.V, ESituacaoFeriado.ATIVO)).thenReturn(Optional.of(umFeriado()));
+            Eboolean.V, ATIVO)).thenReturn(Optional.of(umFeriado()));
 
         assertThat(service.consulta("12/10/2023")).isTrue();
 
         verify(repository).findByDataFeriadoAndFeriadoNacionalAndSituacao(LocalDate.of(2023, 10, 12),
-            Eboolean.V, ESituacaoFeriado.ATIVO);
+            Eboolean.V, ATIVO);
     }
 
     @Test
     public void consulta_retornarFalse_quandoNaoEncontrarFeriadoNaDataInformada() {
         when(repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(LocalDate.of(2023, 10, 12),
-            Eboolean.V, ESituacaoFeriado.ATIVO)).thenReturn(Optional.empty());
+            Eboolean.V, ATIVO)).thenReturn(Optional.empty());
 
         assertThat(service.consulta("12/10/2023")).isFalse();
 
         verify(repository).findByDataFeriadoAndFeriadoNacionalAndSituacao(LocalDate.of(2023, 10, 12),
-            Eboolean.V, ESituacaoFeriado.ATIVO);
+            Eboolean.V, ATIVO);
     }
 
     @Test
     public void consulta_retornarTrue_quandoEncontrarFeriadoNaDataECidadeInformada() {
-        when(repository.findByDataFeriadoAndCidadeIdAndSituacao(LocalDate.of(2023, 10, 12),
-            1, ESituacaoFeriado.ATIVO)).thenReturn(Optional.of(umFeriado()));
+        when(cidadeService.findById(1))
+            .thenReturn(umaCidade(1, "LONDRINA"));
+        when(repository.existsByDataFeriadoAndCidadeIdOrUfId(
+            LocalDate.of(2023, 10, 12), 1, 1, ATIVO)).thenReturn(true);
 
         assertThat(service.consulta("12/10/2023", 1)).isTrue();
 
-        verify(repository).findByDataFeriadoAndCidadeIdAndSituacao(LocalDate.of(2023, 10, 12),
-            1, ESituacaoFeriado.ATIVO);
+        verify(repository).existsByDataFeriadoAndCidadeIdOrUfId(
+            LocalDate.of(2023, 10, 12), 1, 1, ATIVO);
     }
 
     @Test
     public void consulta_retornarFalse_quandoNaoEncontrarFeriadoNaDataECidadeInformada() {
-        when(repository.findByDataFeriadoAndCidadeIdAndSituacao(LocalDate.of(2023, 10, 12),
-            1, ESituacaoFeriado.ATIVO)).thenReturn(Optional.empty());
+        when(cidadeService.findById(1))
+            .thenReturn(umaCidade(1, "LONDRINA"));
+
+        when(repository.existsByDataFeriadoAndCidadeIdOrUfId(LocalDate.of(2023, 10, 12),
+            1, 1, ATIVO)).thenReturn(false);
 
         assertThat(service.consulta("12/10/2023", 1)).isFalse();
 
-        verify(repository).findByDataFeriadoAndCidadeIdAndSituacao(LocalDate.of(2023, 10, 12),
-            1, ESituacaoFeriado.ATIVO);
+        verify(repository).existsByDataFeriadoAndCidadeIdOrUfId(LocalDate.of(2023, 10, 12),
+            1, 1, ATIVO);
     }
 
     @Test
@@ -153,22 +159,22 @@ public class FeriadoServiceTest {
 
     @Test
     public void isFeriadoHojeNaCidadeUf_retornarTrue_quandoEncontrarNacionalOuRegional() {
-        when(repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), "LONDRINA", "PR"))
+        when(repository.hasFeriadoEstadual(dataHoraAtual.getData(), "LONDRINA", "PR"))
             .thenReturn(Boolean.TRUE);
 
         assertThat(service.isFeriadoHojeNaCidadeUf("LONDRINA", "PR")).isTrue();
 
-        verify(repository).hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), "LONDRINA", "PR");
+        verify(repository).hasFeriadoEstadual(dataHoraAtual.getData(), "LONDRINA", "PR");
     }
 
     @Test
     public void isFeriadoHojeNaCidadeUf_retornarFalse_quandoNaoEncontrarNacionalOuRegional() {
-        when(repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), "LONDRINA", "PR"))
+        when(repository.hasFeriadoEstadual(dataHoraAtual.getData(), "LONDRINA", "PR"))
             .thenReturn(Boolean.FALSE);
 
         assertThat(service.isFeriadoHojeNaCidadeUf("LONDRINA", "PR")).isFalse();
 
-        verify(repository).hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), "LONDRINA", "PR");
+        verify(repository).hasFeriadoEstadual(dataHoraAtual.getData(), "LONDRINA", "PR");
     }
 
     @Test
@@ -324,13 +330,13 @@ public class FeriadoServiceTest {
 
     @Test
     public void salvarFeriado_deveLancarException_quandoFeriadoJaCadastrado() {
-        when(repository.findByPredicate(any())).thenReturn(Optional.of(umFeriado()));
+        when(repository.existsByPredicate(any())).thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarFeriado(umFeriadoRequest()))
             .withMessage("Já existe feriado com os mesmos dados.");
 
-        verify(repository).findByPredicate(any());
+        verify(repository).existsByPredicate(any());
         verify(repository, never()).save(any(Feriado.class));
     }
 
@@ -562,13 +568,13 @@ public class FeriadoServiceTest {
 
     @Test
     public void editarFeriado_deveLancarException_quandoFeriadoJaCadastrado() {
-        when(repository.findByPredicate(any())).thenReturn(Optional.of(umFeriado()));
+        when(repository.existsByPredicate(any())).thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.editarFeriado(umFeriadoRequest()))
             .withMessage("Já existe feriado com os mesmos dados.");
 
-        verify(repository).findByPredicate(any());
+        verify(repository).existsByPredicate(any());
         verify(repository, never()).save(any(Feriado.class));
     }
 

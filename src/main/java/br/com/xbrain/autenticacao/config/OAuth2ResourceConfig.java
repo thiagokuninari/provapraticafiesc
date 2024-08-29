@@ -93,6 +93,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/feriado/gerenciar/**").hasRole(
                 CodigoFuncionalidade.CTR_2050.name())
+            .antMatchers("/api/importacao-automatica/**").hasRole(
+                CodigoFuncionalidade.CTR_2050.name())
             .antMatchers("/api/cargo-departamento-funcionalidade").hasRole(
                 CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO.name())
             .antMatchers("/api/permissoes-especiais").hasRole(

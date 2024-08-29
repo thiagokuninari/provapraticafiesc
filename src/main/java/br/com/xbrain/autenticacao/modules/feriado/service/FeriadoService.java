@@ -75,9 +75,10 @@ public class FeriadoService {
     }
 
     public boolean consulta(String data, Integer cidadeId) {
-        return repository.findByDataFeriadoAndCidadeIdAndSituacao(DateUtils.parseStringToLocalDate(data),
-            cidadeId,
-            ESituacaoFeriado.ATIVO).isPresent();
+        var cidade = cidadeService.findById(cidadeId);
+        return repository.existsByDataFeriadoAndCidadeIdOrUfId(DateUtils.parseStringToLocalDate(data),
+            cidadeId, cidade.getIdUf(),
+            ESituacaoFeriado.ATIVO);
     }
 
     public Feriado save(FeriadoRequest request) {
@@ -101,8 +102,27 @@ public class FeriadoService {
             .setFeriadosNacionais(new HashSet<>(repository.findAllNacional(LocalDate.now())));
     }
 
+    private Boolean isFeriadoNacional(LocalDate data) {
+        return repository.hasFeriadoNacional(data);
+    }
+
+    private boolean isFeriadoMunicipal(LocalDate data, String cidade, String uf) {
+        return repository.hasFeriadoMunicipal(data, cidade, uf);
+    }
+
+    private boolean isFeriadoEstadual(LocalDate data, String cidade, String uf) {
+        return repository.hasFeriadoEstadual(data, cidade, uf);
+    }
+
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
-        return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
+        var data = dataHoraAtual.getData();
+        if (isFeriadoNacional(data)) {
+            return true;
+        } else if (isFeriadoEstadual(data, cidade, uf)) {
+            return true;
+        }
+
+        return isFeriadoMunicipal(data, cidade, uf);
     }
 
     public List<String> buscarUfsFeriadosEstaduaisPorData() {
@@ -296,18 +316,31 @@ public class FeriadoService {
     }
 
     private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
-        repository.findByPredicate(
-                new FeriadoPredicate()
-                    .comNome(request.getNome())
-                    .comTipoFeriado(request.getTipoFeriado())
-                    .comEstado(request.getEstadoId())
-                    .comCidade(request.getCidadeId(), request.getEstadoId())
-                    .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
-                    .excetoExcluidos()
-                    .excetoFeriadosFilhos()
-                    .build())
-            .ifPresent(feriado -> {
-                throw EX_FERIADO_JA_CADASTRADO;
-            });
+        var predicate = new FeriadoPredicate()
+            .comNome(request.getNome())
+            .comTipoFeriado(request.getTipoFeriado())
+            .comEstado(request.getEstadoId())
+            .comCidade(request.getCidadeId(), request.getEstadoId())
+            .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+        if (repository.existsByPredicate(predicate)) {
+            throw EX_FERIADO_JA_CADASTRADO;
+        }
+    }
+
+    public boolean validarSeFeriadoNaoCadastrado(FeriadoAutomacao feriadoAutomacao) {
+        var predicate = new FeriadoPredicate()
+            .comNome(feriadoAutomacao.getNome())
+            .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
+            .comEstado(feriadoAutomacao.getUfId())
+            .comCidade(feriadoAutomacao.getCidadeId(), feriadoAutomacao.getUfId())
+            .comDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+
+        return !repository.existsByPredicate(predicate);
     }
 }

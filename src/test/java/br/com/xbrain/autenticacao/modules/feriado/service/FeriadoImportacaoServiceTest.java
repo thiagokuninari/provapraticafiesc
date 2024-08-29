@@ -55,7 +55,7 @@ public class FeriadoImportacaoServiceTest {
 
         when(feriadoService.salvarFeriadoImportado(umFeriadoImportacao("FERIADO CORRETO")))
             .thenReturn(umFeriado("FERIADO CORRETO"));
-        when(feriadoRepository.findByPredicate(predicate)).thenReturn(Optional.of(umFeriado()));
+        when(feriadoRepository.existsByPredicate(predicate)).thenReturn(true);
 
         assertThat(service.importarFeriadoArquivo(umFileFeriado(), umFeriadoImportacaoRequest()))
             .isEqualTo(umaListaFeriadoImportacaoResponse());

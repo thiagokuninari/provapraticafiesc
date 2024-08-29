@@ -212,4 +212,15 @@ public class CidadeRepositoryTest {
             .findCidadesByCodigosIbge(new CidadePredicate().build()).size())
             .isEqualTo(45);
     }
+
+    @Test
+    public void findAllCidades_deveRetornarListaDeTodasAsCidadesDoPais_seSolicitado() {
+        assertThat(cidadeRepository.findAllCidades())
+            .extracting("id", "nome", "uf.id")
+            .contains(
+                tuple(3237, "ARAPONGAS", 1),
+                tuple(1443, "BELO VALE", 8),
+                tuple(2466, "BELTERRA", 4),
+                tuple(3022, "BENEDITINOS", 12));
+    }
 }

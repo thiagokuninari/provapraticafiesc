@@ -184,8 +184,12 @@ public enum EErrors {
     ERRO_ATUALIZAR_EQUIPE_VENDAS_USUARIO(
         "#060 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#060 - Ocorreu um erro ao tentar atualizar o(s) usuário(s) da equipe vendas."),
-    ERRO_BUSCAR_USUARIOS_AA_PAP_INDIRETO("#058 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.",
-        "#058 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto.");
+    ERRO_BUSCAR_USUARIOS_AA_PAP_INDIRETO(
+        "#058 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.",
+        "#058 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto."),
+    ERRO_BUSCAR_FERIADOS(
+        "#061 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#061 - Ocorreu um erro ao buscar feriados.");
 
     private final String descricao;
     private final String descricaoTecnica;

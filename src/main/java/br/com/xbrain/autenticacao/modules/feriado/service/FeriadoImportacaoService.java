@@ -227,17 +227,20 @@ public class FeriadoImportacaoService {
     }
 
     private String validarFeriadoExistente(FeriadoImportacao feriado) {
-        return feriadoRepository.findByPredicate(
-                new FeriadoPredicate()
-                    .comNome(feriado.getNome())
-                    .comTipoFeriado(feriado.getTipoFeriado())
-                    .comEstado(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
-                    .comCidade(!isEmpty(feriado.getCidade()) ? feriado.getCidade().getId() : null,
-                        !isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
-                    .comDataFeriado(feriado.getDataFeriado())
-                    .excetoExcluidos()
-                    .excetoFeriadosFilhos()
-                    .build())
-            .map(feriadoNoBanco -> ERRO_FERIADO_EXISTENTE).orElse(MENSAGEM_VAZIA);
+        var predicate = new FeriadoPredicate()
+            .comNome(feriado.getNome())
+            .comTipoFeriado(feriado.getTipoFeriado())
+            .comEstado(!isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
+            .comCidade(!isEmpty(feriado.getCidade()) ? feriado.getCidade().getId() : null,
+                !isEmpty(feriado.getUf()) ? feriado.getUf().getId() : null)
+            .comDataFeriado(feriado.getDataFeriado())
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+        if (feriadoRepository.existsByPredicate(predicate)) {
+            return ERRO_FERIADO_EXISTENTE;
+        }
+
+        return MENSAGEM_VAZIA;
     }
 }

@@ -6,9 +6,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ETipoFeriado {
-    NACIONAL("NACIONAL"),
-    ESTADUAL("ESTADUAL"),
-    MUNICIPAL("MUNICIPAL");
+    NACIONAL("NACIONAL", "Nacionais"),
+    ESTADUAL("ESTADUAL", "Estaduais"),
+    MUNICIPAL("MUNICIPAL", "Municipais"),
+    FACULTATIVO("FACULTATIVO", "Facultativo");
 
     private String descricao;
+    private String plural;
 }
