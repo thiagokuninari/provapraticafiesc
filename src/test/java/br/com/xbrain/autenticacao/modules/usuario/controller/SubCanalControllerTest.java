@@ -101,7 +101,7 @@ public class SubCanalControllerTest {
     @Test
     public void getSubCanalCompletById_deveRetornarSubCanal_quandoOk() throws Exception {
         when(subCanalService.getSubCanalCompletById(1)).thenReturn(
-            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V));
+            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V));
 
         mvc.perform(get(API_URI + "/1/detalhar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -138,8 +138,8 @@ public class SubCanalControllerTest {
         var filtros = new SubCanalFiltros();
         when(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .thenReturn(new PageImpl<>(List.of(
-            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F),
-            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V))));
+            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F, Eboolean.F),
+            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V))));
 
         mvc.perform(get(API_URI + "/listar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -241,7 +241,8 @@ public class SubCanalControllerTest {
                 "O campo nome é obrigatório.",
                 "O campo situacao é obrigatório.",
                 "O campo novaChecagemCredito é obrigatório.",
-                "O campo novaChecagemViabilidade é obrigatório.")));
+                "O campo novaChecagemViabilidade é obrigatório.",
+                "O campo realizarEnriquecimentoEnd é obrigatório.")));
 
         verify(subCanalService, never()).editar(any());
     }
@@ -251,6 +252,7 @@ public class SubCanalControllerTest {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
         dto.setNovaChecagemViabilidade(Eboolean.V);
+        dto.setRealizarEnriquecimentoEnd(Eboolean.V);
 
         doThrow(PermissaoException.class).when(subCanalService).editar(dto);
 
@@ -384,5 +386,43 @@ public class SubCanalControllerTest {
             .andExpect(status().isOk());
 
         verify(subCanalService).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarBoolean_quandoOk() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1)).thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Eboolean.V.toString())));
+
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d"))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).isRealizarEnriquecimentoEnd(any());
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
     }
 }
