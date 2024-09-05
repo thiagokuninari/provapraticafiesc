@@ -160,6 +160,8 @@ public class UsuarioDto implements Serializable {
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
+        usuarioDto.setCanalNetSalesId(usuario.getCanalNetSalesId());
+        usuarioDto.setCanalNetSalesCodigo(usuario.getCanalNetSalesCodigo());
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
         usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
         return usuarioDto;
