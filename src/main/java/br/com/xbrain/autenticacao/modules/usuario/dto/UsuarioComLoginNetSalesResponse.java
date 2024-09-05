@@ -24,6 +24,7 @@ public class UsuarioComLoginNetSalesResponse {
     private String cpfNetSales;
     private String organizacaoEmpresaNome;
     private String nomeEquipeVendasNetSales;
+    private String canalNetSalesId;
     private String canalNetSalesCodigo;
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
