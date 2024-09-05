@@ -2400,7 +2400,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2429,7 +2429,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2458,7 +2458,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2826,7 +2826,7 @@ public class UsuarioServiceTest {
             .cpf("123.456.887-91")
             .situacao(A)
             .nomeEquipeVendaNetSales("NOME EQUIPE VENDAS")
-            .canalNetSales("CANAL VENDAS NETSALES")
+            .canalNetSalesCodigo("CANAL VENDAS NETSALES")
             .build();
     }
 
@@ -5776,7 +5776,7 @@ public class UsuarioServiceTest {
                 .build()))
             .nomeEquipeVendaNetSales("UMA EQUIPE DE VENDA NETSALES")
             .codigoEquipeVendaNetSales("123")
-            .canalNetSales("CANAL NETSALES")
+            .canalNetSalesCodigo("CANAL NETSALES")
             .build();
 
         usuario.setCidades(

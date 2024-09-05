@@ -828,21 +828,21 @@ public class UsuarioTest {
     @Test
     public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesNull() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales(null);
+        usuario.setCanalNetSalesCodigo(null);
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 
     @Test
     public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesEmpty() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales("");
+        usuario.setCanalNetSalesCodigo("");
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 
     @Test
     public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesBlank() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales(" ");
+        usuario.setCanalNetSalesCodigo(" ");
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 

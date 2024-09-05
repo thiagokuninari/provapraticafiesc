@@ -107,8 +107,11 @@ public class Usuario {
     @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
     private String codigoEquipeVendaNetSales;
 
-    @Column(name = "CANAL_NETSALES")
-    private String canalNetSales;
+    @Column(name = "CANAL_NETSALES_ID")
+    private String canalNetSalesId;
+
+    @Column(name = "CANAL_NETSALES_CODIGO")
+    private String canalNetSalesCodigo;
 
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
@@ -773,7 +776,7 @@ public class Usuario {
 
     public boolean hasNotDadosNetSales() {
         return StringUtils.isBlank(loginNetSales)
-            || StringUtils.isBlank(canalNetSales)
+            || StringUtils.isBlank(canalNetSalesCodigo)
             || StringUtils.isBlank(nomeEquipeVendaNetSales)
             || StringUtils.isBlank(codigoEquipeVendaNetSales);
     }
