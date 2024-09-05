@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.cep.client.ConsultaCepClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
+import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,7 @@ public class ConsultaCepServiceTest {
 
     @Test
     public void consultarCep_deveLancarException_quandoReceberAlgumErroDoClient() {
-        doThrow(RuntimeException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+        doThrow(RetryableException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.consultarCep("86023112"))
@@ -68,7 +69,7 @@ public class ConsultaCepServiceTest {
 
     @Test
     public void consultarCeps_deveLancarException_quandoReceberAlgumErroDoClient() {
-        doThrow(RuntimeException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+        doThrow(RetryableException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.consultarCeps(List.of("86023112")))
