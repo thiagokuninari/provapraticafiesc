@@ -5776,6 +5776,7 @@ public class UsuarioServiceTest {
                 .build()))
             .nomeEquipeVendaNetSales("UMA EQUIPE DE VENDA NETSALES")
             .codigoEquipeVendaNetSales("123")
+            .canalNetSalesId(1)
             .canalNetSalesCodigo("CANAL NETSALES")
             .build();
 

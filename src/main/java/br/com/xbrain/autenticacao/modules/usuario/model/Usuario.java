@@ -108,7 +108,7 @@ public class Usuario {
     private String codigoEquipeVendaNetSales;
 
     @Column(name = "CANAL_NETSALES_ID")
-    private String canalNetSalesId;
+    private Integer canalNetSalesId;
 
     @Column(name = "CANAL_NETSALES_CODIGO")
     private String canalNetSalesCodigo;
@@ -778,6 +778,7 @@ public class Usuario {
         return StringUtils.isBlank(loginNetSales)
             || StringUtils.isBlank(canalNetSalesCodigo)
             || StringUtils.isBlank(nomeEquipeVendaNetSales)
-            || StringUtils.isBlank(codigoEquipeVendaNetSales);
+            || StringUtils.isBlank(codigoEquipeVendaNetSales)
+            || canalNetSalesId == null;
     }
 }
