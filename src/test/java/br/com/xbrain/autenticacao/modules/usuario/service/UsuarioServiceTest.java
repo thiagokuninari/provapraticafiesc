@@ -2400,6 +2400,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
                 UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
@@ -2408,6 +2409,7 @@ public class UsuarioServiceTest {
                 "ATIVO_LOCAL_PROPRIO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2429,6 +2431,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
                 UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
@@ -2437,6 +2440,7 @@ public class UsuarioServiceTest {
                 "OPERACAO_AGENTE_AUTORIZADO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2458,6 +2462,7 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
                 UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
@@ -2466,6 +2471,7 @@ public class UsuarioServiceTest {
                 "RECEPTIVO_ATENTO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2826,6 +2832,7 @@ public class UsuarioServiceTest {
             .cpf("123.456.887-91")
             .situacao(A)
             .nomeEquipeVendaNetSales("NOME EQUIPE VENDAS")
+            .canalNetSalesId(1)
             .canalNetSalesCodigo("CANAL VENDAS NETSALES")
             .build();
     }

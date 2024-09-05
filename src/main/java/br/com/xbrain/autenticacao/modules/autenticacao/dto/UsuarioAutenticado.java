@@ -81,6 +81,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
+        this.canalNetSalesId = usuario.getCanalNetSalesId();
         this.canalNetSalesCodigo = usuario.getCanalNetSalesCodigo();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();

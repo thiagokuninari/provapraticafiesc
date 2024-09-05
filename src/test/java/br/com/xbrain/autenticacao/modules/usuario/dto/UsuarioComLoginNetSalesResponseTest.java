@@ -25,9 +25,10 @@ public class UsuarioComLoginNetSalesResponseTest {
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
                 UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste", "NOME EQUIPE VENDAS NET SALES", "CANAL NETSALES");
+                "685.313.412-56", "Organizacao teste", "NOME EQUIPE VENDAS NET SALES", 1, "CANAL NETSALES");
     }
 
     @Test
@@ -40,9 +41,10 @@ public class UsuarioComLoginNetSalesResponseTest {
                 UsuarioComLoginNetSalesResponse::getRazaoSocialEmpresa, UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getOrganizacaoEmpresaNome,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
                 UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactlyInAnyOrder(9928, "Teste", "Login teste", "OPERACAO_INTERNET", "CLARO S.A.",
-                "685.313.412-56", "Organizacao teste", null, "CANAL NETSALES");
+                "685.313.412-56", "Organizacao teste", null, 1,"CANAL NETSALES");
     }
 
     @Test
@@ -84,6 +86,7 @@ public class UsuarioComLoginNetSalesResponseTest {
                 .build())
             .canais(Set.of(ECanal.INTERNET))
             .codigoEquipeVendaNetSales("T0909")
+            .canalNetSalesId(1)
             .canalNetSalesCodigo("CANAL NETSALES")
             .nomeEquipeVendaNetSales("NOME EQUIPE VENDAS NET SALES")
             .build();
