@@ -16,7 +16,7 @@ public class UsuarioResponseTest {
     public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seSolicitado() {
         assertThat(UsuarioResponse.of(umUsuario()))
             .extracting("id", "nome", "email", "aaId", "tipoCanal")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM);
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, null);
     }
 
     @Test
@@ -26,7 +26,7 @@ public class UsuarioResponseTest {
 
         assertThat(UsuarioResponse.of(usuario))
             .extracting("id", "nome", "email", "aaId", "tipoCanal", "canais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, null,
                 Set.of(AGENTE_AUTORIZADO));
     }
 
@@ -37,7 +37,7 @@ public class UsuarioResponseTest {
 
         assertThat(UsuarioResponse.of(usuario))
             .extracting("id", "nome", "email", "aaId", "tipoCanal", "subCanais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, null,
                 Set.of(SubCanalDto.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
     }
 
@@ -48,7 +48,6 @@ public class UsuarioResponseTest {
             .nome("Fulano de Teste")
             .email("teste@teste.com")
             .agenteAutorizadoId(101)
-            .tipoCanal(ETipoCanal.PAP_PREMIUM)
             .build();
     }
 }
