@@ -24,7 +24,7 @@ public class UsuarioCidadeRepositoryTest {
     public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(100))
             .hasSize(6)
-            .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617, 1403);
+            .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617, 5189);
     }
 
     @Test
@@ -50,13 +50,14 @@ public class UsuarioCidadeRepositoryTest {
     public void findUsuarioCidadesByUsuarioId_deveRetornarasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findUsuarioCidadesByUsuarioId(100))
             .extracting("cidade.uf.id", "cidade.uf.nome", "cidade.id", "cidade.nome")
-            .hasSize(5)
+            .hasSize(6)
             .containsExactlyInAnyOrder(
                 tuple(1, "PARANA", 3237, "ARAPONGAS"),
                 tuple(8, "MINAS GERAIS", 1443, "BELO VALE"),
                 tuple(4, "PARA", 2466, "BELTERRA"),
                 tuple(12, "PIAUI", 3022, "BENEDITINOS"),
-                tuple(24, "PARAIBA", 2617, "BERNARDINO BATISTA"));
+                tuple(24, "PARAIBA", 2617, "BERNARDINO BATISTA"),
+                tuple(2, "SAO PAULO", 5189, "OSASCO"));
     }
 
     @Test

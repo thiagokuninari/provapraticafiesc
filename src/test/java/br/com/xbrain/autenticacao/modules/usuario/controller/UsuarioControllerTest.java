@@ -2328,13 +2328,13 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    @WithMockUser
+    @WithAnonymousUser
     public void findCidadesIdByUsuarioId_deveRetornarUnauthorized_quandoNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/usuario-cidades"))
                 .param("usuarioId", "1")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+        verifyZeroInteractions(usuarioService);
     }
 }

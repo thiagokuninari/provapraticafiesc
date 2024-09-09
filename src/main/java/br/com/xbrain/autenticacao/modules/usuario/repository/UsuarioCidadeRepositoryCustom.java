@@ -9,7 +9,7 @@ public interface UsuarioCidadeRepositoryCustom {
 
     List<Integer> findCidadesIdByUsuarioId(int usuarioId);
 
-    List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull (Integer usuarioId);
+    List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(Integer usuarioId);
 
     Set<UsuarioCidade> findUsuarioCidadesByUsuarioId(Integer usuarioId);
 }
