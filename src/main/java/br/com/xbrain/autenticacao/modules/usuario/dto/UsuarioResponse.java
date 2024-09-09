@@ -47,7 +47,6 @@ public class UsuarioResponse {
     private Integer aaId;
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
-    private ETipoCanal tipoCanal;
     private LocalDateTime dataSaidaCnpj;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
