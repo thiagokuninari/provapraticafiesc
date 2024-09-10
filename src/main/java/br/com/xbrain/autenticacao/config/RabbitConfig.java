@@ -164,6 +164,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-grupos-organizacao-suporte-vendas}")
     private String inativarGruposByOrganizacaoQueue;
 
+    @Value("${app-config.topic.agendador}")
+    private String agendadorTopic;
+
+    @Value("${app-config.queue.agendador-autenticacao-api}")
+    private String agendadorAutenticacaoQueue;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -657,5 +663,22 @@ public class RabbitConfig {
     @Bean
     Binding inativarGruposByOrganizacaoBinding(FanoutExchange organizacaoInativadaFanout) {
         return BindingBuilder.bind(inativarGruposByOrganizacao()).to(organizacaoInativadaFanout);
+    }
+
+    @Bean
+    TopicExchange agendadorTopic() {
+        return new TopicExchange(agendadorTopic);
+    }
+
+    @Bean
+    Queue agendadorQualityCallQueue() {
+        return new Queue(agendadorAutenticacaoQueue, true);
+    }
+
+    @Bean
+    Binding agendadorBinding() {
+        return BindingBuilder.bind(agendadorQualityCallQueue())
+            .to(agendadorTopic())
+            .with(agendadorAutenticacaoQueue);
     }
 }
