@@ -21,8 +21,13 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao.CONSULTA;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Java6Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -205,6 +210,54 @@ public class NivelServiceTest {
     }
 
     @Test
+    public void getPermitidosPorNivel_deveVisualizarTodosOsNiveis_quandoUsuarioForMsoEPossuirPermissaoVisualizarDashboardBko() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(BKO_16008.getRole())));
+        var predicate = getPredicateParaMsoBackoffice(usuarioAutenticado);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(nivelRepository.getAll(predicate.build())).thenReturn(umaListaDeNiveis());
+
+        assertThat(service.getPermitidos(CONSULTA))
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(1, "Operação"),
+                tuple(2, "MSO"),
+                tuple(6, "Atendimento Pessoal"),
+                tuple(7, "Lojas"),
+                tuple(8, "Receptivo"),
+                tuple(9, "Ativo Local Proprio"),
+                tuple(10, "Ativo Local Terceiro"),
+                tuple(11, "Ativo Nacional Terceiro"),
+                tuple(12, "Ativo Nacional Terceiro Segmentado"),
+                tuple(13, "Ativo Rentabilização"),
+                tuple(15, "Ouvidoria"),
+                tuple(16, "Ativo Local Colaborador"),
+                tuple(18, "Backoffice"),
+                tuple(19, "Backoffice Centralizado"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(nivelRepository).getAll(predicate.build());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getPermitidosPorNivel_deveVisualizarApenasNivelMso_quandoUsuarioForMsoENaoPossuirPermissaoVisualizarDashboardBko() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        var predicate = getPredicateParaMsoBackoffice(usuarioAutenticado);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(nivelRepository.getAll(predicate.build())).thenReturn(List.of(umNivelMso()));
+
+        assertThat(service.getPermitidos(CONSULTA))
+            .extracting("id", "nome")
+            .containsExactly(tuple(2, "MSO"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(nivelRepository).getAll(predicate.build());
+    }
+
+    @Test
     public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
         when(nivelRepository.findByCodigoIn(List.of(CodigoNivel.RECEPTIVO, CodigoNivel.BACKOFFICE, CodigoNivel.OPERACAO,
             CodigoNivel.BACKOFFICE_CENTRALIZADO, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS)))
@@ -217,16 +270,16 @@ public class NivelServiceTest {
 
     @Test
     public void getByCodigo_deveRetornarNivelResponse_quandoSolicitado() {
-        when(nivelRepository.findByCodigo(CodigoNivel.MSO)).thenReturn(umNivelMso());
+        when(nivelRepository.findByCodigo(MSO)).thenReturn(umNivelMso());
 
-        assertThat(service.getByCodigo(CodigoNivel.MSO))
+        assertThat(service.getByCodigo(MSO))
             .extracting("id", "nome", "codigo")
-            .containsExactly(2, "MSO", CodigoNivel.MSO.name());
+            .containsExactly(2, "MSO", MSO.name());
     }
 
     @Test
     public void getByCodigo_deveLancarExcecao_quandoNaoEncontrar() {
-        assertThatThrownBy(() -> service.getByCodigo(CodigoNivel.MSO))
+        assertThatThrownBy(() -> service.getByCodigo(MSO))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Nível não encontrado.");
     }
@@ -250,5 +303,16 @@ public class NivelServiceTest {
                 usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
                 usuarioAutenticado.getNivelCodigoEnum(),
                 usuarioAutenticado.haveCanalAgenteAutorizado());
+    }
+
+    private NivelPredicate getPredicateParaMsoBackoffice(UsuarioAutenticado usuarioAutenticado) {
+        var isVisualizaGeral = usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)
+            || usuarioAutenticado.isMso() && usuarioAutenticado.hasPermissao(BKO_16008);
+
+        return new NivelPredicate()
+            .isAtivo()
+            .exibeSomenteParaCadastro(false)
+            .exibeXbrainSomenteParaXbrain(false)
+            .exibeProprioNivelSeNaoVisualizarGeral(isVisualizaGeral, MSO, false);
     }
 }

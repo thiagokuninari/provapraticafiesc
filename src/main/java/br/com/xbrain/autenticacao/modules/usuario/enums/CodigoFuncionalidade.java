@@ -49,7 +49,8 @@ public enum CodigoFuncionalidade {
     VAR_GERENCIAR_ORGANIZACOES("Gerenciar Organizações"),
     POL_GERENCIAR_EQUIPE_VENDA("Gerenciar Equive Vendas no POL"),
     AUT_21615("Gerenciar Configurações de Agenda"),
-    BKO_21420("Gerenciar Grupos de Operadores Suporte de Vendas");
+    BKO_21420("Gerenciar Grupos de Operadores Suporte de Vendas"),
+    BKO_16008("Visualizar Dashboard");
 
     private final String descricao;
 
