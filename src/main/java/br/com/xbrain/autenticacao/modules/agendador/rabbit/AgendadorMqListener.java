@@ -14,12 +14,11 @@ import org.springframework.stereotype.Component;
 public class AgendadorMqListener {
 
     private final AgendadorService service;
-    private final AgendadorSender agendadorSender;
 
     @RabbitListener(queues = "${app-config.queue.agendador-autenticacao-api}")
     public void executarAgendador(AgendadorMqDto agendadorMqDto) {
         log.info("Inicia execução do agendador: {}.", agendadorMqDto.getJobName());
 
-        EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto, agendadorSender);
+        EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto);
     }
 }

@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.verify;
 
 public class EAgendadorTest {
 
@@ -29,7 +30,9 @@ public class EAgendadorTest {
     public void AUT_22789_01_deveExecutarMetodo_quandoSolicitado() {
         var mqDto = new AgendadorMqDto();
         mqDto.setJobName("AUT_22789_01");
-        EAgendador.AUT_22789_01.executar(service, mqDto, agendadorSender);
+        EAgendador.AUT_22789_01.executar(service, mqDto);
+
+        verify(service).flushCacheEstruturasAas(mqDto);
     }
 
     @Test
@@ -37,7 +40,9 @@ public class EAgendadorTest {
     public void AUT_22789_02_deveExecutarMetodo_quandoSolicitado() {
         var mqDto = new AgendadorMqDto();
         mqDto.setJobName("AUT_22789_02");
-        EAgendador.AUT_22789_02.executar(service, mqDto, agendadorSender);
+        EAgendador.AUT_22789_02.executar(service, mqDto);
+
+        verify(service).clearCacheFeriados(mqDto);
     }
 
     @Test
