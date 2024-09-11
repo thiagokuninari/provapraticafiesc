@@ -671,13 +671,13 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue agendadorQualityCallQueue() {
+    Queue agendadorAutenticacaoQueue() {
         return new Queue(agendadorAutenticacaoQueue, true);
     }
 
     @Bean
     Binding agendadorBinding() {
-        return BindingBuilder.bind(agendadorQualityCallQueue())
+        return BindingBuilder.bind(agendadorAutenticacaoQueue())
             .to(agendadorTopic())
             .with(agendadorAutenticacaoQueue);
     }
