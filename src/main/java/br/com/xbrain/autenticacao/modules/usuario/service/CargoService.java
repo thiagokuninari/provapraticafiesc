@@ -18,7 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -32,21 +32,16 @@ import java.util.stream.Stream;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Service
+@RequiredArgsConstructor
 public class CargoService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
 
-    @Autowired
-    private CargoRepository repository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private CargoSuperiorRepository cargoSuperiorRepository;
-
-    @Autowired
-    private NivelRepository nivelRepository;
+    private final CargoRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final CargoSuperiorRepository cargoSuperiorRepository;
+    private final NivelRepository nivelRepository;
 
     public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
                                                               boolean permiteEditarCompleto) {
@@ -63,7 +58,7 @@ public class CargoService {
         } else {
             predicate.comNivel(nivelId);
         }
-        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
+        return permiteEditarCompleto ? buscarCargosPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
     }
 
     public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
@@ -82,6 +77,14 @@ public class CargoService {
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
         }
+    }
+
+    private List<Cargo> buscarCargosPermitidosPorNivel(CargoPredicate cargoPredicate) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        if (!usuarioAutenticado.isVisualizaGeral()) {
+            cargoPredicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
+        }
+        return repository.findAll(cargoPredicate.build());
     }
 
     public List<Cargo> getPermitidosPorNiveis(List<Integer> niveisIds) {

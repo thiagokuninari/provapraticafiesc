@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +49,7 @@ public class NivelService {
                 .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
                 .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
                 .exibeProprioNivelSeNaoVisualizarGeral(
-                    this.isVisualizaGeral(usuarioAutenticado),
+                    usuarioAutenticado.isVisualizaGeral(),
                     usuarioAutenticado.getNivelCodigoEnum(), false)
                 .build());
     }
@@ -76,10 +75,5 @@ public class NivelService {
             .stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());
-    }
-
-    private boolean isVisualizaGeral(UsuarioAutenticado usuarioAutenticado) {
-        return usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)
-            || usuarioAutenticado.isMso() && usuarioAutenticado.hasPermissao(BKO_16008);
     }
 }

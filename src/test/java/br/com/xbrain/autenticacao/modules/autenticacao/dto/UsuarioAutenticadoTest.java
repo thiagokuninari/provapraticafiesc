@@ -3,9 +3,13 @@ package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -270,5 +274,35 @@ public class UsuarioAutenticadoTest {
         assertThat(usuarioAutenticado
             .haveCanalDoorToDoor())
             .isFalse();
+    }
+
+    @Test
+    public void isVisualizaGeral_deveRetornarTrue_quandoUsuarioPossuirPemissaoVisualizaGeral() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelAa();
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())));
+
+        assertThat(usuarioAutenticado.isVisualizaGeral()).isTrue();
+    }
+
+    @Test
+    public void isVisualizaGeral_deveRetornarTrue_quandoUsuarioMsoPossuirPemissaoVisualizaDashboardBko() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(BKO_16008.getRole())));
+
+        assertThat(usuarioAutenticado.isVisualizaGeral()).isTrue();
+    }
+
+    @Test
+    public void isVisualizaGeral_deveRetornarFalse_quandoUsuarioNaoForMsoENaoPossuirPermissaoVisualizaGeral() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelAa();
+
+        assertThat(usuarioAutenticado.isVisualizaGeral()).isFalse();
+    }
+
+    @Test
+    public void isVisualizaGeral_deveRetornarFalse_quandoUsuarioMsoENaoPossuirPermissaoVisualizaDashboardBko() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+
+        assertThat(usuarioAutenticado.isVisualizaGeral()).isFalse();
     }
 }

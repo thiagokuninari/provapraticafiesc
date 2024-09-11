@@ -6,14 +6,17 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
 
+@UtilityClass
 public class CargoHelper {
 
     public static Cargo umCargo(Integer id, CodigoCargo codigoCargo) {
@@ -248,5 +251,16 @@ public class CargoHelper {
                 .id(4)
                 .build())
             .build();
+    }
+
+    public static List<Cargo> umaListaDeCargosBko() {
+        return List.of(
+            umCargo(1, BACKOFFICE_ANALISTA_TRATAMENTO),
+            umCargo(2, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE),
+            umCargo(3, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO),
+            umCargo(4, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS),
+            umCargo(5, BACKOFFICE_COORDENADOR),
+            umCargo(6, BACKOFFICE_GERENTE)
+        );
     }
 }
