@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,8 +41,6 @@ public class ClusterServiceTest {
     private ClusterRepository clusterRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
-    @Mock
-    private ParceirosOnlineService parceirosOnlineService;
 
     private ClusterPredicate predicate;
 
@@ -91,9 +88,9 @@ public class ClusterServiceTest {
             .thenReturn(List.of(umClusterNorteDoParana()));
 
         assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORTE_PARANA_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(45, "NORTE DO PARANÁ"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(45, "NORTE DO PARANÁ"));
     }
 
     @Test
@@ -102,9 +99,9 @@ public class ClusterServiceTest {
             .thenReturn(List.of(umClusterMarilia()));
 
         assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_MARILIA_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(39, "MARÍLIA"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(39, "MARÍLIA"));
     }
 
     @Test
@@ -113,9 +110,9 @@ public class ClusterServiceTest {
             .thenReturn(List.of(umClusterAlagoas()));
 
         assertThat(clusterService.getAllByGrupoIdAndUsuarioId(GRUPO_NORDESTE_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(16, "ALAGOAS"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(16, "ALAGOAS"));
     }
 
     @Test

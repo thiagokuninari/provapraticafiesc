@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,8 +42,6 @@ public class SubClusterServiceTest {
     private SubClusterRepository subClusterRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
-    @Mock
-    private ParceirosOnlineService parceirosOnlineService;
     private SubClusterPredicate predicate;
 
     @Before
@@ -174,9 +171,9 @@ public class SubClusterServiceTest {
             .thenReturn(List.of(umSubClusterMarilia()));
 
         assertThat(subClusterService.getAllByClusterIdAndUsuarioId(CLUSTER_MARILIA_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(166, "MARÍLIA"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(166, "MARÍLIA"));
     }
 
     @Test
@@ -188,12 +185,12 @@ public class SubClusterServiceTest {
                 umSubClusterMaringa()));
 
         assertThat(subClusterService.getAllByClusterIdAndUsuarioId(CLUSTER_NORTE_DO_PARANA_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(
-                    tuple(185, "BRI - PARANAVAÍ - PR"),
-                    tuple(189, "LONDRINA"),
-                    tuple(191, "MARINGÁ"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(185, "BRI - PARANAVAÍ - PR"),
+                tuple(189, "LONDRINA"),
+                tuple(191, "MARINGÁ"));
     }
 
     @Test
@@ -202,15 +199,15 @@ public class SubClusterServiceTest {
             .thenReturn(List.of(umSubClusterArapiraca()));
 
         assertThat(subClusterService.getAllByClusterIdAndUsuarioId(CLUSTER_ALAGOAS_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(68, "BRI - ARAPIRACA - AL"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(68, "BRI - ARAPIRACA - AL"));
     }
 
     @Test
     public void getAllByGrupoIdAndUsuarioId_naoDeveRetornarSubCluster_quandoUsuarioNaoPossuirOCluster() {
         assertThat(subClusterService.getAllByClusterIdAndUsuarioId(CLUSTER_NORTE_DO_PARANA_ID, USUARIO_ID))
-                .isEmpty();
+            .isEmpty();
     }
 
     private SubClusterDto umSubClusterDto(Integer id) {

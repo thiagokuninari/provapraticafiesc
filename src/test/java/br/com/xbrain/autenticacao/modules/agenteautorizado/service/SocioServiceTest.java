@@ -1,7 +1,8 @@
-package br.com.xbrain.autenticacao.modules.parceirosonline.service;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.client.SocioClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.SocioResponse;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.junit.Test;

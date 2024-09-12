@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDisponivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;

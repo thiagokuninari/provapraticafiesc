@@ -35,11 +35,11 @@ public class SubClusterService {
 
     public List<SubClusterDto> getAllByClusterIdAndUsuarioId(Integer clusterId, Integer usuarioId) {
         SubClusterPredicate predicate = new SubClusterPredicate()
-                .filtrarPermitidos(usuarioId);
+            .filtrarPermitidos(usuarioId);
         return repository.findAllByClusterId(clusterId, predicate.build())
-                .stream()
-                .map(SubClusterDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(SubClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAllByClustersId(List<Integer> clustersId) {
@@ -47,21 +47,21 @@ public class SubClusterService {
         SubClusterPredicate predicate = new SubClusterPredicate();
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByClustersId(clustersId, predicate.build())
-                .stream()
-                .map(SubClusterDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(SubClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public SubClusterDto getById(Integer subClusterId) {
         return repository.findById(subClusterId).map(SubClusterDto::of)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<SubClusterDto> getAllAtivos() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
-                .stream()
-                .map(SubClusterDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(SubClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAll() {

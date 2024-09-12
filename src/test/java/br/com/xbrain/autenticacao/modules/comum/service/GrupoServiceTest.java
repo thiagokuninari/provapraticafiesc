@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,8 +40,6 @@ public class GrupoServiceTest {
     private GrupoRepository grupoRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
-    @Mock
-    private ParceirosOnlineService parceirosOnlineService;
     private GrupoPredicate predicate;
 
     @Before
@@ -89,9 +86,9 @@ public class GrupoServiceTest {
             .thenReturn(List.of(umGrupoNorteDoParana()));
 
         assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SUL_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(20, "NORTE DO PARANÁ"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(20, "NORTE DO PARANÁ"));
     }
 
     @Test
@@ -100,15 +97,15 @@ public class GrupoServiceTest {
             .thenReturn(List.of(umGrupoMarilia()));
 
         assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SP_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(15, "MARILIA"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(15, "MARILIA"));
     }
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarVazio_quandoUsuarioNaoPossuirRegionalLeste() {
         assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, USUARIO_ID))
-                .isEmpty();
+            .isEmpty();
     }
 
     @Test
@@ -117,9 +114,9 @@ public class GrupoServiceTest {
             .thenReturn(List.of(umGrupoNordeste()));
 
         assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, USUARIO_ID))
-                .isNotNull()
-                .extracting("id", "nome")
-                .containsExactly(tuple(4, "NORDESTE"));
+            .isNotNull()
+            .extracting("id", "nome")
+            .containsExactly(tuple(4, "NORDESTE"));
     }
 
     @Test

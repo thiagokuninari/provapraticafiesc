@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.parceirosonline.dto;
+package br.com.xbrain.autenticacao.modules.agenteautorizado.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;

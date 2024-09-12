@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
@@ -58,8 +57,6 @@ public class AutenticacaoControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    @MockBean
-    private ParceirosOnlineService parceirosOnlineService;
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired

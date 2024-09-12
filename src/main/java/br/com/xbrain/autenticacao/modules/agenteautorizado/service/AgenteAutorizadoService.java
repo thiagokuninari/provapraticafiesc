@@ -1,17 +1,12 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoFiltros;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.*;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
