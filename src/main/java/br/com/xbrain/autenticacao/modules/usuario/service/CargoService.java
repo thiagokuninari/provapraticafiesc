@@ -51,20 +51,34 @@ public class CargoService {
     }
 
     private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
-                                                          boolean permiteEditarCompleto) {
+                                                           boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate();
-        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
-            predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
-        } else {
-            predicate.comNivel(nivelId);
-        }
-        return permiteEditarCompleto ? buscarCargosPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
+        adicionarFiltroComNivelECanal(predicate, nivelId, canais);
+        adicionarFiltroComId(predicate, permiteEditarCompleto);
+
+        return repository.findAll(predicate.build());
     }
 
-    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
-        cargoPredicate.comId(getCargosPermitidosParaEditar());
-        cargoPredicate.comNivel(nivelId);
-        return repository.findAll(cargoPredicate.build());
+    private void adicionarFiltroComNivelECanal(CargoPredicate predicate, Integer nivelId, Collection<ECanal> canais) {
+        predicate.comNivel(nivelId);
+        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
+            predicate.comCanal(ECanal.INTERNET);
+        }
+    }
+
+    private void adicionarFiltroComId(CargoPredicate predicate, boolean permiteEditarCompleto) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        if (!permiteEditarCompleto || !usuarioAutenticado.isVisualizaGeral()) {
+            var cargoProprioId = usuarioAutenticado.getCargoId();
+            var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
+
+            if (!permiteEditarCompleto) {
+                cargosPermitidos.add(cargoProprioId);
+            }
+
+            predicate.comId(cargosPermitidos);
+        }
     }
 
     public List<Cargo> getPermitidosPorNivel(CargoPredicate cargoPredicate) {
@@ -77,14 +91,6 @@ public class CargoService {
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
         }
-    }
-
-    private List<Cargo> buscarCargosPermitidosPorNivel(CargoPredicate cargoPredicate) {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (!usuarioAutenticado.isVisualizaGeral()) {
-            cargoPredicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
-        }
-        return repository.findAll(cargoPredicate.build());
     }
 
     public List<Cargo> getPermitidosPorNiveis(List<Integer> niveisIds) {
@@ -161,13 +167,5 @@ public class CargoService {
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
-    }
-
-    private List<Integer> getCargosPermitidosParaEditar() {
-        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
-        var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
-        cargosPermitidos.add(cargoProprioId);
-
-        return cargosPermitidos;
     }
 }
