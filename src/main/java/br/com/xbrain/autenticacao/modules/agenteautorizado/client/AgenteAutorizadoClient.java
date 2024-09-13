@@ -102,9 +102,6 @@ public interface AgenteAutorizadoClient {
     @PutMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/{id}/inativar")
     void inativarUsuario(@PathVariable("id") Integer id);
 
-    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
-    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
-
     @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{socioPrincipalId}")
     void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
                                              @RequestParam("emailInativo") String emailInativo,

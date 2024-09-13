@@ -322,18 +322,6 @@ public class AgenteAutorizadoService {
         }
     }
 
-    public void inativarAntigoSocioPrincipal(String email) {
-        try {
-            client.inativarAntigoSocioPrincipal(email);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
     public void ativarUsuario(Integer usuarioId) {
         try {
             client.ativarUsuario(usuarioId);

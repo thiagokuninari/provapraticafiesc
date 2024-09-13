@@ -157,18 +157,8 @@ public class UsuarioGerenciaController {
         service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
     }
 
-    @PutMapping("inativar/socio-principal")
-    public void inativarAntigoSocioPrincipal(@RequestParam String email) {
-        service.inativarAntigoSocioPrincipal(email);
-    }
-
-    @PutMapping("limpar-cpf/socio-principal/{id}")
-    public void limparCpfAntigoSocioPrincipal(@PathVariable Integer id) {
-        service.limparCpfAntigoSocioPrincipal(id);
-    }
-
-    @PutMapping("inativar-email/{socioPrincipalId}")
-    public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
-        service.atualizarEmailSocioInativo(socioPrincipalId);
+    @PutMapping("inativar-limpar-dados/socio-principal/{id}")
+    public void inativarELimparDadosAntigoSocioPrincipal(@PathVariable Integer id) {
+        service.inativarELimparDadosAntigoSocioPrincipal(id);
     }
 }

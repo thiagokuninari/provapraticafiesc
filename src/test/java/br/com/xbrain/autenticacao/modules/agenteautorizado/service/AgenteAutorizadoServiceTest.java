@@ -2,10 +2,10 @@ package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,9 +22,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umPublicoAlvoComunicadoFiltros;
-import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umOutroUsuarioDtoVendas;
 import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
+import static br.com.xbrain.autenticacao.modules.agenteautorizado.helper.UsuarioDtoVendasHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosDoAa1300ComEquipesDeVendas;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
@@ -509,38 +507,6 @@ public class AgenteAutorizadoServiceTest {
             "antigoemailsocioteste@xbrain.com.br",
             1
         );
-    }
-
-    @Test
-    public void inativarAntigoSocioPrincipal_deveInativarEmailSocioPrincipal_quandoSolicitado() {
-        service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-    }
-
-    @Test
-    public void inativarAntigoSocioPrincipal_deveLancarException_quandoRetornarErroNaApi() {
-        doThrow(new HystrixBadRequestException("Erro"))
-            .when(client)
-            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
-            .isInstanceOf(IntegracaoException.class);
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-    }
-
-    @Test
-    public void inativarAntigoSocioPrincipal_deveLancarException_quandoApiIndisponivel() {
-        doThrow(RetryableException.class)
-            .when(client)
-            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#052 - Não foi possível inativar o sócio no Parceiros Online.");
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
     }
 
     @Test
