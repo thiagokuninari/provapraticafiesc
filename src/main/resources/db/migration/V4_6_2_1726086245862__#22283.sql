@@ -1,8 +1,8 @@
 INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (21021, 'Ativar Chip', 'VDS_ATIVAR_CHIP', 3);
 
+-- Adiciona a funcionalidade VDS_ATIVAR_CHIP para todos os cargos que possuem VDS_VISUALIZAR_TRAT_VENDA
 BEGIN
 	FOR F IN (
-		-- Busca todos cargos_dep_funcionalidades cuja funcionalidade seja VDS_VISUALIZAR_TRAT_VENDA
 		SELECT FK_CARGO, FK_DEPARTAMENTO
 		FROM CARGO_DEPART_FUNC
 		WHERE FK_FUNCIONALIDADE = (
