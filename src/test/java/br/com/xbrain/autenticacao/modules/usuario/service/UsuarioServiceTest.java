@@ -133,6 +133,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
@@ -4987,8 +4988,8 @@ public class UsuarioServiceTest {
         var dataCadastro = LocalDateTime.of(2018, 01, 01, 15, 00, 00);
 
         when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
-            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(),umOutroUsuarioDtoVendasPapIndireto()));
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(), umOutroUsuarioDtoVendasPapIndireto()));
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2)))
             .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
 
         assertThat(service.findColaboradoresPapIndireto())
@@ -5005,7 +5006,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,2));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2));
     }
 
     @Test
@@ -5032,7 +5033,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3));
     }
 
     @Test
@@ -5069,7 +5070,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3, 4));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3, 4));
     }
 
     @Test
@@ -5604,6 +5605,54 @@ public class UsuarioServiceTest {
 
         assertEquals(2, resultado.size());
         verify(repository).getUsuarioIdsByPermissaoEspecial(funcionalidade);
+    }
+
+    @Test
+    public void migrarDadosNetSales_deveMigrarUsuariosComCanalNetSales_quandoSolicitado() {
+        doReturn(umaListaDeUsuariosComDadosNetSales())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.migrarDadosNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+    }
+
+    @Test
+    public void migrarDadosNetSales_naoDeveMigrarUsuariosComCanalNetSales_quandoListaDeUsuariosVazia() {
+        doReturn(new ArrayList<Usuario>())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.migrarDadosNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+    }
+
+    @Test
+    public void atualizarCanalNetSales_deveMigrarUsuariosComCanalNetSales_quandoSolicitado() {
+        doReturn(umaListaDeUsuariosComDadosNetSales())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.atualizarCanalNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+    }
+
+    @Test
+    public void atualizarCanalNetSales_naoDeveMigrarUsuariosComCanalNetSales_quandoListaDeUsuariosVazia() {
+        doReturn(new ArrayList<Usuario>())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.atualizarCanalNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

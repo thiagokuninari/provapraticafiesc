@@ -123,6 +123,33 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuarioComDadosNetSales2() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales3() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosComDadosNetSales() {
+        return List.of(
+            umUsuarioComDadosNetSales(),
+            umUsuarioComDadosNetSales2(),
+            umUsuarioComDadosNetSales3());
+    }
+
     public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
                                                        Integer subCanalId,
                                                        ETipoCanal codigoSubCanal) {

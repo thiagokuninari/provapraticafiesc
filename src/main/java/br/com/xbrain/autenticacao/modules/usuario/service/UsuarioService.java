@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -1566,8 +1567,8 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado
             .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
-            .getSenha());
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
+                .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");
@@ -3422,6 +3423,45 @@ public class UsuarioService {
                 return usuario.getId();
             })
             .orElse(null);
+    }
+
+    public void migrarDadosNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
+        var listaDeUsuarios = gerarListaDeUsuarios(canalNetSalesId);
+
+        if (!listaDeUsuarios.isEmpty()) {
+            atualizarDadosNetSales(listaDeUsuarios, canalNetSalesResponse);
+        }
+
+        repository.save(listaDeUsuarios);
+    }
+
+    public void atualizarCanalNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
+        var listaDeUsuarios = gerarListaDeUsuarios(canalNetSalesId);
+
+        if (!listaDeUsuarios.isEmpty()) {
+            atualizarCanalNetSalesCodigo(listaDeUsuarios, canalNetSalesResponse);
+        }
+
+        repository.save(listaDeUsuarios);
+    }
+
+    private void atualizarDadosNetSales(List<Usuario> listaDeUsuarios, CanalNetSalesResponse canalNetSalesResponse) {
+        listaDeUsuarios
+            .forEach(usuario -> {
+                usuario.setCanalNetSalesId(canalNetSalesResponse.getId());
+                usuario.setCanalNetSalesCodigo(canalNetSalesResponse.getCodigo());
+            });
+    }
+
+    private void atualizarCanalNetSalesCodigo(List<Usuario> listaDeUsuarios, CanalNetSalesResponse canalNetSalesResponse) {
+        listaDeUsuarios
+            .forEach(usuario -> {
+                usuario.setCanalNetSalesCodigo(canalNetSalesResponse.getCodigo());
+            });
+    }
+
+    private List<Usuario> gerarListaDeUsuarios(Integer id) {
+        return repository.findAllByCanalNetSalesId(id);
     }
 
     private boolean existeUsuarioCadastradoIgualAtivo(Usuario usuario) {
