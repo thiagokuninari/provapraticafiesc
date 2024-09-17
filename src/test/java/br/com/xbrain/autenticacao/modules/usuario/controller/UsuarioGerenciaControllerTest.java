@@ -1755,7 +1755,7 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(put(API_URI + "/{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales", 1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonString(umCanalNetSalesResponse())))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(usuarioService).migrarDadosNetSales(any(Integer.class), any(CanalNetSalesResponse.class));
     }

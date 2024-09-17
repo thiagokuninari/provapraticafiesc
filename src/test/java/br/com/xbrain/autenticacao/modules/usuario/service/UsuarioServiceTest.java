@@ -212,6 +212,8 @@ public class UsuarioServiceTest {
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
+    private ArgumentCaptor<List<Usuario>> usuarioCaptorList;
+    @Captor
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
     @Captor
     private ArgumentCaptor<UsuarioSocialHubRequestMq> socialHubRequestCaptor;
@@ -5617,6 +5619,14 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository).save(usuarioCaptorList.capture());
+
+        assertThat(usuarioCaptorList.getValue())
+            .extracting("canalNetSalesId", "canalNetSalesCodigo")
+            .containsExactlyInAnyOrder(
+                tuple(2, "migracao"),
+                tuple(2, "migracao"),
+                tuple(2, "migracao"));
     }
 
     @Test
@@ -5629,6 +5639,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository, never()).save(any(Usuario.class));
     }
 
     @Test
@@ -5641,6 +5652,14 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository).save(usuarioCaptorList.capture());
+
+        assertThat(usuarioCaptorList.getValue())
+            .extracting("canalNetSalesId", "canalNetSalesCodigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, "migracao"),
+                tuple(1, "migracao"),
+                tuple(1, "migracao"));
     }
 
     @Test
@@ -5653,6 +5672,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository, never()).save(any(Usuario.class));
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

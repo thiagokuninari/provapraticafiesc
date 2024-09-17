@@ -3426,23 +3426,21 @@ public class UsuarioService {
     }
 
     public void migrarDadosNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
-        var listaDeUsuarios = gerarListaDeUsuarios(canalNetSalesId);
+        var listaDeUsuarios = getUsuariosByCanalNetSalesId(canalNetSalesId);
 
         if (!listaDeUsuarios.isEmpty()) {
             atualizarDadosNetSales(listaDeUsuarios, canalNetSalesResponse);
+            repository.save(listaDeUsuarios);
         }
-
-        repository.save(listaDeUsuarios);
     }
 
     public void atualizarCanalNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
-        var listaDeUsuarios = gerarListaDeUsuarios(canalNetSalesId);
+        var listaDeUsuarios = getUsuariosByCanalNetSalesId(canalNetSalesId);
 
         if (!listaDeUsuarios.isEmpty()) {
             atualizarCanalNetSalesCodigo(listaDeUsuarios, canalNetSalesResponse);
+            repository.save(listaDeUsuarios);
         }
-
-        repository.save(listaDeUsuarios);
     }
 
     private void atualizarDadosNetSales(List<Usuario> listaDeUsuarios, CanalNetSalesResponse canalNetSalesResponse) {
@@ -3460,7 +3458,7 @@ public class UsuarioService {
             });
     }
 
-    private List<Usuario> gerarListaDeUsuarios(Integer id) {
+    private List<Usuario> getUsuariosByCanalNetSalesId(Integer id) {
         return repository.findAllByCanalNetSalesId(id);
     }
 
