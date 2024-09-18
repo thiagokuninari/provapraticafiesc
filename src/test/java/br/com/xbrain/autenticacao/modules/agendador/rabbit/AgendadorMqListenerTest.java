@@ -2,13 +2,13 @@ package br.com.xbrain.autenticacao.modules.agendador.rabbit;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThatCode;
@@ -39,9 +39,9 @@ public class AgendadorMqListenerTest {
         var agendadorMqDto = new AgendadorMqDto();
         agendadorMqDto.setJobName("AGD_01");
 
-        assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(AmqpRejectAndDontRequeueException.class)
             .isThrownBy(() -> listener.executarAgendador(agendadorMqDto))
-            .withMessage("Agendador não encontrado.");
+            .withMessage("br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException: Agendador não encontrado.");
     }
 }
 

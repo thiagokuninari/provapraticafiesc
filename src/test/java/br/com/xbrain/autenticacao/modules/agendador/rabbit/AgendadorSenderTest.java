@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+@Slf4j
 @RunWith(MockitoJUnitRunner.class)
 public class AgendadorSenderTest {
 

@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.agendador.enums;
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import br.com.xbrain.autenticacao.modules.agendador.rabbit.AgendadorSender;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -55,7 +55,7 @@ public class EAgendadorTest {
 
     @Test
     public void convertFrom_deveLancarException_quandoNaoEncontrarValorNoEnum() {
-        assertThatExceptionOfType(ValidacaoException.class)
+        assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> EAgendador.convertFrom("AGD_0261"))
             .withMessage("Agendador não encontrado.");
     }

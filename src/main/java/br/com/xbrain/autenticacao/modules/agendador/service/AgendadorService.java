@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.agendador.service;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
+import br.com.xbrain.autenticacao.modules.agendador.enums.EStatusAgendador;
 import br.com.xbrain.autenticacao.modules.agendador.rabbit.AgendadorSender;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
@@ -26,7 +27,7 @@ public class AgendadorService {
         log.info("Removendo caches de estrutura por agente autorizado.");
         runAsync(() -> {
             aaService.flushCacheEstruturasAas();
-            enviarParaFila(mqDto, agendadorSender);
+            setarStatusSucessoEEnviarParaFila(mqDto, agendadorSender);
         }).exceptionally(ex -> {
             setarErroEEnviarParaFila(ex, mqDto, agendadorSender);
             return null;
@@ -38,7 +39,7 @@ public class AgendadorService {
         log.info("Removendo cache de feriados.");
         runAsync(() -> {
             feriadoService.flushCacheFeriados();
-            enviarParaFila(mqDto, agendadorSender);
+            setarStatusSucessoEEnviarParaFila(mqDto, agendadorSender);
         }).exceptionally(ex -> {
             setarErroEEnviarParaFila(ex, mqDto, agendadorSender);
             return null;
@@ -46,13 +47,19 @@ public class AgendadorService {
         log.info("Finaliza processo de remoção de cache de feriados.");
     }
 
+    private void setarErroEEnviarParaFila(Throwable ex, AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
+        mqDto.setErro(ex.getMessage());
+        mqDto.setStatus(EStatusAgendador.FALHA);
+        enviarParaFila(mqDto, agendadorSender);
+    }
+
+    private static void setarStatusSucessoEEnviarParaFila(AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
+        mqDto.setStatus(EStatusAgendador.SUCESSO);
+        enviarParaFila(mqDto, agendadorSender);
+    }
+
     private static void enviarParaFila(AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
         mqDto.setDataFimExecucao(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         agendadorSender.send(mqDto);
-    }
-
-    private static void setarErroEEnviarParaFila(Throwable ex, AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
-        mqDto.setErro(ex.getMessage());
-        enviarParaFila(mqDto, agendadorSender);
     }
 }

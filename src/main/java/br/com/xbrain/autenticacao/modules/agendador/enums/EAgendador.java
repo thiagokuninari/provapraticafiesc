@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.agendador.enums;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
@@ -31,7 +31,7 @@ public enum EAgendador {
         return Arrays.stream(EAgendador.values())
             .filter(agendador -> agendador.name().equalsIgnoreCase(value))
             .findFirst()
-            .orElseThrow(() -> new ValidacaoException("Agendador não encontrado."));
+            .orElseThrow(() -> new NotFoundException("Agendador não encontrado."));
     }
 }
 
