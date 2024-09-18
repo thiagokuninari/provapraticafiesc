@@ -1,16 +1,13 @@
 package br.com.xbrain.autenticacao.modules.agendador.rabbit;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import nl.altindag.log.LogCaptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -47,20 +44,16 @@ public class AgendadorSenderTest {
 
     @Test
     public void send_deveLancarException_quandoHouverErroAoEnviarParaFila() {
-        var logger = (Logger) LoggerFactory.getLogger(AgendadorSender.class);
-        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-        listAppender.start();
-        logger.addAppender(listAppender);
-
         var agendadorMqDto = new AgendadorMqDto();
         agendadorMqDto.setJobName("limparCache");
 
         doThrow(new AmqpException("Erro ao processar job."))
             .when(rabbitTemplate).convertAndSend("agendador", agendadorMqDto);
 
+        var logger = LogCaptor.forClass(AgendadorSender.class);
         sender.send(agendadorMqDto);
 
-        assertThat(listAppender.list.get(0).getFormattedMessage())
+        assertThat(logger.getLogs().get(0))
             .isEqualTo("Erro ao enviar processamento do job: limparCache para fila.");
 
         verify(rabbitTemplate).convertAndSend("agendador", agendadorMqDto);

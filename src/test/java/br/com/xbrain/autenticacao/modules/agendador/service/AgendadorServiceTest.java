@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import br.com.xbrain.autenticacao.modules.agendador.enums.EStatusAgendador;
 import br.com.xbrain.autenticacao.modules.agendador.rabbit.AgendadorSender;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +90,7 @@ public class AgendadorServiceTest {
     public void setarErroEEnviarParaFila_deveSetarStatusErroNoDtoEEnviarParaFila() {
         var dto = new AgendadorMqDto();
 
-        agendadorService.setarErroEEnviarParaFila(new ValidacaoException("erro"), dto);
+        agendadorService.setarErroEEnviarParaFila("erro", dto);
 
         assertEquals(dto.getStatus(), EStatusAgendador.FALHA);
         verify(agendadorSender).send(dto);

@@ -29,7 +29,7 @@ public class AgendadorService {
             aaService.flushCacheEstruturasAas();
             setarStatusSucessoEEnviarParaFila(mqDto);
         }).exceptionally(ex -> {
-            setarErroEEnviarParaFila(ex, mqDto);
+            setarErroEEnviarParaFila(ex.getMessage(), mqDto);
             return null;
         });
         log.info("Finaliza processo de remoção de caches de estrutura por agente autorizado.");
@@ -41,14 +41,14 @@ public class AgendadorService {
             feriadoService.flushCacheFeriados();
             setarStatusSucessoEEnviarParaFila(mqDto);
         }).exceptionally(ex -> {
-            setarErroEEnviarParaFila(ex, mqDto);
+            setarErroEEnviarParaFila(ex.getMessage(), mqDto);
             return null;
         });
         log.info("Finaliza processo de remoção de cache de feriados.");
     }
 
-    public void setarErroEEnviarParaFila(Throwable ex, AgendadorMqDto mqDto) {
-        mqDto.setErro(ex.getMessage());
+    public void setarErroEEnviarParaFila(String erro, AgendadorMqDto mqDto) {
+        mqDto.setErro(erro);
         mqDto.setStatus(EStatusAgendador.FALHA);
         enviarParaFila(mqDto);
     }

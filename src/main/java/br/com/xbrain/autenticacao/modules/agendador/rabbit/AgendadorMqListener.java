@@ -23,7 +23,7 @@ public class AgendadorMqListener {
             EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto);
         } catch (Exception ex) {
             log.error("Erro ao executar agendador", ex);
-            service.setarErroEEnviarParaFila(ex, agendadorMqDto);
+            service.setarErroEEnviarParaFila(ex.getMessage(), agendadorMqDto);
         }
     }
 }
