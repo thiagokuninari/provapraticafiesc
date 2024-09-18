@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.agendador.rabbit;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
 import br.com.xbrain.autenticacao.modules.agendador.enums.EAgendador;
-import br.com.xbrain.autenticacao.modules.agendador.enums.EStatusAgendador;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +21,10 @@ public class AgendadorMqListener {
     public void executarAgendador(AgendadorMqDto agendadorMqDto) {
         try {
             log.info("Inicia execução do agendador: {}.", agendadorMqDto.getJobName());
-            agendadorMqDto.setStatus(EStatusAgendador.EM_PROCESSO);
+            service.setarStatusEmProcessoEEnviarParaFila(agendadorMqDto);
             EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto);
         } catch (Exception ex) {
-            service.setarErroEEnviarParaFila(ex, agendadorMqDto, agendadorSender);
+            service.setarErroEEnviarParaFila(ex, agendadorMqDto);
             throw new AmqpRejectAndDontRequeueException(ex);
         }
     }

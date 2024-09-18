@@ -47,7 +47,7 @@ public class AgendadorMqListenerTest {
             .isThrownBy(() -> listener.executarAgendador(agendadorMqDto))
             .withMessage("br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException: Agendador não encontrado.");
 
-        verify(service).setarErroEEnviarParaFila(any(NotFoundException.class), eq(agendadorMqDto), eq(agendadorSender));
+        verify(service).setarErroEEnviarParaFila(any(NotFoundException.class), eq(agendadorMqDto));
     }
 }
 
