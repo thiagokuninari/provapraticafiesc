@@ -25,9 +25,7 @@ public class AgendadorMqListener {
             agendadorMqDto.setStatus(EStatusAgendador.EM_PROCESSO);
             EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto);
         } catch (Exception ex) {
-            agendadorMqDto.setErro("Erro ao processar agendador: " + ex.getMessage());
-            agendadorMqDto.setStatus(EStatusAgendador.FALHA);
-            agendadorSender.send(agendadorMqDto);
+            service.setarErroEEnviarParaFila(ex, agendadorMqDto, agendadorSender);
             throw new AmqpRejectAndDontRequeueException(ex);
         }
     }

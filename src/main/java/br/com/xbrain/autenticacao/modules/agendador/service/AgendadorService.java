@@ -47,7 +47,7 @@ public class AgendadorService {
         log.info("Finaliza processo de remoção de cache de feriados.");
     }
 
-    private void setarErroEEnviarParaFila(Throwable ex, AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
+    public void setarErroEEnviarParaFila(Throwable ex, AgendadorMqDto mqDto, AgendadorSender agendadorSender) {
         mqDto.setErro(ex.getMessage());
         mqDto.setStatus(EStatusAgendador.FALHA);
         enviarParaFila(mqDto, agendadorSender);
