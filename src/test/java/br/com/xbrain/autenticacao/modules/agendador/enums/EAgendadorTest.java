@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agendador.enums;
 
 import br.com.xbrain.autenticacao.modules.agendador.dto.AgendadorMqDto;
-import br.com.xbrain.autenticacao.modules.agendador.rabbit.AgendadorSender;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import org.junit.Before;
@@ -17,8 +16,6 @@ public class EAgendadorTest {
 
     @Mock
     private AgendadorService service;
-    @Mock
-    private AgendadorSender agendadorSender;
 
     @Before()
     public void setUp() {
