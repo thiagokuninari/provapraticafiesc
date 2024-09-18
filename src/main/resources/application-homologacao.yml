@@ -47,7 +47,7 @@ app-config:
     equipe-venda:
       url: http://172.10.10.82:8089
     contato-crn:
-      url: http://172.10.10.64:8084
+      url: http://contato-crn-api-hom:8084
     comunicados:
       url: http://172.10.10.53:6553
     claro-indico:
