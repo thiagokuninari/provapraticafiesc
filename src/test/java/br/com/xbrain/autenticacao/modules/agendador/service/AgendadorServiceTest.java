@@ -88,7 +88,7 @@ public class AgendadorServiceTest {
     }
 
     @Test
-    public void setarErroEEnviarParaFila_deveSetarErroNoDtoEEnviarParaFila() {
+    public void setarErroEEnviarParaFila_deveSetarStatusErroNoDtoEEnviarParaFila() {
         var dto = new AgendadorMqDto();
 
         agendadorService.setarErroEEnviarParaFila(new ValidacaoException("erro"), dto);
@@ -98,7 +98,7 @@ public class AgendadorServiceTest {
     }
 
     @Test
-    public void setarStatusEmProcessoEEnviarParaFila_deveSetarErroNoDtoEEnviarParaFila() {
+    public void setarStatusEmProcessoEEnviarParaFila_deveSetarStutusEmProcessoNoDtoEEnviarParaFila() {
         var dto = new AgendadorMqDto();
 
         agendadorService.setarStatusEmProcessoEEnviarParaFila(dto);
