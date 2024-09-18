@@ -71,7 +71,7 @@ app-config:
     claro-indico:
       url: http://172.10.10.55:8055
     gestao:
-      url: http://172.10.10.71:8091
+      url: http://conexao-gestao-api-prod:8091
     notificacao:
       url: http://172.10.10.91:8081
     agente-autorizado:
