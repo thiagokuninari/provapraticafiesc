@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.agendador.enums.EAgendador;
 import br.com.xbrain.autenticacao.modules.agendador.service.AgendadorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 public class AgendadorMqListener {
 
     private final AgendadorService service;
-    private final AgendadorSender agendadorSender;
 
     @RabbitListener(queues = "${app-config.queue.agendador-autenticacao-api}")
     public void executarAgendador(AgendadorMqDto agendadorMqDto) {
@@ -24,8 +22,8 @@ public class AgendadorMqListener {
             service.setarStatusEmProcessoEEnviarParaFila(agendadorMqDto);
             EAgendador.convertFrom(agendadorMqDto.getJobName()).executar(service, agendadorMqDto);
         } catch (Exception ex) {
+            log.error("Erro ao executar agendador", ex);
             service.setarErroEEnviarParaFila(ex, agendadorMqDto);
-            throw new AmqpRejectAndDontRequeueException(ex);
         }
     }
 }

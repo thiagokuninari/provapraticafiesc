@@ -21,8 +21,7 @@ public class AgendadorSender {
         try {
             rabbitTemplate.convertAndSend(agendadorSuccessQueue, agendadorMqDto);
         } catch (AmqpException ex) {
-            log.error(String.format("Erro ao enviar processamento do job: %s para fila.", agendadorMqDto.getJobName()));
-            log.error(ex.getMessage());
+            log.error("Erro ao enviar processamento do job: {} para fila.", agendadorMqDto.getJobName(), ex);
         }
     }
 }

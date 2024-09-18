@@ -60,10 +60,8 @@ public class AgendadorSenderTest {
 
         sender.send(agendadorMqDto);
 
-        assertThat(listAppender.list.get(0).getMessage())
+        assertThat(listAppender.list.get(0).getFormattedMessage())
             .isEqualTo("Erro ao enviar processamento do job: limparCache para fila.");
-        assertThat(listAppender.list.get(1).getMessage())
-            .isEqualTo("Erro ao processar job.");
 
         verify(rabbitTemplate).convertAndSend("agendador", agendadorMqDto);
     }
