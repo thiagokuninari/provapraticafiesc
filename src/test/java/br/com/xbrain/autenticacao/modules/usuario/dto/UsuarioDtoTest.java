@@ -471,6 +471,8 @@ public class UsuarioDtoTest {
             .usuarioCadastroId(2222)
             .unidadesNegociosId(List.of())
             .empresasId(List.of())
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDA")
+            .codigoEquipeVendaNetSales("CODIGO EQUIPE VENDA")
             .recuperarSenhaTentativa(0)
             .build();
 
@@ -634,6 +636,8 @@ public class UsuarioDtoTest {
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDA")
+            .codigoEquipeVendaNetSales("CODIGO EQUIPE VENDA")
             .build();
     }
 }

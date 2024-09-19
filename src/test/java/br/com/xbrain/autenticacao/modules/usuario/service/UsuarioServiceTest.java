@@ -4237,6 +4237,51 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void saveFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComDadosNetSales_quandoSolicitado() {
+        var umCargo = Cargo.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .build();
+        var umNivel = Nivel.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO)
+            .build();
+
+        when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
+            .thenReturn(umCargo);
+        when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(umNivel);
+        when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
+        when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
+        when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        var usuarioMqRequest = UsuarioMqRequest.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .nivel(AGENTE_AUTORIZADO)
+            .situacao(ESituacao.A)
+            .tecnicoIndicador(true)
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDA")
+            .codigoEquipeVendaNetSales("CODIGO EQUIPE VENDA")
+            .build();
+
+        service.saveFromQueue(usuarioMqRequest);
+
+        var expectedDto = umUsuarioDtoSender();
+        expectedDto.setNivelId(1);
+        expectedDto.setNivelCodigo(AGENTE_AUTORIZADO);
+        expectedDto.setNomeEquipeVendaNetSales("NOME EQUIPE VENDA");
+        expectedDto.setCodigoEquipeVendaNetSales("CODIGO EQUIPE VENDA");
+
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest));
+        verify(permissaoTecnicoIndicadorService, times(1))
+            .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest), eq(false));
+        verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+    }
+
+    @Test
     public void updateFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
         var umCargo = Cargo.builder()
             .id(1)
