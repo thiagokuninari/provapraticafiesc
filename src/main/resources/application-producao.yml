@@ -75,7 +75,7 @@ app-config:
     notificacao:
       url: http://172.10.10.91:8081
     agente-autorizado:
-      url: http://172.10.10.113:8300
+      url: http://agente-autorizado-api-prod:8300
     emails:
       url: http://172.10.10.41:8080
     integracao-vendas:
