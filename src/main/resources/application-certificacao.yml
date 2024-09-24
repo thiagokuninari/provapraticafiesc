@@ -45,7 +45,7 @@ app-config:
     mailing:
       url: http://mailing-api-crt:8095
     mailing-importacao:
-      url: http://172.10.10.86:8087
+      url: http://mailing-importacao-api-crt:8087
     equipe-venda:
       url: http://equipe-venda-api-crt:8089
     contato-crn:
