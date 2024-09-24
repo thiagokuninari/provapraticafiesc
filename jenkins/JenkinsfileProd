@@ -18,7 +18,7 @@ pipeline {
         CURRENT_IMAGE = sh(script: "${DOCKER_PROD} ps -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
         JAVA_OPTS = "-Xms2g -Xmx8g -Dspring.profiles.active=${PROFILE} \
                                    -Delastic.apm.service_name=${CONTAINER_NAME} \
-                                   -Delastic.apm.server_url=http://192.168.2.23:8200 \
+                                   -Delastic.apm.server_url=http://192.168.2.64:8200 \
                                    -Delastic.apm.application_packages=br.com.xbrain"
     }
     tools {
