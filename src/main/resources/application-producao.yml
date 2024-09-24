@@ -61,7 +61,7 @@ app-config:
     parceiros-online:
       url: http://172.10.10.76:8099
     mailing:
-      url: http://172.10.10.77:8095
+      url: http://mailing-api-prod:8095
     equipe-venda:
       url: http://equipe-venda-api-prod:8089
     contato-crn:
