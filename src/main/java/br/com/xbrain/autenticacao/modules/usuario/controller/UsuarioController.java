@@ -632,7 +632,12 @@ public class UsuarioController {
     }
 
     @GetMapping("buscar-emails/{cargoId}")
-    List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
+    public List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
         return usuarioService.getEmailsByCargoId(cargoId);
+    }
+
+    @GetMapping("operadores-backoffice-centralizado")
+    public List<UsuarioResponse> buscarOperadoresBackofficeCentralizado() {
+        return usuarioService.getOperadoresBackofficeCentralizado();
     }
 }

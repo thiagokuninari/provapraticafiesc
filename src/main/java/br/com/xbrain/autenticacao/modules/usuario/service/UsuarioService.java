@@ -178,6 +178,7 @@ public class UsuarioService {
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
     private static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
+    private static final Integer OPERADOR_BACKOFFICE_CENTRALIZADO_ID = 115;
 
     @Autowired
     private UsuarioRepository repository;
@@ -3431,6 +3432,13 @@ public class UsuarioService {
     public List<String> getEmailsByCargoId(Integer cargoId) {
         return repository.findByCargo_IdAndSituacao(cargoId, ESituacao.A).stream()
             .map(Usuario::getEmail)
+            .collect(toList());
+    }
+
+    public List<UsuarioResponse> getOperadoresBackofficeCentralizado() {
+        return repository.findByCargo_IdAndSituacao(OPERADOR_BACKOFFICE_CENTRALIZADO_ID, ATIVO)
+            .stream()
+            .map(UsuarioResponse::of)
             .collect(toList());
     }
 }
