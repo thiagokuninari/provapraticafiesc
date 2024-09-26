@@ -23,7 +23,7 @@ public class DirecionamentoInsideSalesVendedorServiceTest {
     private DirecionamentoInsideSalesVendedorClient client;
 
     @Test
-    public void inativarDirecionamentoPorUsuarioVendedorId_deveNaoDeveLacarException_quandoSolicitado() {
+    public void inativarDirecionamentoPorUsuarioVendedorId_naoDeveLancarException_quandoSolicitado() {
         doNothing()
             .when(client).inativarDirecionamentoPorUsuarioVendedorId(14);
 
@@ -32,7 +32,7 @@ public class DirecionamentoInsideSalesVendedorServiceTest {
     }
 
     @Test
-    public void inativarDirecionamentoPorUsuarioVendedorId_deveDeveLacarException_quandoErroConexaoComClient() {
+    public void inativarDirecionamentoPorUsuarioVendedorId_deveLancarException_quandoErroConexaoComClient() {
         doThrow(RetryableException.class)
             .when(client).inativarDirecionamentoPorUsuarioVendedorId(14);
 
@@ -44,7 +44,7 @@ public class DirecionamentoInsideSalesVendedorServiceTest {
     }
 
     @Test
-    public void inativarDirecionamentoPorUsuarioVendedorId_deveDeveLacarException_quandoErroRequisicao() {
+    public void inativarDirecionamentoPorUsuarioVendedorId_deveLancarException_quandoErroRequisicao() {
         doThrow(HystrixBadRequestException.class)
             .when(client).inativarDirecionamentoPorUsuarioVendedorId(14);
 

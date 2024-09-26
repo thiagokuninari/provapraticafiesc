@@ -24,7 +24,7 @@ public class IndicacaoInsideSalesPmeServiceTest {
     private IndicacaoInsideSalesPmeClient client;
 
     @Test
-    public void redistribuirIndicacoesPorUsuarioVendedorId_deveNaoDeveLacarException_quandoSolicitado() {
+    public void redistribuirIndicacoesPorUsuarioVendedorId_naoDeveLancarException_quandoSolicitado() {
         doNothing()
             .when(client).redistribuirIndicacoesPorUsuarioVendedorId(14);
 
@@ -33,7 +33,7 @@ public class IndicacaoInsideSalesPmeServiceTest {
     }
 
     @Test
-    public void redistribuirIndicacoesPorUsuarioVendedorId_deveDeveLacarException_quandoErroConexaoComClient() {
+    public void redistribuirIndicacoesPorUsuarioVendedorId_deveLancarException_quandoErroConexaoComClient() {
         doThrow(RetryableException.class)
             .when(client).redistribuirIndicacoesPorUsuarioVendedorId(14);
 
@@ -45,7 +45,7 @@ public class IndicacaoInsideSalesPmeServiceTest {
     }
 
     @Test
-    public void iredistribuirIndicacoesPorUsuarioVendedorId_deveDeveLacarException_quandoErroRequisicao() {
+    public void iredistribuirIndicacoesPorUsuarioVendedorId_deveLancarException_quandoErroRequisicao() {
         doThrow(HystrixBadRequestException.class)
             .when(client).redistribuirIndicacoesPorUsuarioVendedorId(14);
 
