@@ -131,4 +131,11 @@ public enum CodigoCargo {
             AGENTE_AUTORIZADO_TECNICO_COORDENADOR
         );
     }
+
+    public static List<CodigoCargo> getCargosVendedorInsideSales() {
+        return List.of(
+            OPERACAO_EXECUTIVO_VENDAS,
+            VENDEDOR_OPERACAO
+        );
+    }
 }

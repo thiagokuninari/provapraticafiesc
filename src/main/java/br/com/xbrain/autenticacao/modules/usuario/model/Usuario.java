@@ -780,8 +780,7 @@ public class Usuario {
 
     public boolean isCargoVendedorInsideSales() {
         var cargo = getCargoCodigo();
-        var cargosVendedorInsideSales = List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
 
-        return cargo != null && cargosVendedorInsideSales.contains(cargo);
+        return cargo != null && getCargosVendedorInsideSales().contains(cargo);
     }
 }

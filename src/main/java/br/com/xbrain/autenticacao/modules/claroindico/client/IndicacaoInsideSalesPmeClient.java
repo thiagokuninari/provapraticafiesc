@@ -5,7 +5,7 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
-@FeignClient(name = "agenteAutorizadoClient",
+@FeignClient(name = "indicacaoInsideSalesPmeClient",
     url = "${app-config.services.claro-indico.url}",
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface IndicacaoInsideSalesPmeClient {
