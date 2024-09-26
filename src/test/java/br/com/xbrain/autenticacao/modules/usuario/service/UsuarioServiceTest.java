@@ -126,6 +126,7 @@ import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -6067,5 +6068,36 @@ public class UsuarioServiceTest {
         static ApplicationEventPublisher publisher() {
             return mock(ApplicationEventPublisher.class);
         }
+    }
+
+    @Test
+    public void getOperadoresBackofficeCentralizado_deveRetornarLista_quandoHouverOperadoresAtivos() {
+        var operadorBackofficeCentralizado = Usuario.builder()
+            .id(1)
+            .nome("USUARIO UM")
+            .cargo(Cargo.builder().id(115).codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+
+        when(repository.findByCargo_IdAndSituacao(anyInt(), any()))
+            .thenReturn(List.of(operadorBackofficeCentralizado));
+        
+        var resultado = service.getOperadoresBackofficeCentralizado();
+
+        assertFalse(resultado.isEmpty());
+        assertThat(resultado).extracting("id", "nome").containsExactly(tuple(1, "USUARIO UM"));
+
+        verify(repository).findByCargo_IdAndSituacao(eq(115), eq(A));
+    }
+
+    @Test
+    public void getOperadoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverOperadoresAtivos() {
+        when(repository.findByCargo_IdAndSituacao(anyInt(), any())).thenReturn(List.of());
+        
+        var resultado = service.getOperadoresBackofficeCentralizado();
+
+        assertTrue(resultado.isEmpty());
+
+        verify(repository).findByCargo_IdAndSituacao(eq(115), eq(A));
     }
 }

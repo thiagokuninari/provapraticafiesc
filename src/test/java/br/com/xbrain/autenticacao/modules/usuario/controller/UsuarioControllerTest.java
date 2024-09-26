@@ -2488,4 +2488,24 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getUsuariosIdByPermissaoEspecial("role_101");
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void buscarOperadoresBackofficeCentralizado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/operadores-backoffice-centralizado"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void buscarOperadoresBackofficeCentralizado_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/operadores-backoffice-centralizado"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getOperadoresBackofficeCentralizado();
+    }
 }
