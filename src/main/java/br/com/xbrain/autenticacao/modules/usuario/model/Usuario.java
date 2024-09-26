@@ -610,7 +610,7 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
-        return cargo.getCodigo().equals(codigoCargo);
+        return codigoCargo.equals(cargo.getCodigo());
     }
 
     public boolean hasCanal(ECanal canal) {
@@ -776,5 +776,12 @@ public class Usuario {
             || StringUtils.isBlank(canalNetSales)
             || StringUtils.isBlank(nomeEquipeVendaNetSales)
             || StringUtils.isBlank(codigoEquipeVendaNetSales);
+    }
+
+    public boolean isCargoVendedorInsideSales() {
+        var cargo = getCargoCodigo();
+        var cargosVendedorInsideSales = List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
+
+        return cargo != null && cargosVendedorInsideSales.contains(cargo);
     }
 }

@@ -5,6 +5,8 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.DirecionamentoInsideSalesVendedorService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.IndicacaoInsideSalesPmeService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -277,6 +279,10 @@ public class UsuarioService {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Autowired
     private SuporteVendasService suporteVendasService;
+    @Autowired
+    private DirecionamentoInsideSalesVendedorService direcionamentoInsideSalesVendedorService;
+    @Autowired
+    private IndicacaoInsideSalesPmeService indicacaoInsideSalesPmeService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -634,6 +640,7 @@ public class UsuarioService {
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
             configurarDataReativacao(usuario, situacaoAnterior);
+            validarERedistribuirIndicacoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
             configurarCadastro(usuario);
@@ -3432,5 +3439,29 @@ public class UsuarioService {
         return repository.findByCargo_IdAndSituacao(cargoId, ESituacao.A).stream()
             .map(Usuario::getEmail)
             .collect(toList());
+    }
+
+    private void redistribuirIndicacoesDoUsuario(Integer usuarioVendedorId) {
+        indicacaoInsideSalesPmeService.redistribuirIndicacoesPorUsuarioVendedorId(usuarioVendedorId);
+    }
+
+    private void removerDirecionamentoPorCepDoUsuario(Integer usuarioVendedorId) {
+        direcionamentoInsideSalesVendedorService.inativarDirecionamentoPorUsuarioVendedorId(usuarioVendedorId);
+    }
+
+    private void validarERedistribuirIndicacoes(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = repository.findById(usuario.getId())
+                .orElseThrow(() -> new NotFoundException(MSG_USUARIO_NAO_ENCONTRADO));
+
+            var mudouSubCanal = usuarioAntigo.hasSubCanalInsideSalesPme()
+                && !usuario.hasSubCanalInsideSalesPme();
+            var mudouCargo = usuarioAntigo.isCargoVendedorInsideSales() && !usuario.isCargoVendedorInsideSales();
+
+            if (mudouSubCanal || mudouCargo) {
+                removerDirecionamentoPorCepDoUsuario(usuario.getId());
+                redistribuirIndicacoesDoUsuario(usuario.getId());
+            }
+        }
     }
 }

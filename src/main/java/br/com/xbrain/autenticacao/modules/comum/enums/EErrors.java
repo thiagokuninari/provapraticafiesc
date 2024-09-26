@@ -189,7 +189,13 @@ public enum EErrors {
         "#058 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto."),
     ERRO_BUSCAR_FERIADOS(
         "#061 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#061 - Ocorreu um erro ao buscar feriados.");
+        "#061 - Ocorreu um erro ao buscar feriados."),
+    ERRO_INATIVAR_DIRECIONAMENTOS(
+        "#062 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#062 - Ocorreu um erro ao inativar os direcionamentos do vendedor."),
+    ERRO_REDISTRIBUIR_INSIDE_SALES(
+        "#063 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#063 - Ocorreu um erro ao redistribuir HPs Inside Sales PME do vendedor.");
 
     private final String descricao;
     private final String descricaoTecnica;

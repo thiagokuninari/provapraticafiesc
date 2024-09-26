@@ -942,6 +942,33 @@ public class UsuarioTest {
         assertThat(usuario.isOperadorTelevendasAtivoLocal()).isFalse();
     }
 
+    @Test
+    public void isCargoVendedorInsideSales_deveRetornarTrue_quandoCargoVendedorOperacao() {
+        var usuario = Usuario.builder()
+            .cargo(umCargo(VENDEDOR_OPERACAO))
+            .build();
+
+        assertTrue(usuario.isCargoVendedorInsideSales());
+    }
+
+    @Test
+    public void isCargoVendedorInsideSales_deveRetornarTrue_quandoCargoOperacaoExecutivoVendas() {
+        var usuario = Usuario.builder()
+            .cargo(umCargo(OPERACAO_EXECUTIVO_VENDAS))
+            .build();
+
+        assertTrue(usuario.isCargoVendedorInsideSales());
+    }
+
+    @Test
+    public void isCargoVendedorInsideSales_deveRetornarFalse_quandoCargoNaoVendedorInsideSales() {
+        var usuario = Usuario.builder()
+            .cargo(umCargo(GERENTE_OPERACAO))
+            .build();
+
+        assertFalse(usuario.isCargoVendedorInsideSales());
+    }
+
     private static Usuario umUsuarioComCargoENivel(CodigoNivel nivelCodigo, CodigoCargo codigoCargo) {
         return Usuario
             .builder()
