@@ -19,7 +19,7 @@ public class IndicacaoInsideSalesPmeService {
         try {
             client.redistribuirIndicacoesPorUsuarioVendedorId(usuarioVendedorId);
         } catch (RetryableException ex) {
-            log.warn("Erro ao redistribuir HPs Inside Sales do usuário: {}", usuarioVendedorId);
+            log.error("Erro ao redistribuir HPs Inside Sales do usuário: {}", usuarioVendedorId);
             throw new IntegracaoException(ex, DirecionamentoInsideSalesVendedorService.class.getName(),
                 EErrors.ERRO_REDISTRIBUIR_INSIDE_SALES);
         } catch (HystrixBadRequestException ex) {

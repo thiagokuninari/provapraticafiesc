@@ -2,13 +2,10 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
 
 import java.util.List;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CodigoCargoTest {
 
     @Test

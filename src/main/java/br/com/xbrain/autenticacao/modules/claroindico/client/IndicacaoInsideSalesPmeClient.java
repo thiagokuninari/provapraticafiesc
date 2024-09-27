@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 public interface IndicacaoInsideSalesPmeClient {
     String URL_INDICACAO_INSIDE_SALES = "api/indicacoes-inside-sales-pme";
 
-    @PutMapping(URL_INDICACAO_INSIDE_SALES + "/redistribuir-indicacoes/{usuarioVendedorId")
-    void redistribuirIndicacoesPorUsuarioVendedorId(@PathVariable("usuarioVendedorId") Integer usuarioVendedorId);
+    @PutMapping(URL_INDICACAO_INSIDE_SALES + "/redistribuir-indicacoes/{usuarioVendedorId}")
+    void redistribuirIndicacoesPorUsuarioVendedorId(@PathVariable Integer usuarioVendedorId);
 }

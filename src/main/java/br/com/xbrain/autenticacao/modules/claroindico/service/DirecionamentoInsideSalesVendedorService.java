@@ -20,7 +20,7 @@ public class DirecionamentoInsideSalesVendedorService {
         try {
             client.inativarDirecionamentoPorUsuarioVendedorId(usuarioVendedorId);
         } catch (RetryableException ex) {
-            log.warn("Erro ao inativar direcionamentos vinculados ao vendedor: {}", usuarioVendedorId);
+            log.error("Erro ao inativar direcionamentos vinculados ao vendedor: {}", usuarioVendedorId);
             throw new IntegracaoException(ex, DirecionamentoInsideSalesVendedorService.class.getName(),
                 EErrors.ERRO_INATIVAR_DIRECIONAMENTOS);
         } catch (HystrixBadRequestException ex) {
