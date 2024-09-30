@@ -126,7 +126,7 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+                "O campo nome precisa ter entre 0 e 50 caracteres.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -643,7 +643,7 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+                "O campo nome precisa ter entre 0 e 50 caracteres.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
