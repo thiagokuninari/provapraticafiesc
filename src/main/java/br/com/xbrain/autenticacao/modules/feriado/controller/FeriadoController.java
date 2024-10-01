@@ -69,7 +69,7 @@ public class FeriadoController {
         return service.isFeriadoComCidadeId(cidadeId);
     }
 
-    @GetMapping("/proximos-feriados-nacionais")
+    @GetMapping("proximos-feriados-nacionais")
     public List<FeriadoResponse> getProximosFeriadosNacionais() {
         return service.getProximosFeriadosNacionais();
     }
