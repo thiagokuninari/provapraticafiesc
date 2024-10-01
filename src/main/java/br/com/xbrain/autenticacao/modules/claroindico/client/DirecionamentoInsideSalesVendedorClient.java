@@ -12,6 +12,6 @@ public interface DirecionamentoInsideSalesVendedorClient {
 
     String URL_DIRECIONAMENTO_VENDEDOR = "api/direcionamento-inside-sales-vendedores";
 
-    @PutMapping(URL_DIRECIONAMENTO_VENDEDOR + "inativar-direcionamentos/{usuarioVendedorId}")
+    @PutMapping(URL_DIRECIONAMENTO_VENDEDOR + "/inativar-direcionamentos/{usuarioVendedorId}")
     void inativarDirecionamentoPorUsuarioVendedorId(@PathVariable("usuarioVendedorId") Integer usuarioVendedorId);
 }
