@@ -27,7 +27,7 @@ pipeline {
                                    -Dcom.sun.management.jmxremote.local.only=false \
                                    -Djava.rmi.server.hostname=192.168.1.40 \
                                    -Delastic.apm.service_name=${CONTAINER_NAME} \
-                                   -Delastic.apm.server_url=http://192.168.2.23:8200 \
+                                   -Delastic.apm.server_url=http://192.168.2.64:8200 \
                                    -Delastic.apm.application_packages=br.com.xbrain"
     }
     tools {
@@ -38,8 +38,8 @@ pipeline {
         stage('Package') {
             steps {
                 slackSend channel: '#env-homologação',
-                        color: COLOR_MAP[currentBuild.getPreviousBuild().result],
-                        message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Started by ${BUILD_USER} (<${env.BUILD_URL}|Open>)"
+                          color: COLOR_MAP[currentBuild.getPreviousBuild().result],
+                          message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Started by ${BUILD_USER} (<${env.BUILD_URL}|Open>)"
                 sh 'mvn clean package -DskipTests=true'
             }
         }
@@ -133,13 +133,13 @@ pipeline {
     post {
         always {
             slackSend channel: '#env-homologação',
-                    color: COLOR_MAP[currentBuild.currentResult],
-                    message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
+                      color: COLOR_MAP[currentBuild.currentResult],
+                      message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
         }
         unstable {
             slackSend channel: '#env-homologação',
-                    color: COLOR_MAP[currentBuild.currentResult],
-                    message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
+                      color: COLOR_MAP[currentBuild.currentResult],
+                      message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
         }
     }
 }
