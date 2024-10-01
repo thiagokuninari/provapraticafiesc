@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
@@ -31,8 +33,6 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -92,7 +92,6 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
-import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
@@ -277,6 +276,8 @@ public class UsuarioService {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Autowired
     private SuporteVendasService suporteVendasService;
+    @Autowired
+    private SubNivelService subNivelService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -613,12 +614,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
-        var request = UsuarioDto.convertFrom(usuario);
+    public UsuarioDto save(UsuarioDto usuarioDto, MultipartFile foto) {
+        var usuario = UsuarioDto.convertFrom(usuarioDto);
         if (!isEmpty(foto)) {
-            fileService.salvarArquivo(request, foto);
+            fileService.salvarArquivo(usuario, foto);
         }
-        return save(request);
+        vincularSubNiveis(usuario, usuarioDto);
+        return save(usuario);
     }
 
     @Transactional
@@ -657,12 +659,39 @@ public class UsuarioService {
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
         permissaoTecnicoIndicadorService
             .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
+    }
+
+    private void removerPermissoesEspeciaisSubNivelMsoByNivel(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            repository.findById(usuario.getId())
+                .ifPresent(this::deletarPermissoesEspeciaisMso);
+        }
+    }
+
+    private void deletarPermissoesEspeciaisMso(Usuario usuarioAntigo) {
+        if (usuarioAntigo.isIdNivelMso()) {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(
+                subNivelService.getFuncionalidadesIdsByNivel(usuarioAntigo.getNivelId()),
+                List.of(usuarioAntigo.getId()));
+        }
     }
 
     private void adicionarPermissoes(Usuario usuario) {
         subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
         subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
         feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
+        this.adicionarPermissoesEspeciaisMsoBySubNivel(usuario);
+    }
+
+    private void adicionarPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
+        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
+            var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
+                usuario.getUsuarioCadastro().getId(),
+                subNivelService.getSubNivelFuncionalidadesIdsByCargo(usuario.getSubNiveis(), usuario.getCargoId()));
+
+            this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
+        }
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {
@@ -711,6 +740,12 @@ public class UsuarioService {
         var result = equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(usuarioAnterior.getId());
         if (!result.isEmpty()) {
             throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
+        }
+    }
+
+    private void vincularSubNiveis(Usuario usuario, UsuarioDto usuarioDto) {
+        if (!isEmpty(usuarioDto.getSubNiveisIds())) {
+            usuario.setSubNiveis(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds()));
         }
     }
 
@@ -795,7 +830,7 @@ public class UsuarioService {
         validarOrganizacaoEmpresa(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
-        desvincularGruposByUsuario(usuario);
+        tratarUsuarioAntigo(usuario);
         var isNovoCadastro = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -804,9 +839,18 @@ public class UsuarioService {
         return UsuarioResponse.of(usuario);
     }
 
+    private void tratarUsuarioAntigo(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            suporteVendasService.desvincularGruposByUsuario(usuarioAntigo, usuario);
+            deletarPermissoesEspeciaisMso(usuarioAntigo);
+        }
+    }
+
     public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
         validar(usuario);
         tratarCadastroUsuario(usuario);
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -821,20 +865,6 @@ public class UsuarioService {
                 throw new ValidacaoException(MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO);
             }
         }
-    }
-
-    public void desvincularGruposByUsuario(Usuario usuario) {
-        if (!usuario.isNovoCadastro()) {
-            var usuarioAntigo = findCompleteById(usuario.getId());
-            if (usuarioAntigo.isOperadorSuporteVendas() && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
-                suporteVendasService.desvincularGruposByUsuarioId(usuario.getId());
-            }
-        }
-    }
-
-    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
-            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
     }
 
     private void configurarCadastro(Usuario usuario) {
@@ -1566,8 +1596,8 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado
             .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
-            .getSenha());
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
+                .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");

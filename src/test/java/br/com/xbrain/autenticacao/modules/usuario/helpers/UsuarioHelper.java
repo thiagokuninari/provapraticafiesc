@@ -7,11 +7,14 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import lombok.experimental.UtilityClass;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -25,6 +28,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.umaFuncionalidadeBko;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
@@ -36,6 +40,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubcanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 
+@UtilityClass
 public class UsuarioHelper {
 
     public static Usuario umUsuario(Integer id, String nome, ESituacao situacao,
@@ -160,8 +165,8 @@ public class UsuarioHelper {
             .id(23)
             .cargo(Cargo.builder()
                 .codigo(MSO_CONSULTOR)
-                .nivel(Nivel
-                    .builder()
+                .nivel(Nivel.builder()
+                    .id(2)
                     .codigo(MSO)
                     .situacao(ESituacao.A)
                     .nome("MSO")
@@ -208,6 +213,19 @@ public class UsuarioHelper {
             .organizacaoId(1)
             .usuarioCadastroId(1)
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioMsoBackofficeDto(Integer usuarioId) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .nome("MSO BACKOFFICE")
+            .cpf("873.616.099-70")
+            .email("MSOBACKOFFICE@TESTE.COM.BR")
+            .nivelId(2)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .subNiveisIds(Set.of(1))
             .build();
     }
 
@@ -260,6 +278,7 @@ public class UsuarioHelper {
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .situacao(ESituacao.A)
+            .subNiveis(new HashSet<>())
             .build();
     }
 
@@ -299,6 +318,7 @@ public class UsuarioHelper {
             .recuperarSenhaTentativa(0)
             .tiposFeeder(Set.of())
             .subCanaisId(Set.of())
+            .subNiveisIds(Set.of())
             .build();
     }
 
@@ -984,6 +1004,78 @@ public class UsuarioHelper {
             .dataCadastro(LocalDateTime.of(2018, 12, 1, 0, 0))
             .cpf("111.111.111-11")
             .situacao(A)
+            .build();
+    }
+
+    public static SubNivel umSubNivel(Integer id, String codigo, String nome,
+                                      Set<CargoFuncionalidadeSubNivel> cargoFuncionalidadeSubNivels) {
+        return SubNivel.builder()
+            .id(id)
+            .codigo(codigo)
+            .nome(nome)
+            .cargoFuncionalidadeSubNiveis(cargoFuncionalidadeSubNivels)
+            .build();
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveisComUmSubNivel() {
+        return Set.of(umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+            Set.of(umCargoFuncionalidadeSubNivel(1, null, umaFuncionalidadeBko(1, "Teste 1"))))
+        );
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveis() {
+        return  Set.of(
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO","BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(3, null, umaFuncionalidadeBko(3, "Teste 3"))))
+        );
+    }
+
+    public static List<SubNivel> umaListaDeSubNiveis() {
+        return  List.of(
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoAnalista(), umaFuncionalidadeBko(3, "Teste 3")))),
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(4, null, umaFuncionalidadeBko(4, "Teste 4"))))
+        );
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveisComCargo() {
+        return  Set.of(
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, umCargoMsoAnalista(), umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoConsultor(), umaFuncionalidadeBko(3, "Teste 3")))),
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(4, umCargoMsoAnalista(), umaFuncionalidadeBko(4, "Teste 4"))))
+        );
+    }
+
+    public static CargoFuncionalidadeSubNivel umCargoFuncionalidadeSubNivel(Integer id, Cargo cargo,
+                                                                            Funcionalidade funcionalidade) {
+        return CargoFuncionalidadeSubNivel.builder()
+            .id(id)
+            .cargo(cargo)
+            .funcionalidade(funcionalidade)
+            .build();
+    }
+
+    public static Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
+        return Usuario.builder()
+            .id(100)
+            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
+                .id(organizacaoId)
+                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
+                .build())
+            .email("email@google.com")
             .build();
     }
 }

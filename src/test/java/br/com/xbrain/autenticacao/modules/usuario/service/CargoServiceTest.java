@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
@@ -32,8 +33,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosBko;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
@@ -129,6 +134,49 @@ public class CargoServiceTest {
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001);
 
+        verify(cargoRepository).findAll(predicate);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarOsCargosBackoffice_quandoUsuarioForMsoComPermissaoVisualizarDashboard() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(BKO_16008.getRole())));
+        var predicate = new CargoPredicate().comNivel(18).build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListaDeCargosBko());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(18, null, true))
+            .extracting("id", "codigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, BACKOFFICE_ANALISTA_TRATAMENTO),
+                tuple(2, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE),
+                tuple(3, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO),
+                tuple(4, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS),
+                tuple(5, BACKOFFICE_COORDENADOR),
+                tuple(6, BACKOFFICE_GERENTE));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(cargoRepository).findAll(predicate);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarListaVazia_quandoUsuarioForMsoENaoPossuirPermissaoVisualizarDashboard() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        var predicate = new CargoPredicate()
+            .comNivel(18)
+            .comId(List.of())
+            .build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(List.of());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(18, null, true))
+            .isEmpty();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
         verify(cargoRepository).findAll(predicate);
     }
 
@@ -239,6 +287,7 @@ public class CargoServiceTest {
                 .builder()
                 .cargoId(10)
                 .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                .nivelCodigo(ENivel.OPERACAO.name())
                 .build());
 
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ATIVO_PROPRIO), true))

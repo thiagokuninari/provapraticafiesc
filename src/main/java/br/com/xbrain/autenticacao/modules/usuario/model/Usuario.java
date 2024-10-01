@@ -289,6 +289,16 @@ public class Usuario {
     @Column(name = "FK_TERRITORIO_MERCADO_DESEN")
     private Integer territorioMercadoDesenvolvimentoId;
 
+    @NotAudited
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "USUARIO_SUBNIVEL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))})
+    private Set<SubNivel> subNiveis;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -330,6 +340,7 @@ public class Usuario {
         departamento.getId();
         canais.size();
         Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
+        Optional.ofNullable(subNiveis).ifPresent(Set::size);
         return this;
     }
 
@@ -776,5 +787,13 @@ public class Usuario {
             || StringUtils.isBlank(canalNetSales)
             || StringUtils.isBlank(nomeEquipeVendaNetSales)
             || StringUtils.isBlank(codigoEquipeVendaNetSales);
+    }
+
+    public Set<Integer> getSubNiveisIds() {
+        return !ObjectUtils.isEmpty(this.subNiveis)
+            ? this.subNiveis.stream()
+            .map(SubNivel::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
     }
 }

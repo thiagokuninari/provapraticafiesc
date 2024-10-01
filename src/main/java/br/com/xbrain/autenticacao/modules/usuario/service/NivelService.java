@@ -9,7 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.NivelPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,12 +19,11 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
 @Service
+@RequiredArgsConstructor
 public class NivelService {
 
-    @Autowired
-    private NivelRepository nivelRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
+    private final NivelRepository nivelRepository;
+    private final AutenticacaoService autenticacaoService;
 
     public List<Nivel> getAll() {
         return nivelRepository.getAll(
@@ -50,7 +49,7 @@ public class NivelService {
                 .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
                 .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
                 .exibeProprioNivelSeNaoVisualizarGeral(
-                    usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
+                    usuarioAutenticado.isVisualizaGeral(),
                     usuarioAutenticado.getNivelCodigoEnum(), false)
                 .build());
     }

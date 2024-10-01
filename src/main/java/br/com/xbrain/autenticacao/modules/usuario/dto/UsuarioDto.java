@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioDto implements Serializable {
 
@@ -108,6 +108,7 @@ public class UsuarioDto implements Serializable {
     private Set<ETipoFeederMso> tiposFeeder;
     private Integer territorioMercadoDesenvolvimentoId;
     private ETipoUsuario tipoUsuario;
+    private Set<Integer> subNiveisIds;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -161,6 +162,7 @@ public class UsuarioDto implements Serializable {
         }
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
         usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
+        usuarioDto.setSubNiveisIds(usuario.getSubNiveisIds());
         return usuarioDto;
     }
 

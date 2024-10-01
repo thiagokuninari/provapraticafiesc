@@ -91,11 +91,9 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umDocumentoPng;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
@@ -110,8 +108,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.li
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.umMapApenasDistritosComCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoVendedorInternet;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
@@ -122,6 +118,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicat
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioXBrain;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -235,6 +232,8 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Mock
+    private SubNivelService subNivelService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -715,7 +714,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(5)).findById(eq(1));
+        verify(repository, times(6)).findById(eq(1));
         verify(fileService).salvarArquivo(usuario, file);
     }
 
@@ -736,7 +735,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(5)).findById(eq(1));
+        verify(repository, times(6)).findById(eq(1));
         verify(fileService, never()).salvarArquivo(usuario, file);
     }
 
@@ -1233,7 +1232,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(6)).findById(101112);
+        verify(repository, times(7)).findById(101112);
         verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1251,7 +1250,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(6)).findById(101112);
+        verify(repository, times(7)).findById(101112);
         verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1546,7 +1545,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarCargo() {
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoForAlteracaoDeUsuario() {
         var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
         var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
         when(autenticacaoService.getUsuarioAutenticado())
@@ -1561,44 +1560,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
             .doesNotThrowAnyException();
 
-        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
-    }
-
-    @Test
-    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoGrupo_quandoUsuarioAlterarOrganizacao() {
-        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(100, 100);
-        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(100, 200);
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(repository.findComplete(anyInt()))
-            .thenReturn(Optional.of(usuarioAntigoMock));
-        when(repository.findById(anyInt()))
-            .thenReturn(Optional.of(usuarioAntigoMock));
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
-
-        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
-            .doesNotThrowAnyException();
-
-        verify(suporteVendasService).desvincularGruposByUsuarioId(100);
-    }
-
-    @Test
-    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoGrupo_quandoDadosIdenticos() {
-        var usuarioMock = umUsuarioComCargoEOrganizacao(100, 100);
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        when(repository.findComplete(anyInt()))
-            .thenReturn(Optional.of(usuarioMock));
-        when(repository.findById(anyInt()))
-            .thenReturn(Optional.of(usuarioMock));
-        when(organizacaoEmpresaService.findById(anyInt()))
-            .thenReturn(umaOrganizacaoEmpresa());
-
-        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioMock))
-            .doesNotThrowAnyException();
-
-        verifyZeroInteractions(suporteVendasService);
+        verify(suporteVendasService).desvincularGruposByUsuario(usuarioAntigoMock, usuarioNovoMock);
     }
 
     @Test
@@ -1703,6 +1665,57 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void salvarUsuarioBackoffice_deveRemoverPermissoesEspeciaisMso_quandoUsuarioAnteriorForMso() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setId(23);
+        usuario.setUsuarioCadastro(umUsuario());
+        var usuarioAnterior = umUsuarioMsoConsultor(1, PAP);
+        usuarioAnterior.setSubNiveis(umSetDeSubNiveis());
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+
+        when(organizacaoEmpresaService.findById(anyInt())).thenReturn(organizacao);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(2, 3));
+
+        service.salvarUsuarioBackoffice(usuario);
+
+        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(repository).findComplete(23);
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(2, 3), List.of(23));
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveRemoverPermissoesEspeciaisMso_quandoUsuarioAnteriorNaoForMso() {
+        var usuario = umUsuarioBackoffice();
+        usuario.setId(23);
+        usuario.setUsuarioCadastro(umUsuario());
+        var organizacao = OrganizacaoEmpresa.builder()
+            .id(5)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+
+        when(organizacaoEmpresaService.findById(anyInt())).thenReturn(organizacao);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findById(23)).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuario));
+
+        service.salvarUsuarioBackoffice(usuario);
+
+        verify(autenticacaoService, times(2)).getUsuarioAutenticado();
+        verify(repository).findComplete(23);
+        verify(permissaoEspecialService, times(2)).hasPermissaoEspecialAtiva(23, 30000);
+        verify(permissaoEspecialService).save(anyListOf(PermissaoEspecial.class));
+        verifyZeroInteractions(subNivelService);
+        verifyNoMoreInteractions(permissaoEspecialService);
+    }
+
+    @Test
     public void salvarUsuarioBriefing_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelMso());
@@ -1760,6 +1773,39 @@ public class UsuarioServiceTest {
         verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
         verify(repository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
         verify(repository, never()).save(anyIterable());
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_deveRemoverPermissaoEspecialMso_quandoUsuarioAnteriorForMso() {
+        var usuario = umUsuarioBriefing();
+        usuario.setId(23);
+        var usuarioAnterior = umUsuarioMsoConsultor(1, PAP);
+        usuarioAnterior.setSubNiveis(umSetDeSubNiveis());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(2, 3));
+
+        service.salvarUsuarioBriefing(usuario);
+
+        verify(repository, times(3)).findById(23);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(2, 3), List.of(23));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+    }
+
+    @Test
+    public void salvarUsuarioBriefing_naoDeveRemoverPermissaoEspecialMso_quandoUsuarioAnteriorNaoForMso() {
+        var usuario = umUsuarioBriefing();
+        usuario.setId(23);
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(repository.findById(23)).thenReturn(Optional.of(usuario));
+
+        service.salvarUsuarioBriefing(usuario);
+
+        verify(repository, times(3)).findById(23);
+        verifyZeroInteractions(permissaoEspecialService);
+        verifyZeroInteractions(subNivelService);
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -3445,6 +3491,265 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_deveAdicionarSubNiveisESalvarPermissoesEspeciais_quandoRequestConterSubNiveisIdsECadastroMso() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(null);
+        usuarioDto.setCargoId(22);
+        var subniveis = umSetDeSubNiveisComUmSubNivel();
+
+        when(subNivelService.findByIdIn(Set.of(1))).thenReturn(subniveis);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(1));
+        when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
+            Usuario usuarioArgumento = invocation.getArgument(0);
+            usuarioArgumento.setId(1);
+            return usuarioArgumento;
+        });
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(subNivelService).findByIdIn(Set.of(1));
+        verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(1, 30000);
+        verifyNoMoreInteractions(permissaoEspecialService);
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(1, subniveis);
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(
+                tuple(1, 1, 1));
+    }
+
+    @Test
+    public void save_naoDeveAdicionarSubNiveisENaoDeveSalvarPermissoesEspeciais_quandoRequestNaoConterSubNiveisIdsECadastroMso() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(null);
+        usuarioDto.setSubNiveisIds(Set.of());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(invocation -> {
+            Usuario usuarioArgumento = invocation.getArgument(0);
+            usuarioArgumento.setId(1);
+            return usuarioArgumento;
+        });
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(1, 30000);
+        verifyZeroInteractions(subNivelService);
+        verifyNoMoreInteractions(permissaoEspecialService);
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(1, null);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveAdicionarOsSubNiveisEAsPermissoesEspeciais_quandoForEditarMsoEAdicionarAlgumSubNivelSemOUsuarioPossuirAlgumAnteriormente() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(23);
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
+        usuarioDto.setSituacao(A);
+        usuarioDto.setCargoId(20);
+        var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
+        usuarioAntigo.setSituacao(A);
+        var subniveis = umSetDeSubNiveis();
+
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
+        verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, subniveis);
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(
+                tuple(2, 23, 1),
+                tuple(3, 23, 1));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveRemoverPermissoesEspeciaisENaoDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioMsoParaRemoverSubNivel() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(23);
+        usuarioDto.setSubNiveisIds(null);
+        usuarioDto.setSituacao(A);
+        var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
+        usuarioAntigo.setSituacao(A);
+
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(6)).findById(23);
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
+        verifyZeroInteractions(permissaoEspecialRepository);
+        verifyNoMoreInteractions(subNivelService);
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, null);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveRemoverPermissoesEspeciaisENaoDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioMsoParaTrocarDeNivelECargo() {
+        var usuarioDto = umUsuarioDtoOuvidoria();
+        usuarioDto.setId(23);
+        usuarioDto.setEmail("teste@teste.com");
+        usuarioDto.setSituacao(A);
+        var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
+        usuarioAntigo.setSituacao(A);
+
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(6)).findById(23);
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
+        verifyZeroInteractions(permissaoEspecialRepository);
+        verifyNoMoreInteractions(subNivelService);
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, null);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveRemoverPermissoesEspeciaisEDeveAdicionarNovasPermissoesEspeciais_quandoForEdicaoDeUsuarioDeOutroNivelParaMso() {
+        var usuarioAntigo = umUsuario();
+        usuarioAntigo.setId(23);
+        usuarioAntigo.setSituacao(A);
+        var usuarioDto = umUsuarioDtoMso();
+        usuarioDto.setId(23);
+        usuarioDto.setCargoId(20);
+        usuarioDto.setSituacao(A);
+        usuarioDto.setEmail("teste@teste.com");
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
+        var setSubNiveis = umSetDeSubNiveis();
+
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(setSubNiveis);
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(setSubNiveis, 20)).thenReturn(List.of(2, 3));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository, times(6)).findById(23);
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+        verify(permissaoEspecialRepository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(23, 2);
+        verify(permissaoEspecialRepository).findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(23, 3);
+        verify(subNivelService).getSubNivelFuncionalidadesIdsByCargo(setSubNiveis, 20);
+        verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, setSubNiveis);
+
+        var permissoesEspeciaisSalvas = permissaoEspecialCaptor.getValue();
+        assertThat(permissoesEspeciaisSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(
+                tuple(2, 23, 1),
+                tuple(3, 23, 1));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveAlterarOsSubNiveisEAlterarAsPermissoesEspeciais_quandoForEditarMsoERequestConterSubNiveisIdsDiferentesDosSubNiveisAnterioresDoUsuario() {
+        var usuarioDto = umUsuarioMsoBackofficeDto(23);
+        usuarioDto.setSubNiveisIds(Set.of(2, 3));
+        usuarioDto.setSituacao(A);
+        usuarioDto.setCargoId(23);
+        var usuarioAntigo = umUsuarioMsoConsultor(1, PAP);
+        usuarioAntigo.setSituacao(A);
+        usuarioAntigo.setSubNiveis(umSetDeSubNiveisComUmSubNivel());
+        var subniveis = umSetDeSubNiveis();
+
+        when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
+        when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
+        when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
+
+        assertThatCode(() -> service.save(usuarioDto, null))
+            .doesNotThrowAnyException();
+
+        verify(repository).saveAndFlush(any(Usuario.class));
+        verify(subNivelService).findByIdIn(Set.of(2, 3));
+        verify(subNivelService).getFuncionalidadesIdsByNivel(2);
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(1, 2, 3), List.of(23));
+        verify(permissaoEspecialRepository).save(permissaoEspecialCaptor.capture());
+        verify(repository, times(2)).save(usuarioCaptor.capture());
+
+        var usuarioSalvo = usuarioCaptor.getValue();
+        assertThat(usuarioSalvo)
+            .extracting(Usuario::getId, Usuario::getSubNiveis)
+            .containsExactly(23, subniveis);
+
+        var permissoesSalvas = permissaoEspecialCaptor.getValue();
+        assertThat(permissoesSalvas)
+            .extracting(permissaoEspecial -> permissaoEspecial.getFuncionalidade().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuario().getId(),
+                permissaoEspecial -> permissaoEspecial.getUsuarioCadastro().getId())
+            .containsExactly(
+                tuple(2, 23, 1),
+                tuple(3, 23, 1));
+    }
+
+    @Test
     public void buscarTodosVendedoresReceptivos_deveRetornarVendedoresReceptivoComoSelectResponse_quandoValido() {
         when(repository.findAllVendedoresReceptivos())
             .thenReturn(List.of(umVendedorReceptivo()));
@@ -4305,6 +4610,7 @@ public class UsuarioServiceTest {
         expectedDto.setSubCanaisId(null);
         expectedDto.setNivelId(1);
         expectedDto.setNivelCodigo(AGENTE_AUTORIZADO);
+        expectedDto.setSubNiveisIds(null);
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
             .email("EMAIL@TEST.COM")
@@ -4471,7 +4777,7 @@ public class UsuarioServiceTest {
 
         service.updateFromQueue(usuarioMqRequest);
 
-        verify(repository, times(6)).findById(usuarioDto.getId());
+        verify(repository, times(7)).findById(usuarioDto.getId());
         verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
         verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
         verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
@@ -6090,18 +6396,6 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
-    }
-
-    private Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
-        return Usuario.builder()
-            .id(100)
-            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
-            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
-                .id(organizacaoId)
-                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
-                .build())
-            .email("email@google.com")
-            .build();
     }
 
     @TestConfiguration

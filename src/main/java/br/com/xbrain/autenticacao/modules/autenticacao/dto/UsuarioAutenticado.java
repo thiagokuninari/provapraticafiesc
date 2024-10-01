@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
@@ -260,5 +262,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         if (!isXbrain()) {
             throw new PermissaoException("Usuário não autorizado!");
         }
+    }
+
+    public boolean isVisualizaGeral() {
+        return this.hasPermissao(AUT_VISUALIZAR_GERAL)
+            || this.isMso() && this.hasPermissao(BKO_16008);
     }
 }

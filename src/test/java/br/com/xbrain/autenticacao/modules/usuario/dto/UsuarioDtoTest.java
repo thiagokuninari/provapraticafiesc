@@ -225,9 +225,27 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .subCanaisId(Set.of())
             .territorioMercadoDesenvolvimentoId(10)
+            .subNiveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
+    }
+
+    @Test
+    public void of_deveRetornarSubNiveisIds_quandoUsuarioPossuirSubNivel() {
+        var usuario = umUsuarioMso();
+        usuario.setSubNiveis(umSetDeSubNiveis());
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubNiveisIds)
+            .isEqualTo(Set.of(2, 3));
+    }
+
+    @Test
+    public void of_naoDeveRetornarSubNiveisIds_quandoUsuarioNaoPossuirSubNivel() {
+        var usuario = umUsuarioMso();
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubNiveisIds)
+            .isEqualTo(Set.of());
     }
 
     @Test
@@ -449,6 +467,7 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .permiteEditarCompleto(true)
             .subCanaisId(Set.of())
+            .subNiveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);

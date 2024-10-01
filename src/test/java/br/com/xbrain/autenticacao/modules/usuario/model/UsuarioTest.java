@@ -954,6 +954,30 @@ public class UsuarioTest {
             .build();
     }
 
+    @Test
+    public void getSubNiveisIds_deveRetornarSetVazio_quandoSubNiveisForVazio() {
+        var usuario = Usuario.builder()
+            .subNiveis(Set.of())
+            .build();
+
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of());
+    }
+
+    @Test
+    public void getSubNiveisIds_deveRetornarSetVazio_quandoSubNiveisForNull() {
+        var usuario = new Usuario();
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of());
+    }
+
+    @Test
+    public void getSubNiveisIds_deveRetornarSetDeSubNiveisIds_quandoUsuarioPossuirSubNiveis() {
+        var usuario = Usuario.builder()
+            .subNiveis(umSetDeSubNiveis())
+            .build();
+
+        assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of(2, 3));
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()

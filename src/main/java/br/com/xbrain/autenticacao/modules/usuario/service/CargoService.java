@@ -18,7 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -32,21 +32,16 @@ import java.util.stream.Stream;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Service
+@RequiredArgsConstructor
 public class CargoService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
 
-    @Autowired
-    private CargoRepository repository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private CargoSuperiorRepository cargoSuperiorRepository;
-
-    @Autowired
-    private NivelRepository nivelRepository;
+    private final CargoRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final CargoSuperiorRepository cargoSuperiorRepository;
+    private final NivelRepository nivelRepository;
 
     public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
                                                               boolean permiteEditarCompleto) {
@@ -56,20 +51,34 @@ public class CargoService {
     }
 
     private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
-                                                          boolean permiteEditarCompleto) {
+                                                           boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate();
-        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
-            predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
-        } else {
-            predicate.comNivel(nivelId);
-        }
-        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
+        adicionarFiltroComNivelECanal(predicate, nivelId, canais);
+        adicionarFiltroComId(predicate, permiteEditarCompleto);
+
+        return repository.findAll(predicate.build());
     }
 
-    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
-        cargoPredicate.comId(getCargosPermitidosParaEditar());
-        cargoPredicate.comNivel(nivelId);
-        return repository.findAll(cargoPredicate.build());
+    private void adicionarFiltroComNivelECanal(CargoPredicate predicate, Integer nivelId, Collection<ECanal> canais) {
+        predicate.comNivel(nivelId);
+        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
+            predicate.comCanal(ECanal.INTERNET);
+        }
+    }
+
+    private void adicionarFiltroComId(CargoPredicate predicate, boolean permiteEditarCompleto) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        if (!permiteEditarCompleto || !usuarioAutenticado.isVisualizaGeral()) {
+            var cargoProprioId = usuarioAutenticado.getCargoId();
+            var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
+
+            if (!permiteEditarCompleto) {
+                cargosPermitidos.add(cargoProprioId);
+            }
+
+            predicate.comId(cargosPermitidos);
+        }
     }
 
     public List<Cargo> getPermitidosPorNivel(CargoPredicate cargoPredicate) {
@@ -158,13 +167,5 @@ public class CargoService {
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
-    }
-
-    private List<Integer> getCargosPermitidosParaEditar() {
-        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
-        var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
-        cargosPermitidos.add(cargoProprioId);
-
-        return cargosPermitidos;
     }
 }
