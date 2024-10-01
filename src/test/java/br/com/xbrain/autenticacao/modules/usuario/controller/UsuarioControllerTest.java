@@ -2492,8 +2492,8 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void buscarOperadoresBackofficeCentralizado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/operadores-backoffice-centralizado"))
+    public void buscarColaboradoresBackofficeCentralizado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/colaboradores-backoffice-centralizado"))
             .andExpect(status().isUnauthorized());
 
         verifyZeroInteractions(usuarioService);
@@ -2502,10 +2502,10 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser
-    public void buscarOperadoresBackofficeCentralizado_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/operadores-backoffice-centralizado"))
+    public void buscarColaboradoresBackofficeCentralizado_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/colaboradores-backoffice-centralizado"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).getOperadoresBackofficeCentralizado();
+        verify(usuarioService).getColaboradoresBackofficeCentralizado();
     }
 }

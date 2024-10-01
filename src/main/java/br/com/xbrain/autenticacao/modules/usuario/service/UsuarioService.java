@@ -179,6 +179,7 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
     private static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
     private static final Integer OPERADOR_BACKOFFICE_CENTRALIZADO_ID = 115;
+    private static final Integer ANALISTA_BACKOFFICE_CENTRALIZADO_ID = 116;
 
     @Autowired
     private UsuarioRepository repository;
@@ -3435,8 +3436,14 @@ public class UsuarioService {
             .collect(toList());
     }
 
-    public List<UsuarioResponse> getOperadoresBackofficeCentralizado() {
-        return repository.findByCargo_IdAndSituacao(OPERADOR_BACKOFFICE_CENTRALIZADO_ID, ATIVO)
+    public List<UsuarioResponse> getColaboradoresBackofficeCentralizado() {
+        var cargosIds = List.of(
+            OPERADOR_BACKOFFICE_CENTRALIZADO_ID,
+            ANALISTA_BACKOFFICE_CENTRALIZADO_ID
+        );
+        var predicate = new UsuarioPredicate().comCargosIds(cargosIds).isAtivo(Eboolean.V);
+
+        return repository.getUsuariosFilter(predicate.build())
             .stream()
             .map(UsuarioResponse::of)
             .collect(toList());

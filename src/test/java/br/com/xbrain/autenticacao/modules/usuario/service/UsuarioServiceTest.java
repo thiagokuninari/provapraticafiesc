@@ -6071,33 +6071,46 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getOperadoresBackofficeCentralizado_deveRetornarLista_quandoHouverOperadoresAtivos() {
+    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivos() {
         var operadorBackofficeCentralizado = Usuario.builder()
             .id(1)
             .nome("USUARIO UM")
             .cargo(Cargo.builder().id(115).codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS).build())
             .situacao(A)
             .build();
+        var analistaBackofficeCentralizado = Usuario.builder()
+            .id(2)
+            .nome("USUARIO DOIS")
+            .cargo(Cargo.builder().id(116).codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
 
-        when(repository.findByCargo_IdAndSituacao(anyInt(), any()))
-            .thenReturn(List.of(operadorBackofficeCentralizado));
+        when(repository.getUsuariosFilter(any()))
+            .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
         
-        var resultado = service.getOperadoresBackofficeCentralizado();
+        var resultado = service.getColaboradoresBackofficeCentralizado();
 
         assertFalse(resultado.isEmpty());
-        assertThat(resultado).extracting("id", "nome").containsExactly(tuple(1, "USUARIO UM"));
+        assertThat(resultado)
+            .extracting(
+                UsuarioResponse::getId,
+                UsuarioResponse::getNome)
+            .containsExactlyInAnyOrder(
+                tuple(1, "USUARIO UM"),
+                tuple(2, "USUARIO DOIS")
+            );
 
-        verify(repository).findByCargo_IdAndSituacao(eq(115), eq(A));
+        verify(repository).getUsuariosFilter(any());
     }
 
     @Test
-    public void getOperadoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverOperadoresAtivos() {
-        when(repository.findByCargo_IdAndSituacao(anyInt(), any())).thenReturn(List.of());
+    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivos() {
+        when(repository.getUsuariosFilter(any())).thenReturn(List.of());
         
-        var resultado = service.getOperadoresBackofficeCentralizado();
+        var resultado = service.getColaboradoresBackofficeCentralizado();
 
         assertTrue(resultado.isEmpty());
 
-        verify(repository).findByCargo_IdAndSituacao(eq(115), eq(A));
+        verify(repository).getUsuariosFilter(any());
     }
 }

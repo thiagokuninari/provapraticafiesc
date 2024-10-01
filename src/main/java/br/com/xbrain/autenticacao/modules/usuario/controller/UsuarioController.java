@@ -636,8 +636,8 @@ public class UsuarioController {
         return usuarioService.getEmailsByCargoId(cargoId);
     }
 
-    @GetMapping("operadores-backoffice-centralizado")
-    public List<UsuarioResponse> buscarOperadoresBackofficeCentralizado() {
-        return usuarioService.getOperadoresBackofficeCentralizado();
+    @GetMapping("colaboradores-backoffice-centralizado")
+    public List<UsuarioResponse> buscarColaboradoresBackofficeCentralizado() {
+        return usuarioService.getColaboradoresBackofficeCentralizado();
     }
 }
