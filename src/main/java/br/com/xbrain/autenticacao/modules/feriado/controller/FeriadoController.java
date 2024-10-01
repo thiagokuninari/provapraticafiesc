@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +67,10 @@ public class FeriadoController {
     @GetMapping("/{cidadeId}")
     public boolean isFeriadoComCidadeId(@PathVariable Integer cidadeId) {
         return service.isFeriadoComCidadeId(cidadeId);
+    }
+
+    @GetMapping("/proximos-feriados-nacionais")
+    public List<FeriadoResponse> getProximosFeriadosNacionais() {
+        return service.getProximosFeriadosNacionais();
     }
 }
