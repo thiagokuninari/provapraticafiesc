@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
@@ -236,6 +237,8 @@ public class UsuarioServiceTest {
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
+    @Mock
+    private ClaroIndicoService claroIndicoService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -1701,6 +1704,46 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.salvarUsuarioBackoffice(umUsuarioBackoffice()))
             .withMessage("O usuário não pode ser salvo pois o fornecedor está inativo.");
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoFilaTratamento_quandoUsuarioAlterarCargo() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(115, 100);
+        usuarioAntigoMock.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO).build());
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(100);
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoFilaTratamento_quandoAlterarCargoParaAnalista() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(115, 100);
+        usuarioAntigoMock.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO).build());
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(116, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService, never()).desvincularUsuarioDaFilaTratamento(100);
     }
 
     @Test

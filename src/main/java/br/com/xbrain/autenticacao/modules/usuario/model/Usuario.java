@@ -777,4 +777,10 @@ public class Usuario {
             || StringUtils.isBlank(nomeEquipeVendaNetSales)
             || StringUtils.isBlank(codigoEquipeVendaNetSales);
     }
+
+    @JsonIgnore
+    public boolean isNivelBkoCentralizado() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo() == CodigoNivel.BACKOFFICE_CENTRALIZADO;
+    }
 }

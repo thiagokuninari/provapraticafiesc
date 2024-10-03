@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -178,8 +179,7 @@ public class UsuarioService {
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
     private static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
-    private static final Integer OPERADOR_BACKOFFICE_CENTRALIZADO_ID = 115;
-    private static final Integer ANALISTA_BACKOFFICE_CENTRALIZADO_ID = 116;
+    private static final List<Integer> CARGOS_COLABORADORES_BKO_CENTRALIZADO = List.of(115, 116);
 
     @Autowired
     private UsuarioRepository repository;
@@ -279,6 +279,8 @@ public class UsuarioService {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Autowired
     private SuporteVendasService suporteVendasService;
+    @Autowired
+    private ClaroIndicoService claroIndicoService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -798,6 +800,7 @@ public class UsuarioService {
         validar(usuario);
         tratarCadastroUsuario(usuario);
         desvincularGruposByUsuario(usuario);
+        desvincularFilaTratamento(usuario);
         var isNovoCadastro = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -1933,6 +1936,7 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
+        removerUsuarioDaFilaTratamento(usuario);
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
@@ -3437,15 +3441,33 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getColaboradoresBackofficeCentralizado() {
-        var cargosIds = List.of(
-            OPERADOR_BACKOFFICE_CENTRALIZADO_ID,
-            ANALISTA_BACKOFFICE_CENTRALIZADO_ID
-        );
-        var predicate = new UsuarioPredicate().comCargosIds(cargosIds).isAtivo(Eboolean.V);
+        var predicate = new UsuarioPredicate()
+            .comCargosIds(CARGOS_COLABORADORES_BKO_CENTRALIZADO)
+            .isAtivo(Eboolean.V);
 
         return repository.getUsuariosFilter(predicate.build())
             .stream()
             .map(UsuarioResponse::of)
             .collect(toList());
     }
+
+    public void desvincularFilaTratamento(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            if (usuarioAntigo.isNivelBkoCentralizado()
+                && CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
+                && !CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuario.getCargoId())
+                && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
+                claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+            }
+        }
+    }
+
+    private void removerUsuarioDaFilaTratamento(Usuario usuario) {
+        if (usuario.isNivelBkoCentralizado()
+            && CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuario.getCargoId())) {
+            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+        }
+    }
+
 }

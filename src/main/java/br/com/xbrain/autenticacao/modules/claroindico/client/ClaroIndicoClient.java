@@ -11,8 +11,8 @@ import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface ClaroIndicoClient {
 
-    public String URI_FILAS_TRATAMENTO = "api/filas-tratamento";
+    String URI_FILAS_TRATAMENTO = "api/filas-tratamento";
 
     @PutMapping(URI_FILAS_TRATAMENTO + "/usuarios/{usuarioId}/desvincular")
-    public void desvincularUsuarioDaFilaTratamento(@PathVariable("usuarioId") Integer usuarioId);
+    void desvincularUsuarioDaFilaTratamento(@PathVariable("usuarioId") Integer usuarioId);
 }
