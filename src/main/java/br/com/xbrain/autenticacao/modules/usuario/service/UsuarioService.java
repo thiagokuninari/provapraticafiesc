@@ -3455,12 +3455,16 @@ public class UsuarioService {
         if (!usuario.isNovoCadastro()) {
             var usuarioAntigo = findCompleteById(usuario.getId());
             if (usuarioAntigo.isNivelBkoCentralizado()
-                && CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
-                && !CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuario.getCargoId())
-                && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)) {
+                && houveAlteracaoColaboradorBkoCentralizado(usuarioAntigo, usuario)) {
                 claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
             }
         }
+    }
+
+    private boolean houveAlteracaoColaboradorBkoCentralizado(Usuario usuarioAntigo, Usuario usuario) {
+        return CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
+            && !CARGOS_COLABORADORES_BKO_CENTRALIZADO.contains(usuario.getCargoId())
+            && houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario);
     }
 
     private void removerUsuarioDaFilaTratamento(Usuario usuario) {
@@ -3469,5 +3473,4 @@ public class UsuarioService {
             claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
         }
     }
-
 }

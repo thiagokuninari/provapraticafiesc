@@ -653,6 +653,48 @@ public class UsuarioServiceTest {
             .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
+    @Test
+    public void inativar_deveRemoverUsuarioDaFilaTratamento_seUsuarioForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(115)
+            .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void inativar_naoDeveRemoverUsuarioDaFilaTratamento_seUsuarioNaoForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(117)
+            .codigo(BACKOFFICE_GERENTE_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService, never()).desvincularUsuarioDaFilaTratamento(1);
+    }
+
     private UsuarioInativacaoDto umUsuarioInativoDto() {
         return UsuarioInativacaoDto.builder()
             .idUsuario(1)
