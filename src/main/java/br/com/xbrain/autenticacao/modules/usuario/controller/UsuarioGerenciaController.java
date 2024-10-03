@@ -30,7 +30,7 @@ public class UsuarioGerenciaController {
 
     @PostMapping("backoffice")
     public UsuarioResponse saveBackoffice(@RequestBody @Valid UsuarioBackofficeRequest usuario) {
-        return service.salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario)); // aqui
+        return service.salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
     }
 
     @PostMapping("briefing")
@@ -89,7 +89,7 @@ public class UsuarioGerenciaController {
 
     @PostMapping("/inativar")
     public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
-        service.inativar(dto); // aqui
+        service.inativar(dto);
     }
 
     @PutMapping("/ativar")
