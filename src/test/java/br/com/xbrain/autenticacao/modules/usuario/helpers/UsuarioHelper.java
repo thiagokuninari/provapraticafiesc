@@ -121,10 +121,38 @@ public class UsuarioHelper {
     public static Usuario umUsuarioComDadosNetSales() {
         return Usuario.builder()
             .loginNetSales("login123")
-            .canalNetSales("CANAL NETSALES")
+            .canalNetSalesCodigo("CANAL NETSALES")
             .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
             .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
             .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales2() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales3() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosComDadosNetSales() {
+        return List.of(
+            umUsuarioComDadosNetSales(),
+            umUsuarioComDadosNetSales2(),
+            umUsuarioComDadosNetSales3());
     }
 
     public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
@@ -154,7 +182,8 @@ public class UsuarioHelper {
             .usuariosHierarquia(new HashSet<>())
             .situacao(A)
             .loginNetSales("login123")
-            .canalNetSales("UM CANAL NETSALES")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("UM CANAL NETSALES")
             .codigoEquipeVendaNetSales("123")
             .nomeEquipeVendaNetSales("EQUIPE DE VENDA NETSALES")
             .build();

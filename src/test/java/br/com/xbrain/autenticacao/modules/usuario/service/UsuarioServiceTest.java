@@ -129,6 +129,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
@@ -204,6 +205,8 @@ public class UsuarioServiceTest {
     private NivelRepository nivelRepository;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
+    @Captor
+    private ArgumentCaptor<List<Usuario>> usuarioCaptorList;
     @Captor
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
     @Captor
@@ -2443,7 +2446,8 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2451,6 +2455,7 @@ public class UsuarioServiceTest {
                 "ATIVO_LOCAL_PROPRIO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2472,7 +2477,8 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2480,6 +2486,7 @@ public class UsuarioServiceTest {
                 "OPERACAO_AGENTE_AUTORIZADO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2501,7 +2508,8 @@ public class UsuarioServiceTest {
                 UsuarioComLoginNetSalesResponse::getNivelCodigo,
                 UsuarioComLoginNetSalesResponse::getCpfNetSales,
                 UsuarioComLoginNetSalesResponse::getNomeEquipeVendasNetSales,
-                UsuarioComLoginNetSalesResponse::getCanalNetSales)
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesId,
+                UsuarioComLoginNetSalesResponse::getCanalNetSalesCodigo)
             .containsExactly(
                 umUsuarioComLogin,
                 "UM USUARIO COM LOGIN",
@@ -2509,6 +2517,7 @@ public class UsuarioServiceTest {
                 "RECEPTIVO_ATENTO",
                 "123.456.887-91",
                 "NOME EQUIPE VENDAS",
+                1,
                 "CANAL VENDAS NETSALES");
     }
 
@@ -2869,7 +2878,8 @@ public class UsuarioServiceTest {
             .cpf("123.456.887-91")
             .situacao(A)
             .nomeEquipeVendaNetSales("NOME EQUIPE VENDAS")
-            .canalNetSales("CANAL VENDAS NETSALES")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("CANAL VENDAS NETSALES")
             .build();
     }
 
@@ -5328,8 +5338,8 @@ public class UsuarioServiceTest {
         var dataCadastro = LocalDateTime.of(2018, 01, 01, 15, 00, 00);
 
         when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
-            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(),umOutroUsuarioDtoVendasPapIndireto()));
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(), umOutroUsuarioDtoVendasPapIndireto()));
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2)))
             .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
 
         assertThat(service.findColaboradoresPapIndireto())
@@ -5346,7 +5356,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,2));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2));
     }
 
     @Test
@@ -5373,7 +5383,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3));
     }
 
     @Test
@@ -5410,7 +5420,7 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoService)
             .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,3, 4));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3, 4));
     }
 
     @Test
@@ -5947,6 +5957,72 @@ public class UsuarioServiceTest {
         verify(repository).getUsuarioIdsByPermissaoEspecial(funcionalidade);
     }
 
+    @Test
+    public void migrarDadosNetSales_deveMigrarUsuariosComCanalNetSales_quandoSolicitado() {
+        doReturn(umaListaDeUsuariosComDadosNetSales())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.migrarDadosNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository).save(usuarioCaptorList.capture());
+
+        assertThat(usuarioCaptorList.getValue())
+            .extracting("canalNetSalesId", "canalNetSalesCodigo")
+            .containsExactlyInAnyOrder(
+                tuple(2, "migracao"),
+                tuple(2, "migracao"),
+                tuple(2, "migracao"));
+    }
+
+    @Test
+    public void migrarDadosNetSales_naoDeveMigrarUsuariosComCanalNetSales_quandoListaDeUsuariosVazia() {
+        doReturn(new ArrayList<Usuario>())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.migrarDadosNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    public void atualizarCanalNetSales_deveMigrarUsuariosComCanalNetSales_quandoSolicitado() {
+        doReturn(umaListaDeUsuariosComDadosNetSales())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.atualizarCanalNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository).save(usuarioCaptorList.capture());
+
+        assertThat(usuarioCaptorList.getValue())
+            .extracting("canalNetSalesId", "canalNetSalesCodigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, "migracao"),
+                tuple(1, "migracao"),
+                tuple(1, "migracao"));
+    }
+
+    @Test
+    public void atualizarCanalNetSales_naoDeveMigrarUsuariosComCanalNetSales_quandoListaDeUsuariosVazia() {
+        doReturn(new ArrayList<Usuario>())
+            .when(repository)
+            .findAllByCanalNetSalesId(1);
+
+        assertThatCode(() -> service.atualizarCanalNetSales(1, umCanalNetSalesResponse()))
+            .doesNotThrowAnyException();
+
+        verify(repository).findAllByCanalNetSalesId(1);
+        verify(repository, never()).save(any(Usuario.class));
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()
@@ -6124,7 +6200,8 @@ public class UsuarioServiceTest {
                 .build()))
             .nomeEquipeVendaNetSales("UMA EQUIPE DE VENDA NETSALES")
             .codigoEquipeVendaNetSales("123")
-            .canalNetSales("CANAL NETSALES")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("CANAL NETSALES")
             .build();
 
         usuario.setCidades(

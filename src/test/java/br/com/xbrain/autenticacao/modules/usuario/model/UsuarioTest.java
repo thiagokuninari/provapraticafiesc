@@ -826,23 +826,36 @@ public class UsuarioTest {
     }
 
     @Test
-    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesNull() {
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesCodigoNull() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales(null);
+        usuario.setCanalNetSalesCodigo(null);
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 
     @Test
-    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesEmpty() {
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesCodigoEmpty() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales("");
+        usuario.setCanalNetSalesCodigo("");
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 
     @Test
-    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesBlank() {
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesCodigoBlank() {
         var usuario = umUsuarioComDadosNetSales();
-        usuario.setCanalNetSales(" ");
+        usuario.setCanalNetSalesCodigo(" ");
+        assertThat(usuario.hasNotDadosNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarFalse_quandoUsuarioPossuirLoginNetSalesEmpty() {
+        var usuario = umUsuarioComDadosNetSales();
+        assertThat(usuario.hasNotDadosNetSales()).isFalse();
+    }
+
+    @Test
+    public void hasNotDadosNetSales_deveRetornarTrue_quandoUsuarioPossuirCanalNetSalesIdNull() {
+        var usuario = umUsuarioComDadosNetSales();
+        usuario.setCanalNetSalesId(null);
         assertThat(usuario.hasNotDadosNetSales()).isTrue();
     }
 

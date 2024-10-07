@@ -46,7 +46,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String loginNetSales;
     private String nomeEquipeVendaNetSales;
     private String codigoEquipeVendaNetSales;
-    private String canalNetSales;
+    private Integer canalNetSalesId;
+    private String canalNetSalesCodigo;
     private String cpf;
     private ESituacao situacao;
     private List<String> empresasNome;
@@ -82,7 +83,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCanalNetSales();
+        this.canalNetSalesId = usuario.getCanalNetSalesId();
+        this.canalNetSalesCodigo = usuario.getCanalNetSalesCodigo();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -112,7 +114,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCanalNetSales();
+        this.canalNetSalesId = usuario.getCanalNetSalesId();
+        this.canalNetSalesCodigo = usuario.getCanalNetSalesCodigo();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();

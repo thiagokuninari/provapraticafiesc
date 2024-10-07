@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -51,6 +52,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -1741,6 +1743,71 @@ public class UsuarioGerenciaControllerTest {
     public void atualizarEmailSocioInativo_deveRetornarForbidden_quandoUsuarioSemPermissao() {
         mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
             .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void migrarDadosNetSales_deveRetornarOk_quandoSolicitado() {
+
+        mvc.perform(put(API_URI + "/{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(umCanalNetSalesResponse())))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).migrarDadosNetSales(any(Integer.class), any(CanalNetSalesResponse.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void atualizarCanalNetSalesCodigo_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(umCanalNetSalesResponse())))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).atualizarCanalNetSales(any(Integer.class), any(CanalNetSalesResponse.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void migrarDadosNetSales_deveRetornarForbbiden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/1/migrar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void atualizarCanalNetSalesCodigo_deveRetornarForbbiden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarCanalNetSalesCodigo_deveRetornarRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void migrarDadosNetSales_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isUnauthorized());
 
         verifyZeroInteractions(usuarioService);
     }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -170,5 +171,19 @@ public class UsuarioGerenciaController {
     @PutMapping("inativar-email/{socioPrincipalId}")
     public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
         service.atualizarEmailSocioInativo(socioPrincipalId);
+    }
+
+    @PutMapping("{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales")
+    public void migrarDadosNetSales(@PathVariable Integer canalNetSalesId,
+                                    @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.migrarDadosNetSales(canalNetSalesId, canalNetSalesResponse);
+    }
+
+    @PutMapping("{canalNetSalesId}/atualizar-usuarios-associados-ao-canal-net-sales")
+    public void atualizarCanalNetSalesCodigo(@PathVariable Integer canalNetSalesId,
+                                             @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.atualizarCanalNetSales(canalNetSalesId, canalNetSalesResponse);
     }
 }
