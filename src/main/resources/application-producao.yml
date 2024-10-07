@@ -61,33 +61,33 @@ app-config:
     parceiros-online:
       url: http://172.10.10.76:8099
     mailing:
-      url: http://172.10.10.77:8095
+      url: http://mailing-api-prod:8095
     equipe-venda:
-      url: http://172.10.10.80:8089
+      url: http://equipe-venda-api-prod:8089
     contato-crn:
       url: http://contato-crn-api-prod:8084
     comunicados:
       url: http://172.10.10.53:8053
     claro-indico:
-      url: http://172.10.10.55:8055
+      url: http://claro-indico-api-prod:8055
     gestao:
       url: http://conexao-gestao-api-prod:8091
     notificacao:
       url: http://172.10.10.91:8081
     agente-autorizado:
-      url: http://172.10.10.113:8300
+      url: http://agente-autorizado-api-prod:8300
     emails:
       url: http://172.10.10.41:8080
     integracao-vendas:
       url: http://172.10.10.83:8086
     mailing-importacao:
-      url: http://172.10.10.86:8087
+      url: http://mailing-importacao-api-prod:8087
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     extrato-comissao:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
-      url: http://172.10.10.49:8100
+      url: http://funil-prospeccao-api-prod:8100
     localizacao:
        url: http://localizacao-api:8039
     gestao-colaborador-pol:
