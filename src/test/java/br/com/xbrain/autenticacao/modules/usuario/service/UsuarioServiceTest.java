@@ -1765,7 +1765,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
             .doesNotThrowAnyException();
 
-        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(100);
+        verify(claroIndicoService)
+            .desvincularUsuarioDaFilaTratamento(eq(new Usuario(100)), eq(new Usuario(100)));
     }
 
     @Test

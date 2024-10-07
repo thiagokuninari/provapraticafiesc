@@ -38,5 +38,9 @@ public class Constantes {
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
-
+    public static final List<CodigoCargo> CARGOS_COLABORADOR_BKO_CENTRALIZADO = List.of(
+        CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+        CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS
+    );
+    public static final List<Integer> CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO = List.of(115, 116);
 }
