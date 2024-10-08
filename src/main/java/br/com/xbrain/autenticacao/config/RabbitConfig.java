@@ -164,6 +164,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-grupos-organizacao-suporte-vendas}")
     private String inativarGruposByOrganizacaoQueue;
 
+    @Value("${app-config.queue.redistribuir-indicacoes-inside-sales-vendedor}")
+    private String redistribuirIndicacoesInsideSalesMq;
+
+    @Value("${app-config.queue.inativar-direcionamentos-cep-vendedor-inside-sales}")
+    private String inativarDirecionamentoCepMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -657,5 +663,29 @@ public class RabbitConfig {
     @Bean
     Binding inativarGruposByOrganizacaoBinding(FanoutExchange organizacaoInativadaFanout) {
         return BindingBuilder.bind(inativarGruposByOrganizacao()).to(organizacaoInativadaFanout);
+    }
+
+    @Bean
+    Queue inativarDirecionamentoCepQueue() {
+        return new Queue(inativarDirecionamentoCepMq, false);
+    }
+
+    @Bean
+    public Binding inativarDirecionamentoCepBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarDirecionamentoCepQueue())
+            .to(exchange)
+            .with(inativarDirecionamentoCepMq);
+    }
+
+    @Bean
+    Queue redistribuirIndicacoesInsideSalesQueue() {
+        return new Queue(redistribuirIndicacoesInsideSalesMq, false);
+    }
+
+    @Bean
+    public Binding redistribuirIndicacoesInsideSalesBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(redistribuirIndicacoesInsideSalesQueue())
+            .to(exchange)
+            .with(redistribuirIndicacoesInsideSalesMq);
     }
 }

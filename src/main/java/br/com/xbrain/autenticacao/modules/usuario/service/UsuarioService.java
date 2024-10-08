@@ -5,8 +5,8 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.claroindico.service.DirecionamentoInsideSalesVendedorService;
-import br.com.xbrain.autenticacao.modules.claroindico.service.IndicacaoInsideSalesPmeService;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -280,9 +280,9 @@ public class UsuarioService {
     @Autowired
     private SuporteVendasService suporteVendasService;
     @Autowired
-    private DirecionamentoInsideSalesVendedorService direcionamentoInsideSalesVendedorService;
+    private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
     @Autowired
-    private IndicacaoInsideSalesPmeService indicacaoInsideSalesPmeService;
+    private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -3441,12 +3441,12 @@ public class UsuarioService {
             .collect(toList());
     }
 
-    private void redistribuirIndicacoesDoUsuario(Integer usuarioVendedorId) {
-        indicacaoInsideSalesPmeService.redistribuirIndicacoesPorUsuarioVendedorId(usuarioVendedorId);
+    private void removerDirecionamentoPorCepDoUsuario(Integer usuarioVendedorId) {
+        inativarDirecionamentosCepMqSender.sendInativarDirecionamentoCep(usuarioVendedorId);
     }
 
-    private void removerDirecionamentoPorCepDoUsuario(Integer usuarioVendedorId) {
-        direcionamentoInsideSalesVendedorService.inativarDirecionamentoPorUsuarioVendedorId(usuarioVendedorId);
+    private void redistribuirIndicacoesDoUsuario(Integer usuarioVendedorId) {
+        redistribuirIndicacoesInsideSalesMqSender.sendRedistribuirIndicacoesInsideSales(usuarioVendedorId);
     }
 
     private void validarERedistribuirIndicacoes(Usuario usuario) {

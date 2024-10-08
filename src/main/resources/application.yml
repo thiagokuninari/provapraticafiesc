@@ -156,6 +156,8 @@ app-config:
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
     usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
     inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
+    inativar-direcionamentos-cep-vendedor-inside-sales: inativar-direcionamentos-cep-vendedor-inside-sales.queue
+    redistribuir-indicacoes-inside-sales-vendedor: redistribuir-indicacoes-inside-sales-vendedor.queue
 
   oauth-clients:
     autenticacao-api:
@@ -445,9 +447,9 @@ management:
         enabled: false
 
   contextPath: /actuator
-  port: ${ACTUATOR_PORT:8081}
+  port: ${ACTUATOR_PORT:8083}
   server:
-    port: 8081
+    port: 8083
   endpoint:
     health:
       show-details: always

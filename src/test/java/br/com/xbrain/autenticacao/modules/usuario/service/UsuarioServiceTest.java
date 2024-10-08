@@ -6,8 +6,8 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.claroindico.service.DirecionamentoInsideSalesVendedorService;
-import br.com.xbrain.autenticacao.modules.claroindico.service.IndicacaoInsideSalesPmeService;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
@@ -238,9 +238,9 @@ public class UsuarioServiceTest {
     @Mock
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Mock
-    private IndicacaoInsideSalesPmeService indicacaoInsideSalesPmeService;
+    private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
     @Mock
-    private DirecionamentoInsideSalesVendedorService direcionamentoInsideSalesVendedorService;
+    private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -5615,8 +5615,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(indicacaoInsideSalesPmeService).redistribuirIndicacoesPorUsuarioVendedorId(1);
-        verify(direcionamentoInsideSalesVendedorService).inativarDirecionamentoPorUsuarioVendedorId(1);
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
     }
 
     @Test
@@ -5633,8 +5633,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(indicacaoInsideSalesPmeService).redistribuirIndicacoesPorUsuarioVendedorId(1);
-        verify(direcionamentoInsideSalesVendedorService).inativarDirecionamentoPorUsuarioVendedorId(1);
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
     }
 
     @Test
@@ -5650,8 +5650,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(indicacaoInsideSalesPmeService).redistribuirIndicacoesPorUsuarioVendedorId(1);
-        verify(direcionamentoInsideSalesVendedorService).inativarDirecionamentoPorUsuarioVendedorId(1);
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
     }
 
     @Test
@@ -5668,8 +5668,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verifyZeroInteractions(indicacaoInsideSalesPmeService);
-        verifyZeroInteractions(direcionamentoInsideSalesVendedorService);
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
