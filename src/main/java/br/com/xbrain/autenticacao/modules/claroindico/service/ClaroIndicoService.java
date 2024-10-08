@@ -36,14 +36,9 @@ public class ClaroIndicoService {
         }
     }
 
-    private boolean houveAlteracaoColaboradorBkoCentralizado(Usuario usuarioAntigo, Usuario usuario) {
-        return houveAlteracaoDeCargoOuOrganizacao(usuarioAntigo, usuario)
-            && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
-            && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoId());
-    }
-
-    private boolean houveAlteracaoDeCargoOuOrganizacao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
+    private boolean houveAlteracaoColaboradorBkoCentralizado(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
         return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
-            || mapNull(usuarioAtualizado.getOrganizacaoId(), id -> !id.equals(usuarioAntigo.getOrganizacaoId()), false);
+            && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
+            && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
     }
 }
