@@ -447,9 +447,9 @@ management:
         enabled: false
 
   contextPath: /actuator
-  port: ${ACTUATOR_PORT:8083}
+  port: ${ACTUATOR_PORT:8081}
   server:
-    port: 8083
+    port: 8081
   endpoint:
     health:
       show-details: always
