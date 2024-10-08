@@ -15,12 +15,14 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umUsuario;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_GERENTE_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_CENTRALIZADO;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,10 +64,38 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoInformarUsuariosENaoOcorrerErro() {
-        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(umUsuarioAntigo(), umUsuarioAtualizado()))
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .doesNotThrowAnyException();
 
         verify(client).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoOperadorMudarCargoParaAnalista() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umAnalistaBkoCentralizado()))
+            .doesNotThrowAnyException();
+
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoGerenteMudarCargoParaOperador() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umGerenteBkoCentralizado(), umOperadorBkoCentralizado()))
+            .doesNotThrowAnyException();
+
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoAdicionarNovoCargoParaOUsuario() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umUsuario(), umOperadorBkoCentralizado()))
+            .doesNotThrowAnyException();
+
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
     }
 
     @Test
@@ -73,7 +103,8 @@ public class ClaroIndicoServiceTest {
         doThrow(new RetryableException("", null))
             .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
 
-        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(umUsuarioAntigo(), umUsuarioAtualizado()))
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .isInstanceOf(IntegracaoException.class)
             .hasMessage("Ocorreu um erro ao desvincular usuário da fila de tratamento.");
     }
@@ -83,13 +114,14 @@ public class ClaroIndicoServiceTest {
         doThrow(new HystrixBadRequestException("", null))
             .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
 
-        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(umUsuarioAntigo(), umUsuarioAtualizado()))
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .isInstanceOf(IntegracaoException.class);
 
         verify(client).desvincularUsuarioDaFilaTratamento(anyInt());
     }
 
-    private Usuario umUsuarioAntigo() {
+    private Usuario umOperadorBkoCentralizado() {
         var usuarioAntigo = umUsuario();
         usuarioAntigo.setCargo(
             Cargo.builder()
@@ -102,7 +134,20 @@ public class ClaroIndicoServiceTest {
         return usuarioAntigo;
     }
 
-    private Usuario umUsuarioAtualizado() {
+    private Usuario umAnalistaBkoCentralizado() {
+        var usuarioAntigo = umUsuario();
+        usuarioAntigo.setCargo(
+            Cargo.builder()
+                .id(116)
+                .codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)
+                .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
+                .build());
+        usuarioAntigo.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
+
+        return usuarioAntigo;
+    }
+
+    private Usuario umGerenteBkoCentralizado() {
         var usuarioAtualizado = umUsuario();
         usuarioAtualizado.setCargo(
             Cargo.builder()
