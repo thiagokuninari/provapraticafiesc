@@ -99,6 +99,15 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
+    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoNaoHouverAlteracaoDeCargo() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umOperadorBkoCentralizado()))
+            .doesNotThrowAnyException();
+
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
     public void desvincularUsuarioDaFilaTratamento_deveLancarException_quandoInformarUsuariosEOcorrerErro() {
         doThrow(new RetryableException("", null))
             .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
