@@ -6,12 +6,13 @@ pipeline {
         ACTUATOR_PORT = "8081"
         PROFILE = "desenvolvimento"
         DOCKER_DEV = "docker --context dev"
+        DOCKER_LOCAL = "docker --context default"
         CONTAINER_NAME = "autenticacao-api-dev"
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
-        CURRENT_IMAGE = sh(script: "${DOCKER_DEV} ps -a -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
+        CURRENT_IMAGE = sh(script: "${DOCKER_DEV} images --format '{{.Repository}}:{{.Tag}}' | grep -E /${CONTAINER_NAME}: || echo ''", returnStdout: true).trim()
         JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
                                    -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
@@ -107,7 +108,19 @@ pipeline {
                                     error "status container ${output}!"
                                 }
                             } else {
-                                sh ''' ${DOCKER_DEV} image rm ${CURRENT_IMAGE} '''
+                                sh '''
+                                    if [ -n "$CURRENT_IMAGE" ]; then
+                                       ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                    ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                       ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                       ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                    fi
+                                '''
                             }
                         }
                     } catch (error) {
@@ -116,8 +129,34 @@ pipeline {
                             sh '''
                                 if ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$" && [ -n "${CURRENT_IMAGE}" ]; then
                                    ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                      ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                      ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                   fi
+                                   ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${HARBOR_URL}$"; then
+                                      ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                   fi
+                                elif ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$" && [ -n "${HARBOR_URL}" ]; then
+                                     ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                     ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
                                 else
-                                   ${DOCKER_DEV} image rm ${HARBOR_URL}
+                                   if [ -n "$CURRENT_IMAGE" ]; then
+                                      ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                      ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                      ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                   fi
+                                   if ${DOCKER_DEV} images | awk '{print $1":"$2}' | grep -Eq "^${HARBOR_URL}$"; then
+                                      ${DOCKER_DEV} image rm ${HARBOR_URL}
+                                   fi
+                                   ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                   ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
                                 fi
                             '''
                         }
