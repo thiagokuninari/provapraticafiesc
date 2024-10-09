@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.claroindico.rabbitmq;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,7 +12,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = RedistribuirIndicacoesInsideSalesMqSender.class)
-public class RedistribuirIndicacoesInsideSalesMqSenderTest extends TestCase {
+public class RedistribuirIndicacoesInsideSalesMqSenderTest {
 
     @Autowired
     private RedistribuirIndicacoesInsideSalesMqSender sender;
