@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.predicate;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 import static br.com.xbrain.autenticacao.modules.feriado.model.QFeriado.feriado;
 import static org.assertj.core.api.Assertions.assertThat;
+import static br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.QImportacaoFeriado.importacaoFeriado;
 
 public class FeriadoPredicateTest {
 
@@ -58,6 +60,13 @@ public class FeriadoPredicateTest {
     }
 
     @Test
+    public void comPeriodoDeDataFeriado_naoDeveMontarPredicate_quandoNaoInformarDataFim() {
+        assertThat(new FeriadoPredicate()
+            .comPeriodoDeDataFeriado(LocalDate.of(2023, 12, 12), null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
     public void comCidadeOuEstado_deveMontarPredicateComEstado_quandoCidadeIdForNull() {
         assertThat(new FeriadoPredicate().comCidadeOuEstado(null, 1).build())
             .isEqualTo(new BooleanBuilder(
@@ -94,6 +103,12 @@ public class FeriadoPredicateTest {
     @Test
     public void comCidade_naoDeveMontarPredicate_quandoNaoInformarCidadeIdEEstadoId() {
         assertThat(new FeriadoPredicate().comCidade(null, null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void comCidade_naoDeveMontarPredicate_quandoNaoInformarEstadoId() {
+        assertThat(new FeriadoPredicate().comCidade(1, null).build())
             .isEqualTo(new BooleanBuilder());
     }
 
@@ -145,5 +160,18 @@ public class FeriadoPredicateTest {
     public void excetoExcluidos_deveMontarPredicate_quandoNaoPassarNada() {
         assertThat(new FeriadoPredicate().excetoExcluidos().build())
             .isEqualTo(new BooleanBuilder(feriado.situacao.ne(ESituacaoFeriado.EXCLUIDO)));
+    }
+
+    @Test
+    public void comSituacaoFeriadoAutomacao_deveMontarPredicate_quandoSituacaoFeriadoAutomacaoNaoForNulo() {
+        assertThat(new FeriadoPredicate().comSituacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.EM_IMPORTACAO).build())
+            .isEqualTo(new BooleanBuilder(importacaoFeriado.situacaoFeriadoAutomacao
+                .eq(ESituacaoFeriadoAutomacao.EM_IMPORTACAO)));
+    }
+
+    @Test
+    public void comSituacaoFeriadoAutomacao_naoDeveMontarPredicate_quandoSituacaoFeriadoAutomacaoForNulo() {
+        assertThat(new FeriadoPredicate().comSituacaoFeriadoAutomacao(null).build())
+            .isEqualTo(new BooleanBuilder());
     }
 }

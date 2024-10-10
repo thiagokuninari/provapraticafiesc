@@ -16,6 +16,14 @@ public class ImportacaoFeriadoTest {
             .containsExactlyInAnyOrder(null, ESituacaoFeriadoAutomacao.IMPORTADO, 1, "teste nome");
     }
 
+    @Test
+    public void of_deveRetornarFeriadoAutomacaoComDadosUsuariosNulo_quandoUsuarioCadastroIdEUsuarioCadastroNomeNulos() {
+        assertThat(ImportacaoFeriado.of(ESituacaoFeriadoAutomacao.IMPORTADO, null))
+            .extracting("id", "situacaoFeriadoAutomacao", "usuarioCadastroId",
+                "usuarioCadastroNome")
+            .containsExactlyInAnyOrder(null, ESituacaoFeriadoAutomacao.IMPORTADO, null, null);
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
             .id(1)

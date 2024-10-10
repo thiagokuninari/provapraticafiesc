@@ -336,6 +336,28 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoes_quandoUsuarioAgenteAutorizadoTipoEmpresarial() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setAgenteAutorizadoFeeder(ETipoFeeder.EMPRESARIAL);
+        usuarioNovo.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
+
+        var permissoesEsperadas = new ArrayList<Integer>();
+        permissoesEsperadas.add(FUNCIONALIDADE_TRATAR_LEAD_ID);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas)))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(1111));
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(1111), eq(2222), eq(permissoesEsperadas));
+        verify(usuarioService, times(1))
+            .salvarPermissoesEspeciais(eq(umaListaPermissoesFuncionalidadesFeederParaAa(1111)));
+    }
+
+    @Test
     @SuppressWarnings("LineLength")
     public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesEmpresarial_quandoUsuarioMsoComTiposFeederEmpresarial() {
         when(usuarioRepository.findById(eq(150016)))

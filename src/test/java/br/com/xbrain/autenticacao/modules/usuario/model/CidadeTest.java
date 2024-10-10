@@ -132,6 +132,20 @@ public class CidadeTest {
             .isEqualTo(Set.of(1, 2, 3));
     }
 
+    @Test
+    public void getCodigoUf_deveRetornarCodigoUf_quandoUfNaoNull() {
+        assertThat(umaCidade(1).getCodigoUf())
+            .isEqualTo("PR");
+    }
+
+    @Test
+    public void getCodigoUf_naoDeveRetornarCodigoUfNulo_quandoUfNull() {
+        var cidade = umaCidade(1);
+        cidade.setUf(null);
+        assertThat(cidade.getCodigoUf())
+            .isEqualTo(null);
+    }
+
     private Cidade umaCidade(Integer cidadeId) {
         return Cidade.builder()
             .id(cidadeId)

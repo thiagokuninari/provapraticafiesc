@@ -29,4 +29,15 @@ public class UsuarioHierarquiaFiltrosTest {
 
         assertThat(filtros.apenasSiteId()).isFalse();
     }
+
+    @Test
+    public void apenasSiteId_deveRetornarFalse_quandoSiteIdNulo() {
+        var filtros = UsuarioHierarquiaFiltros
+            .builder()
+            .siteId(null)
+            .coordenadorId(100)
+            .build();
+
+        assertThat(filtros.apenasSiteId()).isFalse();
+    }
 }

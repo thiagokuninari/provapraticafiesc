@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.cep.client.ConsultaCepClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,6 +58,17 @@ public class ConsultaCepServiceTest {
     }
 
     @Test
+    public void consultarCep_deveLancarHystrixBadRequestException_quandoErroNaApi() {
+        doThrow(HystrixBadRequestException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.consultarCep("86023112"));
+
+        verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+        verify(cidadeService, never()).findByUfNomeAndCidadeNome(any(), any());
+    }
+
+    @Test
     public void consultarCeps_deveRetornarListaDeCidadeEUf_quandoEncontrarCeps() {
         when(consultaCepClient.consultarCep(StringUtil.getOnlyNumbers("86023112")))
             .thenReturn(umConsultaCepResponse());
@@ -76,5 +88,16 @@ public class ConsultaCepServiceTest {
             .withMessageContaining("#023 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+    }
+
+    @Test
+    public void consultarCeps_deveLancarHystrixBadRequestException_quandoErroNaApi() {
+        doThrow(HystrixBadRequestException.class).when(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.consultarCeps(List.of("86023112")));
+
+        verify(consultaCepClient).consultarCep(StringUtil.getOnlyNumbers("86023112"));
+        verify(cidadeService, never()).findByUfNomeAndCidadeNome(any(), any());
     }
 }

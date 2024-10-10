@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -27,6 +28,87 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.*;
 
 public class UsuarioTest {
+
+    @Test
+    public void isNovoCadastro_deveRetornarTrue_seIdNull() {
+        var usuario = new Usuario();
+        assertThat(usuario.isNovoCadastro()).isTrue();
+    }
+
+    @Test
+    public void isNovoCadastro_deveRetornarFalse_seIdDiferenteDeNull() {
+        var usuario = umUsuario();
+        assertThat(usuario.isNovoCadastro()).isFalse();
+    }
+
+    @Test
+    public void getEmpresasId_deveRetornarListaDeIdsDaEmpresa_quandoHouverEmpresas() {
+        var usuario = umUsuario();
+        usuario.setEmpresas(List.of(Empresa.builder().id(1).build()));
+
+        assertThat(usuario.getEmpresasId())
+            .isEqualTo(List.of(1));
+    }
+
+    @Test
+    public void getEmpresasId_deveRetornarNulo_quandoEmpresaNulo() {
+        var usuario = umUsuario();
+
+        assertThat(usuario.getEmpresasId())
+            .isEqualTo(null);
+    }
+
+    @Test
+    public void getEmpresasNome_deveRetornarListaDeNomesDasEmpresa_quandoHouverEmpresas() {
+        var usuario = umUsuario();
+        usuario.setEmpresas(List.of(Empresa.builder().nome("kaique").build()));
+
+        assertThat(usuario.getEmpresasNome())
+            .isEqualTo(List.of("kaique"));
+    }
+
+    @Test
+    public void getEmpresasNome_deveRetornarNulo_quandoEmpresaNulo() {
+        var usuario = umUsuario();
+
+        assertThat(usuario.getEmpresasNome())
+            .isEqualTo(null);
+    }
+
+    @Test
+    public void getSubCanaisCodigo_deveRetornarSetDeSubCanais_quandoHouverSubCanais() {
+        var usuario = umUsuario();
+        usuario.setSubCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()));
+
+        assertThat(usuario.getSubCanaisCodigo())
+            .isEqualTo(Set.of(PAP_PREMIUM));
+    }
+
+    @Test
+    public void getSubCanaisCodigo_deveSetVazio_quandoNaoHouverSubCanais() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.getSubCanaisCodigo())
+            .isEqualTo(Set.of());
+    }
+
+    @Test
+    public void getUnidadesNegociosId_deveRetornarListaDeIds_quandoHouverUnidadesNegocios() {
+        var usuario = new Usuario();
+
+        usuario.setUnidadesNegocios(List.of(UnidadeNegocio.builder().id(1).build()));
+
+        assertThat(usuario.getUnidadesNegociosId())
+            .isEqualTo(List.of(1));
+    }
+
+    @Test
+    public void getUnidadesNegociosId_deveRetornarNulo_quandoNaoHouverUnidadesNegocio() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.getUnidadesNegociosId())
+            .isEqualTo(null);
+    }
 
     @Test
     public void isUsuarioEquipeVendas_deveRetornarTrue_quandoForVendedor() {
@@ -460,10 +542,10 @@ public class UsuarioTest {
     @Test
     public void tratarEmails_deveTransformarEmUpperCaseERetirarOsEspacosDoEmail_quandoEmailNaoNull() {
         var usuario = Usuario.builder()
-                .id(1)
-                .nome("Admin")
-                .email("     usuario@xbrain.com.br     ")
-                .build();
+            .id(1)
+            .nome("Admin")
+            .email("     usuario@xbrain.com.br     ")
+            .build();
         assertThat(usuario.getEmail()).isEqualTo("     usuario@xbrain.com.br     ");
 
         usuario.tratarEmails();
