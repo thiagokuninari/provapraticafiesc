@@ -14,16 +14,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.List;
+
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umUsuario;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_GERENTE_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_CENTRALIZADO;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClaroIndicoServiceTest {
@@ -32,6 +37,49 @@ public class ClaroIndicoServiceTest {
     private ClaroIndicoService service;
     @Mock
     private ClaroIndicoClient client;
+
+    @Test
+    public void buscarUsuariosVinculados_deveChamarClient_quandoNaoOcorrerErroERetornarListaDeIds() {
+        when(client.buscarUsuariosVinculados()).thenReturn(List.of(1, 2));
+
+        assertThatCode(() -> service.buscarUsuariosVinculados())
+            .doesNotThrowAnyException();
+        assertThat(service.buscarUsuariosVinculados()).isNotEmpty();
+
+        verify(client, atLeastOnce()).buscarUsuariosVinculados();
+    }
+
+    @Test
+    public void buscarUsuariosVinculados_deveChamarClient_quandoNaoOcorrerErroERetornarListaVazia() {
+        when(client.buscarUsuariosVinculados()).thenReturn(List.of());
+
+        assertThatCode(() -> service.buscarUsuariosVinculados())
+            .doesNotThrowAnyException();
+        assertThat(service.buscarUsuariosVinculados()).isEmpty();
+
+        verify(client, atLeastOnce()).buscarUsuariosVinculados();
+    }
+
+    @Test
+    public void buscarUsuariosVinculados_deveLancarException_quandoOcorrerErro() {
+        doThrow(new RetryableException("", null))
+            .when(client).buscarUsuariosVinculados();
+
+        assertThatCode(() -> service.buscarUsuariosVinculados())
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("Ocorreu um erro ao buscar usuários vinculados às filas de tratamento.");
+    }
+
+    @Test
+    public void buscarUsuariosVinculados_deveLancarIntegracaoException_quandoOcorrerErro() {
+        doThrow(new HystrixBadRequestException("", null))
+            .when(client).buscarUsuariosVinculados();
+
+        assertThatCode(() -> service.buscarUsuariosVinculados())
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).buscarUsuariosVinculados();
+    }
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoInformarIdENaoOcorrerErro() {
