@@ -8,6 +8,8 @@ import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO;
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 
@@ -16,6 +18,18 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 public class ClaroIndicoService {
 
     private final ClaroIndicoClient client;
+
+    public List<Integer> buscarUsuariosVinculados() {
+        try {
+            return client.buscarUsuariosVinculados();
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                ClaroIndicoService.class.getName(),
+                "Ocorreu um erro ao buscar usuários vinculados às filas de tratamento.");
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 
     public void desvincularUsuarioDaFilaTratamento(Integer id) {
         try {

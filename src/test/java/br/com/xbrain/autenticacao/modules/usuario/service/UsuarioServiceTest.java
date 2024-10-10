@@ -6157,7 +6157,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivos() {
+    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivosESemVinculo() {
         var operadorBackofficeCentralizado = Usuario.builder()
             .id(1)
             .nome("USUARIO UM")
@@ -6173,6 +6173,7 @@ public class UsuarioServiceTest {
 
         when(repository.getUsuariosFilter(any()))
             .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of());
         
         var resultado = service.getColaboradoresBackofficeCentralizado();
 
@@ -6187,12 +6188,60 @@ public class UsuarioServiceTest {
             );
 
         verify(repository).getUsuariosFilter(any());
+        verify(claroIndicoService).buscarUsuariosVinculados();
     }
 
     @Test
-    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivos() {
+    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivosEComVinculo() {
+        var operadorBackofficeCentralizado = Usuario.builder()
+            .id(1)
+            .nome("USUARIO UM")
+            .cargo(Cargo.builder().id(115).codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+        var analistaBackofficeCentralizado = Usuario.builder()
+            .id(2)
+            .nome("USUARIO DOIS")
+            .cargo(Cargo.builder().id(116).codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+
+        when(repository.getUsuariosFilter(any()))
+            .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of(1));
+
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertFalse(resultado.isEmpty());
+        assertThat(resultado)
+            .extracting(
+                UsuarioResponse::getId,
+                UsuarioResponse::getNome)
+            .containsExactlyInAnyOrder(
+                tuple(2, "USUARIO DOIS")
+            );
+
+        verify(repository).getUsuariosFilter(any());
+        verify(claroIndicoService).buscarUsuariosVinculados();
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivosESemVinculo() {
         when(repository.getUsuariosFilter(any())).thenReturn(List.of());
-        
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of());
+
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertTrue(resultado.isEmpty());
+
+        verify(repository).getUsuariosFilter(any());
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivosEComVinculo() {
+        when(repository.getUsuariosFilter(any())).thenReturn(List.of());
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of(1));
+
         var resultado = service.getColaboradoresBackofficeCentralizado();
 
         assertTrue(resultado.isEmpty());

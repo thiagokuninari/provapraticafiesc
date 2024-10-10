@@ -3452,10 +3452,21 @@ public class UsuarioService {
             .comCargosIds(CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO)
             .isAtivo(Eboolean.V);
 
+        var usuariosVinculados = claroIndicoService.buscarUsuariosVinculados();
+
         return repository.getUsuariosFilter(predicate.build())
             .stream()
+            .filter(usuario -> !isUsuarioVinculado(usuario, usuariosVinculados))
             .map(UsuarioResponse::of)
             .collect(toList());
+    }
+
+    private boolean isUsuarioVinculado(Usuario usuario, List<Integer> usuariosVinculados) {
+        if (!isEmpty(usuariosVinculados)) {
+            return usuariosVinculados.contains(usuario.getId());
+        }
+
+        return false;
     }
 
     private void removerUsuarioDaFilaTratamento(Usuario usuario) {
