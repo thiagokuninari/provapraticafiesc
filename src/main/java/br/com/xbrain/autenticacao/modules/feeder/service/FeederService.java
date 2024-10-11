@@ -68,7 +68,7 @@ public class FeederService {
             if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeederResidencial()) {
                 removerPermissoes(agenteAutorizadoPermissaoFeederDto, true);
             }
-        } else if (!agenteAutorizadoPermissaoFeederDto.hasPermissaoFeeder()) {
+        } else {
             removerPermissoes(agenteAutorizadoPermissaoFeederDto, false);
         }
     }

@@ -66,7 +66,7 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isCoordenadorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoCoordenadorCanalInternetForNulo() {
-        assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.COORDENADOR_OPERACAO)
+        assertThat(umUsuarioAutenticadoCanalInternet(null)
             .isCoordenadorInternetOperacao())
             .isFalse();
     }
@@ -87,7 +87,7 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isVendedorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoVendedorCanalInternetForNulo() {
-        assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.VENDEDOR_OPERACAO)
+        assertThat(umUsuarioAutenticadoCanalInternet(null)
             .isVendedorInternetOperacao())
             .isFalse();
     }
@@ -260,7 +260,7 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isSupervisorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoForCargoInternetSupervisorForNulo() {
-        assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO)
+        assertThat(umUsuarioAutenticadoCanalInternet(null)
             .isSupervisorInternetOperacao())
             .isFalse();
     }
