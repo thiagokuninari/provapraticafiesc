@@ -34,6 +34,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPER
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -553,5 +554,23 @@ public class UsuarioRepositoryTest {
         assertThat(repository.getUsuarioIdsByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
             .containsExactly(100)
             .hasSize(1);
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarTrue_quandoUsuarioForSocioPrincipal() {
+        assertThat(repository.isUsuarioSocioPrincipal(126))
+            .isTrue();
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarFalse_quandoUsuarioNaoForSocioPrincipal() {
+        assertThat(repository.isUsuarioSocioPrincipal(125))
+            .isFalse();
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarFalse_quandoUsuarioNaoExistir() {
+        assertThat(repository.isUsuarioSocioPrincipal(999))
+            .isFalse();
     }
 }

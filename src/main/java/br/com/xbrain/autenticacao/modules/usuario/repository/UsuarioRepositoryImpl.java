@@ -1455,4 +1455,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuario.situacao.eq(A)))
             .fetchFirst() != null;
     }
+
+    @Override
+    public boolean isUsuarioSocioPrincipal(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .selectOne()
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
+                .and(usuario.id.eq(usuarioId)))
+            .fetchFirst() != null;
+    }
 }

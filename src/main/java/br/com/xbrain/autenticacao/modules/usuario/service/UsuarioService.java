@@ -3501,4 +3501,8 @@ public class UsuarioService {
             .map(Usuario::getEmail)
             .collect(toList());
     }
+
+    public boolean isUsuarioSocioPrincipal(Integer usuarioId) {
+        return repository.isUsuarioSocioPrincipal(usuarioId);
+    }
 }

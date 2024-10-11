@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -8,8 +10,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -634,5 +634,10 @@ public class UsuarioController {
     @GetMapping("buscar-emails/{cargoId}")
     List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
         return usuarioService.getEmailsByCargoId(cargoId);
+    }
+
+    @GetMapping("socio-principal/{usuarioId}")
+    public boolean isUsuarioSocioPrincipal(@PathVariable Integer usuarioId) {
+        return usuarioService.isUsuarioSocioPrincipal(usuarioId);
     }
 }

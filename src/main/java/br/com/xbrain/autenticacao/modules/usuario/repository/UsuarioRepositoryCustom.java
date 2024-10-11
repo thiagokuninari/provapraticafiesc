@@ -207,4 +207,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
 
     boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email);
+
+    boolean isUsuarioSocioPrincipal(Integer usuarioId);
 }
