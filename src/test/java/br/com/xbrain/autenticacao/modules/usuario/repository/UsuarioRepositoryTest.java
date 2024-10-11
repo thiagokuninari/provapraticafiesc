@@ -27,14 +27,10 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -66,7 +62,7 @@ public class UsuarioRepositoryTest {
     @SuppressWarnings("LineLength")
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)
-            ))
+        ))
             .extracting("id", "email", "nivelCodigo")
             .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR", XBRAIN), tuple(104, "MARIA@HOTMAIL.COM", XBRAIN));
     }
