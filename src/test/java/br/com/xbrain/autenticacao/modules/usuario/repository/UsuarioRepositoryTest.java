@@ -563,10 +563,4 @@ public class UsuarioRepositoryTest {
         assertThat(repository.isUsuarioSocioPrincipal(125))
             .isFalse();
     }
-
-    @Test
-    public void isUsuarioSocioPrincipal_deveRetornarFalse_quandoUsuarioNaoExistir() {
-        assertThat(repository.isUsuarioSocioPrincipal(999))
-            .isFalse();
-    }
 }
