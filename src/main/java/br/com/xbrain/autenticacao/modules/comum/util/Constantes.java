@@ -35,6 +35,7 @@ public class Constantes {
     );
     public static final List<CodigoCargo> CARGOS_SUPERVISOR = List.of(
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
+        CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_BACKOFFICE,
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );

@@ -120,7 +120,8 @@ public enum CodigoCargo {
     OPERADOR_SUPORTE_VENDAS,
     SUPERVISOR_SUPORTE_VENDAS,
     COORDENADOR_SUPORTE_VENDAS,
-    GERENTE_SUPORTE_VENDAS;
+    GERENTE_SUPORTE_VENDAS,
+    AGENTE_AUTORIZADO_SUPERVISOR_BACKOFFICE;
 
     public static List<CodigoCargo> getCargosTecnicos() {
         return List.of(
