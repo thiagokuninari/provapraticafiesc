@@ -3501,4 +3501,11 @@ public class UsuarioService {
             .map(Usuario::getEmail)
             .collect(toList());
     }
+
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        return usuario.isSocioPrincipal() || usuario.isXbrainOuMso()
+            ? repository.findSociosIdsAtivosByUsuariosIds(usuariosIds)
+            : List.of();
+    }
 }
