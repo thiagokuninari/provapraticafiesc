@@ -2490,7 +2490,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithAnonymousUser
     public void getSociosIdsAtivosByUsuariosIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/socios-ids-ativos"))
+        mvc.perform(post(BASE_URL + "/socios-ids-ativos"))
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
@@ -2500,7 +2500,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     @WithMockUser
     public void getSociosIdsAtivosByUsuariosIds_deveRetornarOk_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL + "/socios-ids-ativos")
+        mvc.perform(post(BASE_URL + "/socios-ids-ativos")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(List.of(1, 2))))

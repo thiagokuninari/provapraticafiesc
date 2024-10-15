@@ -636,7 +636,7 @@ public class UsuarioController {
         return usuarioService.getEmailsByCargoId(cargoId);
     }
 
-    @GetMapping("socios-ids-ativos")
+    @PostMapping("socios-ids-ativos")
     List<Integer> getSociosIdsAtivosByUsuariosIds(@RequestBody List<Integer> usuariosIds) {
         return usuarioService.findSociosIdsAtivosByUsuariosIds(usuariosIds);
     }
