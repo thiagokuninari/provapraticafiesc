@@ -5049,6 +5049,33 @@ public class UsuarioServiceTest {
         verify(repository).findExecutivosPorCoordenadoresIds(predicate);
     }
 
+    @Test
+    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarListaDeIdsDistintos_quandoSolicitado() {
+        var coordenadoresIds = List.of(1, 2, 3);
+        var subordinadosIds = List.of(4, 5, 6, 6);
+
+        when(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds)).thenReturn(subordinadosIds);
+
+        var resultado = service.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+
+        assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
+
+        verify(repository).getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+    }
+
+    @Test
+    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSomenteCoordenadores_quandoNaoExistiremSubordinados() {
+        var coordenadoresIds = List.of(1, 2, 3);
+
+        when(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds)).thenReturn(List.of());
+
+        var resultado = service.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+
+        assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3);
+
+        verify(repository).getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+    }
+
     private Usuario outroUsuarioNivelOpCanalAa() {
         var usuario = Usuario
             .builder()

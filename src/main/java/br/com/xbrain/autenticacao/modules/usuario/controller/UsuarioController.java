@@ -162,6 +162,11 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
+    @GetMapping("/coordenadores/subordinados")
+    public List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(@RequestParam List<Integer> coordenadoresIds) {
+        return usuarioService.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+    }
+
     @RequestMapping(value = "/{id}/subordinados/vendas", method = RequestMethod.GET)
     public List<Integer> getSubordinadosVendas(@PathVariable("id") int id) {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);

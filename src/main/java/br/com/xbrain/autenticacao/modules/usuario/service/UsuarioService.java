@@ -3310,4 +3310,12 @@ public class UsuarioService {
             .comCanal(ECanal.AGENTE_AUTORIZADO);
         return repository.findExecutivosPorCoordenadoresIds(usuarioPredicate.build());
     }
+
+    public List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(List<Integer> coordenadoresIds) {
+        var subordinados = repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+
+        return Stream.concat(subordinados.stream(), coordenadoresIds.stream())
+            .distinct()
+            .collect(toList());
+    }
 }

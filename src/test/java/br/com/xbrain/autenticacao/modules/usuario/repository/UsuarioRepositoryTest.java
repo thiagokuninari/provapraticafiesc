@@ -416,4 +416,11 @@ public class UsuarioRepositoryTest {
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"));
     }
+
+    @Test
+    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSubordinadosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(109)))
+            .containsExactly(107, 108, 114, 115);
+    }
+
 }

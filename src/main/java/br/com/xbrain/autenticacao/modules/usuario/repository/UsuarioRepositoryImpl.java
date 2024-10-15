@@ -53,7 +53,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
@@ -92,7 +93,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -318,8 +319,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ",
             new MapSqlParameterSource()
-            .addValue("usuarioSuperiorId", usuarioSuperiorId),
-        new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
+                .addValue("usuarioSuperiorId", usuarioSuperiorId),
+            new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
     }
 
     @Override
@@ -722,7 +723,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -1410,7 +1411,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .where(usuario.situacao.eq(A)
                 .and(usuario.cargo.codigo.eq(codigoCargo)
-                .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
+                    .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
             .fetch();
     }
 
@@ -1429,5 +1430,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .where(predicate)
             .fetch();
+    }
+
+    public List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(List<Integer> coordenadoresIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuarioHierarquia.usuario.id)
+            .from(usuarioHierarquia)
+            .where(usuarioHierarquia.usuarioSuperior.id.in(coordenadoresIds))
+            .fetch()
+            .stream()
+            .distinct()
+            .collect(Collectors.toList());
     }
 }

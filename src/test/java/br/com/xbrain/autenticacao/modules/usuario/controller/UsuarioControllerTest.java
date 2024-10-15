@@ -2380,4 +2380,29 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getExecutivosPorCoordenadoresIds(List.of(1));
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/coordenadores/subordinados")
+                .param("coordenadoresIds", "1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSubordinadosIds_quandoUsuarioAutenticado() {
+        when(usuarioService.getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(1)))
+            .thenReturn(List.of(1, 2));
+
+        mvc.perform(get(BASE_URL + "/coordenadores/subordinados")
+                .param("coordenadoresIds", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]", is(1)))
+            .andExpect(jsonPath("$[1]", is(2)));
+
+        verify(usuarioService).getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(1));
+    }
 }
