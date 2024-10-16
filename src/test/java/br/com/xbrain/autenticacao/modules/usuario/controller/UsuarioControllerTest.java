@@ -44,7 +44,6 @@ import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -2384,25 +2383,25 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL + "/coordenadores/subordinados")
-                .param("coordenadoresIds", "1"))
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/usuarios/subordinados")
+                .param("usuariosIds", "1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
     @WithMockUser
-    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSubordinadosIds_quandoUsuarioAutenticado() {
-        when(usuarioService.getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(1)))
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSubordinadosIds_quandoUsuarioAutenticado() {
+        when(usuarioService.getUsuariosSubordinadosIdsByUsuariosIds(List.of(1)))
             .thenReturn(List.of(1, 2));
 
-        mvc.perform(get(BASE_URL + "/coordenadores/subordinados")
-                .param("coordenadoresIds", "1"))
+        mvc.perform(get(BASE_URL + "/usuarios/subordinados")
+                .param("usuariosIds", "1"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0]", is(1)))
             .andExpect(jsonPath("$[1]", is(2)));
 
-        verify(usuarioService).getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(1));
+        verify(usuarioService).getUsuariosSubordinadosIdsByUsuariosIds(List.of(1));
     }
 }

@@ -204,5 +204,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> findExecutivosPorCoordenadoresIds(Predicate predicate);
 
-    List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(List<Integer> coordenadoresIds);
+    List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds);
 }

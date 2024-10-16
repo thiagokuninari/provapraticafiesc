@@ -3311,10 +3311,10 @@ public class UsuarioService {
         return repository.findExecutivosPorCoordenadoresIds(usuarioPredicate.build());
     }
 
-    public List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(List<Integer> coordenadoresIds) {
-        var subordinados = repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+    public List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds) {
+        var subordinados = repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
 
-        return Stream.concat(subordinados.stream(), coordenadoresIds.stream())
+        return Stream.concat(subordinados.stream(), usuariosIds.stream())
             .distinct()
             .collect(toList());
     }

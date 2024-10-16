@@ -418,8 +418,8 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSubordinadosIds_quandoSolicitado() {
-        assertThat(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(List.of(109)))
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSubordinadosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosSubordinadosIdsByUsuariosIds(List.of(109)))
             .containsExactly(107, 108, 114, 115);
     }
 

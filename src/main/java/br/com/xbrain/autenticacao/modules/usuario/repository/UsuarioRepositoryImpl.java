@@ -1432,11 +1432,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
-    public List<Integer> getUsuariosSubordinadosIdsPorCoordenadoresIds(List<Integer> coordenadoresIds) {
+    public List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds) {
         return new JPAQueryFactory(entityManager)
             .select(usuarioHierarquia.usuario.id)
             .from(usuarioHierarquia)
-            .where(usuarioHierarquia.usuarioSuperior.id.in(coordenadoresIds))
+            .where(usuarioHierarquia.usuarioSuperior.id.in(usuariosIds))
             .fetch()
             .stream()
             .distinct()

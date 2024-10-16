@@ -5050,30 +5050,30 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarListaDeIdsDistintos_quandoSolicitado() {
-        var coordenadoresIds = List.of(1, 2, 3);
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarListaDeIdsDistintos_quandoSolicitado() {
+        var usuariosIds = List.of(1, 2, 3);
         var subordinadosIds = List.of(4, 5, 6, 6);
 
-        when(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds)).thenReturn(subordinadosIds);
+        when(repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds)).thenReturn(subordinadosIds);
 
-        var resultado = service.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+        var resultado = service.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
 
         assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
 
-        verify(repository).getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+        verify(repository).getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
     }
 
     @Test
-    public void getUsuariosSubordinadosIdsPorCoordenadoresIds_deveRetornarSomenteCoordenadores_quandoNaoExistiremSubordinados() {
-        var coordenadoresIds = List.of(1, 2, 3);
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSomenteUsuariosIds_quandoNaoExistiremSubordinados() {
+        var usuariosIds = List.of(1, 2, 3);
 
-        when(repository.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds)).thenReturn(List.of());
+        when(repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds)).thenReturn(List.of());
 
-        var resultado = service.getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+        var resultado = service.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
 
         assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3);
 
-        verify(repository).getUsuariosSubordinadosIdsPorCoordenadoresIds(coordenadoresIds);
+        verify(repository).getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
