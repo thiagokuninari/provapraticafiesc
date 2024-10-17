@@ -25,6 +25,7 @@ public enum CodigoNivel {
     ATIVO_LOCAL_COLABORADOR(true),
     BACKOFFICE(false),
     BACKOFFICE_CENTRALIZADO(false),
+    BACKOFFICE_QUALIDADE(false),
     OUVIDORIA(true),
     INTEGRACAO(false),
     GERADOR_LEADS(false),
