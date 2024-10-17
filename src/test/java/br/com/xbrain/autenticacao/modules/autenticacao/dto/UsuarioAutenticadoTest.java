@@ -258,7 +258,7 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
-    public void isGerenteInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoTiverCOdigoNivelOperacao() {
+    public void isGerenteInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoTiverCodigoNivelOperacao() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
         usuarioAutenticado.setNivelCodigo("MSO");
 

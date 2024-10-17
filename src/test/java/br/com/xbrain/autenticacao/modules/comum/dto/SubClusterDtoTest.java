@@ -19,7 +19,7 @@ public class SubClusterDtoTest {
     }
 
     @Test
-    public void of_deveRetornarUmsubClusterDtoComClusterVazio_quandoClusterForNulo() {
+    public void of_deveRetornarUmSubClusterDtoComClusterVazio_quandoClusterForNulo() {
         var subCluster = umSubCluster();
         subCluster.setCluster(null);
 
