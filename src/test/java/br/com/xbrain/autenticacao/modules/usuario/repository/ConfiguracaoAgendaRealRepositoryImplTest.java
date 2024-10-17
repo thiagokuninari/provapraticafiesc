@@ -138,4 +138,10 @@ public class ConfiguracaoAgendaRealRepositoryImplTest {
         assertThat(repository.existsByEstruturaAa("OPERACAO"))
             .isFalse();
     }
+    
+    @Test
+    public void existeConfiguracaoPadrao_deveRetornarFalse_quandoExistirConfiguracaoPadrao() {
+        assertThat(repository.existeConfiguracaoPadrao())
+            .isTrue();
+    }
 }

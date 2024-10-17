@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -72,5 +73,20 @@ public class EmailResponseErrorHandlerTest {
             listAppender.list.get(0).getMessage());
 
         assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @SneakyThrows
+    public void handleError_naoDeveRetornarLogDeErro_quandoStatusForOk() {
+        var email = new EmailResponseErrorHandler();
+
+        var response = mock(ClientHttpResponse.class);
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        email.handleError(response);
+
+        assertThatCode(() -> email.handleError(response))
+            .doesNotThrowAnyException();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }

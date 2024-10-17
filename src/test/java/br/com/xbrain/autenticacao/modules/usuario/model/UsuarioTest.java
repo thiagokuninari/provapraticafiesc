@@ -22,8 +22,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRI
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.*;
 
@@ -302,6 +301,12 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isNivelOperacao_deveRetornarFalse_quandoCargoNulo() {
+        assertThat(new Usuario().isNivelOperacao())
+            .isFalse();
+    }
+
+    @Test
     public void hasSubCanalPapPremium_deveRetornarTrue_seUsuarioPossuirSubCanalPapPremium() {
         assertTrue(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM).hasSubCanalPapPremium());
     }
@@ -540,6 +545,20 @@ public class UsuarioTest {
     }
 
     @Test
+    public void configurarRamal_naoDeveSetarRamal_quandoConfiguracaoNull() {
+        var usuario = Usuario
+            .builder()
+            .configuracao(null)
+            .id(1)
+            .build();
+
+        usuario.configurarRamal(3333);
+
+        assertThat(usuario.getConfiguracao())
+            .isEqualTo(null);
+    }
+
+    @Test
     public void tratarEmails_deveTransformarEmUpperCaseERetirarOsEspacosDoEmail_quandoEmailNaoNull() {
         var usuario = Usuario.builder()
             .id(1)
@@ -699,6 +718,42 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isEmpty_deveRetornarFalse_quandoNomeNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setId(null);
+        usuario.setNome("Jogue Ori, muito bomm");
+        usuario.setCpf(null);
+        usuario.setEmail(null);
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarFalse_quandoCpfNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setId(null);
+        usuario.setNome(null);
+        usuario.setCpf("999999999999999999-99");
+        usuario.setEmail(null);
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarFalse_quandoEmailNaoNull() {
+        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+        usuario.setId(null);
+        usuario.setNome(null);
+        usuario.setCpf(null);
+        usuario.setEmail("kaique@gmail.com");
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
     public void hasUsuarioCadastro_deveRetornarTrue_quandoUsuarioCadastroNaoNull() {
         var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
         usuario.setUsuarioCadastro(umUsuarioCadastro());
@@ -765,6 +820,14 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isAgenteAutorizado_deveRetornarFalse_quandoCargoVazio() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.isAgenteAutorizado())
+            .isFalse();
+    }
+
+    @Test
     public void isSocioPrincipal_deveRetornarTrue_quandoCodigoNivelForSocioPrincipal() {
         var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
 
@@ -775,6 +838,14 @@ public class UsuarioTest {
     @Test
     public void isSocioPrincipal_deveRetornarFalse_quandoCodigoNivelNaoForSocioPrincipal() {
         var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+
+        assertThat(usuario.isSocioPrincipal())
+            .isFalse();
+    }
+
+    @Test
+    public void isSocioPrincipal_deveRetornarFalse_quandoCargoNulo() {
+        var usuario = new Usuario();
 
         assertThat(usuario.isSocioPrincipal())
             .isFalse();
@@ -1071,6 +1142,42 @@ public class UsuarioTest {
             .build();
 
         assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of(2, 3));
+    }
+
+    @Test
+    public void usuario_deveMontarUsuarioComCamposNegocio_quandoHouverEmpresasEUnidadesNegocio() {
+        var empresa = Empresa.builder()
+            .id(1)
+            .nome("Kaique")
+            .unidadeNegocio(new UnidadeNegocio(1))
+            .build();
+        var unidadeNegocio = UnidadeNegocio.builder().id(1).build();
+
+        assertThat(new Usuario(List.of(empresa), List.of(unidadeNegocio)))
+            .extracting(Usuario::getEmpresas, Usuario::getUnidadesNegocios)
+            .containsExactly(List.of(empresa), List.of(unidadeNegocio));
+    }
+
+    @Test
+    public void adicionarHierarquia_deveAdicionarHierarquia_quandoSolicitado() {
+        var usuario = new Usuario();
+
+        usuario.adicionarHierarquia(new UsuarioHierarquia());
+
+        assertThat(usuario.getUsuariosHierarquia())
+            .isNotNull();
+    }
+
+    @Test
+    public void adicionarHierarquia_naoDeveAdicionarHierarquia_quandoHierarquiaJaCadastrada() {
+        var usuario = Usuario.builder()
+            .usuariosHierarquia(Set.of(new UsuarioHierarquia()))
+            .build();
+
+        usuario.adicionarHierarquia(new UsuarioHierarquia());
+
+        assertThat(usuario.getUsuariosHierarquia().size())
+            .isEqualTo(1);
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {

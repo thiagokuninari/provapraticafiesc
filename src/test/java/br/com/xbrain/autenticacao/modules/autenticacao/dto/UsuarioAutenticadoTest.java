@@ -129,6 +129,16 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
+    public void isAssistenteOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoTiverNivelOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.GERENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
+            .isAssistenteOperacao())
+            .isFalse();
+    }
+
+    @Test
     public void isGerenteOperacao_deveRetornarTrue_seUsuarioAutenticadoForCargoGerenteOperacao() {
         assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.GERENTE_OPERACAO)
             .isGerenteOperacao())
@@ -225,7 +235,10 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isBackoffice_deveRetornarFalse_seUsuarioAutenticadoForNivelBackofficeNulo() {
-        assertThat(umUsuarioAutenticadoCanalInternet(null)
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(null);
+        usuarioAutenticado.setNivelCodigo("");
+
+        assertThat(usuarioAutenticado
             .isBackoffice())
             .isFalse();
     }
@@ -240,6 +253,16 @@ public class UsuarioAutenticadoTest {
     @Test
     public void isGerenteInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoForCargoInternetGerente() {
         assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO)
+            .isGerenteInternetOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isGerenteInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoTiverCOdigoNivelOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
             .isGerenteInternetOperacao())
             .isFalse();
     }
@@ -260,7 +283,10 @@ public class UsuarioAutenticadoTest {
 
     @Test
     public void isSupervisorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoForCargoInternetSupervisorForNulo() {
-        assertThat(umUsuarioAutenticadoCanalInternet(null)
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
             .isSupervisorInternetOperacao())
             .isFalse();
     }
@@ -280,6 +306,16 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
+    public void isCoordenadorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoForNivelOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
+            .isCoordenadorInternetOperacao())
+            .isFalse();
+    }
+
+    @Test
     public void isVendedorInternetOperacao_deveRetornarTrue_seUsuarioAutenticadoForNivelOperacaoECargoInternetVendedor() {
         assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.INTERNET_VENDEDOR)
             .isVendedorInternetOperacao())
@@ -294,6 +330,16 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
+    public void isVendedorInternetOperacao_deveRetornarFalse_seUsuarioNaoForNivelInternetOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
+            .isVendedorInternetOperacao())
+            .isFalse();
+    }
+
+    @Test
     public void isBackofficeInternetOperacao_deveRetornarTrue_seUsuarioAutenticadoForNivelOperacaoECargoInternetBackoffice() {
         assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.INTERNET_BACKOFFICE)
             .isBackofficeInternetOperacao())
@@ -303,6 +349,16 @@ public class UsuarioAutenticadoTest {
     @Test
     public void isBackofficeInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoForCargoInternetBackoffice() {
         assertThat(umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO)
+            .isBackofficeInternetOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isBackofficeInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoTiverNivelOperacao() {
+        var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("MSO");
+
+        assertThat(usuarioAutenticado
             .isBackofficeInternetOperacao())
             .isFalse();
     }

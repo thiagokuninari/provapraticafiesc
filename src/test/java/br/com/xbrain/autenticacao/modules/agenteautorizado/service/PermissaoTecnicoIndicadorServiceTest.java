@@ -145,6 +145,19 @@ public class PermissaoTecnicoIndicadorServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarPermissao_seUsuarioRemanejadoForTrue() {
+        var request = UsuarioMqRequest.builder()
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, true);
+
+        verify(permissaoEspecialService, times(1)).save(anyList());
+    }
+
+    @Test
     public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seAaNaoForTecnicoIndicador() {
         var request = UsuarioMqRequest.builder()
             .tecnicoIndicador(false)
@@ -185,6 +198,24 @@ public class PermissaoTecnicoIndicadorServiceTest {
         service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
 
         verify(permissaoEspecialService, never()).save(anyList());
+        verify(permissaoEspecialService, times(1)).hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR);
+    }
+
+    @Test
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seUsuarioNaoPossuirPermissao() {
+        when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(false);
+
+        var request = UsuarioMqRequest.builder()
+            .id(4)
+            .tecnicoIndicador(true)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .build();
+        var usuario = new UsuarioDto(4);
+
+        service.adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(usuario, request, false);
+
+        verify(permissaoEspecialService).save(anyList());
+        verify(permissaoEspecialService).hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR);
     }
 
     @Test

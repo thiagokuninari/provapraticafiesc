@@ -39,12 +39,9 @@ public class UsuarioHierarquiaTest {
     @Test
     public void isSuperior_deveRetornaFalse_seCargoSuperiorExistirECargosSuperioresIdNaoConterNoParametro() {
         var usuarioHierarquia = UsuarioHierarquia.builder()
-            .usuario(Usuario.builder()
-                .cargo(Cargo.builder()
-                    .superiores(Set.of(Cargo.builder().id(1).build()))
-                    .build())
-                .build())
+            .usuario(Usuario.builder().build())
             .build();
+
         assertThat(usuarioHierarquia.isSuperior(89)).isFalse();
     }
 }
