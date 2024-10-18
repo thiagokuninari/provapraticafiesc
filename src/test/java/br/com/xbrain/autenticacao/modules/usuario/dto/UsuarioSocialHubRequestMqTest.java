@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import org.junit.Test;
 
@@ -50,5 +51,14 @@ public class UsuarioSocialHubRequestMqTest {
 
         assertEquals(usuario.getId(), request.getId());
         assertTrue(request.isPermissaoAdmSocialRemovida());
+    }
+
+    @Test
+    public void from_deveCopiarPropriedadesCorretamente_quandoRequestComSituacao() {
+        var usuario = umUsuarioSocialHub("teste@teste.com", 1, CodigoNivel.XBRAIN);
+        var request = UsuarioSocialHubRequestMq.from(usuario.getId(), ESituacao.A);
+
+        assertEquals(usuario.getId(), request.getId());
+        assertEquals(ESituacao.A, request.getSituacao());
     }
 }

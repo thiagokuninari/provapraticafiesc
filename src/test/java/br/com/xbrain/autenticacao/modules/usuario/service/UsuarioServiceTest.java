@@ -88,6 +88,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.umCanalNetSalesResponse;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
@@ -129,7 +130,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
-import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
@@ -237,6 +237,8 @@ public class UsuarioServiceTest {
     private OrganizacaoEmpresaService organizacaoEmpresaService;
     @Mock
     private SubNivelService subNivelService;
+    @Mock
+    private UsuarioCadastroMqSender usuarioCadastroMqSender;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -336,6 +338,37 @@ public class UsuarioServiceTest {
 
         service.ativar(umUsuarioAtivacaoDto());
         verify(agenteAutorizadoService).ativarUsuario(1);
+    }
+
+    @Test
+    public void ativar_deveAlterarSituacaoUsuarioEEnviarParaSocialHub_quandoSolicitado() {
+        doReturn(umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
+            .when(usuarioHistoricoService)
+            .findMotivoInativacaoByUsuarioId(1);
+        var usuario = umUsuarioSocioPrincipalEAa();
+        usuario.setSituacao(I);
+
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(anyInt());
+
+        doReturn(true)
+            .when(agenteAutorizadoService)
+            .existeAaAtivoBySocioEmail(anyString());
+
+        doNothing().when(usuarioCadastroMqSender).enviarDadosUsuarioParaSocialHub(any());
+
+        var usuarioAtivacao = umUsuarioAtivacaoDto();
+
+        service.ativar(usuarioAtivacao);
+        verify(agenteAutorizadoService).ativarUsuario(1);
+
+        verify(usuarioCadastroMqSender).enviarDadosUsuarioParaSocialHub(
+            UsuarioSocialHubRequestMq.from(usuarioAtivacao.getIdUsuario(), ESituacao.A));
     }
 
     @Test
@@ -632,6 +665,58 @@ public class UsuarioServiceTest {
 
         assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
             .doesNotThrowAnyException();
+
+        verify(mailingService, never()).countQuantidadeAgendamentosProprietariosDoUsuario(any(), any());
+    }
+
+    @Test
+    public void inativar_deveInativarUsuarioEEnviarParaSocial_quandoMotivoForDesligamento() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        doNothing().when(usuarioCadastroMqSender).enviarDadosUsuarioParaSocialHub(any());
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(usuarioCadastroMqSender).enviarDadosUsuarioParaSocialHub(
+            UsuarioSocialHubRequestMq.from(usuario.getId(), ESituacao.I));
+
+        verify(mailingService, never()).countQuantidadeAgendamentosProprietariosDoUsuario(any(), any());
+    }
+
+    @Test
+    public void inativar_deveInativarUsuarioENaoEnviarParaSocial_quandoMotivoNaoForDesligamento() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        doNothing().when(usuarioCadastroMqSender).enviarDadosUsuarioParaSocialHub(any());
+        var usuarioInativo = umUsuarioInativoDto();
+        usuarioInativo.setCodigoMotivoInativacao(CodigoMotivoInativacao.DESCREDENCIADO);
+
+        assertThatCode(() -> service.inativar(usuarioInativo))
+            .doesNotThrowAnyException();
+
+        verify(usuarioCadastroMqSender, never()).enviarDadosUsuarioParaSocialHub(
+            UsuarioSocialHubRequestMq.from(usuario.getId(), ESituacao.I));
 
         verify(mailingService, never()).countQuantidadeAgendamentosProprietariosDoUsuario(any(), any());
     }
