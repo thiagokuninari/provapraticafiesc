@@ -719,11 +719,8 @@ public class UsuarioTest {
 
     @Test
     public void isEmpty_deveRetornarFalse_quandoNomeNaoNull() {
-        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
-        usuario.setId(null);
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
         usuario.setNome("Jogue Ori, muito bomm");
-        usuario.setCpf(null);
-        usuario.setEmail(null);
 
         assertThat(usuario.isEmpty())
             .isFalse();
@@ -731,11 +728,8 @@ public class UsuarioTest {
 
     @Test
     public void isEmpty_deveRetornarFalse_quandoCpfNaoNull() {
-        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
-        usuario.setId(null);
-        usuario.setNome(null);
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
         usuario.setCpf("999999999999999999-99");
-        usuario.setEmail(null);
 
         assertThat(usuario.isEmpty())
             .isFalse();
@@ -743,10 +737,7 @@ public class UsuarioTest {
 
     @Test
     public void isEmpty_deveRetornarFalse_quandoEmailNaoNull() {
-        var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
-        usuario.setId(null);
-        usuario.setNome(null);
-        usuario.setCpf(null);
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
         usuario.setEmail("kaique@gmail.com");
 
         assertThat(usuario.isEmpty())
@@ -1159,7 +1150,7 @@ public class UsuarioTest {
     }
 
     @Test
-    public void adicionarHierarquia_deveAdicionarHierarquia_quandoSolicitado() {
+    public void adicionarHierarquia_deveAdicionarHierarquia_quandoHierarquiaNaoCadastrada() {
         var usuario = new Usuario();
 
         usuario.adicionarHierarquia(new UsuarioHierarquia());

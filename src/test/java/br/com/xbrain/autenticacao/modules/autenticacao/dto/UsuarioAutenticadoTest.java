@@ -236,7 +236,7 @@ public class UsuarioAutenticadoTest {
     @Test
     public void isBackoffice_deveRetornarFalse_seUsuarioAutenticadoForNivelBackofficeNulo() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(null);
-        usuarioAutenticado.setNivelCodigo("");
+        usuarioAutenticado.setNivelCodigo(null);
 
         assertThat(usuarioAutenticado
             .isBackoffice())
@@ -282,7 +282,7 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
-    public void isSupervisorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoForCargoInternetSupervisorForNulo() {
+    public void isSupervisorInternetOperacao_deveRetornarFalse_seUsuarioNaoForNivelCodigoOperacaoECargoInternetSupervisorNulo() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
         usuarioAutenticado.setNivelCodigo("MSO");
 
@@ -306,7 +306,7 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
-    public void isCoordenadorInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoNaoForNivelOperacao() {
+    public void isCoordenadorInternetOperacao_deveRetornarFalse_seUsuarioNaoNivelOperacaoECargoNaoInternetCoordenador() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
         usuarioAutenticado.setNivelCodigo("MSO");
 
@@ -330,7 +330,7 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
-    public void isVendedorInternetOperacao_deveRetornarFalse_seUsuarioNaoForNivelInternetOperacao() {
+    public void isVendedorInternetOperacao_deveRetornarFalse_seUsuarioNaoForNivelInternetOperacaoENaoCargoIntenetVendedor() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
         usuarioAutenticado.setNivelCodigo("MSO");
 
@@ -354,7 +354,7 @@ public class UsuarioAutenticadoTest {
     }
 
     @Test
-    public void isBackofficeInternetOperacao_deveRetornarFalse_seUsuarioAutenticadoTiverNivelOperacao() {
+    public void isBackofficeInternetOperacao_deveRetornarFalse_seUsuarioNaoTiverNivelOperacaoENaoTiverCargoInternetBackoffice() {
         var usuarioAutenticado = umUsuarioAutenticadoCanalInternet(CodigoCargo.ASSISTENTE_OPERACAO);
         usuarioAutenticado.setNivelCodigo("MSO");
 

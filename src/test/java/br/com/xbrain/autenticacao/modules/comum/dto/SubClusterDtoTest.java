@@ -7,12 +7,13 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public class SubClusterDtoTest {
 
     @Test
-    public void of_deveRetornarUmsubClusterDto_quandoSolicitado() {
+    public void of_deveRetornarUmSubClusterDto_quandoSolicitado() {
         assertThat(SubClusterDto.of(umSubCluster()))
             .extracting(SubClusterDto::getId, SubClusterDto::getNome, SubClusterDto::getCluster, SubClusterDto::getSituacao)
             .containsExactly(1, "Kaique", new ClusterDto(1, null, null, null), ESituacao.A);
@@ -30,9 +31,9 @@ public class SubClusterDtoTest {
 
     @Test
     public void of_deveRetornarUmaListaDeSubClusterDto_quandoSolicitado() {
-        var esperado = SubClusterDto.of(List.of(umSubCluster()));
-
-        assertThat(esperado).isEqualTo(List.of(SubClusterDto.of(umSubCluster())));
+        assertThat(SubClusterDto.of(List.of(umSubCluster())))
+            .extracting(SubClusterDto::getId, SubClusterDto::getNome, SubClusterDto::getCluster, SubClusterDto::getSituacao)
+            .containsExactly(tuple(1, "Kaique", new ClusterDto(1, null, null, null), ESituacao.A));
     }
 
     private SubCluster umSubCluster() {

@@ -237,7 +237,7 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
-    public void getStatus_deveRetornarFalse_quandoHorarioAtualEstiverForaDoHorarioPermitido() {
+    public void getStatus_deveRetornarFalse_quandoHorarioInicioForPosteriorAHorarioFim() {
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)
             .horarioInicio(LocalTime.of(20, 0))
@@ -366,10 +366,10 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
-    public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualEstiverForaDoHorarioPermitido() {
+    public void getStatus_deveRetornarFalse_quandoInformadoSiteIdComoParametroEHorarioAtualEstiverForaDoHorarioPermitido() {
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)
-            .horarioInicio(LocalTime.of(22, 0))
+            .horarioInicio(LocalTime.of(17, 0))
             .horarioFim(LocalTime.of(18, 0))
             .build();
 

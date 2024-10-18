@@ -202,7 +202,7 @@ public class PermissaoTecnicoIndicadorServiceTest {
     }
 
     @Test
-    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_naoDeveAdicionarPermissao_seUsuarioNaoPossuirPermissao() {
+    public void adicionarPermissaoTecnicoIndicadorParaUsuarioNovo_deveAdicionarPermissao_seUsuarioNaoPossuirPermissao() {
         when(permissaoEspecialService.hasPermissaoEspecialAtiva(4, PERMISSAO_TECNICO_INDICADOR)).thenReturn(false);
 
         var request = UsuarioMqRequest.builder()
