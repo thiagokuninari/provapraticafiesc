@@ -1938,6 +1938,7 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
+        removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(usuario);
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
@@ -3462,6 +3463,13 @@ public class UsuarioService {
                 removerDirecionamentoPorCepDoUsuario(usuario.getId());
                 redistribuirIndicacoesDoUsuario(usuario.getId());
             }
+        }
+    }
+
+    private void removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(Usuario usuario) {
+        if (usuario.hasSubCanalInsideSalesPme() && usuario.isCargoVendedorInsideSales()) {
+            removerDirecionamentoPorCepDoUsuario(usuario.getId());
+            redistribuirIndicacoesDoUsuario(usuario.getId());
         }
     }
 }

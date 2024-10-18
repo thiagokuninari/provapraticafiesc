@@ -655,6 +655,15 @@ public class UsuarioServiceTest {
             .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
+    @Test
+    public void inativar_deveInativarDirecionamentosERedistribuirIndicacoes_qunadoUsuarioVendedorInsideSalesPme() {
+        doReturn(umUsuarioInsideSalesPme())
+            .when(repository).findComplete(14);
+
+        assertThatCode(() -> service.inativar(14))
+            .doesNotThrowAnyException();
+    }
+
     private UsuarioInativacaoDto umUsuarioInativoDto() {
         return UsuarioInativacaoDto.builder()
             .idUsuario(1)
