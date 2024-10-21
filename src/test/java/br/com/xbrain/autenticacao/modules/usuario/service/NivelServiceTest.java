@@ -206,8 +206,7 @@ public class NivelServiceTest {
                 tuple(15, "Ouvidoria"),
                 tuple(8, "Receptivo"),
                 tuple(18, "Backoffice"),
-                tuple(19, "Backoffice Centralizado"),
-                tuple(21, "Backoffice Qualidade"));
+                tuple(19, "Backoffice Centralizado"));
     }
 
     @Test

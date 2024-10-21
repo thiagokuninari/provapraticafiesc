@@ -21,6 +21,6 @@ public class NivelRepositoryTest {
     @Test
     public void findAll_deveRetornarNiveis_quandoPredicateInformado() {
         assertThat(repository.getAll(new NivelPredicate().build()).size())
-            .isEqualTo(21);
+            .isEqualTo(22);
     }
 }
