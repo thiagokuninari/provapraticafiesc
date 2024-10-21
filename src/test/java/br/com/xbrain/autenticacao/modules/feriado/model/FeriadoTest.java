@@ -94,6 +94,15 @@ public class FeriadoTest {
     }
 
     @Test
+    public void isFeriadoEstadual_deveRetornarFalse_quandoFeriadoEstadualNulo() {
+        var feriadoNacional = umFeriadoNacional();
+        feriadoNacional.setTipoFeriado(null);
+
+        assertThat(feriadoNacional.isFeriadoEstadual())
+            .isFalse();
+    }
+
+    @Test
     public void setup_deveRetornarTrue_quandoFeriadoEstadual() {
         var feriado = umFeriadoNacional();
         feriado.setNome("nome");
@@ -110,6 +119,35 @@ public class FeriadoTest {
                 "feriadoPai.id", "feriadoNacional")
             .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
                 1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoComCamposUfIdECidadeIdNulo_quandoUfIdECidadeIdNulos() {
+        var feriadoAutomacao = umFeriadoAutomacao();
+        feriadoAutomacao.setTipoFeriado(ETipoFeriado.NACIONAL);
+        feriadoAutomacao.setUfId(null);
+        feriadoAutomacao.setCidadeId(null);
+        var importacaoFeriado = umImportacaoFeriado();
+
+        assertThat(Feriado.ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                null, 1, ETipoFeriado.NACIONAL, ESituacaoFeriado.ATIVO, null, Eboolean.V);
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoComUsuarioIdNulo_quandoImportacaoUsuarioIdNulo() {
+        var feriadoAutomacao = umFeriadoAutomacao();
+        feriadoAutomacao.setTipoFeriado(ETipoFeriado.NACIONAL);
+        var importacaoFeriado = umImportacaoFeriado();
+        importacaoFeriado.setUsuarioCadastroId(null);
+
+        assertThat(Feriado.ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactly(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                null, 1, ETipoFeriado.NACIONAL, ESituacaoFeriado.ATIVO, null, Eboolean.V);
     }
 
     private FeriadoAutomacao umFeriadoAutomacao() {

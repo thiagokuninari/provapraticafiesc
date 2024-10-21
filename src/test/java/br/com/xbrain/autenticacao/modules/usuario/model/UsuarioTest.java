@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -21,12 +22,92 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRI
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.*;
 
 public class UsuarioTest {
+
+    @Test
+    public void isNovoCadastro_deveRetornarTrue_seIdNull() {
+        var usuario = new Usuario();
+        assertThat(usuario.isNovoCadastro()).isTrue();
+    }
+
+    @Test
+    public void isNovoCadastro_deveRetornarFalse_seIdDiferenteDeNull() {
+        var usuario = umUsuario();
+        assertThat(usuario.isNovoCadastro()).isFalse();
+    }
+
+    @Test
+    public void getEmpresasId_deveRetornarListaDeIdsDaEmpresa_quandoHouverEmpresas() {
+        var usuario = umUsuario();
+        usuario.setEmpresas(List.of(Empresa.builder().id(1).build()));
+
+        assertThat(usuario.getEmpresasId())
+            .isEqualTo(List.of(1));
+    }
+
+    @Test
+    public void getEmpresasId_deveRetornarNulo_quandoEmpresaNulo() {
+        var usuario = umUsuario();
+
+        assertThat(usuario.getEmpresasId())
+            .isEqualTo(null);
+    }
+
+    @Test
+    public void getEmpresasNome_deveRetornarListaDeNomesDasEmpresa_quandoHouverEmpresas() {
+        var usuario = umUsuario();
+        usuario.setEmpresas(List.of(Empresa.builder().nome("kaique").build()));
+
+        assertThat(usuario.getEmpresasNome())
+            .isEqualTo(List.of("kaique"));
+    }
+
+    @Test
+    public void getEmpresasNome_deveRetornarNulo_quandoEmpresaNulo() {
+        var usuario = umUsuario();
+
+        assertThat(usuario.getEmpresasNome())
+            .isEqualTo(null);
+    }
+
+    @Test
+    public void getSubCanaisCodigo_deveRetornarSetDeSubCanais_quandoHouverSubCanais() {
+        var usuario = umUsuario();
+        usuario.setSubCanais(Set.of(SubCanal.builder().codigo(PAP_PREMIUM).build()));
+
+        assertThat(usuario.getSubCanaisCodigo())
+            .isEqualTo(Set.of(PAP_PREMIUM));
+    }
+
+    @Test
+    public void getSubCanaisCodigo_deveSetVazio_quandoNaoHouverSubCanais() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.getSubCanaisCodigo())
+            .isEqualTo(Set.of());
+    }
+
+    @Test
+    public void getUnidadesNegociosId_deveRetornarListaDeIds_quandoHouverUnidadesNegocios() {
+        var usuario = new Usuario();
+
+        usuario.setUnidadesNegocios(List.of(UnidadeNegocio.builder().id(1).build()));
+
+        assertThat(usuario.getUnidadesNegociosId())
+            .isEqualTo(List.of(1));
+    }
+
+    @Test
+    public void getUnidadesNegociosId_deveRetornarNulo_quandoNaoHouverUnidadesNegocio() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.getUnidadesNegociosId())
+            .isEqualTo(null);
+    }
 
     @Test
     public void isUsuarioEquipeVendas_deveRetornarTrue_quandoForVendedor() {
@@ -217,6 +298,12 @@ public class UsuarioTest {
     public void isNivelOperacao_deveRetornarTrue_seUsuarioNaoPossuirCargoEForNivelOperacao() {
         assertThat(usuarioAtivo(null, OPERACAO).isNivelOperacao())
             .isTrue();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarFalse_quandoCargoNulo() {
+        assertThat(new Usuario().isNivelOperacao())
+            .isFalse();
     }
 
     @Test
@@ -458,12 +545,26 @@ public class UsuarioTest {
     }
 
     @Test
+    public void configurarRamal_naoDeveSetarRamal_quandoConfiguracaoNull() {
+        var usuario = Usuario
+            .builder()
+            .configuracao(null)
+            .id(1)
+            .build();
+
+        usuario.configurarRamal(3333);
+
+        assertThat(usuario.getConfiguracao())
+            .isEqualTo(null);
+    }
+
+    @Test
     public void tratarEmails_deveTransformarEmUpperCaseERetirarOsEspacosDoEmail_quandoEmailNaoNull() {
         var usuario = Usuario.builder()
-                .id(1)
-                .nome("Admin")
-                .email("     usuario@xbrain.com.br     ")
-                .build();
+            .id(1)
+            .nome("Admin")
+            .email("     usuario@xbrain.com.br     ")
+            .build();
         assertThat(usuario.getEmail()).isEqualTo("     usuario@xbrain.com.br     ");
 
         usuario.tratarEmails();
@@ -617,6 +718,33 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isEmpty_deveRetornarFalse_quandoNomeNaoNull() {
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
+        usuario.setNome("Jogue Ori, muito bomm");
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarFalse_quandoCpfNaoNull() {
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
+        usuario.setCpf("999999999999999999-99");
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
+    public void isEmpty_deveRetornarFalse_quandoEmailNaoNull() {
+        var usuario = umUsuarioComCargo(null, OPERACAO_TELEVENDAS);
+        usuario.setEmail("kaique@gmail.com");
+
+        assertThat(usuario.isEmpty())
+            .isFalse();
+    }
+
+    @Test
     public void hasUsuarioCadastro_deveRetornarTrue_quandoUsuarioCadastroNaoNull() {
         var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
         usuario.setUsuarioCadastro(umUsuarioCadastro());
@@ -683,6 +811,14 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isAgenteAutorizado_deveRetornarFalse_quandoCargoVazio() {
+        var usuario = new Usuario();
+
+        assertThat(usuario.isAgenteAutorizado())
+            .isFalse();
+    }
+
+    @Test
     public void isSocioPrincipal_deveRetornarTrue_quandoCodigoNivelForSocioPrincipal() {
         var usuario = umUsuarioComCargo(23, AGENTE_AUTORIZADO_SOCIO);
 
@@ -693,6 +829,14 @@ public class UsuarioTest {
     @Test
     public void isSocioPrincipal_deveRetornarFalse_quandoCodigoNivelNaoForSocioPrincipal() {
         var usuario = umUsuarioComCargo(23, OPERACAO_TELEVENDAS);
+
+        assertThat(usuario.isSocioPrincipal())
+            .isFalse();
+    }
+
+    @Test
+    public void isSocioPrincipal_deveRetornarFalse_quandoCargoNulo() {
+        var usuario = new Usuario();
 
         assertThat(usuario.isSocioPrincipal())
             .isFalse();
@@ -989,6 +1133,42 @@ public class UsuarioTest {
             .build();
 
         assertThat(usuario.getSubNiveisIds()).isEqualTo(Set.of(2, 3));
+    }
+
+    @Test
+    public void usuario_deveMontarUsuarioComCamposNegocio_quandoHouverEmpresasEUnidadesNegocio() {
+        var empresa = Empresa.builder()
+            .id(1)
+            .nome("Kaique")
+            .unidadeNegocio(new UnidadeNegocio(1))
+            .build();
+        var unidadeNegocio = UnidadeNegocio.builder().id(1).build();
+
+        assertThat(new Usuario(List.of(empresa), List.of(unidadeNegocio)))
+            .extracting(Usuario::getEmpresas, Usuario::getUnidadesNegocios)
+            .containsExactly(List.of(empresa), List.of(unidadeNegocio));
+    }
+
+    @Test
+    public void adicionarHierarquia_deveAdicionarHierarquia_quandoHierarquiaNaoCadastrada() {
+        var usuario = new Usuario();
+
+        usuario.adicionarHierarquia(new UsuarioHierarquia());
+
+        assertThat(usuario.getUsuariosHierarquia())
+            .isNotNull();
+    }
+
+    @Test
+    public void adicionarHierarquia_naoDeveAdicionarHierarquia_quandoHierarquiaJaCadastrada() {
+        var usuario = Usuario.builder()
+            .usuariosHierarquia(Set.of(new UsuarioHierarquia()))
+            .build();
+
+        usuario.adicionarHierarquia(new UsuarioHierarquia());
+
+        assertThat(usuario.getUsuariosHierarquia().size())
+            .isEqualTo(1);
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {

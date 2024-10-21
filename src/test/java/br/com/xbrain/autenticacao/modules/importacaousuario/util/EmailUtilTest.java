@@ -8,8 +8,14 @@ public class EmailUtilTest {
 
     @Test
     public void validar_deveRetornarFalse_quandoEmailNulo() {
-        assertThat(EmailUtil.validarEmail(null))
+        assertThat(EmailUtil.validar(null))
             .isFalse();
+    }
+
+    @Test
+    public void validar_deveRetornarTrue_quandoEmailValido() {
+        assertThat(EmailUtil.validar("kaique@gmail.com"))
+            .isTrue();
     }
 
     @Test

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.Assert.*;
 
 @ActiveProfiles("test")
@@ -58,5 +59,17 @@ public class LogRequestServiceTest {
         LogRequest res = service.save("/api/teste", "POST", "?nome='teste'", null,
                 100, ADMIN, 101, "200.0.0.1");
         assertNull(res);
+    }
+
+    @Test
+    public void deleteAll_deveDeletarTodosLogs_quandoSolicitado() {
+        assertThatCode(() -> service.deleteAll())
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void findAll_deveDeletarTodosLogs_quandoSolicitado() {
+        assertThatCode(() -> service.findAll())
+            .doesNotThrowAnyException();
     }
 }

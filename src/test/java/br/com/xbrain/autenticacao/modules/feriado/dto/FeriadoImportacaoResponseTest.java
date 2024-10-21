@@ -36,6 +36,18 @@ public class FeriadoImportacaoResponseTest {
                 Eboolean.F);
     }
 
+    @Test
+    public void of_deveRetornarObjetoCorretoDeFeriado_quandoUfDoFeriadoForNulo() {
+        var feriado = umFeriado();
+        feriado.setUf(null);
+        assertThat(FeriadoImportacaoResponse.of(feriado))
+            .extracting("id", "nome", "dataFeriado", "dataCadastro", "feriadoNacional", "cidadeId",
+                "cidadeNome", "estadoId", "estadoNome", "tipoFeriado", "motivoNaoImportacao", "feriadoImportadoComSucesso")
+            .containsExactlyInAnyOrder(123, "FERIADO IMPORTADO", LocalDate.of(2020, 3, 22),
+                LocalDateTime.of(2019, 11, 11, 11, 0, 0), Eboolean.F,
+                null, null, null, null, ETipoFeriado.ESTADUAL, List.of(), Eboolean.V);
+    }
+
     private Feriado umFeriado() {
         return Feriado.builder()
             .id(123)

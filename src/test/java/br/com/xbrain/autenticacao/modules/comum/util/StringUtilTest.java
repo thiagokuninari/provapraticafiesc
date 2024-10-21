@@ -4,6 +4,9 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -49,6 +52,12 @@ public class StringUtilTest {
     }
 
     @Test
+    public void getStringFormatadaCsv_naoDeveLancarException_quandoNaoHouverSerializacao() {
+        assertThatCode(() -> StringUtil.getStringFormatadaCsv(null))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
     public void atualizarEmailInativo_deveRetornarValidacaoException_quandoEmailVazio() {
         assertThatCode(() -> StringUtil.atualizarEmailInativo(""))
             .isInstanceOf(ValidacaoException.class)
@@ -87,5 +96,13 @@ public class StringUtilTest {
     public void getNomeAbreviado_deveRetornarSN_quandoNomeForVazio() {
         assertThat(StringUtil.getNomeAbreviado(""))
             .isEqualTo("SN");
+    }
+
+    @Test
+    public void getDataAtualEmail_deveRetornarADataAtual_quandoSolicitado() {
+        assertThat(StringUtil.getDataAtualEmail())
+            .isEqualTo(LocalDate.now().format(DateTimeFormatter
+                .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt", "BR"))));
+
     }
 }

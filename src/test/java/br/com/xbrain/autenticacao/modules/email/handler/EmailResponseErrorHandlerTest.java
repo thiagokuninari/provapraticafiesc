@@ -73,4 +73,18 @@ public class EmailResponseErrorHandlerTest {
 
         assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.OK);
     }
+
+    @Test
+    @SneakyThrows
+    public void handleError_naoDeveRetornarLogDeErro_quandoStatusForOk() {
+        var email = new EmailResponseErrorHandler();
+
+        var response = mock(ClientHttpResponse.class);
+        when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+        email.handleError(response);
+
+        assertThat(listAppender.list).isEmpty();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
 }
