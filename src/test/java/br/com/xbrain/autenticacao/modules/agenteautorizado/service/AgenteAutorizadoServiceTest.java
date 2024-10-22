@@ -510,38 +510,6 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
-    public void inativarAntigoSocioPrincipal_deveInativarEmailSocioPrincipal_quandoSolicitado() {
-        service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-    }
-
-    @Test
-    public void inativarAntigoSocioPrincipal_deveLancarException_quandoRetornarErroNaApi() {
-        doThrow(new HystrixBadRequestException("Erro"))
-            .when(client)
-            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
-            .isInstanceOf(IntegracaoException.class);
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-    }
-
-    @Test
-    public void inativarAntigoSocioPrincipal_deveLancarException_quandoApiIndisponivel() {
-        doThrow(RetryableException.class)
-            .when(client)
-            .inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-
-        assertThatThrownBy(() -> service.inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br"))
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#052 - Não foi possível inativar o sócio no Parceiros Online.");
-
-        verify(client).inativarAntigoSocioPrincipal("antigoemailsocioteste@xbrain.com.br");
-    }
-
-    @Test
     public void getIdsUsuariosSubordinados_deveRetornarIdsUsuariosSubordinados_quandoIncluirProprioForTrue() {
         when(autenticacaoService.getUsuarioId()).thenReturn(any());
         when(client.getIdUsuariosDoUsuario(Map.of()))

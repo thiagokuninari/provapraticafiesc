@@ -1930,12 +1930,6 @@ public class UsuarioService {
         colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
     }
 
-    public void limparCpfAntigoSocioPrincipal(Integer id) {
-        var socio = findOneById(id);
-        socio.setCpf(null);
-        repository.save(socio);
-    }
-
     @Transactional
     public Usuario limpaCpf(Integer id) {
         var usuario = findComplete(id);
@@ -2221,17 +2215,6 @@ public class UsuarioService {
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
-    public void atualizarEmailSocioInativo(Integer socioPrincipalId) {
-        var socio = findOneById(socioPrincipalId);
-        var emailAtual = socio.getEmail();
-        var emailInativo = atualizarEmailInativo(emailAtual);
-
-        socio.setEmail(emailInativo);
-        repository.save(socio);
-
-        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
-    }
-
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
         var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
@@ -2437,21 +2420,18 @@ public class UsuarioService {
         });
     }
 
-    public void inativarAntigoSocioPrincipal(String email) {
-        var antigoSocioPrincipal = findOneByEmail(email);
+    public void inativarELimparDadosAntigoSocioPrincipal(Integer socioPrincipalId) {
+        var antigoSocioPrincipal = findOneById(socioPrincipalId);
+        var emailAtual = antigoSocioPrincipal.getEmail();
+        var emailInativo = atualizarEmailInativo(emailAtual);
 
-        if (antigoSocioPrincipal.getSituacao() == ATIVO) {
-            antigoSocioPrincipal.setSituacao(INATIVO);
-            repository.save(antigoSocioPrincipal);
-            autenticacaoService.logout(antigoSocioPrincipal.getId());
-        }
+        antigoSocioPrincipal.setEmail(emailInativo);
+        antigoSocioPrincipal.setSituacao(INATIVO);
+        antigoSocioPrincipal.setCpf(null);
 
-        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
-    }
-
-    private Usuario findOneByEmail(String email) {
-        return repository.findByEmail(email)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        repository.save(antigoSocioPrincipal);
+        autenticacaoService.logout(antigoSocioPrincipal.getId());
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
     }
 
     public void inativarColaboradores(String cnpj) {

@@ -42,11 +42,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.io.ByteStreams.toByteArray;
-import static helpers.TestsHelper.*;
+import static helpers.TestsHelper.convertObjectToJsonBytes;
+import static helpers.TestsHelper.convertObjectToJsonString;
 import static helpers.Usuarios.ADMIN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -1647,32 +1647,11 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
-        mvc.perform(put(API_URI + "/inativar/socio-principal")
-                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+    public void inativarELimparDadosAntigoSocioPrincipal_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(put(API_URI + "/inativar-limpar-dados/socio-principal/{id}", 300))
             .andExpect(status().isOk());
 
-        verify(usuarioService).inativarAntigoSocioPrincipal("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
-        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300))
-            .andExpect(status().isOk());
-
-        verify(usuarioService).limparCpfAntigoSocioPrincipal(300);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void inativarAntigoSocioPrincipal_deveRetornarBadRequest_quandoNaoEmailNaoForPassadoPorParametro() {
-        mvc.perform(put(API_URI + "/inativar/socio-principal"))
-            .andExpect(status().isBadRequest());
-
-        verifyZeroInteractions(usuarioService);
+        verify(usuarioService).inativarELimparDadosAntigoSocioPrincipal(300);
     }
 
     @Test
@@ -1715,16 +1694,6 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isForbidden());
 
         verifyZeroInteractions(usuarioService);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
-        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
-            .andExpect(status().isOk());
-
-        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(300));
     }
 
     @Test
