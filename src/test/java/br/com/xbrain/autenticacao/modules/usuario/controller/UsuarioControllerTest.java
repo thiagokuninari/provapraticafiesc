@@ -2488,4 +2488,22 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).getUsuariosIdByPermissaoEspecial("role_101");
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void isUsuarioSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/socio-principal/1")))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void isUsuarioSocioPrincipal_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/socio-principal/1")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).isUsuarioSocioPrincipal(1);
+    }
 }

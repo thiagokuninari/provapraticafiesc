@@ -6302,6 +6302,26 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarTrue_quandoUsuarioForSocioPrincipal() {
+        var usuarioId = 1;
+        when(repository.isUsuarioSocioPrincipal(usuarioId)).thenReturn(true);
+
+        assertThat(service.isUsuarioSocioPrincipal(usuarioId)).isTrue();
+
+        verify(repository).isUsuarioSocioPrincipal(usuarioId);
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarFalse_quandoUsuarioNaoForSocioPrincipal() {
+        var usuarioId = 2;
+        when(repository.isUsuarioSocioPrincipal(usuarioId)).thenReturn(false);
+
+        assertThat(service.isUsuarioSocioPrincipal(usuarioId)).isFalse();
+
+        verify(repository).isUsuarioSocioPrincipal(usuarioId);
+    }
+
     @TestConfiguration
     static class MockitoPublisherConfiguration {
 
