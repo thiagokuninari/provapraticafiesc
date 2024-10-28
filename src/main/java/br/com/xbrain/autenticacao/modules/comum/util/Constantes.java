@@ -40,4 +40,5 @@ public class Constantes {
         CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
 
+    public static final List<Integer> LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS = List.of(3052, 16106);
 }

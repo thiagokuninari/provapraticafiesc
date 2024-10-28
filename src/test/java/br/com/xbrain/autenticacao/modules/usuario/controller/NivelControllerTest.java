@@ -147,4 +147,12 @@ public class NivelControllerTest {
 
         verify(nivelService).getByCodigo(CodigoNivel.BACKOFFICE_CENTRALIZADO);
     }
+
+    @Test
+    @WithMockUser
+    public void getNiveisConfiguracoesTratativas_deveRetornarOk_quandoUsuarioAutenticado() throws Exception {
+        mvc.perform(get("/api/niveis/configuracoes-tratativas")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
 }

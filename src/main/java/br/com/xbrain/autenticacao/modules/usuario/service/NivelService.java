@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
 @Service
@@ -24,6 +26,7 @@ public class NivelService {
 
     private final NivelRepository nivelRepository;
     private final AutenticacaoService autenticacaoService;
+    private final CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
 
     public List<Nivel> getAll() {
         return nivelRepository.getAll(
@@ -74,6 +77,13 @@ public class NivelService {
                 CodigoNivel.OPERACAO, CodigoNivel.BACKOFFICE_CENTRALIZADO, CodigoNivel.BACKOFFICE_SUPORTE_VENDAS,
                 CodigoNivel.BACKOFFICE_QUALIDADE))
             .stream()
+            .map(NivelResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public List<NivelResponse> getNiveisConfiguracoesTratativas() {
+        return cargoDepartamentoFuncionalidadeRepository.getNiveisByFuncionalidades(
+            LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS).stream()
             .map(NivelResponse::of)
             .collect(Collectors.toList());
     }
