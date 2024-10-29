@@ -38,7 +38,7 @@ public class UsuarioDto implements Serializable {
 
     private Integer id;
     @NotNull
-    @Size(max = 80)
+    @Size(max = 50)
     private String nome;
     @NotNull
     @Size(max = 80)
