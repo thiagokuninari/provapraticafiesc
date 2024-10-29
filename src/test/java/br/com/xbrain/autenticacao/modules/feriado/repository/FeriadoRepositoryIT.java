@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
-import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -81,7 +80,7 @@ public class FeriadoRepositoryIT {
     @Test
     public void findAllDataFeriadoByCidadeId_deveRetornarListaDeDatasFeriadosNacionais_quandoCidadeNaoTiverFeriadoRegional() {
         assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(1111))
-            .hasSize(11)
+            .hasSize(12)
             .contains(LocalDate.of(2019, 7, 30))
             .doesNotContain(LocalDate.of(2019, 7, 28), LocalDate.of(2019, 7, 29));
     }
@@ -89,7 +88,7 @@ public class FeriadoRepositoryIT {
     @Test
     public void findAllDataFeriadoByCidadeId_deveRetornarDatasFeriadosNacionaisELocais_quandoCidadeTiverFeriadoRegional() {
         assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(5578))
-            .hasSize(16)
+            .hasSize(17)
             .contains(LocalDate.of(2019, 7, 30), LocalDate.of(2019, 7, 28))
             .doesNotContain(LocalDate.of(2019, 7, 29));
     }
@@ -108,7 +107,8 @@ public class FeriadoRepositoryIT {
                 tuple(2018, 11, 2L),
                 tuple(2018, 12, 1L),
                 tuple(2019, 7, 1L),
-                tuple(2023, 12, 1L)
+                tuple(2023, 12, 1L),
+                tuple(2024, 10, 1L)
             );
     }
 
@@ -276,5 +276,11 @@ public class FeriadoRepositoryIT {
     public void findTotalFeriadosImportadosByTipoFeriado_deveRetornarZero_seNaoEncontrarRegistros() {
         assertThat(feriadoRepository.findTotalFeriadosImportadosByTipoFeriado(ETipoFeriado.MUNICIPAL, 2))
             .isEqualTo(0L);
+    }
+
+    @Test
+    public void findProximosFeriadosNacionaisAtivos_deveRetornarProximosFeriadosNacionais_quandoSolicitado() {
+        assertThat(feriadoRepository.findProximosFeriadosNacionaisAtivos())
+            .hasSize(1);
     }
 }

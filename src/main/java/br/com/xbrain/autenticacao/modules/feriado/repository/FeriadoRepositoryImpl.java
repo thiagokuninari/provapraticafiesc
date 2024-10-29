@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
@@ -247,4 +248,18 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                 .and(feriado.importacaoFeriado.id.eq(importacaoFeriadoId)))
             .fetchCount();
     }
+
+    @Override
+    public List<FeriadoResponse> findProximosFeriadosNacionaisAtivos() {
+        var dataAtual = LocalDate.now();
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(FeriadoResponse.class,
+                feriado.dataFeriado))
+            .from(feriado)
+            .where(feriado.situacao.eq(ATIVO)
+                .and(feriado.tipoFeriado.eq(ETipoFeriado.NACIONAL))
+                .and(feriado.dataFeriado.goe(dataAtual)))
+            .fetch();
+    }
+
 }

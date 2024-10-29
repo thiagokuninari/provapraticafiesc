@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import com.querydsl.core.types.Predicate;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +36,8 @@ import static br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado.NACI
 import static br.com.xbrain.autenticacao.modules.feriado.helper.FeriadoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioAgenteAutorizado;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -706,6 +710,35 @@ public class FeriadoServiceTest {
         service.flushCacheFeriadoMailing();
 
         verify(mailingService).flushCacheFeriadosMailing();
+    }
+
+    @Test
+    public void getProximosFeriadosNacionais_deveRetornarListaVazia_quandoNaoExistiremFeriados() {
+        when(repository.findProximosFeriadosNacionaisAtivos()).thenReturn(Collections.emptyList());
+
+        var resultado = service.getProximosFeriadosNacionais();
+
+        assertTrue(resultado.isEmpty());
+
+        verify(repository).findProximosFeriadosNacionaisAtivos();
+    }
+
+    @Test
+    public void getProximosFeriadosNacionais_deveRetornarListaComFeriados_quandoExistiremFeriados() {
+        var feriados = List.of(
+            new FeriadoResponse(LocalDate.of(2024, 1, 1)),
+            new FeriadoResponse(LocalDate.of(2024, 4, 21)));
+
+        when(repository.findProximosFeriadosNacionaisAtivos()).thenReturn(feriados);
+
+        var resultado = service.getProximosFeriadosNacionais();
+
+        Assert.assertFalse(resultado.isEmpty());
+        assertEquals(2, resultado.size());
+        assertEquals(LocalDate.of(2024, 1, 1), resultado.get(0).getDataFeriado());
+        assertEquals(LocalDate.of(2024, 4, 21), resultado.get(1).getDataFeriado());
+
+        verify(repository).findProximosFeriadosNacionaisAtivos();
     }
 
     private CidadeResponse umaCidadeResponse() {
