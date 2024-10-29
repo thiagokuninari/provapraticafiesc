@@ -11,13 +11,15 @@ pipeline {
         ACTUATOR_PORT = "8081"
         PROFILE = "certificacao"
         DOCKER_CRT = "docker --context crt"
+        DOCKER_LOCAL = "docker --context default"
         CONTAINER_NAME = "autenticacao-api-crt"
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
-        CURRENT_IMAGE = sh(script: "${DOCKER_CRT} ps -f name=^${CONTAINER_NAME}\$ --format '{{.Image}}'", returnStdout: true).trim()
-        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} -XX:+UseContainerSupport \
+        CURRENT_IMAGE = sh(script: "${DOCKER_CRT} images --format '{{.Repository}}:{{.Tag}}' | grep -E /${CONTAINER_NAME}: || echo ''", returnStdout: true).trim()
+        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
+                                   -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
                                    -Dcom.sun.management.jmxremote=true \
                                    -Dcom.sun.management.jmxremote.port=9092 \
@@ -37,8 +39,8 @@ pipeline {
         stage('Package') {
             steps {
                 slackSend channel: '#env-certificacao',
-                        color: COLOR_MAP[currentBuild.getPreviousBuild().result],
-                        message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Started by ${BUILD_USER} (<${env.BUILD_URL}|Open>)"
+                          color: COLOR_MAP[currentBuild.getPreviousBuild().result],
+                          message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Started by ${BUILD_USER} (<${env.BUILD_URL}|Open>)"
                 sh 'mvn clean package -DskipTests=true'
             }
         }
@@ -60,17 +62,19 @@ pipeline {
                        ${DOCKER_CRT} stop ${CONTAINER_NAME}
                        ${DOCKER_CRT} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_CRT} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN" \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${HARBOR_URL}
+                    ${DOCKER_CRT} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN=${MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       --memory ${MAX_MEMORY} \
+                       --memory-swap=${MAX_MEMORY} \
+                       ${HARBOR_URL}
                 '''
             }
         }
@@ -87,6 +91,20 @@ pipeline {
                                 script {
                                     error "status container ${output}!"
                                 }
+                            } else {
+                                sh '''
+                                    if [ -n "$CURRENT_IMAGE" ]; then
+                                       ${DOCKER_CRT} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                    ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                       ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                       ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                    fi
+                                '''
                             }
                         }
                     } catch (error) {
@@ -107,19 +125,38 @@ pipeline {
                        ${DOCKER_CRT} stop ${CONTAINER_NAME}
                        ${DOCKER_CRT} rm ${CONTAINER_NAME}
                     fi
-                   ${DOCKER_CRT} run -d \
-                       --name=${CONTAINER_NAME} \
-                       --restart=unless-stopped -p ${PORT} \
-                       --net network_xbrain \
-                       --memory ${MAX_MEMORY} \
-                       --memory-swap=${MAX_MEMORY} \
-                       -e CONFIG_SERVER_TOKEN=${CONFIG_SERVER_TOKEN} \
-                       -e CONFIG_SERVER_URL=${CONFIG_SERVER_URL} \
-                       -e JAVA_OPTS="${JAVA_OPTS}" \
-                       -e MINIO_TOKEN="$MINIO_TOKEN"  \
-                       -e MINIO_SECRET="$MINIO_SECRET" \
-                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                       ${CURRENT_IMAGE}
+                    if ${DOCKER_CRT} images | awk '{print $1":"$2}' | grep -Eq "^${HARBOR_URL}$"; then
+                       ${DOCKER_CRT} image rm ${HARBOR_URL}
+                    fi
+                    ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                    ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                    if ${DOCKER_LOCAL} images | grep -Eq $(echo "^${CONTAINER_NAME}$" | awk -F'/' '{print $NF}'); then
+                       ${DOCKER_LOCAL} rmi $(echo ${HARBOR_URL} | awk -F'/' '{print $NF}')
+                    fi
+                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                       ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                    fi
+                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                       ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                    fi
+
+                    if [ -n "$CURRENT_IMAGE" ]; then
+                       ${DOCKER_CRT} run \
+                          --name=${CONTAINER_NAME} \
+                          --restart=unless-stopped \
+                          -p ${PORT} \
+                          -d \
+                          -e JAVA_OPTS="${JAVA_OPTS}" \
+                          -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                          -e MINIO_TOKEN=${MINIO_TOKEN} \
+                          -e MINIO_SECRET=${MINIO_SECRET} \
+                          --net network_xbrain \
+                          --memory ${MAX_MEMORY} \
+                          --memory-swap=${MAX_MEMORY} \
+                          ${CURRENT_IMAGE}
+                    else
+                       echo "Current image not found: ${CURRENT_IMAGE}"
+                    fi
                 '''
             }
         }
@@ -127,13 +164,13 @@ pipeline {
     post {
         always {
             slackSend channel: '#env-certificacao',
-                    color: COLOR_MAP[currentBuild.currentResult],
-                    message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
+                      color: COLOR_MAP[currentBuild.currentResult],
+                      message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
         }
         unstable {
             slackSend channel: '#env-certificacao',
-                    color: COLOR_MAP[currentBuild.currentResult],
-                    message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
+                      color: COLOR_MAP[currentBuild.currentResult],
+                      message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
         }
     }
 }

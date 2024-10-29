@@ -6,12 +6,15 @@ pipeline {
         ACTUATOR_PORT = "8081"
         PROFILE = "desenvolvimento"
         DOCKER_DEV = "docker --context dev"
+        DOCKER_LOCAL = "docker --context default"
         CONTAINER_NAME = "autenticacao-api-dev"
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         APPLICATION_TAG = "${BRANCH_NAME}-${BUILD_NUMBER}"
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
-        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} -XX:+UseContainerSupport \
+        CURRENT_IMAGE = sh(script: "${DOCKER_DEV} images --format '{{.Repository}}:{{.Tag}}' | grep -E /${CONTAINER_NAME}: || echo ''", returnStdout: true).trim()
+        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
+                                   -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
                                    -Dcom.sun.management.jmxremote=true \
                                    -Dcom.sun.management.jmxremote.port=9092 \
@@ -51,8 +54,8 @@ pipeline {
         stage('Quality gate') {
             steps {
                 sleep(60)
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -75,17 +78,19 @@ pipeline {
                        ${DOCKER_DEV} stop ${CONTAINER_NAME}
                        ${DOCKER_DEV} rm ${CONTAINER_NAME}
                     fi
-                    ${DOCKER_DEV} run -d \
-                        --name=${CONTAINER_NAME} \
-                        --restart=unless-stopped -p ${PORT} \
-                        --net network_xbrain \
-                        --memory ${MAX_MEMORY} \
-                        --memory-swap=${MAX_MEMORY} \
-                        -e JAVA_OPTS="${JAVA_OPTS}" \
-                        -e MINIO_TOKEN="$MINIO_TOKEN" \
-                        -e MINIO_SECRET="$MINIO_SECRET" \
-                        -e ACTUATOR_PORT=${ACTUATOR_PORT} \
-                        ${HARBOR_URL}
+                    ${DOCKER_DEV} run \
+                       --name=${CONTAINER_NAME} \
+                       --restart=unless-stopped \
+                       -p ${PORT} \
+                       -d \
+                       -e JAVA_OPTS="${JAVA_OPTS}" \
+                       -e ACTUATOR_PORT=${ACTUATOR_PORT} \
+                       -e MINIO_TOKEN=${MINIO_TOKEN} \
+                       -e MINIO_SECRET=${MINIO_SECRET} \
+                       --net network_xbrain \
+                       --memory ${MAX_MEMORY} \
+                       --memory-swap=${MAX_MEMORY} \
+                       ${HARBOR_URL}
                 '''
             }
         }
@@ -102,11 +107,58 @@ pipeline {
                                 script {
                                     error "status container ${output}!"
                                 }
+                            } else {
+                                sh '''
+                                    if [ -n "$CURRENT_IMAGE" ]; then
+                                       ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                    ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                       ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                    fi
+                                    if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                       ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                    fi
+                                '''
                             }
                         }
                     } catch (error) {
                         if (!output.equals("\"healthy\"")) {
                             currentBuild.result = 'UNSTABLE'
+                            sh '''
+                                if ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$" && [ -n "${CURRENT_IMAGE}" ]; then
+                                   ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                      ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                      ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                   fi
+                                   ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${HARBOR_URL}$"; then
+                                      ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                   fi
+                                elif ${DOCKER_DEV} ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$" && [ -n "${HARBOR_URL}" ]; then
+                                     ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                     ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                else
+                                   if [ -n "$CURRENT_IMAGE" ]; then
+                                      ${DOCKER_DEV} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq "^${CURRENT_IMAGE}$"; then
+                                      ${DOCKER_LOCAL} image rm ${CURRENT_IMAGE}
+                                   fi
+                                   if ${DOCKER_LOCAL} images | awk '{print $1":"$2}' | grep -Eq ^$(echo "${CURRENT_IMAGE}" | awk -F'/' '{print $NF}')$; then
+                                      ${DOCKER_LOCAL} rmi $(echo ${CURRENT_IMAGE} | awk -F'/' '{print $NF}')
+                                   fi
+                                   if ${DOCKER_DEV} images | awk '{print $1":"$2}' | grep -Eq "^${HARBOR_URL}$"; then
+                                      ${DOCKER_DEV} image rm ${HARBOR_URL}
+                                   fi
+                                   ${DOCKER_LOCAL} image rm ${HARBOR_URL}
+                                   ${DOCKER_LOCAL} rmi ${CONTAINER_NAME}:${APPLICATION_TAG}
+                                fi
+                            '''
                         }
                     }
                 }
