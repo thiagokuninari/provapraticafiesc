@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        MAX_MEMORY = "3g"
+        MAX_MEMORY = "2g"
         PORT = "6533:8096"
         ACTUATOR_PORT = "8081"
         PROFILE = "desenvolvimento"
@@ -13,7 +13,7 @@ pipeline {
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
         CURRENT_IMAGE = sh(script: "${DOCKER_DEV} images --format '{{.Repository}}:{{.Tag}}' | grep -E /${CONTAINER_NAME}: || echo ''", returnStdout: true).trim()
-        JAVA_OPTS = "-Xms1g -Xmx3g -Dspring.profiles.active=${PROFILE} \
+        JAVA_OPTS = "-Xms1g -Xmx2g -Dspring.profiles.active=${PROFILE} \
                                    -XX:+UseContainerSupport \
                                    -Dcom.sun.management.jmxremote.rmi.port=9092 \
                                    -Dcom.sun.management.jmxremote=true \
