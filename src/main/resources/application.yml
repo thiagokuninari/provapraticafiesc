@@ -103,6 +103,7 @@ app-config:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
     feeder: feeder.topic
+    agendador: agendador.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -156,6 +157,8 @@ app-config:
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
     usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
     inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
+    agendador-autenticacao-api: agendador-autenticacao-api.queue
+    agendador-success: agendador-success.queue
 
   oauth-clients:
     autenticacao-api:
