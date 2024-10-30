@@ -168,9 +168,13 @@ pipeline {
                       message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${currentBuild.currentResult} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)"
         }
         unstable {
-            slackSend channel: '#env-certificacao',
-                      color: COLOR_MAP[currentBuild.currentResult],
-                      message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
+            script {
+                if (env.CURRENT_IMAGE) {
+                    slackSend channel: '#env-certificacao',
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: "${XBRAIN_LIDERES} ${env.JOB_NAME} - Build #${env.BUILD_NUMBER} ${currentBuild.currentResult} Falha ao realizar deploy ${APPLICATION_TAG} rollback para ${CURRENT_IMAGE}"
+                }
+            }
         }
     }
 }
