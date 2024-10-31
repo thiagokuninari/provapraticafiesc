@@ -79,7 +79,7 @@ app-config:
     emails:
       url: http://172.10.10.41:8080
     integracao-vendas:
-      url: http://172.10.10.83:8086
+      url: http://integracao-vendas-api-prod:8086
     mailing-importacao:
       url: http://mailing-importacao-api-prod:8087
     lei-nao-perturbe:

@@ -63,7 +63,7 @@ app-config:
     emails:
       url: http://192.168.50.4:6541
     integracao-vendas:
-      url: http://172.10.10.85:8086
+      url: http://integracao-vendas-api-crt:8086
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     gestao-colaborador-pol:
