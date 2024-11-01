@@ -44,13 +44,12 @@ public class ClaroIndicoService {
     }
 
     public void desvincularUsuarioDaFilaTratamento(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        if (usuarioAntigo.isNivelBkoCentralizado()
-            && houveAlteracaoColaboradorBkoCentralizado(usuarioAntigo, usuarioAtualizado)) {
+        if (usuarioAntigo.isNivelBkoCentralizado() && houveAlteracao(usuarioAntigo, usuarioAtualizado)) {
             desvincularUsuarioDaFilaTratamento(usuarioAtualizado.getId());
         }
     }
 
-    private boolean houveAlteracaoColaboradorBkoCentralizado(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
+    private boolean houveAlteracao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
         return
             (!Objects.equals(usuarioAtualizado.getCargoId(), usuarioAntigo.getCargoId())
             || !Objects.equals(usuarioAtualizado.getNivelId(), usuarioAntigo.getNivelId()))

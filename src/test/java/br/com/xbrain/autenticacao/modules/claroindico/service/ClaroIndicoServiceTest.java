@@ -122,12 +122,21 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
-    public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoHouverAlteracaoDeCargoENivel() {
+    public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoHouverAlteracaoParaNivelBackoffice() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umSupervisorBackoffice()))
             .doesNotThrowAnyException();
 
         verify(client).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoHouverAlteracaoParaNivelBkoCentralizado() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umSupervisorBackoffice(), umOperadorBkoCentralizado()))
+            .doesNotThrowAnyException();
+
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
     }
 
     @Test
