@@ -20,6 +20,8 @@ import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umUsuar
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_GERENTE_TRATAMENTO_VENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_SUPERVISOR;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_CENTRALIZADO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -120,6 +122,15 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
+    public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoHouverAlteracaoDeCargoENivel() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
+                umOperadorBkoCentralizado(), umSupervisorBackoffice()))
+            .doesNotThrowAnyException();
+
+        verify(client).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
     public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoOperadorMudarCargoParaAnalista() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umAnalistaBkoCentralizado()))
@@ -179,41 +190,54 @@ public class ClaroIndicoServiceTest {
     }
 
     private Usuario umOperadorBkoCentralizado() {
-        var usuarioAntigo = umUsuario();
-        usuarioAntigo.setCargo(
+        var usuario = umUsuario();
+        usuario.setCargo(
             Cargo.builder()
                 .id(115)
                 .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
                 .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
-        usuarioAntigo.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
+        usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
-        return usuarioAntigo;
+        return usuario;
     }
 
     private Usuario umAnalistaBkoCentralizado() {
-        var usuarioAntigo = umUsuario();
-        usuarioAntigo.setCargo(
+        var usuario = umUsuario();
+        usuario.setCargo(
             Cargo.builder()
                 .id(116)
                 .codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)
                 .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
-        usuarioAntigo.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
+        usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
-        return usuarioAntigo;
+        return usuario;
     }
 
     private Usuario umGerenteBkoCentralizado() {
-        var usuarioAtualizado = umUsuario();
-        usuarioAtualizado.setCargo(
+        var usuario = umUsuario();
+        usuario.setCargo(
             Cargo.builder()
                 .id(117)
                 .codigo(BACKOFFICE_GERENTE_TRATAMENTO_VENDAS)
                 .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
-        usuarioAtualizado.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
+        usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
-        return usuarioAtualizado;
+        return usuario;
+    }
+
+    private Usuario umSupervisorBackoffice() {
+        var usuario = umUsuario();
+        usuario.setCargo(
+            Cargo.builder()
+                .id(100)
+                .codigo(BACKOFFICE_SUPERVISOR)
+                .nivel(Nivel.builder().codigo(BACKOFFICE).build())
+                .build());
+        usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(2));
+
+        return usuario;
     }
 }

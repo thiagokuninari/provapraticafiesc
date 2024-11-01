@@ -51,7 +51,9 @@ public class ClaroIndicoService {
     }
 
     private boolean houveAlteracaoColaboradorBkoCentralizado(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
+        return
+            (mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
+            || mapNull(usuarioAtualizado.getNivelId(), id -> !id.equals(usuarioAntigo.getNivelId()), false))
             && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
             && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
     }
