@@ -37,6 +37,7 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 public class CargoService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
+    private static final String EX_CODIGO_CARGO_EXISTENTE = "Já existe um cargo ativo com o mesmo código.";
 
     @Autowired
     private CargoRepository repository;
@@ -187,13 +188,13 @@ public class CargoService {
 
     private void validarCodigoExistente(CodigoCargo codigo) {
         if (repository.existsByCodigoAndSituacao(codigo, ESituacao.A)) {
-            throw new ValidacaoException("Já existe um cargo ativo com o mesmo código.");
+            throw new ValidacaoException(EX_CODIGO_CARGO_EXISTENTE);
         }
     }
 
     private void validarCodigoExistente(CodigoCargo codigo, Integer id) {
         if (repository.existsByCodigoAndSituacaoAndIdNot(codigo, ESituacao.A, id)) {
-            throw new ValidacaoException("Já existe um cargo ativo com o mesmo código.");
+            throw new ValidacaoException(EX_CODIGO_CARGO_EXISTENTE);
         }
     }
 }
