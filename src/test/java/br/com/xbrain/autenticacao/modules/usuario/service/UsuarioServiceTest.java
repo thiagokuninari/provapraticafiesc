@@ -2829,7 +2829,8 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
+                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
                 BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
@@ -2844,7 +2845,8 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
+                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
                 BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
