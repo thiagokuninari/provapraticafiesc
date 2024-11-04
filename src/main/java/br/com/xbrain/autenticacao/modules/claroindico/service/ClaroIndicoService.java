@@ -50,10 +50,9 @@ public class ClaroIndicoService {
     }
 
     private boolean houveAlteracao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return
-            (!Objects.equals(usuarioAtualizado.getCargoId(), usuarioAntigo.getCargoId())
-            || !Objects.equals(usuarioAtualizado.getNivelId(), usuarioAntigo.getNivelId()))
-            && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
-            && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
+        return !Objects.equals(usuarioAntigo.getNivelId(), usuarioAtualizado.getNivelId())
+            || !Objects.equals(usuarioAtualizado.getCargoId(), usuarioAntigo.getCargoId())
+                && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
+                && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
     }
 }
