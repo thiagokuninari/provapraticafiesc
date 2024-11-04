@@ -4,7 +4,9 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -144,6 +146,8 @@ public class CargoService {
     }
 
     public Cargo save(Cargo cargo) {
+        validarCodigoExistente(cargo.getCodigo());
+
         return repository.save(cargo);
     }
 
@@ -151,12 +155,18 @@ public class CargoService {
         var cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         copyProperties(cargo, cargoToUpdate);
 
+        validarCodigoExistente(cargo.getCodigo(), cargo.getId());
+
         return repository.save(cargoToUpdate);
     }
 
     public Cargo situacao(CargoRequest cargoRequest) {
         var cargoToUpdate = repository.findById(cargoRequest.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
+
+        if (cargoRequest.getSituacao() == ESituacao.A) {
+            validarCodigoExistente(cargoRequest.getCodigo(), cargoRequest.getId());
+        }
 
         return repository.save(cargoToUpdate);
     }
@@ -173,5 +183,17 @@ public class CargoService {
         return Stream.of(CodigoCargo.values())
             .map(codigoCargo -> new SelectResponse(codigoCargo, codigoCargo.getDescricao()))
             .collect(Collectors.toList());
+    }
+
+    private void validarCodigoExistente(CodigoCargo codigo) {
+        if (repository.existsByCodigoAndSituacao(codigo, ESituacao.A)) {
+            throw new ValidacaoException("Já existe um cargo ativo com o mesmo código.");
+        }
+    }
+
+    private void validarCodigoExistente(CodigoCargo codigo, Integer id) {
+        if (repository.existsByCodigoAndSituacaoAndIdNot(codigo, ESituacao.A, id)) {
+            throw new ValidacaoException("Já existe um cargo ativo com o mesmo código.");
+        }
     }
 }

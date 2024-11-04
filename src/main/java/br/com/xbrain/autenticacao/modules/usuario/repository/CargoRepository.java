@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -17,5 +18,8 @@ public interface CargoRepository extends PagingAndSortingRepository<Cargo, Integ
 
     Optional<Cargo> findById(Integer id);
 
+    boolean existsByCodigoAndSituacao(CodigoCargo codigo, ESituacao situacao);
+
+    boolean existsByCodigoAndSituacaoAndIdNot(CodigoCargo codigo, ESituacao situacao, Integer id);
 }
 
