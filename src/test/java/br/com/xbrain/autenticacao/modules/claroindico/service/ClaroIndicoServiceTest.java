@@ -140,7 +140,7 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
-    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoOperadorMudarCargoParaAnalista() {
+    public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoOperadorMudarCargoParaAnalista() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umAnalistaBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -149,7 +149,7 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
-    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoGerenteMudarCargoParaOperador() {
+    public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoGerenteMudarCargoParaOperador() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umGerenteBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -158,7 +158,7 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
-    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoAdicionarNovoCargoParaOUsuario() {
+    public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoAdicionarNovoCargoParaOUsuario() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umUsuario(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -167,7 +167,7 @@ public class ClaroIndicoServiceTest {
     }
 
     @Test
-    public void desvincularUsuarioDaFilaTratamento_naDeveChamarClient_quandoNaoHouverAlteracaoDeCargo() {
+    public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoNaoHouverAlteracaoDeCargo() {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -204,7 +204,7 @@ public class ClaroIndicoServiceTest {
             Cargo.builder()
                 .id(115)
                 .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
-                .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
+                .nivel(Nivel.builder().id(1).codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
         usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
@@ -217,7 +217,7 @@ public class ClaroIndicoServiceTest {
             Cargo.builder()
                 .id(116)
                 .codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS)
-                .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
+                .nivel(Nivel.builder().id(1).codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
         usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
@@ -230,7 +230,7 @@ public class ClaroIndicoServiceTest {
             Cargo.builder()
                 .id(117)
                 .codigo(BACKOFFICE_GERENTE_TRATAMENTO_VENDAS)
-                .nivel(Nivel.builder().codigo(BACKOFFICE_CENTRALIZADO).build())
+                .nivel(Nivel.builder().id(1).codigo(BACKOFFICE_CENTRALIZADO).build())
                 .build());
         usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(1));
 
@@ -243,7 +243,7 @@ public class ClaroIndicoServiceTest {
             Cargo.builder()
                 .id(100)
                 .codigo(BACKOFFICE_SUPERVISOR)
-                .nivel(Nivel.builder().codigo(BACKOFFICE).build())
+                .nivel(Nivel.builder().id(2).codigo(BACKOFFICE).build())
                 .build());
         usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(2));
 
