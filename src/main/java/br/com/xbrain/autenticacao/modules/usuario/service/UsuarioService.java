@@ -134,7 +134,9 @@ public class UsuarioService {
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
         "Usuário já está cadastrado em outra equipe";
     private static final List<CodigoCargo> CARGOS_OPERADORES_BACKOFFICE
-        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
+        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
+        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );

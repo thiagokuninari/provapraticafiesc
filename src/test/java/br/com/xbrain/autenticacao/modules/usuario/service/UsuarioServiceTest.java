@@ -2829,7 +2829,8 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
         assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true, List.of()))
@@ -2843,7 +2844,8 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
         when(repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
-            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
         assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false, List.of()))
@@ -2857,10 +2859,13 @@ public class UsuarioServiceTest {
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarPorCargo_quandoInformarCargos() {
         doReturn(List.of(umUsuarioAtivo()))
             .when(repository)
-            .findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5, List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE));
+            .findByOrganizacaoEmpresaIdAndCargo_CodigoIn(5,
+                List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO,
+                    BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS));
 
         assertThat(service.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false,
-            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE)))
+            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO,
+                BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS)))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"));
