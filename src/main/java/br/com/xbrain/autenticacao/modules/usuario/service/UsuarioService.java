@@ -1593,12 +1593,13 @@ public class UsuarioService {
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
         log.info("Remanejando usuário {}.", usuarioRemanejado.getId());
+        var usuario = repository.findById(usuarioRemanejado.getId())
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
+
+        usuarioRemanejado.setDataUltimoAcesso(usuario.getDataUltimoAcesso());
+        usuarioRemanejado.setSenha(usuario.getSenha());
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
         usuarioRemanejado.setSituacao(ESituacao.R);
-        usuarioRemanejado
-            .setSenha(repository.findById(usuarioRemanejado.getId())
-                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO))
-                .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");
