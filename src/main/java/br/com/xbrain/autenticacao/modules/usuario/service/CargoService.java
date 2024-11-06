@@ -156,7 +156,7 @@ public class CargoService {
         var cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         copyProperties(cargo, cargoToUpdate);
 
-        validarCodigoExistente(cargo.getCodigo(), cargo.getId());
+        validarCodigoExistente(cargoToUpdate.getCodigo(), cargoToUpdate.getId());
 
         return repository.save(cargoToUpdate);
     }
