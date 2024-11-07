@@ -50,7 +50,7 @@ public class ClaroIndicoService {
     }
 
     private boolean houveAlteracao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return !usuarioAtualizado.isNivelBkoCentralizado()
+        return mapNull(usuarioAtualizado.getNivelId(), id -> !id.equals(usuarioAntigo.getNivelId()), false)
             || mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
                 && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
                 && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
