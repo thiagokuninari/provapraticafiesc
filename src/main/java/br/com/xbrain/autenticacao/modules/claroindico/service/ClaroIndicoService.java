@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 
 @Service
 @RequiredArgsConstructor
@@ -50,8 +50,8 @@ public class ClaroIndicoService {
     }
 
     private boolean houveAlteracao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return !Objects.equals(usuarioAntigo.getNivelId(), usuarioAtualizado.getNivelId())
-            || !Objects.equals(usuarioAtualizado.getCargoId(), usuarioAntigo.getCargoId())
+        return !usuarioAtualizado.isNivelBkoCentralizado()
+            || mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
                 && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
                 && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
     }
