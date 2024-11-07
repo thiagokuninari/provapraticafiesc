@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.claroindico.service;
 import br.com.xbrain.autenticacao.modules.claroindico.client.ClaroIndicoClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.mapNull;
 public class ClaroIndicoService {
 
     private final ClaroIndicoClient client;
+    private final CargoService cargoService;
 
     public List<Integer> buscarUsuariosVinculados() {
         try {
@@ -43,16 +45,18 @@ public class ClaroIndicoService {
         }
     }
 
-    public void desvincularUsuarioDaFilaTratamento(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        if (usuarioAntigo.isNivelBkoCentralizado() && houveAlteracao(usuarioAntigo, usuarioAtualizado)) {
-            desvincularUsuarioDaFilaTratamento(usuarioAtualizado.getId());
+    public void desvincularUsuarioDaFilaTratamento(Usuario usuarioAntigo, Usuario usuarioNovo) {
+        if (usuarioAntigo.isNivelBkoCentralizado() && houveAlteracaoDeCargo(usuarioAntigo, usuarioNovo)) {
+            desvincularUsuarioDaFilaTratamento(usuarioNovo.getId());
         }
     }
 
-    private boolean houveAlteracao(Usuario usuarioAntigo, Usuario usuarioAtualizado) {
-        return mapNull(usuarioAtualizado.getNivelId(), id -> !id.equals(usuarioAntigo.getNivelId()), false)
-            || mapNull(usuarioAtualizado.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
-                && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
-                && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAtualizado.getCargoId());
+    private boolean houveAlteracaoDeCargo(Usuario usuarioAntigo, Usuario usuarioNovo) {
+        var cargo = cargoService.findById(usuarioNovo.getCargoId());
+
+        return mapNull(cargo.getNivel().getId(), id -> !id.equals(usuarioAntigo.getNivelId()), false)
+            || mapNull(usuarioNovo.getCargoId(), id -> !id.equals(usuarioAntigo.getCargoId()), false)
+            && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
+            && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioNovo.getCargoId());
     }
 }

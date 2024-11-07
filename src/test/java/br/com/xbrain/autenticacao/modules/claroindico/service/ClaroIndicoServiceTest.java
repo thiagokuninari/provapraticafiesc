@@ -6,6 +6,8 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
+
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.junit.Test;
@@ -39,6 +41,8 @@ public class ClaroIndicoServiceTest {
     private ClaroIndicoService service;
     @Mock
     private ClaroIndicoClient client;
+    @Mock
+    private CargoService cargoService;
 
     @Test
     public void buscarUsuariosVinculados_deveChamarClient_quandoNaoOcorrerErroERetornarListaDeIds() {
@@ -114,6 +118,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoInformarUsuariosENaoOcorrerErro() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -123,6 +130,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveChamarClient_quandoHouverAlteracaoParaNivelBackoffice() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(2).build()).build());
+
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umSupervisorBackoffice()))
             .doesNotThrowAnyException();
@@ -141,6 +151,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoOperadorMudarCargoParaAnalista() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umAnalistaBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -150,6 +163,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoGerenteMudarCargoParaOperador() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umGerenteBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -168,6 +184,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_naoDeveChamarClient_quandoNaoHouverAlteracaoDeCargo() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
@@ -177,6 +196,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveLancarException_quandoInformarUsuariosEOcorrerErro() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         doThrow(new RetryableException("", null))
             .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
 
@@ -188,6 +210,9 @@ public class ClaroIndicoServiceTest {
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveLancarIntegracaoException_quandoInformarUsuariosEOcorrerErro() {
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
+
         doThrow(new HystrixBadRequestException("", null))
             .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
 
