@@ -283,7 +283,7 @@ public class UsuarioAcessoService {
 
     private void inativarUsuarioBkoCentralizado(UsuarioDto usuario) {
         if (CARGOS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoCodigo())) {
-            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+            claroIndicoService.desvincularUsuarioDaFilaTratamentoInativacao(usuario.getId());
         }
     }
 

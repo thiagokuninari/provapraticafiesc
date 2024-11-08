@@ -223,6 +223,35 @@ public class ClaroIndicoServiceTest {
         verify(client).desvincularUsuarioDaFilaTratamento(anyInt());
     }
 
+    @Test
+    public void desvincularUsuarioDaFilaTratamentoInativacao_deveChamarClient_quandoInformarIdENaoOcorrerErro() {
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
+            .doesNotThrowAnyException();
+
+        verify(client).desvincularUsuarioDaFilaTratamentoInativacao(1);
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamentoInativacao_deveLancarException_quandoInformarIdEOcorrerErro() {
+        doThrow(new RetryableException("", null))
+            .when(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("Ocorreu um erro ao desvincular usuário da fila de tratamento por inativação.");
+    }
+
+    @Test
+    public void desvincularUsuarioDaFilaTratamentoInativacao_deveLancarIntegracaoException_quandoInformarIdEOcorrerErro() {
+        doThrow(new HystrixBadRequestException("", null))
+            .when(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+
+        assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+    }
+
     private Usuario umOperadorBkoCentralizado() {
         var usuario = umUsuario();
         usuario.setCargo(

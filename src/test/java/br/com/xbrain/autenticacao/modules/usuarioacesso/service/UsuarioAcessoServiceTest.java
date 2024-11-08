@@ -161,7 +161,7 @@ public class UsuarioAcessoServiceTest {
         verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(anyInt(), eq("TESTE"));
         verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
         verify(inativarUsuarioFeederMqSender, never()).sendSuccess(anyString());
-        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(4);
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamentoInativacao(4);
     }
 
     @Test

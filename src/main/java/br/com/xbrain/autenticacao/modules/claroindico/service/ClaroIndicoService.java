@@ -59,4 +59,16 @@ public class ClaroIndicoService {
             && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioAntigo.getCargoId())
             && !CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuarioNovo.getCargoId());
     }
+
+    public void desvincularUsuarioDaFilaTratamentoInativacao(Integer id) {
+        try {
+            client.desvincularUsuarioDaFilaTratamentoInativacao(id);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                ClaroIndicoService.class.getName(),
+                "Ocorreu um erro ao desvincular usuário da fila de tratamento por inativação.");
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 }
