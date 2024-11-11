@@ -22,6 +22,6 @@ public interface ClaroIndicoClient {
     @PutMapping(URI_FILAS_TRATAMENTO + "/usuarios/{usuarioId}/desvincular")
     void desvincularUsuarioDaFilaTratamento(
         @PathVariable("usuarioId") Integer usuarioId,
-        @RequestParam(required = false, defaultValue = "false") boolean inativacaoUsuario
+        @RequestParam boolean inativacaoUsuario
     );
 }
