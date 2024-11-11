@@ -35,7 +35,7 @@ public class ClaroIndicoService {
 
     public void desvincularUsuarioDaFilaTratamento(Integer id) {
         try {
-            client.desvincularUsuarioDaFilaTratamento(id);
+            client.desvincularUsuarioDaFilaTratamento(id, false);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 ClaroIndicoService.class.getName(),
@@ -62,7 +62,7 @@ public class ClaroIndicoService {
 
     public void desvincularUsuarioDaFilaTratamentoInativacao(Integer id) {
         try {
-            client.desvincularUsuarioDaFilaTratamentoInativacao(id);
+            client.desvincularUsuarioDaFilaTratamento(id, true);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 ClaroIndicoService.class.getName(),

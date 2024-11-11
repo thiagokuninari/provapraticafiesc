@@ -5,6 +5,7 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -19,8 +20,8 @@ public interface ClaroIndicoClient {
     List<Integer> buscarUsuariosVinculados();
 
     @PutMapping(URI_FILAS_TRATAMENTO + "/usuarios/{usuarioId}/desvincular")
-    void desvincularUsuarioDaFilaTratamento(@PathVariable("usuarioId") Integer usuarioId);
-
-    @PutMapping(URI_FILAS_TRATAMENTO + "/usuarios/{usuarioId}/desvincular-por-inativacao")
-    void desvincularUsuarioDaFilaTratamentoInativacao(@PathVariable("usuarioId") Integer usuarioId);
+    void desvincularUsuarioDaFilaTratamento(
+        @PathVariable("usuarioId") Integer usuarioId,
+        @RequestParam(required = false, defaultValue = "false") boolean inativacaoUsuario
+    );
 }

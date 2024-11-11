@@ -27,7 +27,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKO
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.BACKOFFICE_CENTRALIZADO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -92,13 +94,13 @@ public class ClaroIndicoServiceTest {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(1))
             .doesNotThrowAnyException();
 
-        verify(client).desvincularUsuarioDaFilaTratamento(1);
+        verify(client).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveLancarException_quandoInformarIdEOcorrerErro() {
         doThrow(new RetryableException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(1))
             .isInstanceOf(IntegracaoException.class)
@@ -108,12 +110,12 @@ public class ClaroIndicoServiceTest {
     @Test
     public void desvincularUsuarioDaFilaTratamento_deveLancarIntegracaoException_quandoInformarIdEOcorrerErro() {
         doThrow(new HystrixBadRequestException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(1))
             .isInstanceOf(IntegracaoException.class);
 
-        verify(client).desvincularUsuarioDaFilaTratamento(anyInt());
+        verify(client).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -125,7 +127,7 @@ public class ClaroIndicoServiceTest {
                 umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client).desvincularUsuarioDaFilaTratamento(1);
+        verify(client).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -137,7 +139,7 @@ public class ClaroIndicoServiceTest {
                 umOperadorBkoCentralizado(), umSupervisorBackoffice()))
             .doesNotThrowAnyException();
 
-        verify(client).desvincularUsuarioDaFilaTratamento(1);
+        verify(client).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -146,7 +148,7 @@ public class ClaroIndicoServiceTest {
                 umSupervisorBackoffice(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -158,7 +160,7 @@ public class ClaroIndicoServiceTest {
                 umOperadorBkoCentralizado(), umAnalistaBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -170,7 +172,7 @@ public class ClaroIndicoServiceTest {
                 umGerenteBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -179,7 +181,7 @@ public class ClaroIndicoServiceTest {
                 umUsuario(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -191,7 +193,7 @@ public class ClaroIndicoServiceTest {
                 umOperadorBkoCentralizado(), umOperadorBkoCentralizado()))
             .doesNotThrowAnyException();
 
-        verify(client, never()).desvincularUsuarioDaFilaTratamento(1);
+        verify(client, never()).desvincularUsuarioDaFilaTratamento(eq(1), eq(false));
     }
 
     @Test
@@ -200,7 +202,7 @@ public class ClaroIndicoServiceTest {
             .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
 
         doThrow(new RetryableException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
@@ -214,13 +216,13 @@ public class ClaroIndicoServiceTest {
             .thenReturn(Cargo.builder().nivel(Nivel.builder().id(1).build()).build());
 
         doThrow(new HystrixBadRequestException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamento(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamento(
                 umOperadorBkoCentralizado(), umGerenteBkoCentralizado()))
             .isInstanceOf(IntegracaoException.class);
 
-        verify(client).desvincularUsuarioDaFilaTratamento(anyInt());
+        verify(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
     }
 
     @Test
@@ -228,13 +230,13 @@ public class ClaroIndicoServiceTest {
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
             .doesNotThrowAnyException();
 
-        verify(client).desvincularUsuarioDaFilaTratamentoInativacao(1);
+        verify(client).desvincularUsuarioDaFilaTratamento(eq(1), eq(true));
     }
 
     @Test
     public void desvincularUsuarioDaFilaTratamentoInativacao_deveLancarException_quandoInformarIdEOcorrerErro() {
         doThrow(new RetryableException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
             .isInstanceOf(IntegracaoException.class)
@@ -244,12 +246,12 @@ public class ClaroIndicoServiceTest {
     @Test
     public void desvincularUsuarioDaFilaTratamentoInativacao_deveLancarIntegracaoException_quandoInformarIdEOcorrerErro() {
         doThrow(new HystrixBadRequestException("", null))
-            .when(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+            .when(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
 
         assertThatCode(() -> service.desvincularUsuarioDaFilaTratamentoInativacao(1))
             .isInstanceOf(IntegracaoException.class);
 
-        verify(client).desvincularUsuarioDaFilaTratamentoInativacao(anyInt());
+        verify(client).desvincularUsuarioDaFilaTratamento(anyInt(), anyBoolean());
     }
 
     private Usuario umOperadorBkoCentralizado() {
