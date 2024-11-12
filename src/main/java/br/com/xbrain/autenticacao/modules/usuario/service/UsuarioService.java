@@ -3472,7 +3472,7 @@ public class UsuarioService {
 
     private void removerUsuarioDaFilaTratamento(Usuario usuario, MotivoInativacao motivoInativacao) {
         if (usuario.isNivelBkoCentralizado() && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoId())) {
-            if (motivoInativacao.getCodigo().equals(TENTATIVAS_LOGIN_SENHA_INCORRETA)) {
+            if (motivoInativacao.getCodigo() == TENTATIVAS_LOGIN_SENHA_INCORRETA) {
                 claroIndicoService.desvincularUsuarioDaFilaTratamentoInativacao(usuario.getId());
             } else {
                 claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
