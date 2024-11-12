@@ -101,6 +101,7 @@ import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObrigatorioDadosNetSales;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
@@ -1943,7 +1944,7 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
-        removerUsuarioDaFilaTratamento(usuario);
+        removerUsuarioDaFilaTratamento(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
@@ -3224,7 +3225,7 @@ public class UsuarioService {
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
                     .observacao(ECodigoObservacao.ITL.getObservacao())
-                    .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+                    .codigoMotivoInativacao(TENTATIVAS_LOGIN_SENHA_INCORRETA)
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
@@ -3469,10 +3470,13 @@ public class UsuarioService {
         return false;
     }
 
-    private void removerUsuarioDaFilaTratamento(Usuario usuario) {
-        if (usuario.isNivelBkoCentralizado()
-            && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoId())) {
-            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+    private void removerUsuarioDaFilaTratamento(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isNivelBkoCentralizado() && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoId())) {
+            if (motivoInativacao.getCodigo().equals(TENTATIVAS_LOGIN_SENHA_INCORRETA)) {
+                claroIndicoService.desvincularUsuarioDaFilaTratamentoInativacao(usuario.getId());
+            } else {
+                claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+            }
         }
     }
 }

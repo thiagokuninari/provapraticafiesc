@@ -667,11 +667,36 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacao());
 
         assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
             .doesNotThrowAnyException();
 
         verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void inativar_deveRemoverUsuarioDaFilaTratamentoPorExcessoDeLogins_seUsuarioForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(115)
+            .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacaoSenhaIncorreta());
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamentoInativacao(1);
     }
 
     @Test
@@ -4207,6 +4232,15 @@ public class UsuarioServiceTest {
             .id(1)
             .descricao("TESTE")
             .codigo(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private MotivoInativacao umMotivoInativacao() {
+        return MotivoInativacao.builder()
+            .id(1)
+            .descricao("TESTE")
+            .codigo(CodigoMotivoInativacao.INATIVO)
             .situacao(ESituacao.A)
             .build();
     }
