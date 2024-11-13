@@ -108,6 +108,10 @@ public class PermissaoEspecialService {
         return repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId);
     }
 
+    public boolean hasPermissaoEspecialAtiva(Integer usuarioId, List<Integer> funcionalidadesIds) {
+        return repository.existsByUsuarioIdAndFuncionalidadeIdInAndDataBaixaIsNull(usuarioId, funcionalidadesIds);
+    }
+
     public void deletarPermissoesEspeciaisBy(List<Integer> funcionalidadesIds, List<Integer> usuariosIds) {
         repository.deletarPermissaoEspecialBy(funcionalidadesIds, usuariosIds);
     }

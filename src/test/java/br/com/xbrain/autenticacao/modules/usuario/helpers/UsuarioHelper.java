@@ -109,6 +109,18 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuario(CodigoCargo cargo) {
+        return Usuario.builder()
+            .id(3)
+            .situacao(ESituacao.I)
+            .usuarioCadastro(Usuario.builder().id(1).build())
+            .cargo(Cargo.builder()
+                .id(3)
+                .codigo(cargo)
+                .build())
+            .build();
+    }
+
     public static Usuario doisUsuario(Integer id, String nome, ESituacao situacao) {
         return Usuario
             .builder()
