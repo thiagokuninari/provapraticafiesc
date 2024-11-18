@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -63,6 +64,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioSenhaIncorretaHistorico.usuarioSenhaIncorretaHistorico;
+import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -1465,5 +1467,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
                 .and(usuario.id.eq(usuarioId)))
             .fetchFirst() != null;
+    }
+
+    @Override
+    public List<UsuarioAgenteAutorizadoResponse> findAllUsuarioByAgenteAutorizado(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioAgenteAutorizadoResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.email,
+                nullExpression(),
+                nullExpression()))
+            .from(usuario)
+            .where(predicate)
+            .fetch();
     }
 }

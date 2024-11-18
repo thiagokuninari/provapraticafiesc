@@ -965,6 +965,46 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
+    public void getUsuariosByAasIds_deveRetornarListaUsuarioAgenteAutorizadoResponse_quandoAaIdForFornecido() {
+        var aaIds = List.of(1);
+        when(client.getUsuariosByAasIds(aaIds))
+            .thenReturn(Map.of(1, 2));
+
+        assertThat(service.getUsuariosByAasIds(aaIds))
+            .extracting("id", "aaId")
+            .containsExactly(tuple(1, 2));
+
+        verify(client).getUsuariosByAasIds(aaIds);
+    }
+
+    @Test
+    public void getUsuariosByAasIds_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        var aaIds = List.of(1);
+        doThrow(RetryableException.class)
+            .when(client)
+            .getUsuariosByAasIds(aaIds);
+
+        assertThatThrownBy(() -> service.getUsuariosByAasIds(aaIds))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#003 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client).getUsuariosByAasIds(aaIds);
+    }
+
+    @Test
+    public void getUsuariosByAasIds_deveLancarIntegracaoException_quandoErroNaApi() {
+        var aaIds = List.of(1);
+        doThrow(new HystrixBadRequestException("Bad Request"))
+            .when(client)
+            .getUsuariosByAasIds(aaIds);
+
+        assertThatThrownBy(() -> service.getUsuariosByAasIds(aaIds))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).getUsuariosByAasIds(aaIds);
+    }
+
+    @Test
     public void getUsuariosIdsByAaId_deveRetornarListaUsuarioIds_quandoAaIdForFornecido() {
         when(client.getUsuariosByAaId(1, true))
             .thenReturn(List.of(umUsuarioAgenteAutorizadoResponse()));
