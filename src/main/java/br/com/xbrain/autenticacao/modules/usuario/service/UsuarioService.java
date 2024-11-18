@@ -3488,4 +3488,11 @@ public class UsuarioService {
     public boolean isUsuarioSocioPrincipal(Integer usuarioId) {
         return repository.isUsuarioSocioPrincipal(usuarioId);
     }
+
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        return usuario.isSocioPrincipal() || usuario.isXbrainOuMso()
+            ? repository.findSociosIdsAtivosByUsuariosIds(usuariosIds)
+            : List.of();
+    }
 }

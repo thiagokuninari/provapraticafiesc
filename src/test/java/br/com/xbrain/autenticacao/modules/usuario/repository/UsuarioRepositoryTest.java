@@ -563,4 +563,16 @@ public class UsuarioRepositoryTest {
         assertThat(repository.isUsuarioSocioPrincipal(125))
             .isFalse();
     }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsDoSocios_seEncontrados() {
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(List.of(127)))
+            .isEqualTo(List.of(127));
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsVazia_seNaoEncontrados() {
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(List.of(1)))
+            .isEmpty();
+    }
 }

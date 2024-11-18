@@ -19,6 +19,7 @@ import com.querydsl.core.types.*;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import javax.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,7 +30,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,7 +53,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
@@ -92,7 +93,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -307,8 +308,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ",
             new MapSqlParameterSource()
-            .addValue("usuarioSuperiorId", usuarioSuperiorId),
-        new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
+                .addValue("usuarioSuperiorId", usuarioSuperiorId),
+            new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
     }
 
     @Override
@@ -416,10 +417,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .selectFrom(usuario)
             .where(
                 usuario.cpf.in(
-                        select(usuario.cpf)
-                            .from(usuario)
-                            .where(usuario.id.in(usuariosIds))
-                    ))
+                    select(usuario.cpf)
+                        .from(usuario)
+                        .where(usuario.id.in(usuariosIds))
+                ))
             .orderBy(usuario.cpf.desc())
             .orderBy(usuario.dataCadastro.desc())
             .fetch();
@@ -736,7 +737,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -1424,7 +1425,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .where(usuario.situacao.eq(A)
                 .and(usuario.cargo.codigo.eq(codigoCargo)
-                .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
+                    .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
             .fetch();
     }
 
@@ -1465,5 +1466,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
                 .and(usuario.id.eq(usuarioId)))
             .fetchFirst() != null;
+    }
+
+    @Override
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.id.in(usuariosIds)
+                .and(usuario.cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO))
+                .and(usuario.situacao.eq(A)))
+            .fetch();
     }
 }

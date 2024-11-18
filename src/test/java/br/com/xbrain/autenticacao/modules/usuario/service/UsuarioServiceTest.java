@@ -5231,6 +5231,57 @@ public class UsuarioServiceTest {
         assertThat(service.getEmailsByCargoId(1)).isEmpty();
     }
 
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeInteger_seUsarioForSocioPrincipal() {
+        var usuario = umUsuarioAutenticado(1, CodigoNivel.AGENTE_AUTORIZADO.name(),
+            AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(1, 2))
+            .when(repository)
+            .findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+
+        assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2)))
+            .isEqualTo(List.of(1, 2));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeInteger_seUsarioForXbrain() {
+        var usuario = umUsuarioAutenticado(1, XBRAIN.name(), ADMINISTRADOR, AUT_VISUALIZAR_GERAL);
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        doReturn(List.of(1, 2))
+            .when(repository)
+            .findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+
+        assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2)))
+            .isEqualTo(List.of(1, 2));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaVazia_seUsarioNaoForXbrainOuSocio() {
+        var usuario = umUsuarioAutenticado(1, OPERACAO.name(), VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
+
+        doReturn(usuario)
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2))).isEmpty();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository, never()).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+    }
+
     private Usuario umSocioPrincipal() {
         return Usuario.builder()
             .id(23)

@@ -138,7 +138,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
 
-    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>... orderSpecifiers);
 
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
@@ -209,4 +209,6 @@ public interface UsuarioRepositoryCustom {
     boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email);
 
     boolean isUsuarioSocioPrincipal(Integer usuarioId);
+
+    List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds);
 }

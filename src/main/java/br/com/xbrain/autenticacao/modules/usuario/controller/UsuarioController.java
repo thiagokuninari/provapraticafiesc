@@ -640,4 +640,9 @@ public class UsuarioController {
     public boolean isUsuarioSocioPrincipal(@PathVariable Integer usuarioId) {
         return usuarioService.isUsuarioSocioPrincipal(usuarioId);
     }
+
+    @PostMapping("socios-ids-ativos")
+    List<Integer> getSociosIdsAtivosByUsuariosIds(@RequestBody List<Integer> usuariosIds) {
+        return usuarioService.findSociosIdsAtivosByUsuariosIds(usuariosIds);
+    }
 }
