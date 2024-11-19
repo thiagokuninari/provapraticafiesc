@@ -64,7 +64,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioSenhaIncorretaHistorico.usuarioSenhaIncorretaHistorico;
-import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -1470,14 +1469,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioAgenteAutorizadoResponse> findAllUsuarioByAgenteAutorizado(Predicate predicate) {
+    public List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioAgenteAutorizadoResponse.class,
-                usuario.id,
-                usuario.nome,
                 usuario.email,
-                nullExpression(),
-                nullExpression()))
+                usuario.nome,
+                usuario.id))
             .from(usuario)
             .where(predicate)
             .fetch();

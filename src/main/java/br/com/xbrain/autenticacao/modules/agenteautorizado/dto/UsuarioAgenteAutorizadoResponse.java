@@ -25,6 +25,12 @@ public class UsuarioAgenteAutorizadoResponse {
         this.equipeVendaId = equipeVendaId;
     }
 
+    public UsuarioAgenteAutorizadoResponse(String email, String nome, Integer id) {
+        this.email = email;
+        this.nome = nome;
+        this.id = id;
+    }
+
     public static UsuarioAgenteAutorizadoResponse of(Usuario usuario) {
         var usuarioResponse = new UsuarioAgenteAutorizadoResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);

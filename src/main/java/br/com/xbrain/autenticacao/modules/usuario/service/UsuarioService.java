@@ -2885,7 +2885,7 @@ public class UsuarioService {
             .comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA)
             .comIds(usuariosPorAa.keySet())
             .build();
-        var usuariosAas = repository.findAllUsuarioByAgenteAutorizado(predicate);
+        var usuariosAas = repository.findAllUsuarioAaResponse(predicate);
         usuariosAas.forEach(usuario -> preencherAaId(usuario, usuariosPorAa.get(usuario.getId())));
         return usuariosAas;
     }

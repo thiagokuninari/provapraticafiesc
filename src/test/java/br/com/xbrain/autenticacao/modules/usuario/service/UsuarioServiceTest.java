@@ -2657,9 +2657,9 @@ public class UsuarioServiceTest {
         var mapUsuariosAa = Map.of(
             100, 100,
             101, 100);
-        var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build()
+        var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
         when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
-        when(repository.findAllUsuarioByAgenteAutorizado(predicate))
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO))));
@@ -2680,7 +2680,7 @@ public class UsuarioServiceTest {
             201, 200);
         var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
         when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
-        when(repository.findAllUsuarioByAgenteAutorizado(predicate))
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO))));
@@ -2701,7 +2701,7 @@ public class UsuarioServiceTest {
             201, 200);
         var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
         when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
-        when(repository.findAllUsuarioByAgenteAutorizado(predicate))
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
                 umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)),

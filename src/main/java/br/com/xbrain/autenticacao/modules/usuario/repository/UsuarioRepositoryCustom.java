@@ -211,5 +211,5 @@ public interface UsuarioRepositoryCustom {
 
     boolean isUsuarioSocioPrincipal(Integer usuarioId);
 
-    List<UsuarioAgenteAutorizadoResponse> findAllUsuarioByAgenteAutorizado(Predicate predicate);
+    List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate);
 }

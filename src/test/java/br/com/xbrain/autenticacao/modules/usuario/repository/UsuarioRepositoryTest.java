@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -29,6 +30,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -402,6 +404,17 @@ public class UsuarioRepositoryTest {
                 tuple(121, "VR 1"),
                 tuple(122, "VR 2"),
                 tuple(123, "VR 3"));
+    }
+
+    @Test
+    public void findAllUsuarioAaResponse_deveRetornarUsuarioAaResponses_quandoSolicitado() {
+        assertThat(repository.findAllUsuarioAaResponse(usuario.id.eq(100)))
+            .containsOnly(
+                UsuarioAgenteAutorizadoResponse.builder()
+                    .id(100)
+                    .nome("ADMIN")
+                    .email("ADMIN@XBRAIN.COM.BR")
+                    .build());
     }
 
     @Test
