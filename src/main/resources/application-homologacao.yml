@@ -88,8 +88,8 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: angelica@xbrain.com.br,higor@xbrain.com.br,jose@xbrain.com.br,gabrielpuschel@xbrain.com.br,joaobarion@xbrain.com.br,matheusyoshiaki@xbrain.com.br,mirianynunes@xbrain.com.br,yurivieira@xbrain.com.br,lucassouza@xbrain.com.br
-    emails-solicitacao-ramal: angelica@xbrain.com.br,higor@xbrain.com.br,valdecir@xbrain.com.br,jose@xbrain.com.br,gabrielpuschel@xbrain.com.br,joaobarion@xbrain.com.br,matheusyoshiaki@xbrain.com.br,mirianynunes@xbrain.com.br,yurivieira@xbrain.com.br,lucassouza@xbrain.com.br
+    emails: angelica@xbrain.com.br,yurivieira@xbrain.com.br,joaobarion@xbrain.com.br,tiago.buranello@xbrain.com.br,rafaela.oliveira@xbrain.com.br,kaique.santos@xbrain.com.br,bianca.ferreira@xbrain.com.br,andreia.lima@xbrain.com.br,anderson.silva@xbrain.com.br
+    emails-solicitacao-ramal: angelica@xbrain.com.br,yurivieira@xbrain.com.br,joaobarion@xbrain.com.br,tiago.buranello@xbrain.com.br,rafaela.oliveira@xbrain.com.br,kaique.santos@xbrain.com.br,bianca.ferreira@xbrain.com.br,andreia.lima@xbrain.com.br,anderson.silva@xbrain.com.br
 
 logging:
   level:
