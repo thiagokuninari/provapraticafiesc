@@ -71,4 +71,9 @@ public class CargoController {
     public List<SelectResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
         return service.getPermitidosAosComunicados(niveisId);
     }
+
+    @GetMapping("codigo-cargos")
+    public List<SelectResponse> getAllCargos() {
+        return service.getAllCargos();
+    }
 }

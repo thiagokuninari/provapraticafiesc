@@ -35,8 +35,7 @@ import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -201,5 +200,24 @@ public class CargoControllerTest {
             .andExpect(jsonPath("$[0].label", is("Xbrain")));
 
         verify(cargoService).getPermitidosAosComunicados(anyList());
+    }
+
+    @Test
+    @WithMockUser
+    public void getAllCargos_deveRetornarTodosOsCodigosCargos_quandoSolicitado() throws Exception {
+        when(cargoService.getAllCargos()).thenReturn(umaListaCargoSelectResponse());
+
+        mvc.perform(get(API_CARGO + "/codigo-cargos")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(124)))
+            .andExpect(jsonPath("$[0].value", is("VENDEDOR_OPERACAO")))
+            .andExpect(jsonPath("$[0].label", is("Vendedor Operação")))
+            .andExpect(jsonPath("$[1].value", is("SUPERVISOR_OPERACAO")))
+            .andExpect(jsonPath("$[1].label", is("Supervisor Operação")))
+            .andExpect(jsonPath("$[2].value", is("AGENTE_AUTORIZADO_ACEITE")))
+            .andExpect(jsonPath("$[2].label", is("Agente Autorizado Aceite")));
+
+        verify(cargoService).getAllCargos();
     }
 }

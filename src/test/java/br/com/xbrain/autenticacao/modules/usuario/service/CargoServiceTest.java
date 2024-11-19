@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -40,6 +41,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosBko;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
@@ -237,6 +239,15 @@ public class CargoServiceTest {
     }
 
     @Test
+    public void save_deveLancarExcecao_quandoCodigoCargoExistirAtivoParaOutroCargo() {
+        when(cargoRepository.existsByCodigoAndSituacao(any(), eq(ESituacao.A))).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umCargo(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
+    }
+
+    @Test
     public void update_deveRetonarCargo_quandoForAtualizado() throws Exception {
         when(cargoRepository.findById(any()))
             .thenReturn(Optional.of(umCargo(1, "Assistente", ESituacao.A)));
@@ -249,6 +260,16 @@ public class CargoServiceTest {
     }
 
     @Test
+    public void update_deveLancarExcecao_quandoCodigoCargoExistirAtivoParaOutroCargo() {
+        when(cargoRepository.findById(any())).thenReturn(Optional.of(umCargo(1, "Assistente", ESituacao.A)));
+        when(cargoRepository.existsByCodigoAndSituacaoAndIdNot(any(), eq(ESituacao.A), any())).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.update(umCargo(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
+    }
+
+    @Test
     public void situacao_deveRetonarCargo_quandoSituacaoForAlterado() throws Exception {
         when(cargoRepository.findById(any()))
             .thenReturn(Optional.of(umCargo(1, "Vendedor", ESituacao.A)));
@@ -258,6 +279,16 @@ public class CargoServiceTest {
 
         assertThat(service.situacao(umCargoRequest(1, "Vendedor", ESituacao.I)))
             .extracting("situacao").contains(ESituacao.I);
+    }
+
+    @Test
+    public void situacao_deveLancarExcecao_quandoCodigoCargoExistirAtivoAoAtivarCargo() {
+        when(cargoRepository.findById(any())).thenReturn(Optional.of(umCargo(1, "Vendedor", ESituacao.I)));
+        when(cargoRepository.existsByCodigoAndSituacaoAndIdNot(any(), eq(ESituacao.A), any())).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.situacao(umCargoRequest(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
     }
 
     @Test
