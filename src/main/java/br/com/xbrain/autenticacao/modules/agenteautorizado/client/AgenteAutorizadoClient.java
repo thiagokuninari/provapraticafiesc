@@ -62,7 +62,7 @@ public interface AgenteAutorizadoClient {
         @PathVariable("buscarInativos") Boolean buscarInativos);
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-agentes-autorizados")
-    Map<Integer, Integer> getUsuariosByAasIds(@RequestParam("agentesAutorizadosId") List<Integer> agentesAutorizadosId);
+    Map<Integer, Integer> getUsuariosByAasIds(@RequestParam("agentesAutorizadosIds") List<Integer> agentesAutorizadosIds);
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/agentes-autorizados-permitidos/{usuarioId}")
     List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
