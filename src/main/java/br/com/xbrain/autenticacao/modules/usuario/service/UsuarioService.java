@@ -332,6 +332,10 @@ public class UsuarioService {
         return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
     }
 
+    public List<SelectResponse> findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo cargo) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(cargo);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         var cidades = repository
             .findComCidade(usuarioId)

@@ -88,7 +88,8 @@ public class UsuarioResponse {
                 ? usuario.getCanais() : Collections.emptySet());
             usuarioResponse.setSituacao(usuario.getSituacao());
             usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
-                ? usuario.getSubCanais().stream()
+                ? usuario.getSubCanais()
+                .stream()
                 .map(SubCanalDto::of)
                 .collect(Collectors.toSet())
                 : null);
@@ -102,20 +103,10 @@ public class UsuarioResponse {
     }
 
     public static UsuarioResponse of(Usuario usuario, List<String> permissoes) {
-        UsuarioResponse usuarioResponse = new UsuarioResponse();
-        BeanUtils.copyProperties(usuario, usuarioResponse);
-        usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
-        usuarioResponse.setNomeNivel(usuario.getNivelNome());
-        usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
-        usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
-        usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
-        usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+        var usuarioResponse = of(usuario);
+        usuarioResponse.setNomeCargo(usuario.getCargo().getNome());
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
-        usuarioResponse.setSubCanais(!ObjectUtils.isEmpty(usuario.getSubCanais())
-            ? usuario.getSubCanais().stream()
-            .map(SubCanalDto::of)
-            .collect(Collectors.toSet())
-            : null);
+
         return usuarioResponse;
     }
 }

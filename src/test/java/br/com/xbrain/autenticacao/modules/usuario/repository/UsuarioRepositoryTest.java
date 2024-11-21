@@ -199,6 +199,21 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarDoisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(EXECUTIVO_HUNTER))
+            .hasSize(2)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(OUVIDORIA)).isEmpty();
+    }
+
+    @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
             .hasSize(9);

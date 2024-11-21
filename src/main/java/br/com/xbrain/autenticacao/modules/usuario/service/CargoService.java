@@ -186,6 +186,16 @@ public class CargoService {
             .collect(Collectors.toList());
     }
 
+    public List<SelectResponse> findCargosForAtaReuniao() {
+        return repository.findByCodigoIn(List.of(CodigoCargo.ASSISTENTE_OPERACAO, CodigoCargo.ASSISTENTE_HUNTER,
+                CodigoCargo.OPERACAO_CONSULTOR, CodigoCargo.COORDENADOR_OPERACAO, CodigoCargo.DIRETOR_OPERACAO,
+                CodigoCargo.EXECUTIVO, CodigoCargo.EXECUTIVO_HUNTER, CodigoCargo.GERENTE_OPERACAO)
+            )
+            .stream()
+            .map(cargo -> SelectResponse.of(cargo.getCodigo(), cargo.getNome()))
+            .collect(Collectors.toList());
+    }
+
     private void validarCodigoExistente(CodigoCargo codigo) {
         if (repository.existsByCodigoAndSituacao(codigo, ESituacao.A)) {
             throw new ValidacaoException(EX_CODIGO_CARGO_EXISTENTE);

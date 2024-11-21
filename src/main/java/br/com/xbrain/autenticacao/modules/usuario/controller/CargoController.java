@@ -76,4 +76,9 @@ public class CargoController {
     public List<SelectResponse> getAllCargos() {
         return service.getAllCargos();
     }
+
+    @GetMapping("obter-cargos-atas-reuniao")
+    public List<SelectResponse> findCargosForAtaReuniao() {
+        return service.findCargosForAtaReuniao();
+    }
 }

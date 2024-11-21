@@ -1092,6 +1092,27 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<SelectResponse> findUsuariosAtivosOperacaoComercialByCargoCodigo(CodigoCargo cargoCodigo) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SelectResponse.class,
+                    usuario.id,
+                    usuario.nome
+                )
+            )
+            .from(usuario)
+            .leftJoin(usuario.departamento, departamento)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(cargo.nivel, nivel)
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
+                .and(departamento.codigo.eq(COMERCIAL))
+                .and(nivel.codigo.eq(OPERACAO))
+                .and(cargo.codigo.eq(cargoCodigo))
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
+            .orderBy(usuario.id.asc())
+            .fetch();
+    }
+
+    @Override
     public List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa() {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(SelectResponse.class, usuario.id, usuario.nome))

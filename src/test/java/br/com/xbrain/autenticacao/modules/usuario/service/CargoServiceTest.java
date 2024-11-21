@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
@@ -36,6 +37,7 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosAtaReuniao;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosBko;
@@ -424,6 +426,28 @@ public class CargoServiceTest {
         var lista = List.of(umCargo(1, "nome 1", ESituacao.A), umCargo(2, "nome 2", ESituacao.A));
 
         return new PageImpl<>(lista, new PageRequest(), 0);
+    }
+
+    @Test
+    public void findCargosForAtaReuniao_deveRetornarCargosParaAtaReuniao_quandoSolicitado() {
+        doReturn(umaListaDeCargosAtaReuniao())
+            .when(cargoRepository)
+            .findByCodigoIn(anyList());
+
+        assertThat(service.findCargosForAtaReuniao())
+            .extracting(SelectResponse::getValue, SelectResponse::getLabel)
+            .containsExactlyInAnyOrder(
+                tuple(CodigoCargo.ASSISTENTE_OPERACAO, "Assistente"),
+                tuple(CodigoCargo.ASSISTENTE_HUNTER, "Assistente Hunter"),
+                tuple(CodigoCargo.OPERACAO_CONSULTOR, "Consultor"),
+                tuple(CodigoCargo.COORDENADOR_OPERACAO, "Coordenador"),
+                tuple(CodigoCargo.DIRETOR_OPERACAO, "Diretor"),
+                tuple(CodigoCargo.EXECUTIVO, "Executivo"),
+                tuple(CodigoCargo.EXECUTIVO_HUNTER, "Executivo Hunter"),
+                tuple(CodigoCargo.GERENTE_OPERACAO, "Gerente")
+            );
+
+        verify(cargoRepository).findByCodigoIn(anyList());
     }
 
     private void mockUmUsuarioGerenteVisualizarGeral() {
