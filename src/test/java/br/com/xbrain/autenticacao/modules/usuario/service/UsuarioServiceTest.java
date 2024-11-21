@@ -2728,7 +2728,8 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
             100, 100,
             101, 100));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+        when(repository.findAllUsuarioAaResponse(
+            umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
             .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
