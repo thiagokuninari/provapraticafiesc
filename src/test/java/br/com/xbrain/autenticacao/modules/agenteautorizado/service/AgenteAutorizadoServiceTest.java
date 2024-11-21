@@ -971,8 +971,7 @@ public class AgenteAutorizadoServiceTest {
             .thenReturn(Map.of(1, 2));
 
         assertThat(service.getUsuariosByAasIds(aaIds))
-            .extracting("id", "aaId")
-            .containsExactly(tuple(1, 2));
+            .isEqualTo(Map.of(1, 2));
 
         verify(client).getUsuariosByAasIds(aaIds);
     }
