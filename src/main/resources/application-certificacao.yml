@@ -86,6 +86,8 @@ app-config:
       url: http://192.168.50.4:8078
     ata-reuniao:
       url: http://ata-reuniao-api:8308
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
 
   email:
     enviar: true
