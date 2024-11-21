@@ -2725,9 +2725,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuarios() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(100, 100),
-            umUsuarioAgenteAutorizadoResponse(101, 100)));
+        when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
+            100, 100,
+            101, 100));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
             .thenReturn(Collections.emptyList());
 
