@@ -275,6 +275,9 @@ app-config:
     comunicados-pol-api:
       client: comunicados-pol-api
       secret: c0mun1c4d0sp0l
+    pgaa-api:
+      client: pgaa-api
+      secret: pg44
 
   services:
     autenticacao:
@@ -360,6 +363,9 @@ app-config:
     comunicados-pol:
       #url: http://localhost:8312
       url: http://192.168.50.1:8312
+    pgaa:
+      #url: http://localhost:8354
+      url: http://192.168.50.1:8354
 
 flyway:
   enabled: true
@@ -435,6 +441,9 @@ zuul:
     comunicados-pol:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.comunicados-pol.url}
+    pgaa:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.pgaa.url}
 
   host:
     connect-timeout-millis: 1800000

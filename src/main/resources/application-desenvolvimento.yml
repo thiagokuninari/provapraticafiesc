@@ -59,6 +59,8 @@ app-config:
       url: http://ata-reuniao-api:8308
     comunicados-pol:
       url: http://comunicados-pol-api:8312
+    pgaa:
+      url: http://pgaa-api:8354
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

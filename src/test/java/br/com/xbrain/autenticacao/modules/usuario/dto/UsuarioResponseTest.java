@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsuarioResponseTest {
@@ -45,11 +47,12 @@ public class UsuarioResponseTest {
     @Test
     public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seListaDePermissoesForPassada() {
         var usuario = umUsuario();
+        usuario.setCargo(umCargo(1, CodigoCargo.ADMINISTRADOR));
         usuario.setSubCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
 
         assertThat(UsuarioResponse.of(usuario, List.of("MSO")))
             .extracting("id", "nome", "email", "aaId", "tipoCanal", "subCanais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", null, ETipoCanal.PAP_PREMIUM,
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
                 Set.of(SubCanalDto.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
     }
 
@@ -57,10 +60,11 @@ public class UsuarioResponseTest {
     public void of_deveRetornarUsuarioAgenteAutorizadoResponseComSubCanalNulo_seSubCanalVazio() {
         var usuario = umUsuario();
         usuario.setSubCanais(Set.of());
+        usuario.setCargo(umCargo(1, CodigoCargo.ADMINISTRADOR));
 
         assertThat(UsuarioResponse.of(usuario, List.of("")))
             .extracting("id", "nome", "email", "aaId", "tipoCanal", "subCanais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", null, ETipoCanal.PAP_PREMIUM,
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
                 null);
     }
 

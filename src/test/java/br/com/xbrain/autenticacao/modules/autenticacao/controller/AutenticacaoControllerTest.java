@@ -139,8 +139,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
             .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")))
@@ -158,8 +158,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
             .andExpect(jsonPath("$.empresas", is(Arrays.asList(1, 2))))
@@ -175,8 +175,8 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", token.getAccessToken()))
+                post("/oauth/check_token")
+                    .param("token", token.getAccessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
             .andExpect(jsonPath("$.estruturaAa", is("AA_PME")));
@@ -185,8 +185,8 @@ public class AutenticacaoControllerTest {
     @Test
     public void getAccessToken_badRequest_quandoATokenForInvalida() throws Exception {
         mvc.perform(
-            post("/oauth/check_token")
-                .param("token", "teste"))
+                post("/oauth/check_token")
+                    .param("token", "teste"))
             .andExpect(status().isBadRequest());
     }
 
