@@ -59,6 +59,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import helpers.TestBuilders;
 import io.minio.MinioClient;
+import javax.persistence.EntityManager;
 import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +80,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -91,7 +91,8 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.umCanalNetSalesResponse;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.comum.helper.FileHelper.umDocumentoPng;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
@@ -5128,7 +5129,7 @@ public class UsuarioServiceTest {
     public void findColaboradoresPapIndireto_deveRetornarListaUsuariosVendasPapIndiretoResponse_quandoSolicitado() {
         var dataCadastro = LocalDateTime.of(2018, 01, 01, 15, 00, 00);
 
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2)))
             .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
 
         assertThat(service.findColaboradoresPapIndireto(List.of(1, 2)))
@@ -5147,14 +5148,14 @@ public class UsuarioServiceTest {
 
     @Test
     public void findColaboradoresPapIndireto_deveRetornarListaVazia_quandoUsuarioNaoEncontrado() {
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2)))
             .thenReturn(Collections.emptyList());
 
         assertThat(service.findColaboradoresPapIndireto(List.of(1, 2)))
             .isEmpty();
 
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,2));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2));
     }
 
     @Test
@@ -5176,6 +5177,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeInteger_seUsarioForSocioPrincipal() {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(1, 2));
+
         var usuario = umUsuarioAutenticado(1, CodigoNivel.AGENTE_AUTORIZADO.name(),
             AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
 
@@ -5184,17 +5188,20 @@ public class UsuarioServiceTest {
             .getUsuarioAutenticado();
         doReturn(List.of(1, 2))
             .when(repository)
-            .findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+            .findSociosIdsAtivosByUsuariosIds(predicate.build());
 
         assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2)))
             .isEqualTo(List.of(1, 2));
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+        verify(repository).findSociosIdsAtivosByUsuariosIds(predicate.build());
     }
 
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeInteger_seUsarioForXbrain() {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(1, 2));
+
         var usuario = umUsuarioAutenticado(1, XBRAIN.name(), ADMINISTRADOR, AUT_VISUALIZAR_GERAL);
 
         doReturn(usuario)
@@ -5202,17 +5209,20 @@ public class UsuarioServiceTest {
             .getUsuarioAutenticado();
         doReturn(List.of(1, 2))
             .when(repository)
-            .findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+            .findSociosIdsAtivosByUsuariosIds(predicate.build());
 
         assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2)))
             .isEqualTo(List.of(1, 2));
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
+        verify(repository).findSociosIdsAtivosByUsuariosIds(predicate.build());
     }
 
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaVazia_seUsarioNaoForXbrainOuSocio() {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(1, 2));
+
         var usuario = umUsuarioAutenticado(1, OPERACAO.name(), VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
 
         doReturn(usuario)
@@ -5222,25 +5232,7 @@ public class UsuarioServiceTest {
         assertThat(service.findSociosIdsAtivosByUsuariosIds(List.of(1, 2))).isEmpty();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, never()).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
-    }
-
-    private Usuario umSocioPrincipal() {
-        return Usuario.builder()
-            .id(23)
-            .email("NOVOSOCIO@EMPRESA.COM.BR")
-            .cpf("183.381.665-02")
-            .situacao(ESituacao.A)
-            .build();
-    }
-
-    private Usuario umAntigoSocioPrincipal(ESituacao situacao) {
-        return Usuario.builder()
-            .id(22)
-            .email("ANTIGOSOCIO@EMPRESA.COM.BR")
-            .cpf("93275298631")
-            .situacao(situacao)
-            .build();
+        verify(repository, never()).findSociosIdsAtivosByUsuariosIds(predicate.build());
     }
 
     @Test

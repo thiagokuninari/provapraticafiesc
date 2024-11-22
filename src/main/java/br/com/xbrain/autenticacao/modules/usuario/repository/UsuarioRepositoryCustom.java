@@ -212,5 +212,5 @@ public interface UsuarioRepositoryCustom {
 
     boolean isUsuarioSocioPrincipal(Integer usuarioId);
 
-    List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds);
+    List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate);
 }
