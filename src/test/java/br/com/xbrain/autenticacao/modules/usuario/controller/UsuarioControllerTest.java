@@ -2421,21 +2421,23 @@ public class UsuarioControllerTest {
     @WithMockUser
     @SneakyThrows
     public void findColaboradoresPapIndireto_deveRetornarListaColaboradorPapIndireto_quandoUsuarioAutenticado() {
-        mvc.perform(get(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
-                .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(post(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of(1))))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findColaboradoresPapIndireto();
+        verify(usuarioService).findColaboradoresPapIndireto(List.of(1));
     }
 
     @Test
     @SneakyThrows
     public void findColaboradoresPapIndireto_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+        mvc.perform(post(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService, never()).findColaboradoresPapIndireto();
+        verify(usuarioService, never()).findColaboradoresPapIndireto(anyList());
     }
 
     @Test

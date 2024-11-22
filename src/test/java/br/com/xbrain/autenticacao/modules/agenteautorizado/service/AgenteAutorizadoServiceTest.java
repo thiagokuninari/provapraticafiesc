@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
@@ -1017,46 +1016,6 @@ public class AgenteAutorizadoServiceTest {
             .isInstanceOf(IntegracaoException.class);
 
         verify(client).getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
-    }
-
-    @Test
-    public void findAgentesAutorizadosPapIndireto_deveRetornarUsuariosDtoVendas_quandoSolicitado() {
-        doReturn(List.of(umOutroUsuarioDtoVendas()))
-            .when(client)
-            .findUsuariosAgentesAutorizadosPapIndireto();
-
-        assertThat(service.findUsuariosAgentesAutorizadosPapIndireto())
-            .extracting(UsuarioDtoVendas::getId, UsuarioDtoVendas::getEmail, UsuarioDtoVendas::getAgenteAutorizadoCnpj,
-                UsuarioDtoVendas::getAgenteAutorizadoRazaoSocial, UsuarioDtoVendas::getAgenteAutorizadoId)
-            .containsExactly(tuple(1, "mso_analistaadm_claromovel_pessoal@net.com.br", "64.262.572/0001-21",
-                "Razao Social Teste", 1));
-
-        verify(client).findUsuariosAgentesAutorizadosPapIndireto();
-    }
-
-    @Test
-    public void findAgentesAutorizadosPapIndireto_deveLancarException_quandoErroNaApi() {
-        doThrow(new HystrixBadRequestException("Erro"))
-            .when(client)
-            .findUsuariosAgentesAutorizadosPapIndireto();
-
-        assertThatThrownBy(() -> service.findUsuariosAgentesAutorizadosPapIndireto())
-            .isInstanceOf(IntegracaoException.class);
-
-        verify(client).findUsuariosAgentesAutorizadosPapIndireto();
-    }
-
-    @Test
-    public void findAgentesAutorizadosPapIndireto_deveLancarException_quandoApiIndisponivel() {
-        doThrow(RetryableException.class)
-            .when(client)
-            .findUsuariosAgentesAutorizadosPapIndireto();
-
-        assertThatThrownBy(() -> service.findUsuariosAgentesAutorizadosPapIndireto())
-            .isInstanceOf(IntegracaoException.class)
-            .hasMessage("#058 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.");
-
-        verify(client).findUsuariosAgentesAutorizadosPapIndireto();
     }
 
     private AgenteAutorizadoResponse umAgenteAutorizadoResponse() {

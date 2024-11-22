@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.infra.PredicateBase.getPartitionPredicate;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
@@ -415,14 +416,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds) {
         return new JPAQueryFactory(entityManager)
             .selectFrom(usuario)
-            .where(
-                usuario.cpf.in(
-                    select(usuario.cpf)
-                        .from(usuario)
-                        .where(usuario.id.in(usuariosIds))
-                ))
-            .orderBy(usuario.cpf.desc())
-            .orderBy(usuario.dataCadastro.desc())
+            .where(usuario.cpf.in(
+                select(usuario.cpf)
+                    .from(usuario)
+                    .where(getPartitionPredicate(usuariosIds, usuario.id))
+            ))
             .fetch();
     }
 

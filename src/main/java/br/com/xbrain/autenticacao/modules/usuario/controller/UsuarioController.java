@@ -57,9 +57,9 @@ public class UsuarioController {
         return usuarioService.findAllResponsePorIds(filtro);
     }
 
-    @GetMapping("obter-colaboradores-aa-pap-indireto")
-    public List<UsuarioVendasPapIndiretoResponse> findColaboradoresPapIndireto() {
-        return usuarioService.findColaboradoresPapIndireto();
+    @PostMapping("obter-colaboradores-aa-pap-indireto")
+    public List<UsuarioVendasPapIndiretoResponse> findColaboradoresPapIndireto(@RequestBody List<Integer> aaUsuarioIds) {
+        return usuarioService.findColaboradoresPapIndireto(aaUsuarioIds);
     }
 
     @GetMapping("ativos/nivel/operacao/canal-aa")

@@ -5128,90 +5128,33 @@ public class UsuarioServiceTest {
     public void findColaboradoresPapIndireto_deveRetornarListaUsuariosVendasPapIndiretoResponse_quandoSolicitado() {
         var dataCadastro = LocalDateTime.of(2018, 01, 01, 15, 00, 00);
 
-        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
-            .thenReturn(List.of(UsuarioHelper.umUsuarioDtoVendasPapIndireto(), umOutroUsuarioDtoVendasPapIndireto()));
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2)))
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
             .thenReturn(List.of(umUsuarioPapIndireto(), umOutroUsuarioPapIndireto()));
 
-        assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
-                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
-                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
-                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
+        assertThat(service.findColaboradoresPapIndireto(List.of(1, 2)))
+            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId, UsuarioVendasPapIndiretoResponse::getNome,
+                UsuarioVendasPapIndiretoResponse::getCpf, UsuarioVendasPapIndiretoResponse::getDataCadastro,
+                UsuarioVendasPapIndiretoResponse::getSituacao)
             .containsExactlyInAnyOrder(
-                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"),
-                tuple(2, "64.262.572/0001-22", "Razao Social Teste 2", 101,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "", "Ativo"));
+                tuple(1, "UM USUARIO RESPONSE", "111.111.111-11",
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "Ativo"),
+                tuple(2, "UM OUTRO USUARIO PAP INDIRETO", "222.222.222-22",
+                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, dataCadastro), "Ativo"));
 
-        verify(agenteAutorizadoService)
-            .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
             .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 2));
     }
 
     @Test
-    public void findColaboradoresPapIndireto_deveRetornarListaUsuariosPapIndiretoResponseComDataSaida_quandoUsuarioRemanejado() {
-        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
-            .thenReturn(List.of(umUsuarioDtoVendasPapIndireto(), umUsuarioDtoVendasPapIndiretoRemanejado()));
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3)))
-            .thenReturn(List.of(umUsuarioPapIndireto(), umUsuarioPapIndiretoRemanejado()));
+    public void findColaboradoresPapIndireto_deveRetornarListaVazia_quandoUsuarioNaoEncontrado() {
+        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1,2)))
+            .thenReturn(Collections.emptyList());
 
-        assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
-                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
-                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
-                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
-            .containsExactlyInAnyOrder(
-                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
-                    "REMANEJADO"),
-                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
-                    "", "Ativo"));
+        assertThat(service.findColaboradoresPapIndireto(List.of(1, 2)))
+            .isEmpty();
 
-        verify(agenteAutorizadoService)
-            .findUsuariosAgentesAutorizadosPapIndireto();
         verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3));
-    }
-
-    @Test
-    public void findColaboradoresPapIndireto_deveRetornarListaUsuariosPapIndiretoResponse_quandoUsuarioRemanejadoParaAntigoAA() {
-        var umUsuarioPapIndiretoRemanejado = umUsuarioPapIndireto();
-        var umUsuarioDtoPapIndiretoRemanejado = umUsuarioDtoVendasPapIndireto();
-        umUsuarioPapIndiretoRemanejado.setSituacao(R);
-        umUsuarioDtoPapIndiretoRemanejado.setSituacao(R);
-
-        when(agenteAutorizadoService.findUsuariosAgentesAutorizadosPapIndireto())
-            .thenReturn(List.of(umUsuarioDtoPapIndiretoRemanejado, umUsuarioDtoVendasPapIndiretoRemanejado(),
-                umUsuarioDtoVendasPapIndiretoRemanejadoParaAntigoAA()));
-        when(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3, 4)))
-            .thenReturn(List.of(umUsuarioPapIndiretoRemanejado, umUsuarioPapIndiretoRemanejado(),
-                umUsuarioPapIndiretoRemanejadoParaAntigoAA()));
-
-        assertThat(service.findColaboradoresPapIndireto())
-            .extracting(UsuarioVendasPapIndiretoResponse::getUsuarioId,
-                UsuarioVendasPapIndiretoResponse::getCnpjAa, UsuarioVendasPapIndiretoResponse::getRazaoSocialAa,
-                UsuarioVendasPapIndiretoResponse::getAgenteAutorizadoId, UsuarioVendasPapIndiretoResponse::getDataCadastro,
-                UsuarioVendasPapIndiretoResponse::getDataSaidaCnpj, UsuarioVendasPapIndiretoResponse::getSituacao)
-            .containsExactlyInAnyOrder(
-                tuple(3, "64.262.572/0001-23", "Razao Social Teste 3", 103,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2017, 01, 01, 15, 00, 00)),
-                    "", "Ativo"),
-                tuple(1, "64.262.572/0001-21", "Razao Social Teste", 100,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2018, 01, 01, 15, 00, 00)),
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
-                    "REMANEJADO"),
-                tuple(4, "64.262.572/0001-23", "Razao Social Teste 3", 103,
-                    DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, LocalDateTime.of(2020, 01, 01, 15, 00, 00)),
-                    "", "Ativo"));
-
-        verify(agenteAutorizadoService)
-            .findUsuariosAgentesAutorizadosPapIndireto();
-        verify(repository)
-            .getAllUsuariosDoUsuarioPapIndireto(List.of(1, 3, 4));
+            .getAllUsuariosDoUsuarioPapIndireto(List.of(1,2));
     }
 
     @Test
