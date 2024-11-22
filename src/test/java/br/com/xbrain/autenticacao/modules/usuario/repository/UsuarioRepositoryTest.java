@@ -593,7 +593,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsVazia_seNaoEncontrados() {
         var predicate = new UsuarioPredicate();
-        predicate.comUsuariosIds(List.of(127));
+        predicate.comUsuariosIds(List.of(1));
 
         assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
             .isEmpty();
