@@ -635,7 +635,7 @@ public class UsuarioService {
             enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
-            tratarUsuarioAntigo(usuario);
+            tratatUsuarioAntigoBackoffice(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
@@ -3478,6 +3478,13 @@ public class UsuarioService {
             } else {
                 claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
             }
+        }
+    }
+
+    private void tratatUsuarioAntigoBackoffice(Usuario usuario) {
+        if (usuario != null) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
         }
     }
 }
