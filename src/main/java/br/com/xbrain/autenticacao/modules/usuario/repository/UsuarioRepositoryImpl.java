@@ -1488,13 +1488,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario)
-            .where(usuario.id.in(usuariosIds)
-                .and(usuario.cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO))
-                .and(usuario.situacao.eq(A)))
+            .where(usuario.cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
+                .and(usuario.situacao.eq(A)
+                    .and(predicate)))
             .fetch();
     }
 }

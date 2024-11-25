@@ -58,6 +58,10 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,10 +81,6 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -3419,9 +3419,12 @@ public class UsuarioService {
     }
 
     public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(usuariosIds);
+
         var usuario = autenticacaoService.getUsuarioAutenticado();
         return usuario.isSocioPrincipal() || usuario.isXbrainOuMso()
-            ? repository.findSociosIdsAtivosByUsuariosIds(usuariosIds)
+            ? repository.findSociosIdsAtivosByUsuariosIds(predicate.build())
             : List.of();
     }
 }

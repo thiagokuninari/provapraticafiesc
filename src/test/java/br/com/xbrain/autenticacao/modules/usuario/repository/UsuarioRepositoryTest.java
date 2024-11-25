@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -581,13 +583,33 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsDoSocios_seEncontrados() {
-        assertThat(repository.findSociosIdsAtivosByUsuariosIds(List.of(127)))
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(127));
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
             .isEqualTo(List.of(127));
     }
 
     @Test
     public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsVazia_seNaoEncontrados() {
-        assertThat(repository.findSociosIdsAtivosByUsuariosIds(List.of(1)))
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(1));
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
             .isEmpty();
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuaiosIds_deveRetornarListaDeIds_mesmoComMaisDeMilIdsComoParametro() {
+        var listaDeMil = IntStream.rangeClosed(1, 1010)
+            .boxed()
+            .collect(Collectors.toList());
+        listaDeMil.add(127);
+
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(listaDeMil);
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
+            .isEqualTo(List.of(127));
     }
 }
