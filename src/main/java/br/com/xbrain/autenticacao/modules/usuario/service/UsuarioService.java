@@ -635,6 +635,7 @@ public class UsuarioService {
             enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
+            tratarUsuarioAntigo(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
