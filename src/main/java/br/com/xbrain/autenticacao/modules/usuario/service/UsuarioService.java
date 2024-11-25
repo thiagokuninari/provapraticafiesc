@@ -3482,7 +3482,7 @@ public class UsuarioService {
     }
 
     private void tratarUsuarioAntigoBackoffice(Usuario usuario) {
-        if (usuario != null) {
+        if (usuario != null && !usuario.isNovoCadastro()) {
             var usuarioAntigo = findCompleteById(usuario.getId());
             claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
         }
