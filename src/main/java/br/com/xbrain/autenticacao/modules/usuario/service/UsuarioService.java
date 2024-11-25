@@ -635,7 +635,7 @@ public class UsuarioService {
             enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
-            tratatUsuarioAntigoBackoffice(usuario);
+            tratarUsuarioAntigoBackoffice(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
@@ -3481,7 +3481,7 @@ public class UsuarioService {
         }
     }
 
-    private void tratatUsuarioAntigoBackoffice(Usuario usuario) {
+    private void tratarUsuarioAntigoBackoffice(Usuario usuario) {
         if (usuario != null) {
             var usuarioAntigo = findCompleteById(usuario.getId());
             claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
