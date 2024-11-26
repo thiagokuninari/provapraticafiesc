@@ -821,6 +821,7 @@ public class UsuarioService {
     public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
         validar(usuario);
         tratarCadastroUsuario(usuario);
+        tratarUsuarioAntigoBackoffice(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
