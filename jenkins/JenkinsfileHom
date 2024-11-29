@@ -5,6 +5,9 @@ def COLOR_MAP = [
 ]
 pipeline {
     agent any
+    options {
+        disableConcurrentBuilds()
+    }
     environment {
         MAX_MEMORY = "4g"
         PORT = "6573:8096"

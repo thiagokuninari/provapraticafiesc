@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        disableConcurrentBuilds()
+    }
     environment {
         MAX_MEMORY = "2g"
         PORT = "6533:8096"
