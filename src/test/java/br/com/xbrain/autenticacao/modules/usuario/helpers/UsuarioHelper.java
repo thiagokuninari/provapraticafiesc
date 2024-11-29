@@ -26,6 +26,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.umaOrganizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
@@ -828,6 +829,10 @@ public class UsuarioHelper {
                         100)
                 )
             )
+            .empresas(List.of(Empresa.builder().id(1).build()))
+            .cidades(Set.of(new UsuarioCidade()))
+            .unidadesNegocios(List.of(new UnidadeNegocio(1)))
+            .departamento(new Departamento(1))
             .build();
     }
 

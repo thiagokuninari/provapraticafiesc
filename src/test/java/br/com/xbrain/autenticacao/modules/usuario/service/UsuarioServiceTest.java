@@ -657,11 +657,20 @@ public class UsuarioServiceTest {
 
     @Test
     public void inativar_deveInativarDirecionamentosERedistribuirIndicacoes_qunadoUsuarioVendedorInsideSalesPme() {
-        doReturn(umUsuarioInsideSalesPme())
-            .when(repository).findComplete(14);
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository)
+            .findComplete(14);
+        doReturn(MotivoInativacao.builder().codigo(CodigoMotivoInativacao.DEMISSAO).build())
+            .when(motivoInativacaoService)
+            .findByCodigoMotivoInativacao(eq(CodigoMotivoInativacao.DEMISSAO));
 
-        assertThatCode(() -> service.inativar(14))
+        var umUsuarioInativoDto = umUsuarioInativoDto();
+        umUsuarioInativoDto.setIdUsuario(14);
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto))
             .doesNotThrowAnyException();
+
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(14);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(14);
     }
 
     private UsuarioInativacaoDto umUsuarioInativoDto() {
@@ -730,7 +739,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(5)).findById(eq(1));
+        verify(repository, times(6)).findById(eq(1));
         verify(fileService).salvarArquivo(usuario, file);
     }
 
@@ -751,7 +760,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(5)).findById(eq(1));
+        verify(repository, times(6)).findById(eq(1));
         verify(fileService, never()).salvarArquivo(usuario, file);
     }
 
@@ -5677,8 +5686,8 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuario))
             .doesNotThrowAnyException();
 
-        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
-        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
+        verifyZeroInteractions(inativarDirecionamentosCepMqSender);
+        verifyZeroInteractions(redistribuirIndicacoesInsideSalesMqSender);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {
