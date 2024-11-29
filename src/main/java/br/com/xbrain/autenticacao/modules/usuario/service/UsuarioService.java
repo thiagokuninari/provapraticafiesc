@@ -281,6 +281,8 @@ public class UsuarioService {
     private SuporteVendasService suporteVendasService;
     @Autowired
     private SubNivelService subNivelService;
+    @Autowired
+    private UsuarioCadastroMqSender usuarioCadastroMqSender;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -1773,6 +1775,7 @@ public class UsuarioService {
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
         ativarSocio(usuario);
+        ativarUsuarioSocialHub(dto);
     }
 
     public void ativar(Integer id) {
@@ -1891,6 +1894,7 @@ public class UsuarioService {
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
+        inativarUsuarioSocialHub(usuarioInativacao);
     }
 
     private void ativarSocio(Usuario usuario) {
@@ -3426,5 +3430,18 @@ public class UsuarioService {
         return usuario.isSocioPrincipal() || usuario.isXbrainOuMso()
             ? repository.findSociosIdsAtivosByUsuariosIds(predicate.build())
             : List.of();
+    }
+
+    private void inativarUsuarioSocialHub(UsuarioInativacaoDto usuarioInativacao) {
+        if (usuarioInativacao.getCodigoMotivoInativacao() == DEMISSAO) {
+            usuarioCadastroMqSender
+                .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq
+                    .from(usuarioInativacao.getIdUsuario(), ESituacao.I));
+        }
+    }
+
+    private void ativarUsuarioSocialHub(UsuarioAtivacaoDto usuarioAtivacaoDto) {
+        usuarioCadastroMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq
+            .from(usuarioAtivacaoDto.getIdUsuario(), ESituacao.A));
     }
 }

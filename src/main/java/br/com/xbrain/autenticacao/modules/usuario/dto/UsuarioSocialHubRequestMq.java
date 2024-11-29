@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class UsuarioSocialHubRequestMq {
     private List<Integer> regionaisIds;
     private Integer territorioMercadoDesenvolvimentoId;
     private boolean isPermissaoAdmSocialRemovida;
+    private ESituacao situacao;
 
     public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo,
                                                  boolean isPermissaoAdmSocialRemovida) {
@@ -38,6 +40,13 @@ public class UsuarioSocialHubRequestMq {
         var request = new UsuarioSocialHubRequestMq();
         request.setId(usuarioId);
         request.setPermissaoAdmSocialRemovida(isPermissaoAdmSocialRemovida);
+        return request;
+    }
+
+    public static UsuarioSocialHubRequestMq from(Integer usuarioId, ESituacao situacao) {
+        var request = new UsuarioSocialHubRequestMq();
+        request.setId(usuarioId);
+        request.setSituacao(situacao);
         return request;
     }
 }
