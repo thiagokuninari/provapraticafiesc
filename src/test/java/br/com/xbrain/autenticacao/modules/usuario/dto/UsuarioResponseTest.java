@@ -50,8 +50,8 @@ public class UsuarioResponseTest {
         usuario.setSubCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
 
         assertThat(UsuarioResponse.of(usuario, List.of("MSO")))
-            .extracting("id", "nome", "email", "aaId", "tipoCanal", "subCanais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
+            .extracting("id", "nome", "email", "aaId", "subCanais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101,
                 Set.of(SubCanalDto.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
     }
 
@@ -62,9 +62,8 @@ public class UsuarioResponseTest {
         usuario.setCargo(umCargo(1, CodigoCargo.ADMINISTRADOR));
 
         assertThat(UsuarioResponse.of(usuario, List.of("")))
-            .extracting("id", "nome", "email", "aaId", "tipoCanal", "subCanais")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM,
-                null);
+            .extracting("id", "nome", "email", "aaId", "subCanais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, null);
     }
 
     private static Usuario umUsuario() {
