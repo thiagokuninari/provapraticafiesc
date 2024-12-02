@@ -5988,7 +5988,6 @@ public class UsuarioServiceTest {
             .nascimento(null)
             .aaId(null)
             .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
-            .tipoCanal(null)
             .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
             .build();

@@ -48,7 +48,6 @@ public class UsuarioResponse {
     private Integer aaId;
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
-    private ETipoCanal tipoCanal;
     private LocalDateTime dataSaidaCnpj;
     private Integer organizacaoEmpresaId;
     private String organizacaoEmpresaNome;
