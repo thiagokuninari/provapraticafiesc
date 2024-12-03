@@ -105,4 +105,4 @@ logging:
 xbrain:
   logging:
     level: INFO
-    appender: JSON
+    appender: CONSOLE

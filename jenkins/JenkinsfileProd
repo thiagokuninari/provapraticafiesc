@@ -8,6 +8,8 @@ pipeline {
     environment {
         PORT = "8073:8096"
         ACTUATOR_PORT = "8081"
+        APM_NAME = "autenticacao-api"
+        APM_ENVIRONMENT = "prod"
         PROFILE = "producao"
         DOCKER_PROD = "docker --context prod"
         DOCKER_LOCAL = "docker --context default"
@@ -17,10 +19,12 @@ pipeline {
         HARBOR_LOGIN = "https://harbor.xbrain.com.br/ -u ${HARBOR_USER} -p ${HARBOR_PASSWORD}"
         HARBOR_URL = "harbor.xbrain.com.br/conexao-claro-brasil/${CONTAINER_NAME}:${APPLICATION_TAG}"
         CURRENT_IMAGE = sh(script: "${DOCKER_PROD} images --format '{{.Repository}}:{{.Tag}}' | grep -E /${CONTAINER_NAME}: || echo ''", returnStdout: true).trim()
-        JAVA_OPTS = "-Xms2g -Xmx8g -Dspring.profiles.active=${PROFILE} \
-                                   -Delastic.apm.service_name=${CONTAINER_NAME} \
+        JAVA_OPTS = "-Xms2g -Xmx8g -javaagent:apm-agent.jar \
                                    -Delastic.apm.server_url=http://192.168.2.64:8200 \
-                                   -Delastic.apm.application_packages=br.com.xbrain"
+                                   -Delastic.apm.application_packages=br.com.xbrain \
+                                   -Delastic.apm.service_name=${APM_NAME} \
+                                   -Delastic.apm.environment=${APM_ENVIRONMENT} \
+                                   -Dspring.profiles.active=${PROFILE}"
     }
     tools {
         maven 'Maven3.6'
