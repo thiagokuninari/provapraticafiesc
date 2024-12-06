@@ -5,6 +5,9 @@ def COLOR_MAP = [
 ]
 pipeline {
     agent any
+    options {
+        disableConcurrentBuilds()
+    }
     environment {
         PORT = "8073:8096"
         ACTUATOR_PORT = "8081"
