@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -1495,6 +1496,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuario.cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
                 .and(usuario.situacao.eq(A)
                     .and(predicate)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioAgenteAutorizadoResponse.class,
+                usuario.email,
+                usuario.nome,
+                usuario.id))
+            .from(usuario)
+            .where(predicate)
             .fetch();
     }
 }

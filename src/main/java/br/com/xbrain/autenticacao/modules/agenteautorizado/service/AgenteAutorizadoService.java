@@ -209,6 +209,18 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public Map<Integer, Integer> getUsuariosByAasIds(List<Integer> aasIds) {
+        try {
+            return client.getUsuariosByAasIds(aasIds);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     public List<Integer> getUsuariosIdsByAaId(Integer aaId, Boolean buscarInativos) {
         return getUsuariosByAaId(aaId, buscarInativos).stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)

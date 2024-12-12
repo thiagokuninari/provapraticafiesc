@@ -2739,15 +2739,15 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosIdPorUmAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(100, 100),
-            umUsuarioAgenteAutorizadoResponse(101, 100)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+        var mapUsuariosAa = Map.of(
+            100, 100,
+            101, 100);
+        var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
+        when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
-                umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
-                umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
-
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO))));
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
             .extracting("id", "nome", "email", "agenteAutorizadoId")
@@ -2758,19 +2758,17 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosPorUmAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(100, 100),
-            umUsuarioAgenteAutorizadoResponse(101, 100)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
-            .thenReturn(Collections.emptyList());
-
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(200, 200),
-            umUsuarioAgenteAutorizadoResponse(201, 200)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
+        var mapUsuariosAa = Map.of(
+            100, 100,
+            101, 100,
+            200, 200,
+            201, 200);
+        var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
+        when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
-                umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
-                umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO))));
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
             .extracting("id", "nome", "email", "agenteAutorizadoId")
@@ -2781,21 +2779,19 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarUsuarioAgenteAutorizadoResponse_seEncontradoPorTodosAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(100, 100),
-            umUsuarioAgenteAutorizadoResponse(101, 100)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+        var mapUsuariosAa = Map.of(
+            100, 100,
+            101, 100,
+            200, 200,
+            201, 200);
+        var predicate = umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(mapUsuariosAa.keySet()).build();
+        when(agenteAutorizadoService.getUsuariosByAasIds(List.of(100, 200))).thenReturn(mapUsuariosAa);
+        when(repository.findAllUsuarioAaResponse(predicate))
             .thenReturn(List.of(
-                umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
-                umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
-
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(200, 200),
-            umUsuarioAgenteAutorizadoResponse(201, 200)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
-            .thenReturn(List.of(
-                umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
-                umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)),
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO)),
+                umUsuarioAaResponse(umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO))));
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
             .extracting("id", "nome", "email", "agenteAutorizadoId")
@@ -2808,16 +2804,17 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuariosId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Collections.emptyMap());
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuarios() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
-            umUsuarioAgenteAutorizadoResponse(100, 100),
-            umUsuarioAgenteAutorizadoResponse(101, 100)));
-        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+        when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
+            100, 100,
+            101, 100));
+        when(repository.findAllUsuarioAaResponse(
+            umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
             .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
@@ -2982,6 +2979,14 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
+    private UsuarioAgenteAutorizadoResponse umUsuarioAaResponse(Usuario usuario) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(usuario.getId())
+            .nome(usuario.getNome())
+            .email(usuario.getEmail())
+            .build();
+    }
+
     private Usuario umUsuarioDoIdECodigoCargo(int id, CodigoCargo codigoCargo) {
         return Usuario.builder()
             .id(id)
@@ -3003,7 +3008,7 @@ public class UsuarioServiceTest {
             usuariosList.size());
     }
 
-    private UsuarioPredicate umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List<Integer> ids) {
+    private UsuarioPredicate umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(Collection<Integer> ids) {
         var predicate = new UsuarioPredicate();
         predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
         predicate.comIds(ids);

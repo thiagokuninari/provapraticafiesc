@@ -2814,35 +2814,19 @@ public class UsuarioService {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
     }
 
-    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadoId) {
-        return agentesAutorizadoId
-            .stream()
-            .map(aaId -> buscarBackOfficesESociosAaPorUsuariosId(buscarUsuariosIdPorAaId(aaId), aaId))
-            .flatMap(List::stream)
-            .collect(toList());
+    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadosId) {
+        var usuariosPorAa = agenteAutorizadoService.getUsuariosByAasIds(agentesAutorizadosId);
+        var predicate = new UsuarioPredicate()
+            .comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA)
+            .comIds(usuariosPorAa.keySet())
+            .build();
+        var usuariosAas = repository.findAllUsuarioAaResponse(predicate);
+        usuariosAas.forEach(usuario -> preencherAaId(usuario, usuariosPorAa.get(usuario.getId())));
+        return usuariosAas;
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
-        List<Integer> usuariosId, Integer aaId) {
-        var predicate = new UsuarioPredicate();
-        predicate.comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
-        predicate.comIds(usuariosId);
-        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
-            .map(usuario -> preencherAaId(usuario, aaId))
-            .map(UsuarioAgenteAutorizadoResponse::of)
-            .collect(toList());
-    }
-
-    private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
-        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
-            .stream()
-            .map(UsuarioAgenteAutorizadoResponse::getId)
-            .collect(toList());
-    }
-
-    private Usuario preencherAaId(Usuario usuario, Integer aaId) {
+    private void preencherAaId(UsuarioAgenteAutorizadoResponse usuario, Integer aaId) {
         usuario.setAgenteAutorizadoId(aaId);
-        return usuario;
     }
 
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {

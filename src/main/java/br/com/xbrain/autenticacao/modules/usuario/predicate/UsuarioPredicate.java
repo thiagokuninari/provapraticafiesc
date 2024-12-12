@@ -223,7 +223,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comIds(List<Integer> usuariosIds) {
+    public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.and(ExpressionUtils.anyOf(
                 Lists.partition(new ArrayList<>(usuariosIds), QTD_MAX_IN_NO_ORACLE)

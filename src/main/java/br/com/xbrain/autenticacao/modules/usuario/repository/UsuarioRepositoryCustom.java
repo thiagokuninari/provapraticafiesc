@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -213,4 +214,6 @@ public interface UsuarioRepositoryCustom {
     boolean isUsuarioSocioPrincipal(Integer usuarioId);
 
     List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate);
+
+    List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate);
 }
