@@ -34,7 +34,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosMunicipais(2024, "PR", "Londrina"))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosMunicipais(2024, "PR", "Londrina");
     }
@@ -46,7 +46,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosMunicipais(2024, "PR", "Londrina"))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosMunicipais(2024, "PR", "Londrina");
     }
@@ -72,7 +72,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosEstaduais(2024, "PR"))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosEstaduais(2024, "PR");
     }
@@ -84,7 +84,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosEstaduais(2024, "PR"))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosEstaduais(2024, "PR");
     }
@@ -110,7 +110,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosNacionais(2024))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosNacionais(2024);
     }
@@ -122,7 +122,7 @@ public class FeriadoAutomacaoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> feriadoAutomacaoService.consultarFeriadosNacionais(2024))
-            .withMessage("#061 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+            .withMessage("#062 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(feriadoAutomacaoClient, times(1)).buscarFeriadosNacionais(2024);
     }

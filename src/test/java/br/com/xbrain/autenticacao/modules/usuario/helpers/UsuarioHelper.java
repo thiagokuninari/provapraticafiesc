@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.experimental.UtilityClass;
+import com.google.common.collect.Sets;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -864,9 +865,33 @@ public class UsuarioHelper {
             .rg("123456")
             .loginNetSales("741")
             .orgaoExpedidor("963")
+            .cargo(umCargo(42, GERENTE_OPERACAO))
             .situacao(A)
             .nascimento(LocalDateTime.of(1990, 10, 19, 14, 52))
             .agenteAutorizadoId(77)
+            .build();
+    }
+
+    public static Usuario umUsuarioInsideSalesPme() {
+        return Usuario.builder()
+            .id(14)
+            .nome("VENDEDOR INSIDE SALES PME")
+            .email("VENDEDORINSIDESALES@XBRAIN.COM.BR")
+            .cargo(Cargo.builder().id(123).codigo(VENDEDOR_OPERACAO).build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(SubCanal.builder().id(4).codigo(ETipoCanal.INSIDE_SALES_PME).build()))
+            .usuariosHierarquia(
+                Sets.newHashSet(
+                    UsuarioHierarquia.criar(
+                        umUsuario(),
+                        65,
+                        100)
+                )
+            )
+            .empresas(List.of(Empresa.builder().id(1).build()))
+            .cidades(Set.of(new UsuarioCidade()))
+            .unidadesNegocios(List.of(new UnidadeNegocio(1)))
+            .departamento(new Departamento(1))
             .build();
     }
 

@@ -185,11 +185,17 @@ public enum EErrors {
         "#060 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#060 - Ocorreu um erro ao tentar atualizar o(s) usuário(s) da equipe vendas."),
     ERRO_BUSCAR_USUARIOS_AA_PAP_INDIRETO(
-        "#058 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.",
-        "#058 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto."),
+        "#061 - Ocorreu um erro ao tentar buscar usuários. Contate o administrador.",
+        "#061 - Ocorreu um erro ao tentar buscar usuários dos agentes autorizados PAP Indireto."),
     ERRO_BUSCAR_FERIADOS(
-        "#061 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#061 - Ocorreu um erro ao buscar feriados.");
+        "#062 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#062 - Ocorreu um erro ao buscar feriados."),
+    ERRO_INATIVAR_DIRECIONAMENTOS(
+        "#063 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#063 - Ocorreu um erro ao inativar os direcionamentos do vendedor."),
+    ERRO_REDISTRIBUIR_INSIDE_SALES(
+        "#064 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#064 - Ocorreu um erro ao redistribuir HPs Inside Sales PME do vendedor.");
 
     private final String descricao;
     private final String descricaoTecnica;

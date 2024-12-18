@@ -8,6 +8,8 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecn
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -283,6 +285,10 @@ public class UsuarioService {
     private SubNivelService subNivelService;
     @Autowired
     private UsuarioCadastroMqSender usuarioCadastroMqSender;
+    @Autowired
+    private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
+    @Autowired
+    private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -645,6 +651,7 @@ public class UsuarioService {
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
             configurarDataReativacao(usuario, situacaoAnterior);
+            validarERedistribuirIndicacoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
             configurarCadastro(usuario);
@@ -1891,6 +1898,7 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
+        removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(usuario);
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
@@ -3427,5 +3435,36 @@ public class UsuarioService {
     private void ativarUsuarioSocialHub(UsuarioAtivacaoDto usuarioAtivacaoDto) {
         usuarioCadastroMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq
             .from(usuarioAtivacaoDto.getIdUsuario(), ESituacao.A));
+    }
+
+    private void removerDirecionamentoPorCepDoUsuario(Integer usuarioVendedorId) {
+        inativarDirecionamentosCepMqSender.sendInativarDirecionamentoCep(usuarioVendedorId);
+    }
+
+    private void redistribuirIndicacoesDoUsuario(Integer usuarioVendedorId) {
+        redistribuirIndicacoesInsideSalesMqSender.sendRedistribuirIndicacoesInsideSales(usuarioVendedorId);
+    }
+
+    private void validarERedistribuirIndicacoes(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = repository.findById(usuario.getId())
+                .orElseThrow(() -> new NotFoundException(MSG_USUARIO_NAO_ENCONTRADO));
+
+            var mudouSubCanal = usuarioAntigo.hasSubCanalInsideSalesPme()
+                && !usuario.hasSubCanalInsideSalesPme();
+            var mudouCargo = usuarioAntigo.isCargoVendedorInsideSales() && !usuario.isCargoVendedorInsideSales();
+
+            if (mudouSubCanal || mudouCargo) {
+                removerDirecionamentoPorCepDoUsuario(usuario.getId());
+                redistribuirIndicacoesDoUsuario(usuario.getId());
+            }
+        }
+    }
+
+    private void removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(Usuario usuario) {
+        if (usuario.hasSubCanalInsideSalesPme() && usuario.isCargoVendedorInsideSales()) {
+            removerDirecionamentoPorCepDoUsuario(usuario.getId());
+            redistribuirIndicacoesDoUsuario(usuario.getId());
+        }
     }
 }

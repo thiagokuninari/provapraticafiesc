@@ -624,7 +624,7 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
-        return cargo.getCodigo().equals(codigoCargo);
+        return codigoCargo.equals(cargo.getCodigo());
     }
 
     public boolean hasCanal(ECanal canal) {
@@ -799,5 +799,11 @@ public class Usuario {
             .map(SubNivel::getId)
             .collect(Collectors.toSet())
             : Set.of();
+    }
+
+    public boolean isCargoVendedorInsideSales() {
+        var cargo = getCargoCodigo();
+
+        return cargo != null && getCargosVendedorInsideSales().contains(cargo);
     }
 }

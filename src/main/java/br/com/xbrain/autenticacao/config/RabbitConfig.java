@@ -171,6 +171,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.agendador-autenticacao-api}")
     private String agendadorAutenticacaoQueue;
 
+    @Value("${app-config.queue.redistribuir-indicacoes-inside-sales-vendedor}")
+    private String redistribuirIndicacoesInsideSalesMq;
+
+    @Value("${app-config.queue.inativar-direcionamentos-cep-vendedor-inside-sales}")
+    private String inativarDirecionamentoCepMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -682,5 +688,29 @@ public class RabbitConfig {
         return BindingBuilder.bind(agendadorAutenticacaoQueue())
             .to(agendadorTopic())
             .with(agendadorAutenticacaoQueue);
+    }
+
+    @Bean
+    Queue inativarDirecionamentoCepQueue() {
+        return new Queue(inativarDirecionamentoCepMq, false);
+    }
+
+    @Bean
+    public Binding inativarDirecionamentoCepBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarDirecionamentoCepQueue())
+            .to(exchange)
+            .with(inativarDirecionamentoCepMq);
+    }
+
+    @Bean
+    Queue redistribuirIndicacoesInsideSalesQueue() {
+        return new Queue(redistribuirIndicacoesInsideSalesMq, false);
+    }
+
+    @Bean
+    public Binding redistribuirIndicacoesInsideSalesBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(redistribuirIndicacoesInsideSalesQueue())
+            .to(exchange)
+            .with(redistribuirIndicacoesInsideSalesMq);
     }
 }

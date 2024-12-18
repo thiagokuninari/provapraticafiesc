@@ -6,6 +6,8 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
@@ -240,6 +242,10 @@ public class UsuarioServiceTest {
     private SubNivelService subNivelService;
     @Mock
     private UsuarioCadastroMqSender usuarioCadastroMqSender;
+    @Mock
+    private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
+    @Mock
+    private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -736,6 +742,24 @@ public class UsuarioServiceTest {
             .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
+    @Test
+    public void inativar_deveInativarDirecionamentosERedistribuirIndicacoes_qunadoUsuarioVendedorInsideSalesPme() {
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository)
+            .findComplete(14);
+        doReturn(MotivoInativacao.builder().codigo(CodigoMotivoInativacao.DEMISSAO).build())
+            .when(motivoInativacaoService)
+            .findByCodigoMotivoInativacao(eq(CodigoMotivoInativacao.DEMISSAO));
+
+        var umUsuarioInativoDto = umUsuarioInativoDto();
+        umUsuarioInativoDto.setIdUsuario(14);
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto))
+            .doesNotThrowAnyException();
+
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(14);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(14);
+    }
+
     private UsuarioInativacaoDto umUsuarioInativoDto() {
         return UsuarioInativacaoDto.builder()
             .idUsuario(1)
@@ -802,7 +826,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(6)).findById(eq(1));
+        verify(repository, times(7)).findById(eq(1));
         verify(fileService).salvarArquivo(usuario, file);
     }
 
@@ -823,7 +847,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(repository, times(2)).save(usuario);
-        verify(repository, times(6)).findById(eq(1));
+        verify(repository, times(7)).findById(eq(1));
         verify(fileService, never()).salvarArquivo(usuario, file);
     }
 
@@ -1320,7 +1344,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(7)).findById(101112);
+        verify(repository, times(8)).findById(101112);
         verify(subCanalService).removerPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -1338,7 +1362,7 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
 
         verify(autenticacaoService).getUsuarioAutenticado();
-        verify(repository, times(7)).findById(101112);
+        verify(repository, times(8)).findById(101112);
         verify(subCanalService).adicionarPermissaoIndicacaoInsideSalesPme(any());
     }
 
@@ -3719,7 +3743,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
-        verify(repository, times(6)).findById(23);
+        verify(repository, times(7)).findById(23);
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3751,7 +3775,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
-        verify(repository, times(6)).findById(23);
+        verify(repository, times(7)).findById(23);
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3788,7 +3812,7 @@ public class UsuarioServiceTest {
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
-        verify(repository, times(6)).findById(23);
+        verify(repository, times(7)).findById(23);
         verify(subNivelService).findByIdIn(Set.of(2, 3));
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -4884,7 +4908,7 @@ public class UsuarioServiceTest {
 
         service.updateFromQueue(usuarioMqRequest);
 
-        verify(repository, times(7)).findById(usuarioDto.getId());
+        verify(repository, times(8)).findById(usuarioDto.getId());
         verify(cargoRepository).findByCodigo(usuarioMqRequest.getCargo());
         verify(departamentoRepository).findByCodigo(usuarioMqRequest.getDepartamento());
         verify(nivelRepository).findByCodigo(usuarioMqRequest.getNivel());
@@ -5933,6 +5957,76 @@ public class UsuarioServiceTest {
         assertThat(usuarioCaptor.getValue())
             .extracting("email", "cpf", "situacao")
             .containsExactly("SOCIO.INATIVO@GMAIL.COM", null, I);
+    }
+
+    @Test
+    public void save_deveRedistribuirIndicacoes_quandoUsuarioTrocaSubCanalInsideSalesPme() {
+        var usuario = umUsuarioCompleto(VENDEDOR_OPERACAO, 3, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findById(1);
+        doReturn(umUsuarioAutenticadoAdmin(41))
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
+    }
+
+    @Test
+    public void save_deveRedistribuirIndicacoes_quandoUsuarioTrocaParaCargoNaoVendedorInsideSales() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO, 3, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(SubCanal.builder().id(4).codigo(ETipoCanal.INSIDE_SALES_PME).build()));
+
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findById(1);
+        doReturn(umUsuarioAutenticadoAdmin(41))
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
+    }
+
+    @Test
+    public void save_deveRedistribuirIndicacoes_quandoUsuarioTrocaSubCanalInsideSalesEParaCargoNaoVendedorInsideSales() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO, 3, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findById(1);
+        doReturn(umUsuarioAutenticadoAdmin(41))
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verify(inativarDirecionamentosCepMqSender).sendInativarDirecionamentoCep(1);
+        verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(1);
+    }
+
+    @Test
+    public void save_naoDeveRedistribuirIndicacoes_quandoUsuarioNaoTrocarDeCargoOuSubCanal() {
+        var usuario = umUsuarioCompleto(VENDEDOR_OPERACAO, 3, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(SubCanal.builder().id(4).codigo(ETipoCanal.INSIDE_SALES_PME).build()));
+
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findById(1);
+        doReturn(umUsuarioAutenticadoAdmin(41))
+            .when(autenticacaoService).getUsuarioAutenticado();
+
+        assertThatCode(() -> service.save(usuario))
+            .doesNotThrowAnyException();
+
+        verifyZeroInteractions(inativarDirecionamentosCepMqSender);
+        verifyZeroInteractions(redistribuirIndicacoesInsideSalesMqSender);
     }
 
     private Usuario outroUsuarioNivelOpCanalAa() {

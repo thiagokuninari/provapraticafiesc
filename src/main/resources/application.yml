@@ -159,6 +159,8 @@ app-config:
     inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
     agendador-autenticacao-api: agendador-autenticacao-api.queue
     agendador-success: agendador-success.queue
+    inativar-direcionamentos-cep-vendedor-inside-sales: inativar-direcionamentos-cep-vendedor-inside-sales.queue
+    redistribuir-indicacoes-inside-sales-vendedor: redistribuir-indicacoes-inside-sales-vendedor.queue
 
   oauth-clients:
     autenticacao-api:
