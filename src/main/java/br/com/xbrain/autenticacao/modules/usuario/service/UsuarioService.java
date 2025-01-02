@@ -1867,6 +1867,7 @@ public class UsuarioService {
         return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
+    @Transactional
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
         var email = usuario.getEmail();
