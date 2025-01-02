@@ -156,8 +156,4 @@ public enum CodigoCargo {
             VENDEDOR_OPERACAO
         );
     }
-
-    public static boolean isCargoTecnico(CodigoCargo codigoCargo) {
-        return !ObjectUtils.isEmpty(codigoCargo) && getCargosTecnicos().contains(codigoCargo);
-    }
 }
