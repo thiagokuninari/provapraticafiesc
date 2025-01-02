@@ -28,4 +28,18 @@ public class CodigoCargoTest {
 
         assertEquals(getCargosVendedorInsideSales(), listaCargosVendedorInsideSales);
     }
+
+    @Test
+    public void isCargoTecnico_deveRetornarTrue_quandoCargoForTecnico() {
+        var resultado = CodigoCargo.isCargoTecnico(CodigoCargo.AGENTE_AUTORIZADO_TECNICO_GERENTE);
+
+        assertTrue("O método deve retornar true para cargos técnicos.", resultado);
+    }
+
+    @Test
+    public void isCargoTecnico_deveRetornarFalse_quandoCargoNaoForTecnico() {
+        var resultado = CodigoCargo.isCargoTecnico(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS);
+
+        assertFalse("O método deve retornar false para cargos que não são técnicos.", resultado);
+    }
 }

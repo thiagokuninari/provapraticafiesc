@@ -51,4 +51,36 @@ public class ColaboradorTecnicoServiceTest {
         assertThatThrownBy(() -> service.atualizarUsuarioRemanejado(new UsuarioRemanejamentoRequest()))
             .isInstanceOf(IntegracaoException.class);
     }
+
+    @Test
+    public void limparCpfColaboradorTecnico_deveChamarClient_quandoSolicitado() {
+        service.limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+
+        verify(client).limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+    }
+
+    @Test
+    public void limparCpfColaboradorTecnico_deveLancarException_quandoApiIndisponivel() {
+        doThrow(HystrixBadRequestException.class)
+            .when(client)
+            .limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+
+        assertThatThrownBy(() -> service.limparCpfColaboradorTecnico("usuarioteste@gmail.com"))
+            .isInstanceOf(IntegracaoException.class);
+
+        verify(client).limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+    }
+
+    @Test
+    public void limparCpfColaboradorTecnico_deveLancarException_quandoErroNaApi() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+
+        assertThatThrownBy(() -> service.limparCpfColaboradorTecnico("usuarioteste@gmail.com"))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#053 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+
+        verify(client).limparCpfColaboradorTecnico("usuarioteste@gmail.com");
+    }
 }

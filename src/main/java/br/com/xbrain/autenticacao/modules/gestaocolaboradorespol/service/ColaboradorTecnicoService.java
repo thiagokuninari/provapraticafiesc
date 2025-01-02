@@ -32,4 +32,16 @@ public class ColaboradorTecnicoService {
         }
     }
 
+    public void limparCpfColaboradorTecnico(String email) {
+        try {
+            client.limparCpfColaboradorTecnico(email);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                ColaboradorTecnicoService.class.getName(),
+                EErrors.ERRO_AO_LIMPAR_CPF_COLABORADOR);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
 }

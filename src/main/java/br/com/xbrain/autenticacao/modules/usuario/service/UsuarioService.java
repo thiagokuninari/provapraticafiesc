@@ -1867,12 +1867,17 @@ public class UsuarioService {
         return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
+    @Transactional
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
-        colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
+        var cargo = usuario.getCargo();
+        if (CodigoCargo.isCargoTecnico(cargo.getCodigo())) {
+            colaboradorTecnicoService.limparCpfColaboradorTecnico(usuario.getEmail());
+        } else {
+            colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
+        }
     }
 
-    @Transactional
     public Usuario limpaCpf(Integer id) {
         var usuario = findComplete(id);
         usuario.setCpf(null);
