@@ -2206,11 +2206,11 @@ public class UsuarioService {
     }
 
     private void validarPoliticaDeSenha(String novaSenha) {
-        if (novaSenha.length() >= MIN_CARACTERES_SENHA) {
+        if (isNotBlank(novaSenha) && novaSenha.length() >= MIN_CARACTERES_SENHA) {
             Pattern maiusculas = Pattern.compile("[A-Z]");
             Pattern minusculas = Pattern.compile("[a-z]");
             Pattern numeros = Pattern.compile("[0-9]");
-            Pattern caracteresEspeciais = Pattern.compile("[$%&*!@#=+-]");
+            Pattern caracteresEspeciais = Pattern.compile("[!$%&*=@#^+-]");
 
             Matcher possuiMaiusculas = maiusculas.matcher(novaSenha);
             Matcher possuiMinusculas = minusculas.matcher(novaSenha);
