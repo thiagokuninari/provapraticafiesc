@@ -2837,9 +2837,9 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
             100, 100,
             101, 100));
-        when(repository.findAllUsuarioAaResponse(
-            umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
-            .thenReturn(Collections.emptyList());
+        // when(repository.findAllUsuarioAaResponse(
+        //     umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+        //     .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
@@ -6505,5 +6505,100 @@ public class UsuarioServiceTest {
         static ApplicationEventPublisher publisher() {
             return mock(ApplicationEventPublisher.class);
         }
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaComMenosDeOiteCaracteres() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("teste")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo 8 caracteres.");
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemMaiusculas() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("teste123@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo uma letra maiúscula.");
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemMinusculas() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("TESTE123@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo uma letra minúscula.");
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemNumeros() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("testeSenha@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo um número.");
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemCaracteresEspeciais() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("testeSENHA123")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo um caracter especial.");
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_naoDeveLancarException_quandoUsuarioInformarNovaSenhaDentroDaPolitica() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("T3steS&nh@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatCode(() -> service.alterarDadosAcessoSenha(request))
+            .doesNotThrowAnyException();
     }
 }

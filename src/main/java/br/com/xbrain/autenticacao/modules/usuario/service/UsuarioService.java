@@ -86,6 +86,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -123,6 +124,7 @@ public class UsuarioService {
 
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
+    private static final int MIN_CARACTERES_SENHA = 8;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String CONTRATO_ATIVO = "CONTRATO ATIVO";
@@ -2188,6 +2190,7 @@ public class UsuarioService {
             || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
+        validarPoliticaDeSenha(usuarioDadosAcessoRequest.getSenhaNova());
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
@@ -2199,6 +2202,35 @@ public class UsuarioService {
     private void validarSenhaAtual(Usuario usuario, final String senhaAtual) {
         if (!BCrypt.checkpw(senhaAtual, usuario.getSenha())) {
             throw SENHA_ATUAL_INCORRETA_EXCEPTION;
+        }
+    }
+
+    private void validarPoliticaDeSenha(String novaSenha) {
+        if (novaSenha.length() >= MIN_CARACTERES_SENHA) {
+            Pattern maiusculas = Pattern.compile("[A-Z]");
+            Pattern minusculas = Pattern.compile("[a-z]");
+            Pattern numeros = Pattern.compile("[0-9]");
+            Pattern caracteresEspeciais = Pattern.compile("[$%&*!@#=+-]");
+
+            Matcher possuiMaiusculas = maiusculas.matcher(novaSenha);
+            Matcher possuiMinusculas = minusculas.matcher(novaSenha);
+            Matcher possuirNumeros = numeros.matcher(novaSenha);
+            Matcher possuiCaracteresEspeciais = caracteresEspeciais.matcher(novaSenha);
+
+            if (!possuiMinusculas.find()) {
+                throw new ValidacaoException("A senha deve possuir no mínimo uma letra minúscula.");
+            }
+            if (!possuiMaiusculas.find()) {
+                throw new ValidacaoException("A senha deve possuir no mínimo uma letra maiúscula.");
+            }
+            if (!possuirNumeros.find()) {
+                throw new ValidacaoException("A senha deve possuir no mínimo um número.");
+            }
+            if (!possuiCaracteresEspeciais.find()) {
+                throw new ValidacaoException("A senha deve possuir no mínimo um caracter especial.");
+            }
+        } else {
+            throw new ValidacaoException("A senha deve possuir no mínimo 8 caracteres.");
         }
     }
 
