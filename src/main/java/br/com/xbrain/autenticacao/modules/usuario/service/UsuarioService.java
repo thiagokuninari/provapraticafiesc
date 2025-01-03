@@ -86,7 +86,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -2211,23 +2210,28 @@ public class UsuarioService {
             Pattern minusculas = Pattern.compile("[a-z]");
             Pattern numeros = Pattern.compile("[0-9]");
             Pattern caracteresEspeciais = Pattern.compile("[!$%&*=@#^+-]");
+            Pattern espacos = Pattern.compile("\\p{Zs}+");
 
-            Matcher possuiMaiusculas = maiusculas.matcher(novaSenha);
-            Matcher possuiMinusculas = minusculas.matcher(novaSenha);
-            Matcher possuirNumeros = numeros.matcher(novaSenha);
-            Matcher possuiCaracteresEspeciais = caracteresEspeciais.matcher(novaSenha);
+            var possuiMaiusculas = maiusculas.matcher(novaSenha).find();
+            var possuiMinusculas = minusculas.matcher(novaSenha).find();
+            var possuiNumeros = numeros.matcher(novaSenha).find();
+            var possuiCaracteresEspeciais = caracteresEspeciais.matcher(novaSenha).find();
+            var possuiEspacos = espacos.matcher(novaSenha).find();
 
-            if (!possuiMinusculas.find()) {
+            if (!possuiMinusculas) {
                 throw new ValidacaoException("A senha deve possuir no mínimo uma letra minúscula.");
             }
-            if (!possuiMaiusculas.find()) {
+            if (!possuiMaiusculas) {
                 throw new ValidacaoException("A senha deve possuir no mínimo uma letra maiúscula.");
             }
-            if (!possuirNumeros.find()) {
+            if (!possuiNumeros) {
                 throw new ValidacaoException("A senha deve possuir no mínimo um número.");
             }
-            if (!possuiCaracteresEspeciais.find()) {
+            if (!possuiCaracteresEspeciais) {
                 throw new ValidacaoException("A senha deve possuir no mínimo um caracter especial.");
+            }
+            if (possuiEspacos) {
+                throw new ValidacaoException("A senha não deve possuir espaços.");
             }
         } else {
             throw new ValidacaoException("A senha deve possuir no mínimo 8 caracteres.");

@@ -2838,9 +2838,6 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
             100, 100,
             101, 100));
-        // when(repository.findAllUsuarioAaResponse(
-        //     umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
-        //     .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
@@ -6622,6 +6619,26 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
             .withMessage("A senha deve possuir no mínimo um caracter especial.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaComEspacos() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("TesteS3nh@ ")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha não deve possuir espaços.");
 
         verify(repository, never()).updateSenha(any(), any(), any());
         verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
