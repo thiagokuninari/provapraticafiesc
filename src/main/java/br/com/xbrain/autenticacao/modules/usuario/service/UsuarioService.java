@@ -60,10 +60,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +79,10 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -1399,12 +1399,12 @@ public class UsuarioService {
         configurarUsuario(usuarioMqRequest, usuarioDto);
         usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
-        enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
-
         if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
             enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
         } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
             enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
+        } else if (usuarioDto.isAtualizarSocioPrincipal()) {
+            enviarParaFilaDeAtualizarSocioPrincipal(usuarioDto);
         } else {
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         }
@@ -1416,10 +1416,9 @@ public class UsuarioService {
     }
 
     private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioDto socio) {
-        if (socio.isAtualizarSocioPrincipal()) {
-            enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
-            permissaoEspecialService.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
-        }
+        socio.setTipoUsuario(SOCIO);
+        enviarParaFilaDeAtualizarSocioPrincipalSalvo(socio);
+        permissaoEspecialService.atualizarPermissoesEspeciaisNovoSocioPrincipal(socio);
     }
 
     @Transactional
