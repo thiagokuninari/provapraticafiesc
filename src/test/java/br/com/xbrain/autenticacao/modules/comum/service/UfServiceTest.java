@@ -8,11 +8,13 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -22,6 +24,22 @@ public class UfServiceTest {
     private UfService ufService;
     @Mock
     private UfRepository ufRepository;
+
+    @Test
+    public void findAll_deveRetornarUmaListaUfsOrdenada_quandoSolicitado() {
+        var sort = new Sort("nome");
+        when(ufRepository.findAll(sort))
+            .thenReturn(umaListaUf());
+
+        assertThat(ufService.findAll(sort))
+            .extracting("id", "nome")
+            .containsExactly(
+                Tuple.tuple(1, "PR"),
+                Tuple.tuple(2, "SP")
+            );
+
+        verify(ufRepository).findAll(sort);
+    }
 
     @Test
     public void findAll_deveRetornarUmaListaUfs_quandoSolicitado() {

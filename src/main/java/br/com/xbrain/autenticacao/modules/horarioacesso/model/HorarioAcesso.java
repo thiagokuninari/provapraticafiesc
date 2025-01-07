@@ -34,10 +34,6 @@ public class HorarioAcesso {
     @Column(name = "USUARIO_ALTERACAO_NOME")
     private String usuarioAlteracaoNome;
 
-    public HorarioAcesso(Integer id) {
-        this.id = id;
-    }
-
     public static HorarioAcesso of(HorarioAcessoRequest request) {
         return HorarioAcesso.builder()
             .id(request.getId())

@@ -58,6 +58,19 @@ public class NotificacaoUsuarioAcessoServiceTest {
     }
 
     @Test
+    public void getLoginsLogoutsDeHoje_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
+
+        assertThatThrownBy(() ->  service.getLoginsLogoutsDeHoje(Optional.of(List.of(12, 1, 98)), umPageRequest()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#024 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
+    }
+
+    @Test
     public void getLoginsLogoutsDeHoje_deveNaoPassarParametroUsuarioIds_quandoUsuarioIdsForNull() {
         service.getLoginsLogoutsDeHoje(Optional.empty(), umPageRequest());
 
@@ -181,6 +194,25 @@ public class NotificacaoUsuarioAcessoServiceTest {
     }
 
     @Test
+    public void getCsv_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        var filtro = RelatorioLoginLogoutCsvFiltro.builder()
+            .colaboradoresIds(Set.of(3000))
+            .dataInicio(LocalDate.of(2015, 6, 25))
+            .dataFim(LocalDate.of(2016, 1, 4))
+            .build();
+
+        doThrow(RetryableException.class)
+            .when(client)
+            .getCsv(requestParamsArgCaptor.capture());
+
+        assertThatThrownBy(() ->  service.getCsv(filtro, Optional.empty()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#025 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
+    }
+
+    @Test
     public void getCsv_deveNaoChamarOClientERetornarListaVazia_quandoNenhumUsuarioForPermitido() {
         var filtro = RelatorioLoginLogoutCsvFiltro.builder()
             .colaboradoresIds(Set.of(3000))
@@ -191,6 +223,19 @@ public class NotificacaoUsuarioAcessoServiceTest {
         assertThat(service.getCsv(filtro, Optional.of(List.of()))).isEmpty();
 
         verify(client, never()).getCsv(any());
+    }
+
+    @Test
+    public void getUsuariosIdsByIds_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .getUsuariosIdsByIds(List.of(14, 44, 1));
+
+        assertThatThrownBy(() ->  service.getUsuariosIdsByIds(Optional.of(List.of(14, 44, 1))))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#026 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).getUsuariosIdsByIds(List.of(14, 44, 1));
     }
 
     @Test
@@ -217,6 +262,19 @@ public class NotificacaoUsuarioAcessoServiceTest {
             .isEmpty();
 
         verify(client, never()).getUsuariosIdsByIds(any());
+    }
+
+    @Test
+    public void countUsuariosLogadosPorPeriodo_deveLancarIntegracaoException_quandoApiIndisponivel() {
+        doThrow(RetryableException.class)
+            .when(client)
+            .countUsuariosLogadosPorPeriodo(umUsuarioLogadoRequest());
+
+        assertThatThrownBy(() ->  service.countUsuariosLogadosPorPeriodo(umUsuarioLogadoRequest()))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#030 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).countUsuariosLogadosPorPeriodo(umUsuarioLogadoRequest());
     }
 
     @Test

@@ -37,4 +37,11 @@ public class VendedoresFeederResponseTest {
             .extracting("id", "nome", "situacao", "nivelCodigo")
             .containsExactly(1, "NOME 1 (SÓCIO PRINCIPAL)", "A", "AGENTE_AUTORIZADO");
     }
+
+    @Test
+    public void of_VendedoresFeederResponse_seUsuarioNomeNulo() {
+        assertThat(VendedoresFeederResponse.of(umUsuario(1, null, A, AGENTE_AUTORIZADO_SOCIO, AGENTE_AUTORIZADO)))
+            .extracting("id", "nome", "situacao", "nivelCodigo")
+            .containsExactly(1, null, "A", "AGENTE_AUTORIZADO");
+    }
 }

@@ -25,6 +25,19 @@ public class UsuarioHierarquiaFiltrosTest {
             .builder()
             .siteId(123)
             .coordenadorId(100)
+            .equipeVendaId(100)
+            .build();
+
+        assertThat(filtros.apenasSiteId()).isFalse();
+    }
+
+    @Test
+    public void apenasSiteId_deveRetornarFalse_quandoSiteIdNulo() {
+        var filtros = UsuarioHierarquiaFiltros
+            .builder()
+            .siteId(null)
+            .coordenadorId(100)
+            .equipeVendaId(null)
             .build();
 
         assertThat(filtros.apenasSiteId()).isFalse();

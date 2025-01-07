@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

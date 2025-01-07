@@ -33,6 +33,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -55,10 +56,11 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
+import static helpers.TestBuilders.umSite;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -76,6 +78,8 @@ public class SiteServiceTest {
     private UfRepository ufRepository;
     @Mock
     private CidadeRepository cidadeRepository;
+    @Mock
+    private UsuarioRepository usuarioRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
     @Mock
@@ -143,9 +147,27 @@ public class SiteServiceTest {
     }
 
     @Test
+    public void getAllByUsuarioLogado_deveRetornarSelectResponseComSites_quandoNivelMso() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelMso());
+
+        when(siteRepository.findAll(any(Predicate.class)))
+            .thenReturn(umaListaSites());
+
+        assertThat(service.getAllByUsuarioLogado())
+            .hasSize(3)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
+    }
+
+    @Test
     public void getAll_deveRetornarTodosOsSiltes_quandoNivelMso() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(101, MSO_CONSULTOR, CodigoDepartamento.COMERCIAL));
+            .thenReturn(umUsuarioAutenticadoNivelMso());
         when(siteRepository.findAll(any(Predicate.class), any(Pageable.class)))
             .thenReturn(new PageImpl<>(umaListaSites()));
 
@@ -157,6 +179,17 @@ public class SiteServiceTest {
                 tuple(2, "Site Dinossauro do Acre", ACT),
                 tuple(3, "Site Amazonia Queimada", AMT)
             );
+    }
+
+    @Test
+    public void getUsuariosIdsBySiteId_deveRetornarListaDeIds_quandoEncontrado() {
+        when(usuarioRepository.findUsuariosIdsPorSiteId(1))
+            .thenReturn(List.of(1, 2, 3));
+
+        assertThat(service.getUsuariosIdsBySiteId(1))
+            .isEqualTo(List.of(1, 2, 3));
+
+        verify(usuarioRepository).findUsuariosIdsPorSiteId(1);
     }
 
     @Test
@@ -181,6 +214,22 @@ public class SiteServiceTest {
 
         verify(siteRepository, atLeastOnce()).findAll(umSitePredicate());
         verifyZeroInteractions(cidadeRepository);
+    }
+
+    @Test
+    public void save_deveSalvarSite_quandoDadosCorretos() {
+        var usuarioAutenticado = umUsuarioAutenticado();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        var request = TestBuilders.umSiteRequest();
+        request.setIncluirCidadesDisponiveis(true);
+        var cidadePredicate = new SitePredicate().comFiltroVisualizar(usuarioAutenticado).build();
+
+        service.save(request);
+
+        verify(cidadeRepository).buscarCidadesVinculadasAoUsuarioSemSite(cidadePredicate, List.of(5));
+        verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), any(), any());
+        verify(siteRepository, never()).findAll(umSitePredicate());
+        verify(siteRepository).save(any(Site.class));
     }
 
     @Test
@@ -854,6 +903,58 @@ public class SiteServiceTest {
 
         verify(siteRepository).findById(200);
         verify(cidadeService).getCidadesDistritos(Eboolean.V);
+    }
+
+    @Test
+    public void getSuperioresDoUsuario_deveRetornarListaUsuarioIds_quandoExistirParaOUsuario() {
+        when(usuarioService.getSuperioresDoUsuario(5))
+            .thenReturn(List.of(
+                UsuarioHierarquiaResponse.builder().id(4).status("ATIVO").build(),
+                UsuarioHierarquiaResponse.builder().id(3).status("ATIVO").build()));
+
+        assertThat(service.getSuperioresDoUsuario(5))
+            .hasSize(2)
+            .isEqualTo(List.of(4, 3));
+    }
+
+    @Test
+    public void inativar_deveInativar_quandoSiteEncontrado() {
+        var site = umSiteCompleto();
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.ofNullable(site));
+
+        assertThat(site.getSituacao()).isEqualTo(ESituacao.A);
+
+        service.inativar(200);
+
+        assertThat(site.getSituacao()).isEqualTo(ESituacao.I);
+    }
+
+    @Test
+    public void inativar_deveLancarException_quandoSiteNaoEncontrado() {
+        when(siteRepository.findById(200))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.inativar(200))
+            .withMessage("Site não encontrado.");
+    }
+
+    @Test
+    public void getSitesPorPermissao_deveRetornarSelectResponseComSites_quandoTiverPermissao() {
+        var usuario = umUsuario(1, COORDENADOR_OPERACAO);
+
+        when(siteRepository.findBySituacaoAtiva(any(Predicate.class)))
+            .thenReturn(umaListaSites());
+
+        assertThat(service.getSitesPorPermissao(usuario))
+            .hasSize(3)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
     }
 
     private Site umReagendamentoConfiguracaoResponse(Integer id) {

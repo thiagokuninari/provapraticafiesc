@@ -164,6 +164,22 @@ public class HorarioHelper {
             .build();
     }
 
+    public static UsuarioAutenticado umUsuarioAutenticado() {
+        return UsuarioAutenticado.builder()
+            .usuario(Usuario.builder()
+                .id(101)
+                .nome("SUPERVISOR_ATIVO_LOCAL_PROPRIO")
+                .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .cargo(Cargo.builder()
+                    .codigo(CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO)
+                    .build())
+                .build())
+            .nivelCodigo("XBRAIN")
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cargoCodigo(CodigoCargo.SUPERVISOR_ATIVO_LOCAL_PROPRIO)
+            .build();
+    }
+
     public static UsuarioAutenticado umAdmin() {
         return UsuarioAutenticado.builder()
             .usuario(Usuario.builder()

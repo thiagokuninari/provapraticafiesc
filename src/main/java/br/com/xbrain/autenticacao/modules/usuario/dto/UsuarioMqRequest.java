@@ -53,6 +53,8 @@ public class UsuarioMqRequest {
     private boolean isAtualizarSocioPrincipal;
     private List<Integer> agentesAutorizadosIds;
     private List<Integer> antigosSociosPrincipaisIds;
+    private String codigoEquipeVendaNetSales;
+    private String nomeEquipeVendaNetSales;
 
     public boolean isNovoCadastro() {
         return this.id == null;

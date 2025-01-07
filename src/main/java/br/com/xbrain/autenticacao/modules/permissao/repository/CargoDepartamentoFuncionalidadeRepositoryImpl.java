@@ -2,9 +2,11 @@ package br.com.xbrain.autenticacao.modules.permissao.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,7 @@ import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -94,6 +97,19 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
             .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
             .where(departamento.nivel.id.eq(cargo.nivel.id)
                 .and(predicate))
+            .fetch();
+    }
+
+    @Override
+    public List<Nivel> getNiveisByFuncionalidades(List<Integer> funcionalidadesIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(cargoDepartamentoFuncionalidade.cargo.nivel)
+            .distinct()
+            .from(cargoDepartamentoFuncionalidade)
+            .join(cargoDepartamentoFuncionalidade.cargo, cargo)
+            .join(cargo.nivel, nivel)
+            .where(cargoDepartamentoFuncionalidade.funcionalidade.id.in(funcionalidadesIds)
+                .and(nivel.situacao.eq(ESituacao.A)))
             .fetch();
     }
 }

@@ -35,6 +35,7 @@ public enum EScopes {
     SOCIAL_HUB("social-hub-api"),
     SUPORTE_VENDAS_BKO("suporte-vendas-bko-api"),
     CHECAGEM_CREDITO_API("checagem-credito-api"),
+    BRIEFING("briefing-api"),
     INTEGRACAO_SALES_API("integracao-sales-api");
 
     @Getter

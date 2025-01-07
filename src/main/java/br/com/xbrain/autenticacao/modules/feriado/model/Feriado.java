@@ -2,10 +2,12 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -17,6 +19,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
@@ -50,7 +54,7 @@ public class Feriado {
     private Eboolean feriadoNacional;
 
     @JoinColumn(name = "FK_CIDADE", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FERIADO_CIDADE"))
+        foreignKey = @ForeignKey(name = "FK_FERIADO_CIDADE"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Cidade cidade;
 
@@ -82,6 +86,12 @@ public class Feriado {
     @JsonIgnore
     private Usuario usuarioCadastro;
 
+    @JoinColumn(name = "FK_IMPORTACAO", foreignKey = @ForeignKey(name = "FK_FERIADO_IMPORTACAO"),
+        referencedColumnName = "ID", updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private ImportacaoFeriado importacaoFeriado;
+
     @PrePersist
     public void setup() {
         nome = nome.toUpperCase();
@@ -102,6 +112,35 @@ public class Feriado {
         feriado.setSituacao(ESituacaoFeriado.ATIVO);
         feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
         return feriado;
+    }
+
+    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, ImportacaoFeriado importacaoFeriado) {
+        var feriado = new Feriado();
+        BeanUtils.copyProperties(feriadoAutomacao, feriado);
+        feriado.setDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()));
+        feriado.setFeriadoNacional(
+            feriadoAutomacao.getTipoFeriado()
+                .equals(ETipoFeriado.NACIONAL) ? Eboolean.V : Eboolean.F);
+        if (feriadoAutomacao.getUfId() != null) {
+            feriado.setUf(new Uf(feriadoAutomacao.getUfId()));
+        }
+        if (feriadoAutomacao.getCidadeId() != null) {
+            feriado.setCidade(new Cidade(feriadoAutomacao.getCidadeId()));
+        }
+        if (importacaoFeriado.getUsuarioCadastroId() != null) {
+            feriado.setUsuarioCadastro(new Usuario(importacaoFeriado.getUsuarioCadastroId()));
+        }
+        feriado.setDataCadastro(LocalDateTime.now());
+        feriado.setSituacao(ESituacaoFeriado.ATIVO);
+        feriado.setImportacaoFeriado(importacaoFeriado);
+        return feriado;
+    }
+
+    public static List<Feriado> ofAutomacao(List<FeriadoAutomacao> feriadosAutomacao, ImportacaoFeriado importacaoFeriado) {
+        return feriadosAutomacao
+            .stream()
+            .map(feriadoAutomacao -> ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .collect(Collectors.toList());
     }
 
     public static Feriado criarFeriadoFilho(Cidade cidade, Feriado feriadoPai) {

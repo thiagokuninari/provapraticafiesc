@@ -1,16 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +23,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -68,7 +66,7 @@ public class UsuarioRepositoryTest {
     @SuppressWarnings("LineLength")
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)
-            ))
+        ))
             .extracting("id", "email", "nivelCodigo")
             .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR", XBRAIN), tuple(104, "MARIA@HOTMAIL.COM", XBRAIN));
     }
@@ -202,6 +200,21 @@ public class UsuarioRepositoryTest {
     public void findUsuariosAtivosOperacaoComercialByCargoId_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
         assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoId(1000))
             .isEmpty();
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarDoisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(EXECUTIVO_HUNTER))
+            .hasSize(2)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoCodigo_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(OUVIDORIA)).isEmpty();
     }
 
     @Test
@@ -373,7 +386,7 @@ public class UsuarioRepositoryTest {
     @Test
     public void findByIdInAndCargoInAndSituacaoNot_deveRetornarUsuariosNaoRealocados_quandoInformarIdsAndCargosAndSituacao() {
         var cargo = Cargo.builder().id(58).codigo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS).build();
-        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), ESituacao.R))
+        assertThat(repository.findByIdInAndCargoInAndSituacaoNot(List.of(500, 600, 700), List.of(cargo), R))
             .extracting("id", "nome", "email")
             .containsExactly(
                 Assertions.tuple(500, "USUARIO 500", "USUARIO_500@TESTE.COM"),
@@ -383,7 +396,21 @@ public class UsuarioRepositoryTest {
     @Test
     public void getIdsUsuariosHierarquiaPorCargos_deveRetornarListaIdUsuarios_pORCodigosDosCargos() {
         assertThat(repository.getIdsUsuariosHierarquiaPorCargos(Set.of(INTERNET_VENDEDOR)))
-            .containsExactly(219);
+            .containsExactly(219, 222, 223);
+    }
+
+    @Test
+    public void getAllUsuariosDoUsuarioPapIndireto_deveRetornarListaUsuariosComCpfIguais_quandoInformarUsuarioIds() {
+        assertThat(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(222)))
+            .extracting(Usuario::getId, Usuario::getCpf, Usuario::getEmail, Usuario::getNome, Usuario::getSituacao)
+            .containsExactlyInAnyOrder(
+                tuple(222, "1", "USUARIOPAPINDIRETOREMANEJADO@TESTE.COM", "USUARIO PAP INDIRETO REMANEJADO", ESituacao.R),
+                tuple(223, "1", "USUARIOPAPINDIRETO@TESTE.COM", "USUARIO PAP INDIRETO", A));
+    }
+
+    @Test
+    public void getAllUsuariosDoUsuarioPapIndireto_deveRetornarListaVazia_quandoNaoEncontrarUsuario() {
+        assertThat(repository.getAllUsuariosDoUsuarioPapIndireto(List.of(99999))).isEmpty();
     }
 
     @Test
@@ -397,8 +424,205 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
+    public void findAllUsuarioAaResponse_deveRetornarUsuarioAaResponses_quandoSolicitado() {
+        assertThat(repository.findAllUsuarioAaResponse(usuario.id.eq(100)))
+            .containsOnly(
+                UsuarioAgenteAutorizadoResponse.builder()
+                    .id(100)
+                    .nome("ADMIN")
+                    .email("ADMIN@XBRAIN.COM.BR")
+                    .build());
+    }
+
+    @Test
     public void findAllUsuariosReceptivosIdsByOrganizacaoId_deveRetornarUsuariosIdsPorOrganizacao_quandoSolicitado() {
         assertThat(repository.findAllUsuariosReceptivosIdsByOrganizacaoId(5))
             .containsExactly(121, 122, 123);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seCpfExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("00011122233",
+            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(703, "USUARIO 703", "USUARIO_703@TESTE.COM", "00011122233", I);
+
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarUsuario_seEmailECpfExistirESituacaoNaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("99988877766",
+            "USUARIO_XBRAIN@TESTE.COM", List.of(R, P))).get()
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(710, "USUARIO 710", "USUARIO_XBRAIN@TESTE.COM", "99988877766", A);
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seCpfExistirESituacaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("11122233344",
+            "QUALQUERVALOR@XBRAIN.COM.BR", List.of(R, P)))
+            .isEmpty();
+    }
+
+    @Test
+    public void findByCpfOrEmailAndSituacaoNotIn_deveRetornarVazio_seEmailExistirESituacaoForPendenteOuRealocado() {
+        assertThat(repository.findByCpfOrEmailAndSituacaoNotIn("01010101010",
+            "USUARIO_REALOCADO@TESTE.COM", List.of(R, P)))
+            .isEmpty();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarTrue_quandoEmailJaExistirEUsuarioAtivo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("00011122233", "ADMIN@XBRAIN.COM.BR"))
+            .isTrue();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarTrue_quandoECpfJaExistirEUsuarioAtivo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("0", "ADMIN@XBRAIN.COM.B"))
+            .isTrue();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarFalse_quandoEmailECpfNaoExistirIgual() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("99011122233", "QUALQUERVALOR@GMAIL.COM"))
+            .isFalse();
+    }
+
+    @Test
+    public void existeByCpfOrEmailAndSituacaoAtivo_deveRetornarFalse_quandoEmailJaExistirEUsuarioInativo() {
+        assertThat(repository.existeByCpfOrEmailAndSituacaoAtivo("99011122233", "JOAO@GMAIL.COM"))
+            .isFalse();
+    }
+
+    @Test
+    public void findComCidade_deveRetonarCidades_quandoUsuarioNaCidadeEncontrado() {
+        assertThat(repository.findComCidade(100))
+            .get()
+            .isEqualTo(List.of(new Cidade(5578), new Cidade(3237), new Cidade(4498), new Cidade(879)));
+    }
+
+    @Test
+    public void getUsuariosFilter_deveRetonarUsuarios_quandoPredicateInformado() {
+        assertThat(repository.getUsuariosFilter(new UsuarioPredicate().comUsuariosIds(List.of(100, 101, 500, 600)).build()))
+            .extracting("id", "nome")
+            .containsExactly(Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(101, "ADMIN"),
+                Tuple.tuple(500, "USUARIO 500"),
+                Tuple.tuple(600, "USUARIO 600"));
+    }
+
+    @Test
+    public void getUsuariosSuperiores_deveRetonarSuperioresDoUsuario_quandoUsuarioEncontrado() {
+        assertThat(repository.getUsuarioSuperiores(115))
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .containsExactly(Tuple.tuple(115, 109),
+                Tuple.tuple(115, 113));
+    }
+
+    @Test
+    public void getUsuariosSuperiores_deveRetonarIdsDosSuperioresDoUsuario_quandoUsuariosEncontrado() {
+        assertThat(repository.getUsuariosSuperioresIds(List.of(107, 108, 114, 115)))
+            .isEqualTo(List.of(109, 109, 109, 109, 113));
+    }
+
+    @Test
+    public void getUsuariosByPermissaoEspecial_deveRetonarPermissaoEspecial_quandoEncontrado() {
+        assertThat(repository.getUsuariosByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
+            .extracting("usuario.id", "funcionalidade.nome", "funcionalidade.role")
+            .containsExactly(Tuple.tuple(100, "Tratar todos os chamados", "CHM_TRATAR_CHAMADO_GERAL"));
+    }
+
+    @Test
+    public void getUsuariosByNivel_deveRetonarUsuarios_quandoNivelEncontrado() {
+        assertThat(repository.getUsuariosByNivel(XBRAIN))
+            .extracting("id", "nome")
+            .containsExactly(
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(101, "ADMIN"),
+                Tuple.tuple(217, "ADMIN"),
+                Tuple.tuple(106, "ALBERTO"),
+                Tuple.tuple(103, "CARLOS"),
+                Tuple.tuple(102, "JOAO"),
+                Tuple.tuple(104, "MARIA"),
+                Tuple.tuple(200, "USUARIO 200"),
+                Tuple.tuple(300, "USUARIO 300"),
+                Tuple.tuple(400, "USUARIO 400"),
+                Tuple.tuple(701, "USUARIO 701"),
+                Tuple.tuple(702, "USUARIO 702"),
+                Tuple.tuple(703, "USUARIO 703"));
+    }
+
+    @Test
+    public void getUsuariosIdsByNivel_deveRetonarIdsDosUsuarios_quandoNivelEncontrado() {
+        assertThat(repository.getUsuariosIdsByNivel(XBRAIN))
+            .isEqualTo(List.of(100, 101, 102, 103, 104, 106, 200, 217, 300, 400, 701, 702, 703));
+    }
+
+    @Test
+    public void findComConfiguracao_deveRetonarUsuario_quandoUsuarioTiverConfiguracao() {
+        assertThat(repository.findComConfiguracao(100))
+            .get()
+            .extracting("id", "nome")
+            .containsExactly(100, "ADMIN");
+    }
+
+    @Test
+    public void getUsuarioIdsByPermissaoEspecial_deveRetornarListaDeUsuariosId_quandoPossuirUsuariosComPermissao() {
+        assertThat(repository.getUsuarioIdsByPermissaoEspecial("CHM_TRATAR_CHAMADO_GERAL"))
+            .containsExactly(100)
+            .hasSize(1);
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarTrue_quandoUsuarioForSocioPrincipal() {
+        assertThat(repository.isUsuarioSocioPrincipal(126))
+            .isTrue();
+    }
+
+    @Test
+    public void isUsuarioSocioPrincipal_deveRetornarFalse_quandoUsuarioNaoForSocioPrincipal() {
+        assertThat(repository.isUsuarioSocioPrincipal(125))
+            .isFalse();
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsDoSocios_seEncontrados() {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(127));
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
+            .isEqualTo(List.of(127));
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuariosIds_deveRetornarListaDeIdsVazia_seNaoEncontrados() {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(List.of(1));
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
+            .isEmpty();
+    }
+
+    @Test
+    public void findSociosIdsAtivosByUsuaiosIds_deveRetornarListaDeIds_mesmoComMaisDeMilIdsComoParametro() {
+        var listaDeMil = IntStream.rangeClosed(1, 1010)
+            .boxed()
+            .collect(Collectors.toList());
+        listaDeMil.add(127);
+
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(listaDeMil);
+
+        assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
+            .isEqualTo(List.of(127));
     }
 }

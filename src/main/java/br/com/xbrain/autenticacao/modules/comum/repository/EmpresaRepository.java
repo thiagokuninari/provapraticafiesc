@@ -15,6 +15,8 @@ import java.util.List;
 public interface EmpresaRepository extends PagingAndSortingRepository<Empresa, Integer>,
         QueryDslPredicateExecutor<Empresa> {
 
+    List<Empresa> findAll();
+
     @Cacheable("empresaFindAll")
     Iterable<Empresa> findAll(Predicate var1, Sort var2);
 
@@ -23,4 +25,5 @@ public interface EmpresaRepository extends PagingAndSortingRepository<Empresa, I
     List<Empresa> findAllAtivo();
 
     List<Empresa> findByCodigoIn(Collection<CodigoEmpresa> codigos);
+
 }

@@ -39,31 +39,31 @@ app-config:
     vendas:
       url: http://vendas-api-crt:8097
     parceiros-online:
-      url: http://172.10.10.76:8099
+      url: http://parceiros-online-api-crt:8099
     call:
       url: http://call-api-crt:8094
     mailing:
-      url: http://172.10.10.77:8095
+      url: http://mailing-api-crt:8095
     mailing-importacao:
-      url: http://172.10.10.86:8087
+      url: http://mailing-importacao-api-crt:8087
     equipe-venda:
-      url: http://172.10.10.82:8089
+      url: http://equipe-venda-api-crt:8089
     contato-crn:
-      url: http://172.10.10.64:8084
+      url: http://contato-crn-api-crt:8084
     comunicados:
       url: http://172.10.10.53:6553
     claro-indico:
-      url: http://172.10.10.55:8055
+      url: http://claro-indico-api-crt:8055
     agente-autorizado:
-      url: http://172.10.10.106:8300
+      url: http://agente-autorizado-api-crt:8300
     gestao:
-      url: http://172.10.10.71:8091
+      url: http://conexao-gestao-api-crt:8091
     notificacao:
       url: http://172.10.10.98:8081
     emails:
       url: http://192.168.50.4:6541
     integracao-vendas:
-      url: http://172.10.10.85:8086
+      url: http://integracao-vendas-api-crt:8086
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     gestao-colaborador-pol:
@@ -71,7 +71,7 @@ app-config:
     extrato-comissao:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
-      url: http://172.10.10.113:8304
+      url: http://funil-prospeccao-api-crt:8304
     localizacao:
       url: http://localizacao-api:8039
     integracao-claro-net:
@@ -82,6 +82,14 @@ app-config:
       url: http://checagem-credito-api:8037
     backoffice:
       url: http://backoffice-api-crt:8101
+    feriado-automacao:
+      url: http://192.168.50.4:8078
+    ata-reuniao:
+      url: http://ata-reuniao-api:8308
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
+    pgaa:
+      url: http://pgaa-api:8354
 
   email:
     enviar: true
@@ -97,4 +105,4 @@ logging:
 xbrain:
   logging:
     level: INFO
-    appender: JSON
+    appender: CONSOLE

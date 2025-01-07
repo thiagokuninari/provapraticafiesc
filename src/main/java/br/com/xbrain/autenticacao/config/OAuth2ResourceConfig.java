@@ -75,6 +75,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
             .antMatchers("/api/usuarios/gerencia/remanejar-usuario")
             .hasAnyRole(CodigoFuncionalidade.POL_GERENCIAR_EQUIPE_VENDA.name(), CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuarios/buscar-emails/**").authenticated()
             .antMatchers("/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
@@ -91,6 +92,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/funcionalidades").hasAnyRole(
                 CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/feriado/gerenciar/**").hasRole(
+                CodigoFuncionalidade.CTR_2050.name())
+            .antMatchers("/api/importacao-automatica/**").hasRole(
                 CodigoFuncionalidade.CTR_2050.name())
             .antMatchers("/api/cargo-departamento-funcionalidade").hasRole(
                 CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO.name())

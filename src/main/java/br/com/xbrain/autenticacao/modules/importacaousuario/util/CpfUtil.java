@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 public class CpfUtil {
 
     private static final int[] pesoCPF = {11, 10, 9, 8, 7, 6, 5, 4, 3, 2};
+    private static final int DIGITO_QUATORZE = 14;
     private static final int DIGITO_ONZE = 11;
     private static final int DIGITO_DEZ = 10;
     private static final int DIGITO_NOVE = 9;
@@ -21,10 +22,10 @@ public class CpfUtil {
     }
 
     public static boolean isCpfValido(String cpf) {
-        cpf = cpf.trim().replace(".", "").replace("-", "");
-        if (cpf == null || cpf.length() != DIGITO_ONZE) {
+        if (cpf == null || cpf.length() != DIGITO_ONZE && cpf.length() != DIGITO_QUATORZE) {
             return false;
         }
+        cpf = cpf.trim().replace(".", "").replace("-", "");
 
         for (int j = 0; j < DIGITO_DEZ; j++) {
             if (padLeft(Integer.toString(j), Character.forDigit(j, DIGITO_DEZ))

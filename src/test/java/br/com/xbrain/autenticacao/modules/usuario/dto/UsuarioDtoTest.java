@@ -209,7 +209,8 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales("D2D_CLARO_PESSOAL")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -225,9 +226,27 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .subCanaisId(Set.of())
             .territorioMercadoDesenvolvimentoId(10)
+            .subNiveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
+    }
+
+    @Test
+    public void of_deveRetornarSubNiveisIds_quandoUsuarioPossuirSubNivel() {
+        var usuario = umUsuarioMso();
+        usuario.setSubNiveis(umSetDeSubNiveis());
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubNiveisIds)
+            .isEqualTo(Set.of(2, 3));
+    }
+
+    @Test
+    public void of_naoDeveRetornarSubNiveisIds_quandoUsuarioNaoPossuirSubNivel() {
+        var usuario = umUsuarioMso();
+        assertThat(UsuarioDto.of(usuario))
+            .extracting(UsuarioDto::getSubNiveisIds)
+            .isEqualTo(Set.of());
     }
 
     @Test
@@ -287,6 +306,8 @@ public class UsuarioDtoTest {
             .situacao(ESituacao.A)
             .cidades(Set.of())
             .canais(Set.of())
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .usuariosHierarquia(Set.of())
             .tiposFeeder(Set.of())
             .build();
@@ -412,7 +433,8 @@ public class UsuarioDtoTest {
             .tiposFeeder(Set.of())
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales("D2D_CLARO_PESSOAL")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -433,7 +455,8 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales("D2D_CLARO_PESSOAL")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .cargoId(120)
             .cargoCodigo(VAREJO_VENDEDOR)
             .cargoQuantidadeSuperior(50)
@@ -449,6 +472,7 @@ public class UsuarioDtoTest {
             .recuperarSenhaTentativa(0)
             .permiteEditarCompleto(true)
             .subCanaisId(Set.of())
+            .subNiveisIds(Set.of())
             .build();
 
         assertThat(atual).isEqualToComparingFieldByField(esperado);
@@ -471,6 +495,8 @@ public class UsuarioDtoTest {
             .usuarioCadastroId(2222)
             .unidadesNegociosId(List.of())
             .empresasId(List.of())
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDA")
+            .codigoEquipeVendaNetSales("CODIGO EQUIPE VENDA")
             .recuperarSenhaTentativa(0)
             .build();
 
@@ -489,7 +515,8 @@ public class UsuarioDtoTest {
             .loginNetSales("login123")
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales("D2D_CLARO_PESSOAL")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .territorioMercadoDesenvolvimentoId(territorioMercadoDesenId)
             .cargo(Cargo
                 .builder()
@@ -575,6 +602,8 @@ public class UsuarioDtoTest {
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
             .hierarquiasId(null)
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .canais(Collections.emptySet())
             .cidadesId(null)
             .hierarquiasId(null)
@@ -618,7 +647,8 @@ public class UsuarioDtoTest {
             .hierarquiasId(null)
             .nomeEquipeVendaNetSales("EQUIPE NET")
             .codigoEquipeVendaNetSales("654321")
-            .canalNetSales("D2D_CLARO_PESSOAL")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("D2D_CLARO_PESSOAL")
             .build();
     }
 
@@ -634,6 +664,8 @@ public class UsuarioDtoTest {
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .nomeEquipeVendaNetSales("NOME EQUIPE VENDA")
+            .codigoEquipeVendaNetSales("CODIGO EQUIPE VENDA")
             .build();
     }
 }

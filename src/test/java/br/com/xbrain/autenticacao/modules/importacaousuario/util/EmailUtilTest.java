@@ -7,6 +7,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EmailUtilTest {
 
     @Test
+    public void validar_deveRetornarFalse_quandoEmailNulo() {
+        assertThat(EmailUtil.validar(null))
+            .isFalse();
+    }
+
+    @Test
+    public void validar_deveRetornarTrue_quandoEmailValido() {
+        assertThat(EmailUtil.validar("kaique@gmail.com"))
+            .isTrue();
+    }
+
+    @Test
     public void validarEmail_deveRetornarFalse_quandoEmailVazio() {
         assertThat(EmailUtil.validarEmail(""))
             .isFalse();

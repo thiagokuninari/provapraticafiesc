@@ -6,12 +6,14 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
+import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.FuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
@@ -25,12 +27,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoComercial;
 import static helpers.Usuarios.SOCIO_AA;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -143,6 +147,31 @@ public class FuncionalidadeServiceTest {
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
             .hasSize(43);
+    }
+
+    @Test
+    public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_seCanalNaoNullECanalConterNoUsuario() {
+        var cargoDepartamentoFuncionalidade = new CargoDepartamentoFuncionalidade();
+        cargoDepartamentoFuncionalidade.setId(1);
+        cargoDepartamentoFuncionalidade.setCargo(umCargoMsoConsultor());
+        cargoDepartamentoFuncionalidade.setDepartamento(umDepartamentoComercial());
+        cargoDepartamentoFuncionalidade.setCanal(ECanal.D2D_PROPRIO);
+        var usuario = Usuario.builder()
+            .id(100)
+            .cargo(umCargoExecutivo())
+            .departamento(new Departamento(21))
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+        when(cargoDepartamentoFuncionalidadeRepository.findFuncionalidadesPorCargoEDepartamento(getPredicate(usuario)))
+            .thenReturn(List.of(cargoDepartamentoFuncionalidade));
+        when(permissaoEspecialRepository.findPorUsuario(usuario.getId()))
+            .thenReturn(List.of(
+                funcionalidadeGerenciarHorariosDeAcesso(),
+                funcionalidadeGerenciarPermissoesEspeciaisPorUsuario()
+            ));
+
+        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
+            .hasSize(3);
     }
 
     @Test

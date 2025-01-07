@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.importacao.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.Data;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,25 +35,4 @@ public class UsuarioImportacao {
     private Eboolean alterarSenha;
     private ESituacao situacao;
 
-    public void trimProperties() {
-        this.setNome(this.getNome().trim());
-        this.setEmail(this.getEmail().trim());
-        if (!StringUtils.isEmpty(this.getEmail02())) {
-            this.setEmail02(this.getEmail02().trim());
-        }
-        if (!StringUtils.isEmpty(this.getEmail03())) {
-            this.setEmail03(this.getEmail03().trim());
-        }
-    }
-
-    public void toUpperCaseProperties() {
-        this.setNome(this.getNome().toUpperCase());
-        this.setEmail(this.getEmail().toUpperCase());
-        if (!StringUtils.isEmpty(this.getEmail02())) {
-            this.setEmail02(this.getEmail02().toUpperCase());
-        }
-        if (!StringUtils.isEmpty(this.getEmail03())) {
-            this.setEmail03(this.getEmail03().toUpperCase());
-        }
-    }
 }

@@ -104,6 +104,13 @@ public class EquipeVendasUsuarioServiceTest {
         verify(equipeVendasUsuarioClient).updateEquipeVendasUsuario(any(EquipeVendaUsuarioRequest.class));
     }
 
+    @Test
+    public void updateEquipeVendasUsuario_naoDeveLancarException_quandoSolicitadoCorretamente() {
+        equipeVendasUsuarioService.updateEquipeVendasUsuario(umaEquipeVendaUsuarioRequest());
+
+        verify(equipeVendasUsuarioClient).updateEquipeVendasUsuario(any(EquipeVendaUsuarioRequest.class));
+    }
+
     private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {
         return List.of(
             EquipeVendaUsuarioResponse.builder()

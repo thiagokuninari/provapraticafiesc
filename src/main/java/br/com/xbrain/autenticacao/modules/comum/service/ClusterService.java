@@ -36,11 +36,11 @@ public class ClusterService {
 
     public List<ClusterDto> getAllByGrupoIdAndUsuarioId(Integer grupoId, Integer usuarioId) {
         ClusterPredicate predicate = new ClusterPredicate()
-                .filtrarPermitidos(usuarioId);
+            .filtrarPermitidos(usuarioId);
         return repository.findAllByGrupoId(grupoId, predicate.build())
-                .stream()
-                .map(ClusterDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(ClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<ClusterDto> getAllAtivo() {

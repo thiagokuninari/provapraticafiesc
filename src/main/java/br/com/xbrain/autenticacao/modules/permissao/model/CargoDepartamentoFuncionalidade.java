@@ -52,12 +52,6 @@ public class CargoDepartamentoFuncionalidade {
     @Column(name = "CANAL")
     private ECanal canal;
 
-    public CargoDepartamentoFuncionalidade(Integer cargoId, Integer departamentoId, Integer funcionalidadeId) {
-        this.cargo = new Cargo(cargoId);
-        this.departamento = new Departamento(departamentoId);
-        this.funcionalidade = Funcionalidade.builder().id(funcionalidadeId).build();
-    }
-
     @Builder
     public CargoDepartamentoFuncionalidade(Integer id, Cargo cargo, Departamento departamento,
                                            Funcionalidade funcionalidade, Usuario usuario,

@@ -190,6 +190,16 @@ public class CallServiceTest {
     }
 
     @Test
+    public void cleanCacheabeSiteAtivoProprio_deveLimparCache_quandoSolicitado() {
+        when(callClient.cleanCacheableSiteAtivoProprio()).thenReturn("any");
+
+        assertThatCode(() -> callService.cleanCacheableSiteAtivoProprio())
+            .doesNotThrowAnyException();
+
+        verify(callClient).cleanCacheableSiteAtivoProprio();
+    }
+
+    @Test
     public void consultarStatusUsoRamalByUsuarioAutenticado_deveRetornarTrue_quandoUsuarioEmLigacao() {
         when(callClient.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(true);
 

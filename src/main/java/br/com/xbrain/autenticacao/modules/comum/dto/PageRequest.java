@@ -29,34 +29,6 @@ public class PageRequest implements Pageable {
         this.orderDirection = orderDirection;
     }
 
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
-    }
-
-    public String getOrderDirection() {
-        return orderDirection;
-    }
-
-    public void setOrderDirection(String orderDirection) {
-        this.orderDirection = orderDirection;
-    }
-
     @Override
     public int getOffset() {
         return page * size;
@@ -75,8 +47,8 @@ public class PageRequest implements Pageable {
     @Override
     public Sort getSort() {
         return new Sort(
-                Sort.Direction.fromString(this.orderDirection),
-                this.orderBy);
+            Sort.Direction.fromString(this.orderDirection),
+            this.orderBy);
     }
 
     @Override

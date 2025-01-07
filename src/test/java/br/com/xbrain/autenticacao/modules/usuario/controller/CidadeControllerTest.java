@@ -693,8 +693,21 @@ public class CidadeControllerTest {
                 .param("distrito", "SAO LUIZ")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        
+
         verify(cidadeService).getCidadeDistrito(eq("PR"), eq("LONDRINA"), eq("SAO LUIZ"));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getCidadesByCidadeInstalacaoIds_deveRetornarOk_quandoInformarParametrosCorretos() {
+        mvc.perform(post(BASE_URL + "/cidade-instalacao-ids")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(List.of(5578))))
+            .andExpect(status().isOk());
+
+        verify(cidadeService)
+            .getCidadesByCidadeInstalacaoIds(eq(List.of(5578)));
     }
 
     private Cidade umaCidade() {

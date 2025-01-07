@@ -66,4 +66,9 @@ public class SubCanalController {
     public Page<SubCanalHistoricoResponse> getHistorico(PageRequest pageable, @PathVariable Integer id) {
         return service.getHistorico(id, pageable);
     }
+
+    @GetMapping("{id}/verificar-enriquecimento-end-d2d")
+    public Eboolean isRealizarEnriquecimentoEnd(@PathVariable Integer id) {
+        return service.isRealizarEnriquecimentoEnd(id);
+    }
 }

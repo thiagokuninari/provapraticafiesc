@@ -9,12 +9,16 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -28,6 +32,10 @@ public class AutenticacaoServiceTest {
     private TokenStore tokenStore;
     @Mock
     private UsuarioRepository usuarioRepository;
+    @Mock
+    private SecurityContext securityContext;
+    @Mock
+    private OAuth2Authentication oauth2Authentication;
 
     @Test
     public void forcarLogoutGeradorLeadsEClienteLojaFuturo_deveChamarTokenStore_quandoUsuarioGeradorLeads() {
@@ -116,5 +124,32 @@ public class AutenticacaoServiceTest {
         autenticacaoService.logoutLoginMultiplo(96);
         verify(tokenStore, never()).removeAccessToken(any());
         verify(usuarioRepository, times(1)).findComplete(96);
+    }
+
+    @Test
+    public void getLoginUsuario_deveRetornarNomeUsuario_quandoSolicitado() {
+        SecurityContextHolder.setContext(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(oauth2Authentication);
+        when(oauth2Authentication.getName()).thenReturn("nome do usuário");
+
+        assertThat(autenticacaoService.getLoginUsuario())
+            .isEqualTo("nome do usuário");
+
+        verify(securityContext).getAuthentication();
+        verify(oauth2Authentication).getName();
+    }
+
+    @Test
+    public void getUsuarioId_deveRetornarIdDoUsuario_quandoNomeDeUsuarioForValido() {
+        SecurityContextHolder.setContext(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(oauth2Authentication);
+        when(oauth2Authentication.getName()).thenReturn("123-nome do usuário");
+
+        assertThat(autenticacaoService.getUsuarioId())
+            .isEqualTo(123);
+
+        verify(securityContext).getAuthentication();
+        verify(oauth2Authentication).getName();
+
     }
 }

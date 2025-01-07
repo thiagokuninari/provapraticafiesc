@@ -197,6 +197,19 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
+    public void criaHorariosAcesso_deveRetornarException_quandoAlgumErroAoSalvar() {
+        doThrow(new RuntimeException("Error"))
+            .when(atuacaoRepository)
+            .save(any(HorarioAtuacao.class));
+
+        assertThatThrownBy(() -> service.criaHorariosAcesso(umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Error");
+
+        verify(atuacaoRepository).save(any(HorarioAtuacao.class));
+    }
+
+    @Test
     public void getStatus_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.SEGUNDA)
@@ -221,6 +234,47 @@ public class HorarioAcessoServiceTest {
         verify(siteService).findById(100);
         verify(dataHoraAtual).getDataHora();
         verify(atuacaoRepository).findByHorarioAcessoId(1);
+    }
+
+    @Test
+    public void getStatus_deveRetornarFalse_quandoHorarioInicioForPosteriorAHorarioFim() {
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.SEGUNDA)
+            .horarioInicio(LocalTime.of(20, 0))
+            .horarioFim(LocalTime.of(18, 0))
+            .build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
+        when(repository.findBySiteId(100)).thenReturn(Optional.of(umHorarioAcesso()));
+        when(siteService.getSitesPorPermissao(umUsuarioOperadorTelevendas()))
+            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
+        when(siteService.findById(100)).thenReturn(umSite());
+        when(dataHoraAtual.getDataHora())
+            .thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
+        when(atuacaoRepository.findByHorarioAcessoId(1)).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isFalse();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).findBySiteId(100);
+        verify(siteService).getSitesPorPermissao(umUsuarioOperadorTelevendas());
+        verify(siteService).findById(100);
+        verify(dataHoraAtual).getDataHora();
+        verify(atuacaoRepository).findByHorarioAcessoId(1);
+    }
+
+    @Test
+    public void getStatus_deveRetornarTrue_quandoNaoForOperadorTelevendasAtivoLocal() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO)).isTrue();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository, never()).findBySiteId(100);
+        verify(siteService, never()).getSitesPorPermissao(umUsuarioOperadorTelevendas());
+        verify(siteService, never()).findById(100);
+        verify(dataHoraAtual, never()).getDataHora();
+        verify(atuacaoRepository, never()).findByHorarioAcessoId(1);
     }
 
     @Test
@@ -302,6 +356,30 @@ public class HorarioAcessoServiceTest {
         when(atuacaoRepository.findByHorarioAcessoId(1)).thenReturn(List.of(horarioAtuacao));
 
         assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isTrue();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository).findBySiteId(100);
+        verify(siteService, never()).getSitesPorPermissao(any());
+        verify(siteService, never()).findById(any());
+        verify(dataHoraAtual).getDataHora();
+        verify(atuacaoRepository).findByHorarioAcessoId(1);
+    }
+
+    @Test
+    public void getStatus_deveRetornarFalse_quandoInformadoSiteIdComoParametroEHorarioAtualEstiverForaDoHorarioPermitido() {
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.SEGUNDA)
+            .horarioInicio(LocalTime.of(17, 0))
+            .horarioFim(LocalTime.of(18, 0))
+            .build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
+        when(repository.findBySiteId(100)).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora())
+            .thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
+        when(atuacaoRepository.findByHorarioAcessoId(1)).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus(ECanal.ATIVO_PROPRIO, 100)).isFalse();
 
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).findBySiteId(100);

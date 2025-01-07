@@ -42,4 +42,6 @@ public interface CidadeRepositoryCustom {
     List<Cidade> findAllByPredicate(Predicate predicate);
 
     Optional<Cidade> buscarCidadeDistrito(String uf, String nomeCidade, String nomeDistrito);
+
+    List<Cidade> findAllCidades();
 }

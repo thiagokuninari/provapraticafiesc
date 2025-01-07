@@ -28,10 +28,6 @@ public class UsuarioConsultaDto {
     public UsuarioConsultaDto() {
     }
 
-    public UsuarioConsultaDto(Usuario objRequest) {
-        BeanUtils.copyProperties(convertFrom(objRequest), this);
-    }
-
     public static UsuarioConsultaDto convertFrom(Usuario usuario) {
         UsuarioConsultaDto response = new UsuarioConsultaDto();
         BeanUtils.copyProperties(usuario, response);

@@ -18,11 +18,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -318,5 +314,12 @@ public class CidadeService {
         return cidadeRepository.buscarCidadeDistrito(uf, cidade, distrito)
             .map(CidadeResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<ConfiguracaoCidadeResponse> getCidadesByCidadeInstalacaoIds(List<Integer> cidadeInstalacaoIds) {
+        return cidadeRepository.findAllByPredicate(new CidadePredicate().comCidadesId(cidadeInstalacaoIds).build())
+            .stream()
+            .map(ConfiguracaoCidadeResponse::of)
+            .collect(Collectors.toList());
     }
 }

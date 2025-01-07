@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -24,8 +25,6 @@ import java.util.Set;
 public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmail(String email);
-
-    Optional<Usuario> findUsuarioByEmail(String email);
 
     Optional<Usuario> findComplete(Integer id);
 
@@ -70,6 +69,8 @@ public interface UsuarioRepositoryCustom {
     List<Integer> getUsuariosSuperioresIds(List<Integer> usuariosIds);
 
     List<PermissaoEspecial> getUsuariosByPermissaoEspecial(String codigoFuncionalidade);
+
+    List<Integer> getUsuarioIdsByPermissaoEspecial(String codigoFuncionalidade);
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
@@ -126,6 +127,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
 
+    List<SelectResponse> findUsuariosAtivosOperacaoComercialByCargoCodigo(CodigoCargo cargo);
+
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
     List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos);
@@ -138,7 +141,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
 
-    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>... orderSpecifiers);
 
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
@@ -201,4 +204,16 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findByPredicate(Predicate predicate);
 
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
+
+    List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds);
+
+    Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
+
+    boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email);
+
+    boolean isUsuarioSocioPrincipal(Integer usuarioId);
+
+    List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate);
+
+    List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate);
 }

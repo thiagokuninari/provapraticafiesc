@@ -103,6 +103,7 @@ app-config:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
     feeder: feeder.topic
+    agendador: agendador.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -156,6 +157,10 @@ app-config:
     organizacao-empresa-atualizacao-nome-failure: organizacao-empresa-atualizacao-nome-failure.queue
     usuario-atualizacao-social-hub: usuario-atualizacao-social-hub.queue
     inativar-grupos-organizacao-suporte-vendas: inativar-grupos-organizacao-suporte-vendas.queue
+    agendador-autenticacao-api: agendador-autenticacao-api.queue
+    agendador-success: agendador-success.queue
+    inativar-direcionamentos-cep-vendedor-inside-sales: inativar-direcionamentos-cep-vendedor-inside-sales.queue
+    redistribuir-indicacoes-inside-sales-vendedor: redistribuir-indicacoes-inside-sales-vendedor.queue
 
   oauth-clients:
     autenticacao-api:
@@ -266,6 +271,15 @@ app-config:
     checagem-credito-api:
       client: checagem-credito-api
       secret: ch3c4g3mcr3d1t04p1
+    briefing-api:
+      client: briefing-api
+      secret: br13f1ng4p1
+    comunicados-pol-api:
+      client: comunicados-pol-api
+      secret: c0mun1c4d0sp0l
+    pgaa-api:
+      client: pgaa-api
+      secret: pg44
     integracao-sales-api:
       client: integracao-sales-api
       secret: 1nt3gr4c40s4l3s
@@ -299,7 +313,7 @@ app-config:
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
     agente-autorizado:
       #url: http://localhost:8300
-      url: https://api-dev.conexaoclarobrasil.com.br/parceiros/agente-autorizado
+      url: https://api-dev.conexaoclarobrasil.com.br/agente-autorizado
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br
@@ -345,6 +359,18 @@ app-config:
     backoffice:
       #url: http://localhost:8101
       url: https://api-dev.conexaoclarobrasil.com.br/backoffice
+    feriado-automacao:
+#      url: http://localhost:5846
+      url: http://192.168.50.4:8078
+    ata-reuniao:
+      #url: http://localhost:8308
+      url: http://192.168.50.1:8308
+    comunicados-pol:
+      #url: http://localhost:8312
+      url: http://192.168.50.1:8312
+    pgaa:
+      #url: http://localhost:8354
+      url: http://192.168.50.1:8354
 
 flyway:
   enabled: true
@@ -414,6 +440,15 @@ zuul:
     backoffice:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.backoffice.url}
+    ata-reuniao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.ata-reuniao.url}
+    comunicados-pol:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.comunicados-pol.url}
+    pgaa:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.pgaa.url}
 
   host:
     connect-timeout-millis: 1800000

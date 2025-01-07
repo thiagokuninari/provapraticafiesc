@@ -16,7 +16,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalObserver;
 import br.com.xbrain.autenticacao.modules.usuario.service.*;
-import helpers.TestsHelper;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,13 +36,10 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_SOCIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static helpers.TestBuilders.umUsuario;
+import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -119,7 +115,7 @@ public class UsuarioControllerTest {
 
         mvc.perform(post(BASE_URL.concat("/por-ids"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(filtro))
+                .content(convertObjectToJsonBytes(filtro))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
         verify(usuarioService).findAllResponsePorIds(filtro);
@@ -136,7 +132,7 @@ public class UsuarioControllerTest {
 
         mvc.perform(post(BASE_URL.concat("/por-ids"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(filtro))
+                .content(convertObjectToJsonBytes(filtro))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
         verify(usuarioService).findAllResponsePorIds(filtro);
@@ -327,7 +323,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/vendedores"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of(1))))
+                .content(convertObjectToJsonBytes(List.of(1))))
             .andExpect(status().isOk());
 
         verify(usuarioService).getVendedoresByIds(List.of(1));
@@ -348,6 +344,26 @@ public class UsuarioControllerTest {
         mvc.perform(get(BASE_URL.concat("/ativos/operacao-comercial/cargo/1")))
             .andExpect(status().isOk());
         verify(usuarioService).buscarColaboradoresAtivosOperacaoComericialPorCargo(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/obter-cargos-operacao-comercial/GERENTE_OPERACAO")))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo.GERENTE_OPERACAO);
     }
 
     @Test
@@ -631,6 +647,22 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void findAllResponsaveisDdd_deveRetornarOk_quandoUsuarioAutenticado() {
+        var listaUsuarioAutoComplete = List.of(UsuarioAutoComplete.builder().value(1).text("nome").build());
+        when(usuarioService.findAllResponsaveisDdd())
+            .thenReturn(listaUsuarioAutoComplete);
+
+        mvc.perform(get(BASE_URL.concat("/responsaveis-ddd")))
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].text", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findAllResponsaveisDdd();
+    }
+
+    @Test
+    @SneakyThrows
     @WithAnonymousUser
     public void vincularUsuariosComSuperior_vincular_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/vincula/hierarquia")))
@@ -664,7 +696,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/alterar/hierarquia"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new AlteraSuperiorRequest())))
+                .content(convertObjectToJsonBytes(new AlteraSuperiorRequest())))
             .andExpect(status().isOk());
 
         verify(usuarioService).vincularUsuarioParaNovaHierarquia(any());
@@ -723,7 +755,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/ativos"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of(1))))
+                .content(convertObjectToJsonBytes(List.of(1))))
             .andExpect(status().isOk());
 
         verify(usuarioService).getUsuariosAtivosByIds(List.of(1));
@@ -815,7 +847,7 @@ public class UsuarioControllerTest {
                 .param("buscarAtivo", "true")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of("email@test.com"))))
+                .content(convertObjectToJsonBytes(List.of("email@test.com"))))
             .andExpect(status().isOk());
 
         verify(usuarioService).findByEmails(List.of("email@test.com"), true);
@@ -828,7 +860,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/emails"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of("email@test.com"))))
+                .content(convertObjectToJsonBytes(List.of("email@test.com"))))
             .andExpect(status().isOk());
 
         verify(usuarioService).findByEmails(List.of("email@test.com"), null);
@@ -881,7 +913,7 @@ public class UsuarioControllerTest {
                 .param("buscarAtivo", "true")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of("123"))))
+                .content(convertObjectToJsonBytes(List.of("123"))))
             .andExpect(status().isOk());
 
         verify(usuarioService).findByCpfs(List.of("123"), true);
@@ -894,7 +926,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/cpfs"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of("123"))))
+                .content(convertObjectToJsonBytes(List.of("123"))))
             .andExpect(status().isOk());
 
         verify(usuarioService).findByCpfs(List.of("123"), null);
@@ -1101,7 +1133,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/adicionar-configuracao"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
+                .content(convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
             .andExpect(status().isOk());
 
         verify(usuarioService).adicionarConfiguracao(any());
@@ -1122,7 +1154,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/usuarios-hierarquias-save"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of(new UsuarioHierarquiaCarteiraDto()))))
+                .content(convertObjectToJsonBytes(List.of(new UsuarioHierarquiaCarteiraDto()))))
             .andExpect(status().isOk());
 
         verify(usuarioService).saveUsuarioHierarquia(any());
@@ -1143,7 +1175,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/remover-configuracao"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
+                .content(convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
             .andExpect(status().isOk());
 
         verify(usuarioService).removerConfiguracao(any());
@@ -1164,7 +1196,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/remover-ramal-configuracao"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
+                .content(convertObjectToJsonBytes(new UsuarioConfiguracaoDto())))
             .andExpect(status().isOk());
 
         verify(usuarioService).removerRamalConfiguracao(any());
@@ -1185,7 +1217,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/remover-ramais-configuracao"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(List.of(new UsuarioConfiguracaoDto()))))
+                .content(convertObjectToJsonBytes(List.of(new UsuarioConfiguracaoDto()))))
             .andExpect(status().isOk());
 
         verify(usuarioService).removerRamaisDeConfiguracao(any());
@@ -1206,7 +1238,7 @@ public class UsuarioControllerTest {
         mvc.perform(put(BASE_URL.concat("/esqueci-senha"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioDadosAcessoRequest())))
+                .content(convertObjectToJsonBytes(new UsuarioDadosAcessoRequest())))
             .andExpect(status().isOk());
 
         verify(usuarioServiceEsqueciSenha).enviarConfirmacaoResetarSenha(any());
@@ -1400,7 +1432,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/permissoes-por-usuario"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioPermissoesRequest())))
+                .content(convertObjectToJsonBytes(new UsuarioPermissoesRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -1417,7 +1449,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/permissoes-por-usuario"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(request)))
+                .content(convertObjectToJsonBytes(request)))
             .andExpect(status().isOk());
 
         verify(usuarioService).findUsuariosByPermissoes(request);
@@ -1480,7 +1512,7 @@ public class UsuarioControllerTest {
     @WithAnonymousUser
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2"))
-            .param("tipoContato", "PRESENCIAL"))
+                .param("tipoContato", "PRESENCIAL"))
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioAgendamentoService);
@@ -1491,7 +1523,7 @@ public class UsuarioControllerTest {
     @WithMockUser
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarForbidden_quandoUsuarioSemPermissao() {
         mvc.perform(get(BASE_URL.concat("/distribuicao/agendamentos/1/agenteautorizado/2"))
-            .param("tipoContato", "PRESENCIAL"))
+                .param("tipoContato", "PRESENCIAL"))
             .andExpect(status().isForbidden());
 
         verifyNoMoreInteractions(usuarioAgendamentoService);
@@ -1737,7 +1769,7 @@ public class UsuarioControllerTest {
                 .param("buscarInativos", "false"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false, null);
     }
 
     @Test
@@ -1748,7 +1780,21 @@ public class UsuarioControllerTest {
                 .param("organizacaoId", "1"))
             .andExpect(status().isOk());
 
-        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true);
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, true, null);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarOk_quandoInformadoCargos() {
+        mvc.perform(get(BASE_URL)
+                .param("organizacaoId", "1")
+                .param("buscarInativos", "false")
+                .param("cargos", "BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(1, false,
+            List.of(BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE));
     }
 
     @Test
@@ -1883,7 +1929,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/usuario-situacao/por-ids"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(new UsuarioSituacaoFiltro())))
+                .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -1898,7 +1944,7 @@ public class UsuarioControllerTest {
         mvc.perform(post(BASE_URL.concat("/usuario-situacao/por-ids"))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(filtro)))
+                .content(convertObjectToJsonBytes(filtro)))
             .andExpect(status().isOk());
 
         verify(usuarioService).buscarUsuarioSituacaoPorIds(filtro);
@@ -2202,6 +2248,35 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithAnonymousUser
+    public void findByCpf_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/cpf")))
+            .andExpect(status().isUnauthorized());
+        verify(usuarioService, never()).findByCpf(anyString());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findByCpf_deveRetornarOk_quandoUsuarioAutenticado() {
+        var usuarioSubCanalNivelResponse = UsuarioSubCanalNivelResponse.builder()
+            .id(1)
+            .nome("nome")
+            .build();
+        when(usuarioService.findByCpf("00590878900"))
+            .thenReturn(usuarioSubCanalNivelResponse);
+
+        mvc.perform(get(BASE_URL.concat("/cpf"))
+                .param("cpf", "00590878900"))
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findByCpf("00590878900");
+    }
+
+    @Test
+    @SneakyThrows
     public void moverAvatarMinio_deveRetornarUnauthorized_quandoNaoAutenticado() {
         mvc.perform(post(BASE_URL.concat("/mover-avatar-minio"))
                 .accept(MediaType.APPLICATION_JSON))
@@ -2340,5 +2415,137 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @WithMockUser
+    @SneakyThrows
+    public void findColaboradoresPapIndireto_deveRetornarListaColaboradorPapIndireto_quandoUsuarioAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of(1))))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findColaboradoresPapIndireto(List.of(1));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findColaboradoresPapIndireto_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(post(BASE_URL.concat("/obter-colaboradores-aa-pap-indireto"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).findColaboradoresPapIndireto(anyList());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"POL_GERENCIAR_AA"})
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).obterIdSeUsuarioForSocioOuAceite(
+            "42675562700",
+            "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void obterIdSeUsuarioForSocioOuAceite_deveRetornarUnauthorized_seUsuarioSemAutorizacao() {
+        mvc.perform(get(BASE_URL + "/socio-principal/verificar-cpf-email")
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getEmailsByCargoId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/buscar-emails/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getEmailsByCargoId(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getEmailsByCargoId_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/buscar-emails/1"))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosIdsByPermissao_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/funcionalidade/role_101"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosIdsByPermissao_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/funcionalidade/role_101"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getUsuariosIdByPermissaoEspecial("role_101");
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void isUsuarioSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/socio-principal/1")))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void isUsuarioSocioPrincipal_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/socio-principal/1")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).isUsuarioSocioPrincipal(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getSociosIdsAtivosByUsuariosIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(post(BASE_URL + "/socios-ids-ativos"))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getSociosIdsAtivosByUsuariosIds_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(post(BASE_URL + "/socios-ids-ativos")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of(1, 2))))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
     }
 }

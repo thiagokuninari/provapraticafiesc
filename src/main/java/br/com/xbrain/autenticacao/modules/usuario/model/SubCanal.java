@@ -41,6 +41,10 @@ public class SubCanal {
     @Enumerated(EnumType.STRING)
     private Eboolean novaChecagemViabilidade;
 
+    @Column(name = "REALIZAR_ENRIQUECIMENTO_END", length = 1)
+    @Enumerated(EnumType.STRING)
+    private Eboolean realizarEnriquecimentoEnd;
+
     public SubCanal(Integer id) {
         this.id = id;
     }
@@ -51,6 +55,7 @@ public class SubCanal {
         this.situacao = request.getSituacao();
         this.novaChecagemCredito = request.getNovaChecagemCredito();
         this.novaChecagemViabilidade = request.getNovaChecagemViabilidade();
+        this.realizarEnriquecimentoEnd = request.getRealizarEnriquecimentoEnd();
         return this;
     }
 }

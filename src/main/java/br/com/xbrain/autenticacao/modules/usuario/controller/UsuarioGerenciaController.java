@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -157,18 +158,22 @@ public class UsuarioGerenciaController {
         service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
     }
 
-    @PutMapping("inativar/socio-principal")
-    public void inativarAntigoSocioPrincipal(@RequestParam String email) {
-        service.inativarAntigoSocioPrincipal(email);
+    @PutMapping("inativar-limpar-dados/socio-principal/{id}")
+    public void inativarELimparDadosAntigoSocioPrincipal(@PathVariable Integer id) {
+        service.inativarELimparDadosAntigoSocioPrincipal(id);
     }
 
-    @PutMapping("limpar-cpf/socio-principal/{id}")
-    public void limparCpfAntigoSocioPrincipal(@PathVariable Integer id) {
-        service.limparCpfAntigoSocioPrincipal(id);
+    @PutMapping("{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales")
+    public void migrarDadosNetSales(@PathVariable Integer canalNetSalesId,
+                                    @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.migrarDadosNetSales(canalNetSalesId, canalNetSalesResponse);
     }
 
-    @PutMapping("inativar-email/{socioPrincipalId}")
-    public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
-        service.atualizarEmailSocioInativo(socioPrincipalId);
+    @PutMapping("{canalNetSalesId}/atualizar-usuarios-associados-ao-canal-net-sales")
+    public void atualizarCanalNetSalesCodigo(@PathVariable Integer canalNetSalesId,
+                                             @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.atualizarCanalNetSales(canalNetSalesId, canalNetSalesResponse);
     }
 }

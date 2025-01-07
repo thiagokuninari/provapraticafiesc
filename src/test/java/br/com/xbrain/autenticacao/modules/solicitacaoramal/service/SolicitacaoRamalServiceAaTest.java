@@ -8,7 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
@@ -87,6 +87,32 @@ public class SolicitacaoRamalServiceAaTest {
     @Test
     public void save_deveSalvarUmaSolicitacaoRamal_quandoDadosValidos() {
         ReflectionTestUtils.setField(service, "destinatarios", "teste");
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioId())
+            .thenReturn(1);
+        when(agenteAutorizadoService.getAaById(7129))
+            .thenReturn(criaAa());
+        when(dataHoraAtual.getDataHora())
+            .thenReturn(LocalDateTime.of(2023, 11, 27, 10, 0));
+        when(repository.save(any(SolicitacaoRamal.class)))
+            .thenReturn(umaSolicitacaoRamal(1));
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(7129))
+            .thenReturn(umaListaUsuarioResponse());
+
+        service.save(criaSolicitacaoRamal(null, 7129));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(autenticacaoService).getUsuarioId();
+        verify(agenteAutorizadoService).getAaById(7129);
+        verify(dataHoraAtual).getDataHora();
+        verify(repository).save(any(SolicitacaoRamal.class));
+    }
+
+    @Test
+    public void save_deveSalvarUmaSolicitacaoRamalComDestinatariosSemAVirgula_quandoDadosValidos() {
+        ReflectionTestUtils.setField(service, "destinatarios", ",teste");
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
@@ -239,6 +265,26 @@ public class SolicitacaoRamalServiceAaTest {
 
         verify(agenteAutorizadoService).getAaById(1);
         verify(callService).obterNomeTelefoniaPorId(1);
+        verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
+        verify(socioService).findSocioPrincipalByAaId(1);
+        verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);
+    }
+
+    @Test
+    public void getDadosAdicionais_deveChamarClientPeloAgenteAutorizadoId_quandoDiscadoraIdNull() {
+        var agenteAutorizado = umAgenteAutorizado();
+        agenteAutorizado.setDiscadoraId(null);
+        when(agenteAutorizadoService.getAaById(1))
+            .thenReturn(agenteAutorizado);
+        when(agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of());
+        when(socioService.findSocioPrincipalByAaId(1))
+            .thenReturn(umSocioPrincipal());
+
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
+
+        verify(agenteAutorizadoService).getAaById(1);
+        verify(callService, never()).obterNomeTelefoniaPorId(1);
         verify(callService).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
         verify(socioService).findSocioPrincipalByAaId(1);
         verify(agenteAutorizadoService).getUsuariosAaAtivoComVendedoresD2D(1);

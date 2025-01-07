@@ -138,11 +138,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
-    private String getTipoCanal(Usuario usuario) {
-        var tipoCanal = usuario.getTipoCanal();
-        return Objects.nonNull(tipoCanal) ? tipoCanal.name() : null;
-    }
-
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
@@ -179,7 +174,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
         token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
         token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
-        token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSales());
+        token.getAdditionalInformation().put("canalNetSalesId", usuario.getCanalNetSalesId());
+        token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSalesCodigo());
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
         token.getAdditionalInformation().put("organizacaoNome", getOrganizacaoEmpresaNome(usuario));
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
@@ -211,7 +207,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             equipesSupervisionadas);
         token.getAdditionalInformation().put("equipesTecnicasSupervisionadas", equipesTecnicasSupervisionadas);
         token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
-        token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
         token.getAdditionalInformation().put("sites", sites);
         token.getAdditionalInformation().put("siteId", sites.stream()
             .map(SelectResponse::getValue)

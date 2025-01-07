@@ -32,6 +32,7 @@ public class SubCanalHelper {
             .situacao(A)
             .novaChecagemCredito(Eboolean.F)
             .novaChecagemViabilidade(Eboolean.F)
+            .realizarEnriquecimentoEnd(Eboolean.F)
             .build();
     }
 
@@ -72,6 +73,7 @@ public class SubCanalHelper {
             .situacao(ESituacao.I)
             .novaChecagemCredito(Eboolean.F)
             .novaChecagemViabilidade(Eboolean.F)
+            .realizarEnriquecimentoEnd(Eboolean.F)
             .build();
     }
 

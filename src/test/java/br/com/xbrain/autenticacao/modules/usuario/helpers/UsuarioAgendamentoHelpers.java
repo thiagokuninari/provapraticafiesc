@@ -1,13 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.EAcao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
@@ -259,22 +259,22 @@ public class UsuarioAgendamentoHelpers {
 
     public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosMesmoSegmentoAgenteAutorizado1300() {
         return List.of(
-                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
-                        .id(130)
-                        .nome("JOÃO MARINHO DA SILVA DOS SANTOS")
-                        .build(),
-                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
-                        .id(133)
-                        .nome("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")
-                        .build(),
-                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
-                        .id(134)
-                        .nome("MARIA DA SILVA SAURO SANTOS")
-                        .build(),
-                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
-                        .id(135)
-                        .nome("MARCOS AUGUSTO DA SILVA SANTOS")
-                        .build());
+            UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                .id(130)
+                .nome("JOÃO MARINHO DA SILVA DOS SANTOS")
+                .build(),
+            UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                .id(133)
+                .nome("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")
+                .build(),
+            UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                .id(134)
+                .nome("MARIA DA SILVA SAURO SANTOS")
+                .build(),
+            UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                .id(135)
+                .nome("MARCOS AUGUSTO DA SILVA SANTOS")
+                .build());
     }
 
     public static Usuario umUsuarioId9991() {
@@ -431,49 +431,49 @@ public class UsuarioAgendamentoHelpers {
 
     public static List<UsuarioAgenteAutorizadoResponse> usuariosDoAa1300ComEquipesDeVendas() {
         return List.of(
-                new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", 999),
-                new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", 980),
-                new UsuarioAgenteAutorizadoResponse(132, "LUIZ BARRETTO DE AZEVEDO NETO", 755),
-                new UsuarioAgenteAutorizadoResponse(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR", 999),
-                new UsuarioAgenteAutorizadoResponse(134, "PAULO JUNIO COLARES MIRANDA", null),
-                new UsuarioAgenteAutorizadoResponse(135, "LEONARDO DOS SANTOS GONCALVES REIS", 999)
+            new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", 999),
+            new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", 980),
+            new UsuarioAgenteAutorizadoResponse(132, "LUIZ BARRETTO DE AZEVEDO NETO", 755),
+            new UsuarioAgenteAutorizadoResponse(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR", 999),
+            new UsuarioAgenteAutorizadoResponse(134, "PAULO JUNIO COLARES MIRANDA", null),
+            new UsuarioAgenteAutorizadoResponse(135, "LEONARDO DOS SANTOS GONCALVES REIS", 999)
         );
     }
 
     public static Cargo umCargoVendedorTelevendas() {
         return Cargo.builder()
-                .id(1000)
-                .nome("AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS")
-                .codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
-                .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
-                .build();
+            .id(1000)
+            .nome("AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
     }
 
     public static Cargo umCargoVendedorD2d() {
         return Cargo.builder()
-                .id(1000)
-                .nome("AGENTE_AUTORIZADO_VENDEDOR_D2D")
-                .codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
-                .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
-                .build();
+            .id(1000)
+            .nome("AGENTE_AUTORIZADO_VENDEDOR_D2D")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
     }
 
     public static Cargo umCargoSupervisor() {
         return Cargo.builder()
-                .id(2000)
-                .nome("AGENTE_AUTORIZADO_SUPERVISOR")
-                .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
-                .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
-                .build();
+            .id(2000)
+            .nome("AGENTE_AUTORIZADO_SUPERVISOR")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
     }
 
     public static Cargo umCargoSocioPrincipal() {
         return Cargo.builder()
-                .id(3000)
-                .nome("AGENTE_AUTORIZADO_SOCIO_PRINCIPAL")
-                .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
-                .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
-                .build();
+            .id(3000)
+            .nome("AGENTE_AUTORIZADO_SOCIO_PRINCIPAL")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
     }
 
     public static UsuarioPermissaoResponse umaPermissaoDeVendaPresencial() {

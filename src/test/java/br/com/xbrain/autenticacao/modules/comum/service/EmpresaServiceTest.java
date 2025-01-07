@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.filtros.EmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -20,7 +21,8 @@ import static helpers.Empresas.*;
 import static helpers.TestBuilders.umUsuarioAutenticado;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -81,6 +83,24 @@ public class EmpresaServiceTest {
             .hasSize(1)
             .extracting("nome")
             .containsExactly("Claro Móvel");
+    }
+
+    @Test
+    public void findWithoutXbrain_deveRetornarListaEmpresasSemXbrain_quandoSolicitado() {
+        doReturn(List.of(CLARO_MOVEL, CLARO_TV, NET, CLARO_RESIDENCIAL, XBRAIN))
+            .when(empresaRepository)
+            .findAll();
+
+        assertThat(empresaService.findWithoutXbrain())
+            .extracting(SelectResponse::getValue, SelectResponse::getLabel)
+            .containsExactlyInAnyOrder(
+                tuple(1, "Claro Móvel"),
+                tuple(2, "Claro TV"),
+                tuple(3, "NET"),
+                tuple(5, "Claro Residencial")
+            );
+
+        verify(empresaRepository).findAll();
     }
 
     private BooleanBuilder getBooleanBuilder(Integer unidadeNegocioId, UsuarioAutenticado usuarioAutenticado) {

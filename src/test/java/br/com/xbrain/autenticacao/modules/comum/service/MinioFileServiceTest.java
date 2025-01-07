@@ -100,4 +100,15 @@ public class MinioFileServiceTest {
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Arquivo não encontrado.");
     }
+
+    @Test
+    @SneakyThrows
+    public void getArquivo_deveLancarIntegracaoException_quandoErroNaApi() {
+        doThrow(IntegracaoException.class)
+            .when(client).getObject(any(), eq(TEST_FILE_DIRETORIO));
+
+        assertThatThrownBy(() -> service.getArquivo(TEST_FILE_DIRETORIO))
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage("#048 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
 }

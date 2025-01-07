@@ -156,13 +156,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCargoCodigo(CodigoCargo cargo) {
-        if (nonNull(cargo)) {
-            builder.and(usuario.cargo.codigo.eq(cargo));
-        }
-        return this;
-    }
-
     public UsuarioPredicate semCargoCodigo(CodigoCargo cargo) {
         if (cargo != null) {
             builder.and(usuario.cargo.codigo.ne(cargo));
@@ -230,7 +223,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comIds(List<Integer> usuariosIds) {
+    public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.and(ExpressionUtils.anyOf(
                 Lists.partition(new ArrayList<>(usuariosIds), QTD_MAX_IN_NO_ORACLE)
@@ -316,11 +309,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate daHierarquia(List<Integer> ids) {
-        builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
-        return this;
-    }
-
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
 
@@ -356,17 +344,6 @@ public class UsuarioPredicate {
     public UsuarioPredicate comCargosIds(List<Integer> cargosIds) {
         if (!isEmpty(cargosIds)) {
             builder.and(usuario.cargo.id.in(cargosIds));
-        }
-        return this;
-    }
-
-    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, Integer regionalId, Integer ufId) {
-        if (!isEmpty(cidadesIds)) {
-            comCidade(cidadesIds);
-        } else if (!isEmpty(ufId)) {
-            comUf(ufId);
-        } else if (!isEmpty(regionalId)) {
-            comRegional(regionalId);
         }
         return this;
     }

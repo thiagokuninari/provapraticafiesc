@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
-import helpers.Usuarios;
 import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static helpers.TestsHelper.getAccessToken;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Matchers.any;
@@ -67,12 +66,12 @@ public class UsuarioControllerIT {
 
     @Test
     @SneakyThrows
+    @WithMockUser
     public void getSubordinadosAndAasDoUsuario_deveRetornarSubordinadosDoUsuario_quandoTudoOk() {
         when(usuarioService.getSubordinadosAndAasDoUsuario(false))
             .thenReturn(umaListaDeUsuariosHierarquiaDtos(1, 2));
 
         mvc.perform(get("/api/usuarios/hierarquia/subordinados-aas")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))

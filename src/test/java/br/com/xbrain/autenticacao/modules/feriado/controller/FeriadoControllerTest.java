@@ -303,4 +303,27 @@ public class FeriadoControllerTest {
 
         verify(service).isFeriadoComCidadeId(1520);
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getProximosFeriadosNacionais_deveRetornarUnauthorized_quandoNaoPassarToken() {
+        mvc.perform(get(URL_BASE + "/proximos-feriados-nacionais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error", is("unauthorized")));
+
+        verify(service, never()).getProximosFeriadosNacionais();
+    }
+
+    @Test
+    @SneakyThrows
+    public void getProximosFeriadosNacionais_deveRetornarOK_quandoDadosValidos() {
+        mvc.perform(get(URL_BASE + "/proximos-feriados-nacionais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).getProximosFeriadosNacionais();
+    }
+
 }

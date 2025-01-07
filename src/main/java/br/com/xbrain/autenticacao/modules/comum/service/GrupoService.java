@@ -36,11 +36,11 @@ public class GrupoService {
 
     public List<GrupoDto> getAllByRegionalIdAndUsuarioId(Integer regionalId, Integer usuarioId) {
         GrupoPredicate predicate = new GrupoPredicate()
-                .filtrarPermitidos(usuarioId);
+            .filtrarPermitidos(usuarioId);
         return repository.findAllByRegionalId(regionalId, predicate.build())
-                .stream()
-                .map(GrupoDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(GrupoDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<GrupoDto> getAllAtiva() {

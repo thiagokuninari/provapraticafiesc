@@ -10,6 +10,8 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -73,5 +75,12 @@ public class PermissaoEspecial {
             .usuario(new Usuario(usuarioId))
             .dataCadastro(LocalDateTime.now())
             .build();
+    }
+
+    public static List<PermissaoEspecial> of(Integer usuarioId, List<Integer> funcionalidadesIds,
+                                             Integer usuarioCadastroId) {
+        return funcionalidadesIds.stream()
+            .map(funcionalidadeId -> PermissaoEspecial.of(usuarioId, funcionalidadeId, usuarioCadastroId))
+            .collect(Collectors.toList());
     }
 }

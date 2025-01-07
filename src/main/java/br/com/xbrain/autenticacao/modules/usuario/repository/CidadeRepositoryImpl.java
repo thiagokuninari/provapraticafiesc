@@ -239,11 +239,21 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .from(cidade)
             .where(cidade.nome.eq(nomeDistrito)
                 .and(cidade.uf.uf.eq(uf))
-                .and(cidade.fkCidade.eq(
+                .and(cidade.fkCidade.in(
                     select(cidade.id)
-                    .from(cidade)
-                    .where(cidade.nome.eq(nomeCidade))
+                        .from(cidade)
+                        .where(cidade.nome.eq(nomeCidade)
+                            .and(cidade.uf.uf.eq(uf)))
                 )))
             .fetchFirst());
+    }
+
+    @Override
+    public List<Cidade> findAllCidades() {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .innerJoin(cidade.uf, uf1).fetchJoin()
+            .orderBy(cidade.nome.asc())
+            .fetch();
     }
 }

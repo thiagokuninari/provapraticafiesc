@@ -18,10 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,6 +46,27 @@ public class OrganizacaoEmpresaHistoricoServiceTest {
             .extracting("situacao", "organizacaoEmpresa.id", "observacao", "usuarioId",
                 "usuarioNome")
             .contains(ESituacaoOrganizacaoEmpresa.A, 1, EHistoricoAcao.EDICAO, 2, "Thiago");
+    }
+
+    @Test
+    public void obterHistoricoDaOrganizacaoEmpresa_deveChamarRepositorio_quandoReceberOrganizacaoEmpresa() {
+        var dataAlteracao = LocalDateTime.of(2024, 06, 03, 0,0,0);
+
+        when(historicoRepository.findAllByOrganizacaoEmpresaIdOrderByDataAlteracaoDesc(eq(1)))
+            .thenReturn(
+                List.of(umaOrganizacaoEmpresaHistorico("MARINA"),
+                    umaOrganizacaoEmpresaHistorico("LUCAS"),
+                    umaOrganizacaoEmpresaHistorico("THOMAS")));
+
+        assertThat(historicoService.obterHistoricoDaOrganizacaoEmpresa(1))
+            .extracting("usuarioNome", "dataAlteracao", "observacao")
+            .contains(
+                tuple("MARINA", dataAlteracao, EHistoricoAcao.EDICAO),
+                tuple("LUCAS", dataAlteracao, EHistoricoAcao.EDICAO),
+                tuple("THOMAS", dataAlteracao, EHistoricoAcao.EDICAO)
+            );
+
+        verify(historicoRepository).findAllByOrganizacaoEmpresaIdOrderByDataAlteracaoDesc(eq(1));
     }
 
     private OrganizacaoEmpresa umaOrganizacaoEmpresaCadastrada() {
@@ -72,5 +94,17 @@ public class OrganizacaoEmpresaHistoricoServiceTest {
         usuarioAutenticado.setId(2);
         usuarioAutenticado.setNome("Thiago");
         return usuarioAutenticado;
+    }
+
+    private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico(String nome) {
+        return OrganizacaoEmpresaHistorico.builder()
+            .id(1)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .observacao(EHistoricoAcao.EDICAO)
+            .organizacaoEmpresa(umaOrganizacaoEmpresaCadastrada())
+            .usuarioId(1)
+            .dataAlteracao(LocalDateTime.of(2024, 06, 03, 0, 0, 0))
+            .usuarioNome(nome)
+            .build();
     }
 }

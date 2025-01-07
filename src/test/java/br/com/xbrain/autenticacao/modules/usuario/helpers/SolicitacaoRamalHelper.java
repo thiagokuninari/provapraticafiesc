@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -151,5 +148,14 @@ public class SolicitacaoRamalHelper {
         filtro.setSubCanalId(subCanalId);
         filtro.setAgenteAutorizadoId(aaId);
         return filtro;
+    }
+
+    public static SolicitacaoRamalAtualizarStatusRequest umaSolicitacaoRamalAtualizarStatusRequest(
+        ESituacaoSolicitacao situacaoSolicitacao) {
+        return SolicitacaoRamalAtualizarStatusRequest.builder()
+            .idSolicitacao(1)
+            .situacao(situacaoSolicitacao)
+            .observacao("uma observacao bem observada")
+            .build();
     }
 }

@@ -4,9 +4,14 @@ import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutoriz
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDisponivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.querydsl.core.types.Predicate;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -104,6 +110,55 @@ public class UsuarioAgendamentoServiceTest {
         verify(usuarioService, times(7)).findPermissoesByUsuario(any(Usuario.class));
         verify(equipeVendasService).getEquipesPorSupervisor(135);
         verify(cargoService).findByUsuarioId(135);
+    }
+
+    @Test
+    public void recuperarUsuariosParaDistribuicao_deveRetornarListaVazia_quandoTipoDoContatoNaoExistir() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
+        when(repository.getUsuariosFilter(any(Predicate.class))).thenReturn(usuariosDoAgenteAutorizado1300());
+        when(equipeVendasService.getEquipesPorSupervisor(135)).thenReturn(List.of(umaEquipeDeVendas()));
+
+        assertThat(service.recuperarUsuariosParaDistribuicao(135, 1300, "NAO TEM CADASTRO"))
+            .isEmpty();
+
+        verify(agenteAutorizadoService).getUsuariosByAaId(1300, false);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository, times(2)).getUsuariosFilter(any(Predicate.class));
+        verify(usuarioService, times(7)).findPermissoesByUsuario(any(Usuario.class));
+        verify(equipeVendasService).getEquipesPorSupervisor(135);
+        verify(cargoService).findByUsuarioId(135);
+    }
+
+    @Test
+    public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosHibridosEVendedoresLojas_quandoVendedoresDoMesmoCanal() {
+        var cargo =  Cargo.builder()
+            .id(2000)
+            .nome("VENDEDOR OPERACAO")
+            .codigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSocio());
+        when(repository.getUsuariosFilter(any(Predicate.class))).thenReturn(usuariosDoAgenteAutorizado1300());
+        when(cargoService.findByUsuarioId(100)).thenReturn(cargo);
+        assertThat(service.recuperarUsuariosParaDistribuicao(100, 1300, "PRESENCIAL"))
+            .hasSize(4)
+            .extracting(
+                UsuarioAgenteAutorizadoAgendamentoResponse::getId,
+                UsuarioAgenteAutorizadoAgendamentoResponse::getNome)
+            .containsExactlyInAnyOrder(
+                tuple(131, "JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR"),
+                tuple(132, "JOSÉ MARINHO DA SILVA DOS SANTOS"),
+                tuple(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR"),
+                tuple(135, "MARCOS AUGUSTO DA SILVA SANTOS")
+            );
+
+        verify(agenteAutorizadoService).getUsuariosByAaId(1300, false);
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(repository, times(2)).getUsuariosFilter(any(Predicate.class));
+        verify(usuarioService, times(8)).findPermissoesByUsuario(any(Usuario.class));
+        verifyNoMoreInteractions(equipeVendasService);
+        verify(cargoService, times(1)).findByUsuarioId(100);
     }
 
     @Test
@@ -351,6 +406,39 @@ public class UsuarioAgendamentoServiceTest {
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(usuarioService, never()).findPermissoesByUsuario(any(Usuario.class));
         verify(equipeVendasService, never()).getEquipesPorSupervisor(anyInt());
+    }
+
+    @SuppressWarnings("LineLength")
+    @Test
+    public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarUsuariosDaEquipeVenda_seExistirUsuarioDtoEForCargosHibridos() {
+        var usuariodto = UsuarioDto.builder().id(9991).cargoCodigo(AGENTE_AUTORIZADO_GERENTE).build();
+        when(usuarioService.getUsuarioById(9991)).thenReturn(usuariodto);
+        var resultMap = new HashMap<Integer, Integer>();
+        resultMap.put(9991, 999);
+        var usuarioIds = List.of(9991, 9992, 9993, 9994, 9995);
+        when(usuarioService.getUsuariosAtivosByIds(usuarioIds)).thenReturn(List.of(9991));
+        when(usuarioService.findPermissoesByUsuario(any(Usuario.class))).thenReturn(umaPermissaoVisualizarGeral());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
+        when(equipeVendasService.getEquipesPorSupervisor(135)).thenReturn(List.of(umaEquipeDeVendas()));
+        when(equipeVendasService.getByUsuario(9991)).thenReturn(umaEquipeVendasDto());
+        when(equipeVendasService.getUsuarioEEquipeByUsuarioIds(List.of(9991))).thenReturn(resultMap);
+
+        assertThat(service.recuperarUsuariosDisponiveisParaDistribuicao(999))
+            .hasSize(1)
+            .extracting(
+                UsuarioDisponivelResponse::getId,
+                UsuarioDisponivelResponse::getNome
+            )
+            .contains(
+                tuple(9991, "USUARIO 1 DO AA 999")
+            );
+
+        verify(agenteAutorizadoService).getUsuariosByAaId(999, true);
+        verify(usuarioService).getUsuariosAtivosByIds(usuarioIds);
+        verify(equipeVendasService).getUsuarioEEquipeByUsuarioIds(List.of(9991));
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(usuarioService).findPermissoesByUsuario(any(Usuario.class));
+        verify(equipeVendasService).getEquipesPorSupervisor(135);
     }
 
 }
