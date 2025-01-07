@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -18,6 +17,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
@@ -45,7 +46,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String loginNetSales;
     private String nomeEquipeVendaNetSales;
     private String codigoEquipeVendaNetSales;
-    private String canalNetSales;
+    private Integer canalNetSalesId;
+    private String canalNetSalesCodigo;
     private String cpf;
     private ESituacao situacao;
     private List<String> empresasNome;
@@ -81,7 +83,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCanalNetSales();
+        this.canalNetSalesId = usuario.getCanalNetSalesId();
+        this.canalNetSalesCodigo = usuario.getCanalNetSalesCodigo();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -111,7 +114,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.loginNetSales = usuario.getLoginNetSales();
         this.nomeEquipeVendaNetSales = usuario.getNomeEquipeVendaNetSales();
         this.codigoEquipeVendaNetSales = usuario.getCodigoEquipeVendaNetSales();
-        this.canalNetSales = usuario.getCanalNetSales();
+        this.canalNetSalesId = usuario.getCanalNetSalesId();
+        this.canalNetSalesCodigo = usuario.getCanalNetSalesCodigo();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -148,10 +152,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         return Objects.nonNull(this.canais) && this.canais.stream().anyMatch(c -> Objects.equals(c, canal));
     }
 
-    public boolean hasSubCanal(SubCanal subCanal) {
-        return Objects.nonNull(this.subCanais) && this.subCanais.stream().anyMatch(s -> Objects.equals(s, subCanal));
-    }
-
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
     }
@@ -162,10 +162,6 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isMso() {
         return MSO == getNivelCodigoEnum();
-    }
-
-    public boolean isMsoOrXbrain() {
-        return isMso() || isXbrain();
     }
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
@@ -269,5 +265,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         if (!isXbrain()) {
             throw new PermissaoException("Usuário não autorizado!");
         }
+    }
+
+    public boolean isVisualizaGeral() {
+        return this.hasPermissao(AUT_VISUALIZAR_GERAL)
+            || this.isMso() && this.hasPermissao(BKO_16008);
     }
 }

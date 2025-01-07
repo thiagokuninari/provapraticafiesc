@@ -7,7 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;

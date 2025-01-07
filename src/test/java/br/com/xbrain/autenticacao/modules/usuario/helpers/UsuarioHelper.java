@@ -1,15 +1,20 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Marca;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import lombok.experimental.UtilityClass;
+import com.google.common.collect.Sets;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
@@ -19,9 +24,11 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.organizacaoEmpresa;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.umaFuncionalidadeBko;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
@@ -33,6 +40,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubcanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 
+@UtilityClass
 public class UsuarioHelper {
 
     public static Usuario umUsuario(Integer id, String nome, ESituacao situacao,
@@ -101,6 +109,18 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static Usuario umUsuario(CodigoCargo cargo) {
+        return Usuario.builder()
+            .id(3)
+            .situacao(ESituacao.I)
+            .usuarioCadastro(Usuario.builder().id(1).build())
+            .cargo(Cargo.builder()
+                .id(3)
+                .codigo(cargo)
+                .build())
+            .build();
+    }
+
     public static Usuario doisUsuario(Integer id, String nome, ESituacao situacao) {
         return Usuario
             .builder()
@@ -108,6 +128,43 @@ public class UsuarioHelper {
             .nome(nome)
             .situacao(situacao)
             .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales2() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static Usuario umUsuarioComDadosNetSales3() {
+        return Usuario.builder()
+            .loginNetSales("login123")
+            .canalNetSalesCodigo("CANAL NETSALES")
+            .nomeEquipeVendaNetSales("EQUIPE VENDA NETSALES")
+            .codigoEquipeVendaNetSales("codigo123")
+            .canalNetSalesId(1)
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosComDadosNetSales() {
+        return List.of(
+            umUsuarioComDadosNetSales(),
+            umUsuarioComDadosNetSales2(),
+            umUsuarioComDadosNetSales3());
     }
 
     public static Usuario umUsuarioOperacaoComSubCanal(Integer usuarioId,
@@ -136,6 +193,11 @@ public class UsuarioHelper {
             .usuarioCadastro(umUsuarioMsoConsultor(3, PAP_PREMIUM))
             .usuariosHierarquia(new HashSet<>())
             .situacao(A)
+            .loginNetSales("login123")
+            .canalNetSalesId(1)
+            .canalNetSalesCodigo("UM CANAL NETSALES")
+            .codigoEquipeVendaNetSales("123")
+            .nomeEquipeVendaNetSales("EQUIPE DE VENDA NETSALES")
             .build();
     }
 
@@ -144,8 +206,8 @@ public class UsuarioHelper {
             .id(23)
             .cargo(Cargo.builder()
                 .codigo(MSO_CONSULTOR)
-                .nivel(Nivel
-                    .builder()
+                .nivel(Nivel.builder()
+                    .id(2)
                     .codigo(MSO)
                     .situacao(ESituacao.A)
                     .nome("MSO")
@@ -195,6 +257,19 @@ public class UsuarioHelper {
             .build();
     }
 
+    public static UsuarioDto umUsuarioMsoBackofficeDto(Integer usuarioId) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .nome("MSO BACKOFFICE")
+            .cpf("873.616.099-70")
+            .email("MSOBACKOFFICE@TESTE.COM.BR")
+            .nivelId(2)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .subNiveisIds(Set.of(1))
+            .build();
+    }
+
     public static UsuarioDto umUsuarioFeederDto(Integer usuarioId, String usuarioEmail) {
         return UsuarioDto.builder()
             .id(usuarioId)
@@ -239,10 +314,12 @@ public class UsuarioHelper {
                 .nivel(Nivel
                     .builder()
                     .id(2)
+                    .codigo(MSO)
                     .build())
                 .build())
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .situacao(ESituacao.A)
+            .subNiveis(new HashSet<>())
             .build();
     }
 
@@ -282,6 +359,7 @@ public class UsuarioHelper {
             .recuperarSenhaTentativa(0)
             .tiposFeeder(Set.of())
             .subCanaisId(Set.of())
+            .subNiveisIds(Set.of())
             .build();
     }
 
@@ -747,7 +825,7 @@ public class UsuarioHelper {
             .empresa(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
             .usuarioCadastroId(69)
             .usuarioCadastroNome("Alguem")
-            .colaboradorVendasId(89)
+            .colaboradorId(89)
             .agenteAutorizadoId(77)
             .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .isCadastroSocioPrincipal(true)
@@ -787,9 +865,33 @@ public class UsuarioHelper {
             .rg("123456")
             .loginNetSales("741")
             .orgaoExpedidor("963")
+            .cargo(umCargo(42, GERENTE_OPERACAO))
             .situacao(A)
             .nascimento(LocalDateTime.of(1990, 10, 19, 14, 52))
             .agenteAutorizadoId(77)
+            .build();
+    }
+
+    public static Usuario umUsuarioInsideSalesPme() {
+        return Usuario.builder()
+            .id(14)
+            .nome("VENDEDOR INSIDE SALES PME")
+            .email("VENDEDORINSIDESALES@XBRAIN.COM.BR")
+            .cargo(Cargo.builder().id(123).codigo(VENDEDOR_OPERACAO).build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(SubCanal.builder().id(4).codigo(ETipoCanal.INSIDE_SALES_PME).build()))
+            .usuariosHierarquia(
+                Sets.newHashSet(
+                    UsuarioHierarquia.criar(
+                        umUsuario(),
+                        65,
+                        100)
+                )
+            )
+            .empresas(List.of(Empresa.builder().id(1).build()))
+            .cidades(Set.of(new UsuarioCidade()))
+            .unidadesNegocios(List.of(new UnidadeNegocio(1)))
+            .departamento(new Departamento(1))
             .build();
     }
 
@@ -808,7 +910,7 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario umUsuarioSocialHub(String email) {
+    public static Usuario umUsuarioSocialHub(String email, Integer mercadoDesenvolvimentoId, CodigoNivel codigoNivel) {
         return Usuario.builder()
             .id(1)
             .cpf("097.238.645-92")
@@ -818,6 +920,7 @@ public class UsuarioHelper {
             .usuariosHierarquia(new HashSet<>())
             .usuarioCadastro(new Usuario(1))
             .hierarquiasId(List.of(2))
+            .territorioMercadoDesenvolvimentoId(mercadoDesenvolvimentoId)
             .canais(Set.of(ECanal.INTERNET))
             .departamento(Departamento.builder().id(1).nome("teste").build())
             .cargo(Cargo.builder()
@@ -825,7 +928,7 @@ public class UsuarioHelper {
                 .codigo(OPERACAO_TELEVENDAS)
                 .nivel(Nivel.builder()
                     .id(1)
-                    .codigo(CodigoNivel.XBRAIN)
+                    .codigo(codigoNivel)
                     .build())
                 .build())
             .build();
@@ -862,6 +965,172 @@ public class UsuarioHelper {
             .usuarioNome("NAKANO")
             .trocaDeSubCanal(true)
             .trocaDeNome(false)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndiretoRemanejado() {
+        return Usuario.builder()
+            .id(3)
+            .nome("UM USUARIO PAP INDIRETO REMANEJADO")
+            .email("umusuariopapindiretoremanejado@net.com.br")
+            .cpf("111.111.111-11")
+            .dataCadastro(LocalDateTime.of(2017, 01, 01, 15, 00, 00))
+            .situacao(R)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndiretoRemanejadoParaAntigoAA() {
+        return Usuario.builder()
+            .id(4)
+            .nome("UM USUARIO PAP INDIRETO REMANEJADO PARA ANTIGO AA")
+            .email("umusuariopapindireto@net.com.br")
+            .cpf("111.111.111-11")
+            .dataCadastro(LocalDateTime.of(2020, 01, 01, 15, 00, 00))
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndireto() {
+        return UsuarioDtoVendas.builder()
+            .id(1)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO")
+            .email("umusuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-21")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste")
+            .agenteAutorizadoId(100)
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umOutroUsuarioDtoVendasPapIndireto() {
+        return UsuarioDtoVendas.builder()
+            .id(2)
+            .nome("UM OUTRO USUARIO DTO VENDAS PAP INDIRETO")
+            .email("umoutrousuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-22")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 2")
+            .agenteAutorizadoId(101)
+            .situacao(A)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndiretoRemanejado() {
+        return UsuarioDtoVendas.builder()
+            .id(3)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO REMANEJADO")
+            .email("umusuariopapindiretoremanejado@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-23")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 3")
+            .agenteAutorizadoId(103)
+            .situacao(R)
+            .build();
+    }
+
+    public static UsuarioDtoVendas umUsuarioDtoVendasPapIndiretoRemanejadoParaAntigoAA() {
+        return UsuarioDtoVendas.builder()
+            .id(4)
+            .nome("UM USUARIO DTO VENDAS PAP INDIRETO REMANEJADO PARA ANTIGO AA")
+            .email("umusuariopapindireto@net.com.br")
+            .agenteAutorizadoCnpj("64.262.572/0001-23")
+            .agenteAutorizadoRazaoSocial("Razao Social Teste 3")
+            .agenteAutorizadoId(103)
+            .situacao(A)
+            .build();
+    }
+
+    public static Usuario umUsuarioPapIndireto() {
+        return Usuario
+            .builder()
+            .id(1)
+            .agenteAutorizadoId(100)
+            .nome("UM USUARIO RESPONSE")
+            .dataCadastro(LocalDateTime.of(2018, 01, 1, 15, 0))
+            .cpf("111.111.111-11")
+            .situacao(A)
+            .build();
+    }
+
+    public static SubNivel umSubNivel(Integer id, String codigo, String nome,
+                                      Set<CargoFuncionalidadeSubNivel> cargoFuncionalidadeSubNivels) {
+        return SubNivel.builder()
+            .id(id)
+            .codigo(codigo)
+            .nome(nome)
+            .cargoFuncionalidadeSubNiveis(cargoFuncionalidadeSubNivels)
+            .build();
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveisComUmSubNivel() {
+        return Set.of(umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+            Set.of(umCargoFuncionalidadeSubNivel(1, null, umaFuncionalidadeBko(1, "Teste 1"))))
+        );
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveis() {
+        return  Set.of(
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO","BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(3, null, umaFuncionalidadeBko(3, "Teste 3"))))
+        );
+    }
+
+    public static List<SubNivel> umaListaDeSubNiveis() {
+        return  List.of(
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, null, umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoAnalista(), umaFuncionalidadeBko(3, "Teste 3")))),
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(4, null, umaFuncionalidadeBko(4, "Teste 4"))))
+        );
+    }
+
+    public static Set<SubNivel> umSetDeSubNiveisComCargo() {
+        return  Set.of(
+            umSubNivel(1, "BACKOFFICE", "BACKOFFICE",
+                Set.of(umCargoFuncionalidadeSubNivel(1, umCargoMsoConsultor(), umaFuncionalidadeBko(1, "Teste 1")))),
+            umSubNivel(2, "BACKOFFICE_CENTRALIZADO", "BACKOFFICE CENTRALIZADO",
+                Set.of(umCargoFuncionalidadeSubNivel(2, umCargoMsoAnalista(), umaFuncionalidadeBko(2, "Teste 2")))),
+            umSubNivel(3, "BACKOFFICE_QUALIDADE", "BACKOFFICE DE QUALIDADE",
+                Set.of(umCargoFuncionalidadeSubNivel(3, umCargoMsoConsultor(), umaFuncionalidadeBko(3, "Teste 3")))),
+            umSubNivel(4, "BACKOFFICE_SUPORTE_VENDAS", "BACKOFFICE SUPORTE DE VENDAS",
+                Set.of(umCargoFuncionalidadeSubNivel(4, umCargoMsoAnalista(), umaFuncionalidadeBko(4, "Teste 4"))))
+        );
+    }
+
+    public static CargoFuncionalidadeSubNivel umCargoFuncionalidadeSubNivel(Integer id, Cargo cargo,
+                                                                            Funcionalidade funcionalidade) {
+        return CargoFuncionalidadeSubNivel.builder()
+            .id(id)
+            .cargo(cargo)
+            .funcionalidade(funcionalidade)
+            .build();
+    }
+
+    public static Usuario umUsuarioComCargoEOrganizacao(Integer cargoId, Integer organizacaoId) {
+        return Usuario.builder()
+            .id(100)
+            .cargo(Cargo.builder().id(cargoId).codigo(OPERADOR_SUPORTE_VENDAS).build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder()
+                .id(organizacaoId)
+                .nivel(Nivel.builder().codigo(BACKOFFICE_SUPORTE_VENDAS).build())
+                .build())
+            .email("email@google.com")
+            .build();
+    }
+
+    public static Usuario umOutroUsuarioPapIndireto() {
+        return Usuario.builder()
+            .id(2)
+            .agenteAutorizadoId(101)
+            .nome("UM OUTRO USUARIO PAP INDIRETO")
+            .email("umoutrousuariopapindireto@net.com.br")
+            .cpf("222.222.222-22")
+            .dataCadastro(LocalDateTime.of(2018, 01, 01, 15, 00, 00))
+            .situacao(A)
             .build();
     }
 }

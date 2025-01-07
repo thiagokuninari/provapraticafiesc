@@ -4,7 +4,9 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -18,7 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -32,21 +34,17 @@ import java.util.stream.Stream;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Service
+@RequiredArgsConstructor
 public class CargoService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
+    private static final String EX_CODIGO_CARGO_EXISTENTE = "Já existe um cargo ativo com o mesmo código.";
 
-    @Autowired
-    private CargoRepository repository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-    @Autowired
-    private CargoSuperiorRepository cargoSuperiorRepository;
-
-    @Autowired
-    private NivelRepository nivelRepository;
+    private final CargoRepository repository;
+    private final UsuarioRepository usuarioRepository;
+    private final AutenticacaoService autenticacaoService;
+    private final CargoSuperiorRepository cargoSuperiorRepository;
+    private final NivelRepository nivelRepository;
 
     public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
                                                               boolean permiteEditarCompleto) {
@@ -56,20 +54,34 @@ public class CargoService {
     }
 
     private List<Cargo> filtrarPorNivelCanalOuCargoProprio(Integer nivelId, Collection<ECanal> canais,
-                                                          boolean permiteEditarCompleto) {
+                                                           boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate();
-        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
-            predicate.comNivel(nivelId).comCanal(ECanal.INTERNET);
-        } else {
-            predicate.comNivel(nivelId);
-        }
-        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
+        adicionarFiltroComNivelECanal(predicate, nivelId, canais);
+        adicionarFiltroComId(predicate, permiteEditarCompleto);
+
+        return repository.findAll(predicate.build());
     }
 
-    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
-        cargoPredicate.comId(getCargosPermitidosParaEditar());
-        cargoPredicate.comNivel(nivelId);
-        return repository.findAll(cargoPredicate.build());
+    private void adicionarFiltroComNivelECanal(CargoPredicate predicate, Integer nivelId, Collection<ECanal> canais) {
+        predicate.comNivel(nivelId);
+        if (canais != null && new ArrayList<>(canais).equals(List.of(ECanal.INTERNET))) {
+            predicate.comCanal(ECanal.INTERNET);
+        }
+    }
+
+    private void adicionarFiltroComId(CargoPredicate predicate, boolean permiteEditarCompleto) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        if (!permiteEditarCompleto || !usuarioAutenticado.isVisualizaGeral()) {
+            var cargoProprioId = usuarioAutenticado.getCargoId();
+            var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
+
+            if (!permiteEditarCompleto) {
+                cargosPermitidos.add(cargoProprioId);
+            }
+
+            predicate.comId(cargosPermitidos);
+        }
     }
 
     public List<Cargo> getPermitidosPorNivel(CargoPredicate cargoPredicate) {
@@ -79,8 +91,7 @@ public class CargoService {
 
     private void filtrarPermitidos(CargoPredicate predicate) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (!
-            usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
         }
     }
@@ -102,14 +113,14 @@ public class CargoService {
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
         return repository.buscarTodosComNiveis(
-            new CargoPredicate()
-                .comNiveis(niveisIds)
-                .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
-                .build())
+                new CargoPredicate()
+                    .comNiveis(niveisIds)
+                    .filtrarPermitidos(usuarioAutenticado, cargosIds)
+                    .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
+                    .build())
             .stream()
             .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ",
-                 cargo.getNome(), cargo.getNivel().getNome())))
+                cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 
@@ -144,12 +155,16 @@ public class CargoService {
     }
 
     public Cargo save(Cargo cargo) {
+        validarCodigoExistente(cargo.getCodigo());
+
         return repository.save(cargo);
     }
 
     public Cargo update(Cargo cargo) {
         var cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         copyProperties(cargo, cargoToUpdate);
+
+        validarCodigoExistente(cargoToUpdate.getCodigo(), cargoToUpdate.getId());
 
         return repository.save(cargoToUpdate);
     }
@@ -158,14 +173,38 @@ public class CargoService {
         var cargoToUpdate = repository.findById(cargoRequest.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
+        if (cargoRequest.getSituacao() == ESituacao.A) {
+            validarCodigoExistente(cargoRequest.getCodigo(), cargoRequest.getId());
+        }
+
         return repository.save(cargoToUpdate);
     }
 
-    private List<Integer> getCargosPermitidosParaEditar() {
-        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
-        var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
-        cargosPermitidos.add(cargoProprioId);
+    public List<SelectResponse> getAllCargos() {
+        return Stream.of(CodigoCargo.values())
+            .map(codigoCargo -> new SelectResponse(codigoCargo, codigoCargo.getDescricao()))
+            .collect(Collectors.toList());
+    }
 
-        return cargosPermitidos;
+    public List<SelectResponse> findCargosForAtaReuniao() {
+        return repository.findByCodigoIn(List.of(CodigoCargo.ASSISTENTE_OPERACAO, CodigoCargo.ASSISTENTE_HUNTER,
+                CodigoCargo.OPERACAO_CONSULTOR, CodigoCargo.COORDENADOR_OPERACAO, CodigoCargo.DIRETOR_OPERACAO,
+                CodigoCargo.EXECUTIVO, CodigoCargo.EXECUTIVO_HUNTER, CodigoCargo.GERENTE_OPERACAO)
+            )
+            .stream()
+            .map(cargo -> SelectResponse.of(cargo.getCodigo(), cargo.getNome()))
+            .collect(Collectors.toList());
+    }
+
+    private void validarCodigoExistente(CodigoCargo codigo) {
+        if (repository.existsByCodigoAndSituacao(codigo, ESituacao.A)) {
+            throw new ValidacaoException(EX_CODIGO_CARGO_EXISTENTE);
+        }
+    }
+
+    private void validarCodigoExistente(CodigoCargo codigo, Integer id) {
+        if (repository.existsByCodigoAndSituacaoAndIdNot(codigo, ESituacao.A, id)) {
+            throw new ValidacaoException(EX_CODIGO_CARGO_EXISTENTE);
+        }
     }
 }

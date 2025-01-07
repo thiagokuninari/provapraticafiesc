@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -19,6 +20,7 @@ import com.querydsl.core.types.*;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import javax.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,18 +31,16 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.infra.PredicateBase.getPartitionPredicate;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
-import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
-import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
@@ -55,7 +55,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.RECEPTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
@@ -94,20 +95,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
-    }
-
-    public Optional<Usuario> findUsuarioByEmail(String email) {
-        return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                )
-                .fetchOne());
     }
 
     public Optional<Usuario> findComplete(Integer id) {
@@ -320,8 +310,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ",
             new MapSqlParameterSource()
-            .addValue("usuarioSuperiorId", usuarioSuperiorId),
-        new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
+                .addValue("usuarioSuperiorId", usuarioSuperiorId),
+            new BeanPropertyRowMapper<>(UsuarioSubCanalId.class));
     }
 
     @Override
@@ -421,6 +411,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuarioHierarquia.usuario, usuario)
             .where(usuario.id.eq(usuarioId)
                 .and(usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)))
+            .fetch();
+    }
+
+    public List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(usuario.cpf.in(
+                select(usuario.cpf)
+                    .from(usuario)
+                    .where(getPartitionPredicate(usuariosIds, usuario.id))
+            ))
             .fetch();
     }
 
@@ -585,6 +586,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Integer> getUsuarioIdsByPermissaoEspecial(String codigoFuncionalidade) {
+        return new JPAQueryFactory(entityManager)
+            .select(permissaoEspecial.usuario.id)
+            .from(permissaoEspecial)
+            .innerJoin(permissaoEspecial.funcionalidade)
+            .where(permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade)
+                .and(permissaoEspecial.dataBaixa.isNull()))
+            .fetch();
+    }
+
+    @Override
     public List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel) {
         return new JPAQueryFactory(entityManager)
             .select(usuario)
@@ -724,7 +736,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(ESituacao.R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -780,29 +792,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                                            List<Integer> areasAtuacaoIds,
                                                            List<CodigoCargo> cargos,
                                                            Set<ECanal> canais) {
-        return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioResponse.class,
-                usuarioCidade.usuario.id,
-                usuarioCidade.usuario.nome,
-                usuarioCidade.usuario.cargo.codigo))
-            .from(usuarioCidade)
-            .join(usuarioCidade.cidade, cidade)
-            .join(cidade.subCluster, subCluster)
-            .join(subCluster.cluster, cluster)
-            .join(cluster.grupo, grupo)
-            .join(grupo.regional, regional)
-            .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
-                .and(usuarioCidade.usuario.canais.any().in(canais))
-                .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
-            .distinct()
-            .fetch();
-    }
-
-    @Override
-    public List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                               List<Integer> areasAtuacaoIds,
-                                                               List<CodigoCargo> cargos,
-                                                               Set<ECanal> canais) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
                 usuarioCidade.usuario.id,
@@ -923,12 +912,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
+    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros) {
         var query = new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario);
-        filtros.setNovasRegionaisIds(novasRegionaisIds);
-        montarQuery(query, filtros, novasRegionaisIds);
+        montarQuery(query, filtros);
 
         return query.where(filtros.toPredicate())
             .distinct()
@@ -936,52 +924,31 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros,
-                                                     List<Integer> novasRegionaisIds) {
+    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros) {
         var query = new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario);
-        filtros.setNovasRegionaisIds(novasRegionaisIds);
-        montarQuery(query, filtros, novasRegionaisIds);
+        montarQuery(query, filtros);
 
         return query.where(filtros.toPredicate())
             .distinct()
             .fetch();
     }
 
-    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
+    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros) {
         var temCidadesIds = !ObjectUtils.isEmpty(filtros.getCidadesIds());
-        var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
-        var temClusterId = Objects.nonNull(filtros.getClusterId());
-        var temGrupoId = Objects.nonNull(filtros.getGrupoId());
         var temUfId = Objects.nonNull(filtros.getUfId());
         var temRegionalId = Objects.nonNull(filtros.getRegionalId());
-        var temNovaRegionalId = temRegionalId
-            && Objects.nonNull(novasRegionaisIds)
-            && novasRegionaisIds.contains(filtros.getRegionalId());
 
-        if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temUfId || temRegionalId) {
+        if (temCidadesIds || temUfId || temRegionalId) {
             query.leftJoin(usuario.cidades, usuarioCidade)
                 .leftJoin(usuarioCidade.cidade, cidade);
         }
-        if (temSubClusterId || temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(cidade.subCluster, subCluster);
-        }
-        if (temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(subCluster.cluster, cluster);
-        }
-        if (temGrupoId || temRegionalId && !temNovaRegionalId) {
-            query.leftJoin(cluster.grupo, grupo);
-        }
-        if (temUfId || temRegionalId && temNovaRegionalId) {
+        if (temUfId || temRegionalId) {
             query.leftJoin(cidade.uf, uf1);
         }
         if (temRegionalId) {
-            if (temNovaRegionalId) {
-                query.leftJoin(cidade.regional, regional);
-            } else {
-                query.leftJoin(grupo.regional, regional);
-            }
+            query.leftJoin(cidade.regional, regional);
         }
     }
 
@@ -1118,6 +1085,27 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(departamento.codigo.eq(COMERCIAL))
                 .and(nivel.codigo.eq(OPERACAO))
                 .and(cargo.id.eq(cargoId))
+                .and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
+            .orderBy(usuario.id.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<SelectResponse> findUsuariosAtivosOperacaoComercialByCargoCodigo(CodigoCargo cargoCodigo) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SelectResponse.class,
+                    usuario.id,
+                    usuario.nome
+                )
+            )
+            .from(usuario)
+            .leftJoin(usuario.departamento, departamento)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(cargo.nivel, nivel)
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
+                .and(departamento.codigo.eq(COMERCIAL))
+                .and(nivel.codigo.eq(OPERACAO))
+                .and(cargo.codigo.eq(cargoCodigo))
                 .and(usuario.canais.any().eq(AGENTE_AUTORIZADO)))
             .orderBy(usuario.id.asc())
             .fetch();
@@ -1457,7 +1445,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .where(usuario.situacao.eq(A)
                 .and(usuario.cargo.codigo.eq(codigoCargo)
-                .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
+                    .and(usuario.organizacaoEmpresa.id.eq(organizacaoId))))
             .fetch();
     }
 
@@ -1467,5 +1455,59 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .selectFrom(usuario)
             .where(predicate)
             .fetchFirst());
+    }
+
+    @Override
+    public Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .where(usuario.cpf.eq(cpf).or(usuario.email.equalsIgnoreCase(email))
+                .and(usuario.situacao.notIn(situacoes)))
+            .fetchFirst());
+    }
+
+    @Override
+    public boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email) {
+        return new JPAQueryFactory(entityManager)
+            .selectOne()
+            .from(usuario)
+            .where(usuario.cpf.eq(cpf).or(usuario.email.equalsIgnoreCase(email))
+                .and(usuario.situacao.eq(A)))
+            .fetchFirst() != null;
+    }
+
+    @Override
+    public boolean isUsuarioSocioPrincipal(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .selectOne()
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
+                .and(usuario.id.eq(usuarioId)))
+            .fetchFirst() != null;
+    }
+
+    @Override
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.cargo.codigo.eq(AGENTE_AUTORIZADO_SOCIO)
+                .and(usuario.situacao.eq(A)
+                    .and(predicate)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioAgenteAutorizadoResponse.class,
+                usuario.email,
+                usuario.nome,
+                usuario.id))
+            .from(usuario)
+            .where(predicate)
+            .fetch();
     }
 }

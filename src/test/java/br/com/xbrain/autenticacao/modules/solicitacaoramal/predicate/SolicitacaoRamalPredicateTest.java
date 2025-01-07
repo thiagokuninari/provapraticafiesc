@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
@@ -39,6 +40,18 @@ public class SolicitacaoRamalPredicateTest {
     }
 
     @Test
+    public void comDataCadastro_naoDeveMontarPredicate_quandoInformarDataInicialSolicitacaoNull() {
+        assertThat(new SolicitacaoRamalPredicate().comDataCadastro(null, "10/05/2023").build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void comDataCadastro_naoDeveMontarPredicate_quandoInformarDataFinalSolicitacaoNull() {
+        assertThat(new SolicitacaoRamalPredicate().comDataCadastro("10/05/2023", null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
     public void comDataFinalizacaoNula_deveMontarPredicate_quandoDataFinalizacaoNull() {
         assertThat(new SolicitacaoRamalPredicate().comDataFinalizacaoNula().build())
             .isEqualTo(new BooleanBuilder(solicitacaoRamal.dataFinalizacao.isNull()));
@@ -57,9 +70,27 @@ public class SolicitacaoRamalPredicateTest {
     }
 
     @Test
-    public void comSubCanalId_deveRetornarPredicate_seHouverSubCanalId() {
+    public void comCanal_deveMontarPredicate_seHouverCanal() {
+        assertThat(new SolicitacaoRamalPredicate().comCanal(ECanal.AGENTE_AUTORIZADO).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.canal.eq(ECanal.AGENTE_AUTORIZADO)));
+    }
+
+    @Test
+    public void comCanal_naoDeveMontarPredicate_seNaoHouverCanal() {
+        assertThat(new SolicitacaoRamalPredicate().comCanal(null).build())
+            .isEqualTo(new BooleanBuilder());
+    }
+
+    @Test
+    public void comSubCanalId_deveMontarPredicate_seHouverSubCanalId() {
         assertThat(new SolicitacaoRamalPredicate().comSubCanalId(1).build())
             .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanal.id.eq(1)));
+    }
+
+    @Test
+    public void comSubCanalId_naoDeveMontarPredicate_seSubCanalIdNulo() {
+        assertThat(new SolicitacaoRamalPredicate().comSubCanalId(null).build())
+            .isEqualTo(new BooleanBuilder());
     }
 
     @Test

@@ -1,19 +1,25 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
 
+@UtilityClass
 public class CargoHelper {
 
     public static Cargo umCargo(Integer id, CodigoCargo codigoCargo) {
@@ -21,6 +27,20 @@ public class CargoHelper {
             .builder()
             .id(id)
             .codigo(codigoCargo)
+            .build();
+    }
+
+    public static Cargo umCargo(Integer id, String nome, CodigoCargo codigoCargo) {
+        return Cargo.builder()
+            .id(id)
+            .nome(nome)
+            .codigo(codigoCargo)
+            .situacao(ESituacao.A)
+            .nivel(Nivel
+                .builder()
+                .id(1)
+                .build()
+            )
             .build();
     }
 
@@ -248,5 +268,35 @@ public class CargoHelper {
                 .id(4)
                 .build())
             .build();
+    }
+
+    public static List<Cargo> umaListaDeCargosBko() {
+        return List.of(
+            umCargo(1, BACKOFFICE_ANALISTA_TRATAMENTO),
+            umCargo(2, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE),
+            umCargo(3, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO),
+            umCargo(4, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS),
+            umCargo(5, BACKOFFICE_COORDENADOR),
+            umCargo(6, BACKOFFICE_GERENTE)
+        );
+    }
+
+    public static List<SelectResponse> umaListaCargoSelectResponse() {
+        return Stream.of(CodigoCargo.values())
+            .map(codigoCargo -> new SelectResponse(codigoCargo, codigoCargo.getDescricao()))
+            .collect(Collectors.toList());
+    }
+
+    public static List<Cargo> umaListaDeCargosAtaReuniao() {
+        return List.of(
+            umCargo(1, "Assistente", CodigoCargo.ASSISTENTE_OPERACAO),
+            umCargo(2, "Assistente Hunter", CodigoCargo.ASSISTENTE_HUNTER),
+            umCargo(3, "Consultor", CodigoCargo.OPERACAO_CONSULTOR),
+            umCargo(4, "Coordenador", CodigoCargo.COORDENADOR_OPERACAO),
+            umCargo(6, "Diretor", CodigoCargo.DIRETOR_OPERACAO),
+            umCargo(5, "Executivo", CodigoCargo.EXECUTIVO),
+            umCargo(7, "Executivo Hunter", CodigoCargo.EXECUTIVO_HUNTER),
+            umCargo(10, "Gerente", CodigoCargo.GERENTE_OPERACAO)
+        );
     }
 }

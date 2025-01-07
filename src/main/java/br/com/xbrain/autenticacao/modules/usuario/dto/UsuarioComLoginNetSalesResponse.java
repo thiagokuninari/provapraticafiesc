@@ -24,7 +24,8 @@ public class UsuarioComLoginNetSalesResponse {
     private String cpfNetSales;
     private String organizacaoEmpresaNome;
     private String nomeEquipeVendasNetSales;
-    private String canalNetSales;
+    private Integer canalNetSalesId;
+    private String canalNetSalesCodigo;
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
         return UsuarioComLoginNetSalesResponse.builder()
@@ -38,7 +39,8 @@ public class UsuarioComLoginNetSalesResponse {
                 ? usuario.getOrganizacaoEmpresa().getDescricao()
                 : null)
             .nomeEquipeVendasNetSales(usuario.getNomeEquipeVendaNetSales())
-            .canalNetSales(usuario.getCanalNetSales())
+            .canalNetSalesId(usuario.getCanalNetSalesId())
+            .canalNetSalesCodigo(usuario.getCanalNetSalesCodigo())
             .build();
     }
 

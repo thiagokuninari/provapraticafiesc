@@ -20,10 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
-import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
-import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
@@ -159,13 +156,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCargoCodigo(CodigoCargo cargo) {
-        if (nonNull(cargo)) {
-            builder.and(usuario.cargo.codigo.eq(cargo));
-        }
-        return this;
-    }
-
     public UsuarioPredicate semCargoCodigo(CodigoCargo cargo) {
         if (cargo != null) {
             builder.and(usuario.cargo.codigo.ne(cargo));
@@ -233,7 +223,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comIds(List<Integer> usuariosIds) {
+    public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.and(ExpressionUtils.anyOf(
                 Lists.partition(new ArrayList<>(usuariosIds), QTD_MAX_IN_NO_ORACLE)
@@ -266,33 +256,17 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comRegional(Integer regionalId, List<Integer> novasRegionaisIds) {
+    public UsuarioPredicate comRegional(Integer regionalId) {
         if (regionalId != null) {
-            if (novasRegionaisIds.contains(regionalId)) {
-                comNovaRegional(regionalId);
-            } else {
-                builder.and(usuario.cidades.any().cidade.id.in(
-                    JPAExpressions.select(cidade.id)
-                        .from(cidade)
-                        .join(cidade.subCluster, subCluster)
-                        .join(subCluster.cluster, cluster)
-                        .join(cluster.grupo, grupo)
-                        .join(grupo.regional, regional)
-                        .where(regional.id.eq(regionalId))
-                ));
-            }
+            builder.and(usuario.cidades.any().cidade.id.in(
+                JPAExpressions.select(cidade.id)
+                    .from(cidade)
+                    .join(cidade.uf, uf1)
+                    .join(cidade.regional, regional)
+                    .where(regional.id.eq(regionalId))
+            ));
         }
         return this;
-    }
-
-    private void comNovaRegional(Integer regionalId) {
-        builder.and(usuario.cidades.any().cidade.id.in(
-            JPAExpressions.select(cidade.id)
-                .from(cidade)
-                .join(cidade.uf, uf1)
-                .join(cidade.regional, regional)
-                .where(regional.id.eq(regionalId))
-        ));
     }
 
     public UsuarioPredicate comUf(Integer ufId) {
@@ -302,45 +276,6 @@ public class UsuarioPredicate {
                     .from(cidade)
                     .join(cidade.uf, uf1)
                     .where(uf1.id.eq(ufId))
-            ));
-        }
-        return this;
-    }
-
-    public UsuarioPredicate comGrupo(Integer grupoId) {
-        if (grupoId != null) {
-            builder.and(usuario.cidades.any().cidade.id.in(
-                JPAExpressions.select(cidade.id)
-                    .from(cidade)
-                    .join(cidade.subCluster, subCluster)
-                    .join(subCluster.cluster, cluster)
-                    .join(cluster.grupo, grupo)
-                    .where(grupo.id.eq(grupoId))
-            ));
-        }
-        return this;
-    }
-
-    public UsuarioPredicate comCluster(Integer clusterId) {
-        if (clusterId != null) {
-            builder.and(usuario.cidades.any().cidade.id.in(
-                JPAExpressions.select(cidade.id)
-                    .from(cidade)
-                    .join(cidade.subCluster, subCluster)
-                    .join(subCluster.cluster, cluster)
-                    .where(cluster.id.eq(clusterId))
-            ));
-        }
-        return this;
-    }
-
-    public UsuarioPredicate comSubCluster(Integer subClusterId) {
-        if (subClusterId != null) {
-            builder.and(usuario.cidades.any().cidade.id.in(
-                JPAExpressions.select(cidade.id)
-                    .from(cidade)
-                    .join(cidade.subCluster, subCluster)
-                    .where(subCluster.id.eq(subClusterId))
             ));
         }
         return this;
@@ -371,11 +306,6 @@ public class UsuarioPredicate {
         if (!isEmpty(subCanais)) {
             builder.and(usuario.subCanais.any().id.in(subCanais));
         }
-        return this;
-    }
-
-    public UsuarioPredicate daHierarquia(List<Integer> ids) {
-        builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
         return this;
     }
 
@@ -414,25 +344,6 @@ public class UsuarioPredicate {
     public UsuarioPredicate comCargosIds(List<Integer> cargosIds) {
         if (!isEmpty(cargosIds)) {
             builder.and(usuario.cargo.id.in(cargosIds));
-        }
-        return this;
-    }
-
-    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, List<Integer> novasRegionaisIds,
-                                          Integer clusterId, Integer grupoId, Integer regionalId,
-                                          Integer subClusterId, Integer ufId) {
-        if (!isEmpty(cidadesIds)) {
-            comCidade(cidadesIds);
-        } else if (!isEmpty(subClusterId)) {
-            comSubCluster(subClusterId);
-        } else if (!isEmpty(clusterId)) {
-            comCluster(clusterId);
-        } else if (!isEmpty(grupoId)) {
-            comGrupo(grupoId);
-        } else if (!isEmpty(ufId)) {
-            comUf(ufId);
-        } else if (!isEmpty(regionalId)) {
-            comRegional(regionalId, novasRegionaisIds);
         }
         return this;
     }
@@ -513,12 +424,9 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comEstruturaDeCidade(PublicoAlvoComunicadoFiltros filtros) {
-        return comCluster(filtros.getClusterId())
-            .comCidade(filtros.getCidadesIds())
-            .comGrupo(filtros.getGrupoId())
-            .comRegional(filtros.getRegionalId(), filtros.getNovasRegionaisIds())
-            .comUf(filtros.getUfId())
-            .comSubCluster(filtros.getSubClusterId());
+        return comCidade(filtros.getCidadesIds())
+            .comRegional(filtros.getRegionalId())
+            .comUf(filtros.getUfId());
     }
 
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
@@ -590,5 +498,4 @@ public class UsuarioPredicate {
     public BooleanBuilder build() {
         return this.builder;
     }
-
 }

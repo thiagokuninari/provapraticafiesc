@@ -7,12 +7,12 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioDto implements Serializable {
 
@@ -38,7 +38,7 @@ public class UsuarioDto implements Serializable {
 
     private Integer id;
     @NotNull
-    @Size(max = 80)
+    @Size(max = 50)
     private String nome;
     @NotNull
     @Size(max = 80)
@@ -57,13 +57,13 @@ public class UsuarioDto implements Serializable {
     @Size(max = 30)
     private String orgaoExpedidor;
     @Size(max = 120)
-    @NotBlank
     private String loginNetSales;
     @Size(max = 120)
     private String nomeEquipeVendaNetSales;
     @Size(max = 120)
     private String codigoEquipeVendaNetSales;
-    private String canalNetSales;
+    private Integer canalNetSalesId;
+    private String canalNetSalesCodigo;
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
@@ -107,6 +107,9 @@ public class UsuarioDto implements Serializable {
     private String cupomLoja;
     private Integer siteId;
     private Set<ETipoFeederMso> tiposFeeder;
+    private Integer territorioMercadoDesenvolvimentoId;
+    private ETipoUsuario tipoUsuario;
+    private Set<Integer> subNiveisIds;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -134,6 +137,7 @@ public class UsuarioDto implements Serializable {
             usuario.setTiposFeeder(Set.of());
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
         return usuario;
     }
 
@@ -157,8 +161,11 @@ public class UsuarioDto implements Serializable {
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }
+        usuarioDto.setCanalNetSalesId(usuario.getCanalNetSalesId());
+        usuarioDto.setCanalNetSalesCodigo(usuario.getCanalNetSalesCodigo());
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
-
+        usuarioDto.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
+        usuarioDto.setSubNiveisIds(usuario.getSubNiveisIds());
         return usuarioDto;
     }
 

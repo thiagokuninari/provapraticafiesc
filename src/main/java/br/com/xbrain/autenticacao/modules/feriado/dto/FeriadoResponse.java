@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ import static java.util.Objects.nonNull;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeriadoResponse {
 
     private Integer id;
@@ -38,6 +40,10 @@ public class FeriadoResponse {
     private String estadoNome;
     private ETipoFeriado tipoFeriado;
     private Integer anoReferencia;
+
+    public FeriadoResponse(LocalDate dataFeriado) {
+        this.dataFeriado = dataFeriado;
+    }
 
     public static FeriadoResponse of(Feriado feriado) {
         var response = new FeriadoResponse();

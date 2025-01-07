@@ -8,39 +8,39 @@ app-config:
     autenticacao:
       url: http://autenticacao-api-dev:8096
     parceiros-online:
-      url: http://172.10.10.36:8099
+      url: http://parceiros-online-api-dev:8099
     call:
       url: http://call-api-dev:8094
     vendas:
       url: http://vendas-api-dev:8097
     mailing:
-      url: http://172.10.10.37:8095
+      url: http://mailing-api-dev:8095
     equipe-venda:
-      url: http://172.10.10.22:8089
+      url: http://equipe-venda-api-dev:8089
     contato-crn:
-      url: http://172.10.10.65:8084
+      url: http://contato-crn-api-dev:8084
     comunicados:
       url: http://172.10.10.51:6549
     claro-indico:
-      url: http://172.10.10.54:8055
+      url: http://claro-indico-api-dev:8055
     gestao:
-      url: http://172.10.10.21:8091
+      url: http://conexao-gestao-api-dev:8091
     notificacao:
       url: http://172.10.10.95:8081
     agente-autorizado:
-      url: http://172.10.10.105:8300
+      url: http://agente-autorizado-api-dev:8300
     emails:
       url: https://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
-      url: http://172.10.10.45:8086
+      url: http://integracao-vendas-api-dev:8086
     mailing-importacao:
-      url: http://172.10.10.32:8087
+      url: http://mailing-importacao-api-dev:8087
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     extrato-comissao:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
-      url: http://172.10.10.109:8304
+      url: http://funil-prospeccao-api-dev:8304
     localizacao:
       url: http://localizacao-api:8039
     gestao-colaborador-pol:
@@ -53,6 +53,14 @@ app-config:
       url: http://checagem-credito-api:8037
     backoffice:
       url: http://backoffice-api-dev:8101
+    feriado-automacao:
+      url: http://192.168.50.4:8078
+    ata-reuniao:
+      url: http://ata-reuniao-api:8308
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
+    pgaa:
+      url: http://pgaa-api:8354
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
@@ -78,4 +86,4 @@ spring:
 xbrain:
   logging:
     level: INFO
-    appender: JSON
+    appender: CONSOLE

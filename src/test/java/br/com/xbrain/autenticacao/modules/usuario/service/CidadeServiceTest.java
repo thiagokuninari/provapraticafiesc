@@ -4,34 +4,37 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoCidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
+import org.assertj.core.groups.Tuple;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.comum.helper.RegionalHelper.listaNovasRegionaisIds;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -47,6 +50,58 @@ public class CidadeServiceTest {
     private RegionalService regionalService;
     @Mock
     private CidadeService self;
+
+    @Test
+    public void buscarTodas_deveRetornarTodasAsCidadesComRegionalEComUf_quandoUfIdERegionalIdNaoNullos() {
+        when(cidadeRepository.findAllByRegionalIdAndUfId(1, 2, new CidadePredicate().build()))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.buscarTodas(2, 1, 4))
+            .extracting("id", "nome", "codigoIbge", "uf.id", "uf.nome")
+            .containsExactly(Tuple.tuple(5578, "LONDRINA", "1234", 1, "PARANA"));
+
+        verify(cidadeRepository).findAllByRegionalIdAndUfId(1, 2, new CidadePredicate().build());
+        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any(Sort.class));
+        verify(cidadeRepository, never()).findBySubCluster(anyInt());
+    }
+
+    @Test
+    public void buscarTodas_deveRetornarTodasAsCidadesComUf_quandoUfIdNaoNull() {
+        when(cidadeRepository.findCidadeByUfId(2, new Sort("nome")))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.buscarTodas(2, null, 4))
+            .extracting("id", "nome", "codigoIbge", "uf.id", "uf.nome")
+            .containsExactly(Tuple.tuple(5578, "LONDRINA", "1234", 1, "PARANA"));
+
+        verify(cidadeRepository).findCidadeByUfId(2, new Sort("nome"));
+        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any(Predicate.class));
+        verify(cidadeRepository, never()).findBySubCluster(anyInt());
+    }
+
+    @Test
+    public void buscarTodas_deveRetornarTodasAsCidadesComSubCluster_quandoUfIdNull() {
+        when(cidadeRepository.findBySubCluster(4))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.buscarTodas(null, 1, 4))
+            .extracting("id", "nome", "codigoIbge", "uf.id", "uf.nome")
+            .containsExactly(Tuple.tuple(5578, "LONDRINA", "1234", 1, "PARANA"));
+
+        verify(cidadeRepository).findBySubCluster(4);
+        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any(Sort.class));
+        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any(Predicate.class));
+    }
+
+    @Test
+    public void buscarTodas_deveRetornarListaVazia_quandoUfIdESubClusterIdNullos() {
+        assertThat(service.buscarTodas(null, 1, null))
+            .isEmpty();
+
+        verify(cidadeRepository, never()).findBySubCluster(anyInt());
+        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any(Sort.class));
+        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any(Predicate.class));
+    }
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
@@ -173,40 +228,207 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build(),
-                Cidade.builder().id(4519).nome("FLORIANOPOLIS")
-                    .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build()));
-        when(regionalService.getNovasRegionaisIds())
-            .thenReturn(listaNovasRegionaisIds());
-
-        assertThat(service.getAllByRegionalId(1001))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1001, "RS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1001, "RS")
-            );
-    }
-
-    @Test
-    public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
-            .thenReturn(List.of(
-                Cidade.builder().id(5578).nome("LONDRINA")
-                    .uf(Uf.builder().id(1).nome("PARANA").build())
                     .regional(Regional.builder().id(1027).nome("RPS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
                     .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
-        when(regionalService.getNovasRegionaisIds())
-            .thenReturn(listaNovasRegionaisIds());
         assertThat(service.getAllByRegionalId(1027))
             .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
             .contains(
                 tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"),
                 tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RPS"));
+    }
+
+    @Test
+    public void getAllByRegionalIdAndUfId_deveRetornarCidades_quandoRegionalIdEUfIdForemInformados() {
+        var usuarioAutenticado = UsuarioAutenticado.builder().id(1).build();
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
+
+        var predicate = new CidadePredicate().filtrarPermitidos(usuarioAutenticado).build();
+
+        when(cidadeRepository.findAllByRegionalIdAndUfId(eq(1027), eq(1), eq(predicate)))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getAllByRegionalIdAndUfId(1027, 1))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(cidadeRepository).findAllByRegionalIdAndUfId(eq(1027), eq(1), eq(predicate));
+
+    }
+
+    @Test
+    public void getCidadesByRegionalReprocessamento_deveRetornarUsuariosCidadeDto_quandoRegionalIdForInformado() {
+        var predicate = new CidadePredicate().build();
+
+        when(cidadeRepository.findAllByRegionalId(eq(1027), eq(predicate)))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getCidadesByRegionalReprocessamento(1027))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
+
+        verify(cidadeRepository).findAllByRegionalId(eq(1027), eq(predicate));
+    }
+
+    @Test
+    public void getCidadesByRegionalAndUfReprocessamento_deveRetornarUsuariosCidadeDto_seRegionalIdEUfIdForemInformados() {
+        var predicate = new CidadePredicate().build();
+
+        when(cidadeRepository.findAllByRegionalIdAndUfId(eq(1027), eq(1), eq(predicate)))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getCidadesByRegionalAndUfReprocessamento(1027, 1))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
+
+        verify(cidadeRepository).findAllByRegionalIdAndUfId(eq(1027), eq(1), eq(predicate));
+    }
+
+    @Test
+    public void getAllBySubClusterId_deveRetornarUsuariosCidadeDto_quandoSubClusterIdForInformado() {
+        var usuarioAutenticado = UsuarioAutenticado.builder().id(1).build();
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
+
+        var predicate = new CidadePredicate().filtrarPermitidos(usuarioAutenticado).build();
+
+        when(cidadeRepository.findAllBySubClusterId(eq(1), eq(predicate)))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getAllBySubClusterId(1))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(cidadeRepository).findAllBySubClusterId(1, predicate);
+    }
+
+    @Test
+    public void getAllBySubCluster_deveRetornarCidades_quandoSubClusterIdForInformado() {
+        when(cidadeRepository.findBySubCluster(eq(3)))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getAllBySubCluster(3))
+            .extracting("id", "nome", "uf.id", "regional.id")
+            .contains(tuple(5578, "LONDRINA", 1, 1027));
+
+        verify(cidadeRepository).findBySubCluster(eq(3));
+    }
+
+    @Test
+    public void findByUfNomeAndCidadeNome_deveRetornarCidades_quandoCidadeEncontrada() {
+        var predicate = new CidadePredicate().comNome("LONDRINA").comUf("PARANA");
+        when(cidadeRepository.findByPredicate(predicate.build()))
+            .thenReturn(Optional.ofNullable(umaCidade()));
+
+        assertThat(service.findByUfNomeAndCidadeNome("PARANA", "LONDRINA"))
+            .extracting("id", "nome", "codigoIbge", "uf.id", "uf.nome")
+            .containsExactly(5578, "LONDRINA", "1234", 1, "PARANA");
+
+        verify(cidadeRepository).findByPredicate(predicate.build());
+    }
+
+    @Test
+    public void findByUfNomeAndCidadeNome_deveRetornarException_quandoCidadeNaoEncontrada() {
+        assertThatCode( () -> service.findByUfNomeAndCidadeNome("GOIAS", "GOIANA"))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Cidade não encontrada.");
+
+        verify(cidadeRepository).findByPredicate(new CidadePredicate().comNome("GOIANA").comUf("GOIAS").build());
+    }
+
+    @Test
+    public void getClusterizacao_deveRetornarClusterizacaoDto_quandoCidadeIdForInformado() {
+        var clusterizacaoDto = new ClusterizacaoDto();
+        clusterizacaoDto.setCidadeId(5);
+        clusterizacaoDto.setCidadeNome("LONDRINA");
+
+        when(cidadeRepository.getClusterizacao(eq(5)))
+            .thenReturn(clusterizacaoDto);
+
+        assertThat(service.getClusterizacao(5))
+            .extracting("cidadeId", "cidadeNome")
+            .contains(5, "LONDRINA");
+
+        verify(cidadeRepository).getClusterizacao(eq(5));
+    }
+
+    @Test
+    public void findCidadeByCodigoIbge_deveRetornarCidadeResponse_quandoCodigoIbgeForInformado() {
+        when(cidadeRepository.findCidadeByCodigoIbge(eq("1234")))
+            .thenReturn(Optional.of(
+                umaCidade()));
+
+        assertThat(service.findCidadeByCodigoIbge("1234"))
+            .extracting("id", "nome", "uf.id", "regional.id", "codigoIbge")
+            .contains(5578, "LONDRINA", 1, 1027, "1234");
+
+        verify(cidadeRepository).findCidadeByCodigoIbge(eq("1234"));
+    }
+
+    @Test
+    public void findCidadesByCodigosIbge_deveRetornarListaCidadeResponse_quandoListaCodigoIbgeForInformado() {
+        var predicate = new CidadePredicate().comCodigosIbge(List.of("IBGE"));
+        when(cidadeRepository.findCidadesByCodigosIbge(predicate.build()))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.findCidadesByCodigosIbge(List.of("IBGE")))
+            .extracting("id", "nome", "uf.id", "regional.id", "codigoIbge")
+            .contains(Tuple.tuple(5578, "LONDRINA", 1, 1027, "1234"));
+
+        verify(cidadeRepository).findCidadesByCodigosIbge(predicate.build());
+    }
+
+    @Test
+    public void findCidadesByCodigosIbge_deveRetornarListaVazia_quandoCidadesNaoEncontrado() {
+        var predicate = new CidadePredicate().comCodigosIbge(List.of("XUXU"));
+        when(cidadeRepository.findCidadesByCodigosIbge(predicate.build()))
+            .thenReturn(List.of());
+
+        assertThat(service.findCidadesByCodigosIbge(List.of("XUXU")))
+            .isEmpty();
+
+        verify(cidadeRepository).findCidadesByCodigosIbge(predicate.build());
+    }
+
+    @Test
+    public void findById_deveRetornarCidade_quandoExistirCidade() {
+        when(cidadeRepository.findOne(eq(1)))
+            .thenReturn(umaCidade());
+
+        assertThat(service.findById(1))
+            .extracting("id", "nome", "uf.id", "regional.id", "codigoIbge")
+            .contains(5578, "LONDRINA", 1, 1027, "1234");
+
+        verify(cidadeRepository).findOne(eq(1));
+    }
+
+    @Test
+    public void getAllCidadeNetUno_deveRetornarListaCidadeResponse_quandoCidadeEncontrada() {
+        when(cidadeRepository.findAllByNetUno(Eboolean.V))
+            .thenReturn(List.of(umaCidade()));
+
+        assertThat(service.getAllCidadeNetUno())
+            .extracting("id", "nome", "uf.id", "regional.id", "codigoIbge")
+            .contains(Tuple.tuple(5578, "LONDRINA", 1, 1027, "1234"));
+
+        verify(cidadeRepository).findAllByNetUno(Eboolean.V);
+    }
+
+    @Test
+    public void getAllCidadeNetUno_deveRetornarListaVazia_quandoCidadeNaoEncontrada() {
+        when(cidadeRepository.findAllByNetUno(Eboolean.V))
+            .thenReturn(List.of());
+
+        assertThat(service.getAllCidadeNetUno())
+            .isEmpty();
+
+        verify(cidadeRepository).findAllByNetUno(Eboolean.V);
     }
 
     @Test
@@ -606,5 +828,44 @@ public class CidadeServiceTest {
             );
 
         verify(cidadeRepository).findCodigoIbgeRegionalByCidade(predicate);
+    }
+
+    private Cidade umaCidade() {
+        return Cidade.builder()
+            .id(5578)
+            .nome("LONDRINA")
+            .codigoIbge("1234")
+            .uf(Uf.builder().id(1).nome("PARANA").build())
+            .regional(Regional.builder().id(1027).nome("RPS").build())
+            .build();
+    }
+
+    @Test
+    public void getCidadesByCidadeInstalacaoIds_deveRetornarListaConfiguracaoCidade_quandoChamado() {
+        var cidadesIds = List.of(5578, 3426, 5107);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(List.of(cidadeLondrina(), cidadeMaringa()));
+
+        assertThat(service.getCidadesByCidadeInstalacaoIds(cidadesIds))
+            .extracting(ConfiguracaoCidadeResponse::getId, ConfiguracaoCidadeResponse::getNome,
+                ConfiguracaoCidadeResponse::getUf)
+            .containsExactlyInAnyOrder(tuple(5578, "LONDRINA", "PR"), tuple(3426, "MARINGA", "PR"));
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
+    }
+
+    @Test
+    public void getCidadesByCidadeInstalacaoIds_deveRetornarListaVazia_quandoCidadesNaoEncontradas() {
+        var cidadesIds = List.of(123123, 213213);
+        var predicate = new CidadePredicate().comCidadesId(cidadesIds).build();
+
+        when(cidadeRepository.findAllByPredicate(predicate))
+            .thenReturn(List.of());
+
+        assertThat(service.getCidadesByCidadeInstalacaoIds(cidadesIds)).isEmpty();
+
+        verify(cidadeRepository).findAllByPredicate(predicate);
     }
 }

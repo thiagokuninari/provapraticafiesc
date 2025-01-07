@@ -34,7 +34,8 @@ public enum EScopes {
     INTEGRACAO_CLARO_NET("integracao-claro-net-api"),
     SOCIAL_HUB("social-hub-api"),
     SUPORTE_VENDAS_BKO("suporte-vendas-bko-api"),
-    CHECAGEM_CREDITO_API("checagem-credito-api");
+    CHECAGEM_CREDITO_API("checagem-credito-api"),
+    BRIEFING("briefing-api");
 
     @Getter
     private String scope;

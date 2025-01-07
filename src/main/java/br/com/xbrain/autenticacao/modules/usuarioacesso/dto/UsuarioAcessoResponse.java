@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.Optional;
@@ -27,10 +26,6 @@ public class UsuarioAcessoResponse {
     private String cpf;
     private String email;
     private String dataHora;
-
-    public UsuarioAcessoResponse(UsuarioAcesso usuarioAcesso) {
-        BeanUtils.copyProperties(usuarioAcesso, this);
-    }
 
     public static UsuarioAcessoResponse of(UsuarioAcesso usuarioAcesso) {
         return UsuarioAcessoResponse.builder()

@@ -102,8 +102,12 @@ public class UsuarioUploadFileService {
             .nascimento(trataData(row.getCell(CELULA_NACIMENTO)))
             .telefone(recuperarValorCelula(row, CELULA_TELEFONE))
             .senha(passwordEncoder.encode(senha))
-            .departamento(recuperarDepartamento(row.getCell(CELULA_DEPARTAMENTO).getStringCellValue(), nivel))
-            .cargo(recuperarCargo(row.getCell(CELULA_CARGO).getStringCellValue(), nivel))
+            .departamento(nivel != null
+                ? recuperarDepartamento(row.getCell(CELULA_DEPARTAMENTO).getStringCellValue(), nivel)
+                : null)
+            .cargo(nivel != null
+                ? recuperarCargo(row.getCell(CELULA_CARGO).getStringCellValue(), nivel)
+                : null)
             .nivel(nivel)
             .build();
 

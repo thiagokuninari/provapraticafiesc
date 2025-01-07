@@ -43,6 +43,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     Optional<Usuario> findByEmailAndSituacao(String email, ESituacao situacao);
 
+    Optional<Usuario> findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao);
+
     List<Usuario> findAllByCpf(String cpf);
 
     Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);
@@ -64,6 +66,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     List<Usuario> findByFotoDiretorioIsNotNull();
 
     Optional<Usuario> getUsuarioCadastroById(Integer usuarioId);
+
+    List<Usuario> findByCargo_IdAndSituacao(Integer cargoId, ESituacao situacao);
 
     @Modifying
     @Query("update Usuario u set u.fotoDiretorio = ?1 where u.id = ?2")
@@ -123,4 +127,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     List<Usuario> findByOrganizacaoEmpresaIdAndCargo_CodigoIn(Integer organizacaoEmpresaId, List<CodigoCargo> cargos);
 
     List<Usuario> findByOrganizacaoEmpresaId(Integer organizacaoEmpresaId);
+
+    List<Usuario> findAllByCanalNetSalesId(Integer id);
 }

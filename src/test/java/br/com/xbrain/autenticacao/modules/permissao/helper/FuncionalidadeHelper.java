@@ -3,12 +3,14 @@ package br.com.xbrain.autenticacao.modules.permissao.helper;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao.*;
 import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeCanalHelper.umaFuncionalidadeCanal;
 
+@UtilityClass
 public class FuncionalidadeHelper {
 
     public static Funcionalidade funcionalidadeGerenciarPausasAgendadas() {
@@ -812,6 +814,15 @@ public class FuncionalidadeHelper {
                 umaFuncionalidadeCanal(3062, ECanal.D2D_PROPRIO)
             ))
             .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade umaFuncionalidadeBko(Integer id, String nome) {
+        return Funcionalidade.builder()
+            .id(id)
+            .nome(nome)
+            .role(nome.concat(" - ").concat(id.toString()))
+            .aplicacao(umaAplicacaoBko())
             .build();
     }
 

@@ -27,10 +27,7 @@ public class UsuarioFiltros {
     private String cnpjAa;
     private Integer regionalId;
     private Integer ufId;
-    private Integer grupoId;
-    private Integer clusterId;
     private List<Integer> unidadeNegocioIds;
-    private Integer subClusterId;
     private Integer nivelId;
     private Integer departamentoId;
     private Integer cargoId;
@@ -40,7 +37,6 @@ public class UsuarioFiltros {
     private Integer organizacaoId;
     private List<Integer> excluiIds;
     private List<CodigoCargo> codigosCargos;
-    private List<Integer> novasRegionaisIds;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -51,11 +47,8 @@ public class UsuarioFiltros {
             .comCanal(canal)
             .comSubCanal(subCanalId)
             .comSituacoes(situacoes)
-            .comGrupo(grupoId)
-            .comCluster(clusterId)
-            .comRegional(regionalId, novasRegionaisIds)
+            .comRegional(regionalId)
             .comUf(ufId)
-            .comSubCluster(subClusterId)
             .comUnidadeNegocio(unidadeNegocioIds)
             .comOrganizacaoEmpresaId(organizacaoId)
             .comNivel(!ObjectUtils.isEmpty(nivelId)

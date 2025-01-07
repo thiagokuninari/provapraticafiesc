@@ -16,6 +16,6 @@ public class ConfiguracaoTelefoniaResponse {
     private String ip;
 
     public String getText() {
-        return ip.concat(" - ").concat(nome);
+        return ip != null && nome != null ?  ip.concat(" - ").concat(nome) : null;
     }
 }

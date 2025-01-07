@@ -1,10 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.PermissaoTecnicoIndicadorService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -25,13 +30,12 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorTecnicoService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.service.OrganizacaoEmpresaService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -43,9 +47,11 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.suportevendas.service.SuporteVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.event.UsuarioSubCanalEvent;
+import br.com.xbrain.autenticacao.modules.usuario.exceptions.ValidacaoSubCanalException;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -54,6 +60,10 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,10 +83,6 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -95,7 +101,9 @@ import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObrigatorioDadosNetSales;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.getListaCidadeResponseOrdenadaPorNome;
 import static br.com.xbrain.autenticacao.modules.usuario.service.CidadeService.hasFkCidadeSemNomeCidadePai;
 import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
@@ -122,12 +130,15 @@ public class UsuarioService {
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO =
         "Não é possível remover o canal Agente Autorizado, pois o usuário possui vínculo com o(s) AA(s): %s.";
+    private static final String MSG_ERRO_DADOS_NETSALES_OBRIGATORIOS = "Dados NetSales precisam ser preenchidos";
     private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE =
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
         "Usuário já está cadastrado em outra equipe";
     private static final List<CodigoCargo> CARGOS_OPERADORES_BACKOFFICE
-        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
+        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO,
+        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE,
+        BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
@@ -170,6 +181,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser salvo pois o fornecedor está inativo.";
     private static final List<Integer> FUNCIONALIDADES_SOCIAL_HUB = List.of(30000);
+    private static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -259,17 +271,27 @@ public class UsuarioService {
     @Value("${app-config.url-foto-usuario}")
     private String urlDir;
     @Autowired
+    private ColaboradorTecnicoService colaboradorTecnicoService;
+    @Autowired
     private PermissaoTecnicoIndicadorService permissaoTecnicoIndicadorService;
     @Autowired
     private CidadeService cidadeService;
     @Lazy
     @Autowired
     private OrganizacaoEmpresaService organizacaoEmpresaService;
-    @Value("#{'${app-config.dominios-social-hub}'.split(',')}")
-    private Set<String> dominiosPermitidos;
+    @Autowired
+    private SuporteVendasService suporteVendasService;
+    @Autowired
+    private SubNivelService subNivelService;
+    @Autowired
+    private UsuarioCadastroMqSender usuarioCadastroMqSender;
+    @Autowired
+    private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
+    @Autowired
+    private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
 
     public Usuario findComplete(Integer id) {
-        var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+        var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
         usuario.forceLoad();
 
         return usuario;
@@ -318,10 +340,14 @@ public class UsuarioService {
         return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
     }
 
+    public List<SelectResponse> findColaboradoresAtivosOperacaoComercialPorCargoCodigo(CodigoCargo cargo) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoCodigo(cargo);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         var cidades = repository
             .findComCidade(usuarioId)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
 
         if (!cidades.isEmpty()) {
             var cidadesResponse = getListaCidadeResponseOrdenadaPorNome(cidades);
@@ -337,7 +363,7 @@ public class UsuarioService {
     }
 
     public Usuario findCompleteById(int id) {
-        return repository.findComplete(id).orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+        return repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public Usuario findCompleteByIdComLoginNetSales(int id) {
@@ -349,7 +375,13 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.of(repository.findByEmail(email)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)));
+    }
+
+    public UsuarioResponse findByCpfAndSituacaoIsNot(String cpf, ESituacao situacao) {
+        return repository.findByCpfAndSituacaoIsNot(getOnlyNumbers(cpf), situacao)
+            .map(UsuarioResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
@@ -438,6 +470,12 @@ public class UsuarioService {
         var usuarios = repository.findAll(filtro.toPredicate().build());
         return StreamSupport.stream(usuarios.spliterator(), false)
             .map(UsuarioConsultaDto::convertFrom).collect(toList());
+    }
+
+    private void validarNivelDadosObrigatoriosNetSales(Usuario usuario) {
+        if (isNivelObrigatorioDadosNetSales(usuario.getNivelCodigo()) && usuario.hasNotDadosNetSales()) {
+            throw new ValidacaoException(MSG_ERRO_DADOS_NETSALES_OBRIGATORIOS);
+        }
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {
@@ -591,12 +629,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(UsuarioDto usuario, MultipartFile foto) {
-        var request = UsuarioDto.convertFrom(usuario);
+    public UsuarioDto save(UsuarioDto usuarioDto, MultipartFile foto) {
+        var usuario = UsuarioDto.convertFrom(usuarioDto);
         if (!isEmpty(foto)) {
-            fileService.salvarArquivo(request, foto);
+            fileService.salvarArquivo(usuario, foto);
         }
-        return save(request);
+        vincularSubNiveis(usuario, usuarioDto);
+        return save(usuario);
     }
 
     @Transactional
@@ -612,6 +651,7 @@ public class UsuarioService {
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
             configurarDataReativacao(usuario, situacaoAnterior);
+            validarERedistribuirIndicacoes(usuario);
             repository.saveAndFlush(usuario);
             adicionarPermissoes(usuario);
             configurarCadastro(usuario);
@@ -635,12 +675,39 @@ public class UsuarioService {
         feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
         permissaoTecnicoIndicadorService
             .removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
+    }
+
+    private void removerPermissoesEspeciaisSubNivelMsoByNivel(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            repository.findById(usuario.getId())
+                .ifPresent(this::deletarPermissoesEspeciaisMso);
+        }
+    }
+
+    private void deletarPermissoesEspeciaisMso(Usuario usuarioAntigo) {
+        if (usuarioAntigo.isIdNivelMso()) {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(
+                subNivelService.getFuncionalidadesIdsByNivel(usuarioAntigo.getNivelId()),
+                List.of(usuarioAntigo.getId()));
+        }
     }
 
     private void adicionarPermissoes(Usuario usuario) {
         subCanalService.adicionarPermissaoIndicacaoPremium(usuario);
         subCanalService.adicionarPermissaoIndicacaoInsideSalesPme(usuario);
         feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
+        this.adicionarPermissoesEspeciaisMsoBySubNivel(usuario);
+    }
+
+    private void adicionarPermissoesEspeciaisMsoBySubNivel(Usuario usuario) {
+        if (usuario.isIdNivelMso() && !isEmpty(usuario.getSubNiveis())) {
+            var permissoesEspeciaisBko = this.getPermissoesEspeciaisDoUsuario(usuario.getId(),
+                usuario.getUsuarioCadastro().getId(),
+                subNivelService.getSubNivelFuncionalidadesIdsByCargo(usuario.getSubNiveis(), usuario.getCargoId()));
+
+            this.salvarPermissoesEspeciais(permissoesEspeciaisBko);
+        }
     }
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {
@@ -689,6 +756,12 @@ public class UsuarioService {
         var result = equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(usuarioAnterior.getId());
         if (!result.isEmpty()) {
             throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
+        }
+    }
+
+    private void vincularSubNiveis(Usuario usuario, UsuarioDto usuarioDto) {
+        if (!isEmpty(usuarioDto.getSubNiveisIds())) {
+            usuario.setSubNiveis(subNivelService.findByIdIn(usuarioDto.getSubNiveisIds()));
         }
     }
 
@@ -768,20 +841,40 @@ public class UsuarioService {
             .collect(Collectors.joining(", "));
     }
 
-    public Usuario salvarUsuarioBackoffice(Usuario usuario) {
+    public UsuarioResponse salvarUsuarioBackoffice(Usuario usuario) {
         tratarUsuarioBackoffice(usuario);
+        validarOrganizacaoEmpresa(usuario);
         validar(usuario);
-        validarOrganizacaoEmpresaInativa(usuario);
         tratarCadastroUsuario(usuario);
-        var enviarEmail = usuario.isNovoCadastro();
+        tratarUsuarioAntigo(usuario);
+        var isNovoCadastro = usuario.isNovoCadastro();
         repository.save(usuario);
 
         processarUsuarioParaSocialHub(usuario);
-        enviarEmailDadosAcesso(usuario, enviarEmail);
-        return usuario;
+        enviarEmailDadosAcesso(usuario, isNovoCadastro);
+        return UsuarioResponse.of(usuario);
     }
 
-    private void validarOrganizacaoEmpresaInativa(Usuario usuario) {
+    private void tratarUsuarioAntigo(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            suporteVendasService.desvincularGruposByUsuario(usuarioAntigo, usuario);
+            deletarPermissoesEspeciaisMso(usuarioAntigo);
+        }
+    }
+
+    public UsuarioResponse salvarUsuarioBriefing(Usuario usuario) {
+        validar(usuario);
+        tratarCadastroUsuario(usuario);
+        this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
+        var enviarEmail = usuario.isNovoCadastro();
+        repository.save(usuario);
+
+        enviarEmailDadosAcesso(usuario, enviarEmail);
+        return UsuarioResponse.of(usuario);
+    }
+
+    private void validarOrganizacaoEmpresa(Usuario usuario) {
         if (usuario.getOrganizacaoEmpresa() != null) {
             var organizacaoEmpresa = organizacaoEmpresaService.findById(usuario.getOrganizacaoEmpresa().getId());
             if (!organizacaoEmpresa.isAtivo()) {
@@ -902,13 +995,6 @@ public class UsuarioService {
         usuario.setAlterarSenha(Eboolean.V);
     }
 
-    public void salvarUsuarioRealocado(Usuario usuario) {
-        var usuarioARealocar = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
-        usuarioARealocar.setSituacao(ESituacao.R);
-        repository.save(usuarioARealocar);
-    }
-
     private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
         return usuario.isNovoCadastro()
             ? ESituacao.A
@@ -924,7 +1010,7 @@ public class UsuarioService {
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
         var usuarioSuperior = repository.findById(idUsuarioSuperior)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
 
         idUsuarioNovo.stream()
             .map(id -> {
@@ -990,6 +1076,7 @@ public class UsuarioService {
             var usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
                 var usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
+                usuarioDto.setTipoUsuario(SOCIO);
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -1018,6 +1105,12 @@ public class UsuarioService {
         validarEmailCadastrado(email, null);
     }
 
+    public List<UsuarioVendasPapIndiretoResponse> findColaboradoresPapIndireto(List<Integer> aaUsuarioIds) {
+        return repository.getAllUsuariosDoUsuarioPapIndireto(aaUsuarioIds).stream()
+            .map(UsuarioVendasPapIndiretoResponse::of)
+            .collect(toList());
+    }
+
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
@@ -1039,6 +1132,7 @@ public class UsuarioService {
     }
 
     private void validar(Usuario usuario) {
+        validarNivelDadosObrigatoriosNetSales(usuario);
         validarSupervisorNaHierarquia(usuario);
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
@@ -1052,7 +1146,7 @@ public class UsuarioService {
 
     private void validarOrganizacaoEmpresaReceptivoInternet(Usuario usuario) {
         if (usuario.isNivelReceptivo() || usuario.isNivelOperacao() && usuario.hasCanal(ECanal.INTERNET)) {
-            validarOrganizacaoEmpresaInativa(usuario);
+            validarOrganizacaoEmpresa(usuario);
         }
     }
 
@@ -1101,10 +1195,14 @@ public class UsuarioService {
         if (!CollectionUtils.isEmpty(usuario.getSubCanais())) {
             if (usuario.getSubCanais().size() > 1
                 && !CARGOS_COM_MAIS_SUBCANAIS.contains(cargo.getCodigo())) {
-                throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+                throw new ValidacaoException(
+                    "Não é permitido cadastrar mais de um sub-canal para este cargo."
+                );
             }
         } else {
-            throw MSG_ERRO_USUARIO_NAO_POSSUI_SUBCANAIS;
+            throw new ValidacaoException(
+                "Usuário não possui sub-canais, deve ser cadastrado no mínimo um."
+            );
         }
     }
 
@@ -1116,7 +1214,9 @@ public class UsuarioService {
                 .collect(Collectors.toSet());
 
             if (!usuario.hasSubCanaisDaHierarquia(hierarquiaSubCanalIds)) {
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
+                throw new ValidacaoException(
+                    "Usuário não possui sub-canal em comum com usuários da hierarquia."
+                );
             }
         }
     }
@@ -1129,7 +1229,9 @@ public class UsuarioService {
                     getSubordinadosComSubCanaisDiferentes(usuario, subordinadosComSubCanalId);
                 applicationEventPublisher.publishEvent(
                     new UsuarioSubCanalEvent(this, subordinadosComSubCanaisDiferentes));
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DOS_SUBORDINADOS;
+                throw new ValidacaoSubCanalException(
+                    "Usuário não possui sub-canal em comum com usuários subordinados."
+                );
             }
         }
     }
@@ -1417,7 +1519,12 @@ public class UsuarioService {
         permissaoTecnicoIndicadorService.removerPermissaoTecnicoIndicadorDoUsuario(UsuarioDto.of(usuario));
         var usuarioNovo = repository.save(criaNovoUsuarioAPartirDoRemanejado(usuario));
         var remanejamentoRequest = UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId);
-        colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+
+        if (usuarioNovo.isTecnico()) {
+            colaboradorTecnicoService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        } else {
+            colaboradorVendasService.atualizarUsuarioRemanejado(remanejamentoRequest);
+        }
         log.info("Usuário remanejado com sucesso. Usuário Antigo {} | Usuário Novo {} | Agente Autorizado: {}",
             usuarioMqRequest.getId(), usuarioNovo.getId(), usuarioMqRequest.getAgenteAutorizadoId());
 
@@ -1426,12 +1533,13 @@ public class UsuarioService {
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
         log.info("Remanejando usuário {}.", usuarioRemanejado.getId());
+        var usuario = repository.findById(usuarioRemanejado.getId())
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
+
+        usuarioRemanejado.setDataUltimoAcesso(usuario.getDataUltimoAcesso());
+        usuarioRemanejado.setSenha(usuario.getSenha());
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
         usuarioRemanejado.setSituacao(ESituacao.R);
-        usuarioRemanejado
-            .setSenha(repository.findById(usuarioRemanejado.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."))
-            .getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
         log.info("Usuário remanejado com sucesso.");
@@ -1478,7 +1586,7 @@ public class UsuarioService {
         }
 
         var usuarioCpfAntigo = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
         usuario.removerCaracteresDoCpf();
 
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
@@ -1613,6 +1721,7 @@ public class UsuarioService {
     private void configurarNivel(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
         var nivel = nivelRepository.findByCodigo(usuarioMqRequest.getNivel());
         usuarioDto.setNivelId(nivel.getId());
+        usuarioDto.setNivelCodigo(nivel.getCodigo());
     }
 
     private void configurarUnidadesNegocio(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
@@ -1662,8 +1771,8 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setDataReativacao(LocalDateTime.now());
-        usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
+        usuario.setSituacao(ESituacao.A);
         validarSubcanal(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
@@ -1673,6 +1782,7 @@ public class UsuarioService {
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
         ativarSocio(usuario);
+        ativarUsuarioSocialHub(dto);
     }
 
     public void ativar(Integer id) {
@@ -1685,6 +1795,9 @@ public class UsuarioService {
     }
 
     private void validarAtivacao(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            throw new ValidacaoException("O usuário já está ativo.");
+        }
         var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
         var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
@@ -1709,6 +1822,8 @@ public class UsuarioService {
         } else if (!isEmpty(usuario.getOrganizacaoEmpresa())
             && !usuario.getOrganizacaoEmpresa().isAtivo()) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO);
+        } else if (existeUsuarioCadastradoIgualAtivo(usuario)) {
+            throw new ValidacaoException("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
         }
 
         repository.save(usuario);
@@ -1757,12 +1872,6 @@ public class UsuarioService {
         colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
     }
 
-    public void limparCpfAntigoSocioPrincipal(Integer id) {
-        var socio = findOneById(id);
-        socio.setCpf(null);
-        repository.save(socio);
-    }
-
     @Transactional
     public Usuario limpaCpf(Integer id) {
         var usuario = findComplete(id);
@@ -1789,9 +1898,11 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
+        removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(usuario);
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
+        inativarUsuarioSocialHub(usuarioInativacao);
     }
 
     private void ativarSocio(Usuario usuario) {
@@ -2018,6 +2129,10 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> getUsuariosIdByPermissaoEspecial(String funcionalidade) {
+        return repository.getUsuarioIdsByPermissaoEspecial(funcionalidade);
+    }
+
     @Transactional
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
         var usuario = findComplete(idUsuario);
@@ -2042,17 +2157,6 @@ public class UsuarioService {
         processarUsuarioParaSocialHub(getUsuario(usuarioDadosAcessoRequest.getUsuarioId()));
         updateSenha(usuario, Eboolean.V);
         enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
-    }
-
-    public void atualizarEmailSocioInativo(Integer socioPrincipalId) {
-        var socio = findOneById(socioPrincipalId);
-        var emailAtual = socio.getEmail();
-        var emailInativo = atualizarEmailInativo(emailAtual);
-
-        socio.setEmail(emailInativo);
-        repository.save(socio);
-
-        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
@@ -2260,28 +2364,25 @@ public class UsuarioService {
         });
     }
 
-    public void inativarAntigoSocioPrincipal(String email) {
-        var antigoSocioPrincipal = findOneByEmail(email);
+    public void inativarELimparDadosAntigoSocioPrincipal(Integer socioPrincipalId) {
+        var antigoSocioPrincipal = findOneById(socioPrincipalId);
+        var emailAtual = antigoSocioPrincipal.getEmail();
+        var emailInativo = atualizarEmailInativo(emailAtual);
 
-        if (antigoSocioPrincipal.getSituacao() == ATIVO) {
-            antigoSocioPrincipal.setSituacao(INATIVO);
-            repository.save(antigoSocioPrincipal);
-            autenticacaoService.logout(antigoSocioPrincipal.getId());
-        }
+        antigoSocioPrincipal.setEmail(emailInativo);
+        antigoSocioPrincipal.setSituacao(INATIVO);
+        antigoSocioPrincipal.setCpf(null);
 
-        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
-    }
-
-    private Usuario findOneByEmail(String email) {
-        return repository.findByEmail(email)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        repository.save(antigoSocioPrincipal);
+        autenticacaoService.logout(antigoSocioPrincipal.getId());
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, socioPrincipalId);
     }
 
     public void inativarColaboradores(String cnpj) {
         var emailColaboradores = agenteAutorizadoService.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             var usuario = repository.findByEmail(colaborador)
-                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
             usuario.setSituacao(ESituacao.I);
             usuario.removerCaracteresDoCpf();
             repository.save(usuario);
@@ -2387,7 +2488,6 @@ public class UsuarioService {
     }
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
-        filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
         var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
@@ -2531,7 +2631,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
-        return repository.findAllIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllIds(usuarioFiltros);
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -2545,13 +2645,13 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
-        return repository.findAllNomesIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllNomesIds(usuarioFiltros);
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
         var cidades = usuarioCidadeRepository
             .findUsuarioCidadesByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
-                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")));
+                .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)));
 
         if (cidades.isEmpty()) {
             return List.of();
@@ -2592,7 +2692,7 @@ public class UsuarioService {
     public UsuarioResponse findById(Integer id) {
         return repository.findById(id)
             .map(UsuarioResponse::of)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
@@ -2607,7 +2707,7 @@ public class UsuarioService {
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return Optional.of(Optional.of(repository.findById(usuarioId)
-                    .orElseThrow(() -> new ValidacaoException("Usuário não encontrado.")))
+                    .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO)))
                 .filter(Usuario::isAtivo)
                 .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
             .map(UsuarioComLoginNetSalesResponse::of)
@@ -2659,8 +2759,18 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoId,
-                                                                                     boolean buscarInativos) {
-        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
+                                                                                     boolean buscarInativos,
+                                                                                     List<CodigoCargo> cargos) {
+        if (!isEmpty(cargos)) {
+            return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, cargos);
+        }
+        return findUsuariosOperadoresBackofficeByOrganizacaoECargos(organizacaoId, buscarInativos, CARGOS_OPERADORES_BACKOFFICE);
+    }
+
+    private List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoECargos(Integer organizacaoId,
+                                                                                      boolean buscarInativos,
+                                                                                      List<CodigoCargo> cargos) {
+        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, cargos)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
@@ -2705,42 +2815,26 @@ public class UsuarioService {
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
         return repository.findById(id)
             .map(UrlLojaOnlineResponse::of)
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+            .orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
     }
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
     }
 
-    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadoId) {
-        return agentesAutorizadoId
-            .stream()
-            .map(aaId -> buscarBackOfficesESociosAaPorUsuariosId(buscarUsuariosIdPorAaId(aaId), aaId))
-            .flatMap(List::stream)
-            .collect(toList());
+    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadosId) {
+        var usuariosPorAa = agenteAutorizadoService.getUsuariosByAasIds(agentesAutorizadosId);
+        var predicate = new UsuarioPredicate()
+            .comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA)
+            .comIds(usuariosPorAa.keySet())
+            .build();
+        var usuariosAas = repository.findAllUsuarioAaResponse(predicate);
+        usuariosAas.forEach(usuario -> preencherAaId(usuario, usuariosPorAa.get(usuario.getId())));
+        return usuariosAas;
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
-        List<Integer> usuariosId, Integer aaId) {
-        var predicate = new UsuarioPredicate();
-        predicate.comCodigosCargos(CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
-        predicate.comIds(usuariosId);
-        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
-            .map(usuario -> preencherAaId(usuario, aaId))
-            .map(UsuarioAgenteAutorizadoResponse::of)
-            .collect(toList());
-    }
-
-    private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
-        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
-            .stream()
-            .map(UsuarioAgenteAutorizadoResponse::getId)
-            .collect(toList());
-    }
-
-    private Usuario preencherAaId(Usuario usuario, Integer aaId) {
+    private void preencherAaId(UsuarioAgenteAutorizadoResponse usuario, Integer aaId) {
         usuario.setAgenteAutorizadoId(aaId);
-        return usuario;
     }
 
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
@@ -3185,16 +3279,24 @@ public class UsuarioService {
     }
 
     private void gerenciarPermissaoSocialHub(Usuario usuario) {
-        var email = usuario.getEmail();
-        var dominio = extractDominio(email);
+        var mercadoDesenvolvimento = usuario.getTerritorioMercadoDesenvolvimentoIdOrNull();
 
-        if (this.isDominioPermitido(dominio)) {
-            this.adicionarPermissaoSocialHub(usuario);
+        if (mercadoDesenvolvimento != null) {
+            adicionarPermissaoSocialHub(usuario);
+        } else if (isNivelMercadoDesenvolvimento(usuario)) {
+            removerPermissaoSocialHub(usuario);
         }
     }
 
-    private boolean isDominioPermitido(String dominio) {
-        return dominiosPermitidos.contains(dominio);
+    private boolean isNivelMercadoDesenvolvimento(Usuario usuario) {
+        var nivelCodigo = usuario.getNivelCodigo();
+        return CodigoNivel.MSO == nivelCodigo || CodigoNivel.OPERACAO == nivelCodigo;
+    }
+
+    private void removerPermissaoSocialHub(Usuario usuario) {
+        if (usuario.getId() != null) {
+            removerPermissoesEspeciais(FUNCIONALIDADES_SOCIAL_HUB, List.of(usuario.getId()));
+        }
     }
 
     private void enviarDadosAtualizacaoParaSocialHub(Usuario usuario) {
@@ -3207,15 +3309,7 @@ public class UsuarioService {
         var regionais = regionalService.getRegionalIds(usuario.getId());
         var cargoUsuario = cargoService.findByUsuarioId(usuario.getId());
         usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuario, regionais,
-            cargoUsuario.getNome()));
-    }
-
-    private String extractDominio(String email) {
-        int atIndex = email.lastIndexOf("@");
-        if (atIndex != -1) {
-            return email.substring(atIndex + 1);
-        }
-        return "";
+            cargoUsuario.getNome(), false));
     }
 
     private void adicionarPermissaoSocialHub(Usuario usuario) {
@@ -3253,5 +3347,128 @@ public class UsuarioService {
             .map(SubCanal::getId)
             .anyMatch(antigoSubCanalId -> usuario.getSubCanaisId().stream()
                 .anyMatch(novoSubCanalId -> !novoSubCanalId.equals(antigoSubCanalId)));
+    }
+
+    private Optional<Usuario> buscarUsuarioPorCpfOuEmailExcluindoSituacoes(String cpf, String email) {
+        return repository.findByCpfOrEmailAndSituacaoNotIn(
+            getOnlyNumbers(cpf),
+            email,
+            List.of(ESituacao.R, ESituacao.P));
+    }
+
+    public Integer obterIdSeUsuarioForSocioOuAceite(String cpf, String email) {
+        return buscarUsuarioPorCpfOuEmailExcluindoSituacoes(cpf, email)
+            .map(usuario -> {
+                if (!usuario.isSocioPrincipalOuAceite()) {
+                    throw new ValidacaoException("Usuário cadastrado com outro cargo.");
+                }
+                return usuario.getId();
+            })
+            .orElse(null);
+    }
+
+    public void migrarDadosNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
+        var listaDeUsuarios = getUsuariosByCanalNetSalesId(canalNetSalesId);
+
+        if (!listaDeUsuarios.isEmpty()) {
+            atualizarDadosNetSales(listaDeUsuarios, canalNetSalesResponse);
+            repository.save(listaDeUsuarios);
+        }
+    }
+
+    public void atualizarCanalNetSales(Integer canalNetSalesId, CanalNetSalesResponse canalNetSalesResponse) {
+        var listaDeUsuarios = getUsuariosByCanalNetSalesId(canalNetSalesId);
+
+        if (!listaDeUsuarios.isEmpty()) {
+            atualizarCanalNetSalesCodigo(listaDeUsuarios, canalNetSalesResponse);
+            repository.save(listaDeUsuarios);
+        }
+    }
+
+    private void atualizarDadosNetSales(List<Usuario> listaDeUsuarios, CanalNetSalesResponse canalNetSalesResponse) {
+        listaDeUsuarios
+            .forEach(usuario -> {
+                usuario.setCanalNetSalesId(canalNetSalesResponse.getId());
+                usuario.setCanalNetSalesCodigo(canalNetSalesResponse.getCodigo());
+            });
+    }
+
+    private void atualizarCanalNetSalesCodigo(List<Usuario> listaDeUsuarios, CanalNetSalesResponse canalNetSalesResponse) {
+        listaDeUsuarios
+            .forEach(usuario -> {
+                usuario.setCanalNetSalesCodigo(canalNetSalesResponse.getCodigo());
+            });
+    }
+
+    private List<Usuario> getUsuariosByCanalNetSalesId(Integer id) {
+        return repository.findAllByCanalNetSalesId(id);
+    }
+
+    private boolean existeUsuarioCadastradoIgualAtivo(Usuario usuario) {
+        return repository.existeByCpfOrEmailAndSituacaoAtivo(usuario.getCpf(), usuario.getEmail());
+    }
+
+    public List<String> getEmailsByCargoId(Integer cargoId) {
+        return repository.findByCargo_IdAndSituacao(cargoId, ESituacao.A).stream()
+            .map(Usuario::getEmail)
+            .collect(toList());
+    }
+
+    public boolean isUsuarioSocioPrincipal(Integer usuarioId) {
+        return repository.isUsuarioSocioPrincipal(usuarioId);
+    }
+
+    public List<Integer> findSociosIdsAtivosByUsuariosIds(List<Integer> usuariosIds) {
+        var predicate = new UsuarioPredicate();
+        predicate.comUsuariosIds(usuariosIds);
+
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        return usuario.isSocioPrincipal() || usuario.isXbrainOuMso()
+            ? repository.findSociosIdsAtivosByUsuariosIds(predicate.build())
+            : List.of();
+    }
+
+    private void inativarUsuarioSocialHub(UsuarioInativacaoDto usuarioInativacao) {
+        if (usuarioInativacao.getCodigoMotivoInativacao() == DEMISSAO) {
+            usuarioCadastroMqSender
+                .enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq
+                    .from(usuarioInativacao.getIdUsuario(), ESituacao.I));
+        }
+    }
+
+    private void ativarUsuarioSocialHub(UsuarioAtivacaoDto usuarioAtivacaoDto) {
+        usuarioCadastroMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq
+            .from(usuarioAtivacaoDto.getIdUsuario(), ESituacao.A));
+    }
+
+    private void removerDirecionamentoPorCepDoUsuario(Integer usuarioVendedorId) {
+        inativarDirecionamentosCepMqSender.sendInativarDirecionamentoCep(usuarioVendedorId);
+    }
+
+    private void redistribuirIndicacoesDoUsuario(Integer usuarioVendedorId) {
+        redistribuirIndicacoesInsideSalesMqSender.sendRedistribuirIndicacoesInsideSales(usuarioVendedorId);
+    }
+
+    private void validarERedistribuirIndicacoes(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            var usuarioAntigo = repository.findById(usuario.getId())
+                .orElseThrow(() -> new NotFoundException(MSG_USUARIO_NAO_ENCONTRADO));
+
+            var mudouSubCanal = usuarioAntigo.hasSubCanalInsideSalesPme()
+                && !usuario.hasSubCanalInsideSalesPme();
+            var mudouCargo = usuarioAntigo.isCargoVendedorInsideSales() && !usuario.isCargoVendedorInsideSales();
+
+            if (mudouSubCanal || mudouCargo) {
+                removerDirecionamentoPorCepDoUsuario(usuario.getId());
+                redistribuirIndicacoesDoUsuario(usuario.getId());
+            }
+        }
+    }
+
+    private void removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(Usuario usuario) {
+        if (usuario.hasSubCanalInsideSalesPme() && usuario.isCargoVendedorInsideSales()) {
+            removerDirecionamentoPorCepDoUsuario(usuario.getId());
+            redistribuirIndicacoesDoUsuario(usuario.getId());
+        }
     }
 }

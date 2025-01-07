@@ -44,7 +44,7 @@ public class UsuarioMqRequest {
     private String exception;
     private Set<ECanal> canais;
     private Set<SubCanalDto> subCanais;
-    private Integer colaboradorVendasId;
+    private Integer colaboradorId;
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
@@ -53,6 +53,8 @@ public class UsuarioMqRequest {
     private boolean isAtualizarSocioPrincipal;
     private List<Integer> agentesAutorizadosIds;
     private List<Integer> antigosSociosPrincipaisIds;
+    private String codigoEquipeVendaNetSales;
+    private String nomeEquipeVendaNetSales;
 
     public boolean isNovoCadastro() {
         return this.id == null;

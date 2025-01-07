@@ -67,6 +67,28 @@ public class RegionalControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
+    public void findAllAtivos_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_REGIONAL + "/ativas")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(service, never()).findAllAtivos();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void findAllAtivos_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get(API_REGIONAL + "/ativas")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service, times(1)).findAllAtivos();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
     public void getAtivosParaComunicados_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_REGIONAL + "/comunicados")
                 .accept(MediaType.APPLICATION_JSON))
@@ -128,27 +150,5 @@ public class RegionalControllerTest {
             .andExpect(status().isOk());
 
         verify(service, times(1)).findById(1);
-    }
-
-    @Test
-    @SneakyThrows
-    @WithAnonymousUser
-    public void getNovasRegionaisIds_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_REGIONAL + "/novas-regionais-ids")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-
-        verify(service, never()).getNovasRegionaisIds();
-    }
-
-    @Test
-    @SneakyThrows
-    @WithMockUser
-    public void getNovasRegionaisIds_deveRetornarOk_seUsuarioAutenticado() {
-        mvc.perform(get(API_REGIONAL + "/novas-regionais-ids")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(service, times(1)).getNovasRegionaisIds();
     }
 }

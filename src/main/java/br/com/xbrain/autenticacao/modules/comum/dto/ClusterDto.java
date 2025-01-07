@@ -21,11 +21,6 @@ public class ClusterDto {
     private GrupoDto grupo;
     private ESituacao situacao;
 
-    public ClusterDto(Integer id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
     public static ClusterDto of(Cluster cluster) {
         ClusterDto dto = new ClusterDto();
         BeanUtils.copyProperties(cluster, dto);

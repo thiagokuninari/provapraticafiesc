@@ -58,29 +58,9 @@ public class CidadeController {
         return service.getAllByRegionalIdAndUfId(regionalId, ufId);
     }
 
-    @GetMapping("grupo/{grupoId}")
-    public List<UsuarioCidadeDto> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
-        return service.getAllByGrupoId(grupoId);
-    }
-
-    @GetMapping("cluster/{clusterId}")
-    public List<UsuarioCidadeDto> getByIdCluster(@PathVariable("clusterId") int clusterId) {
-        return service.getAllByClusterId(clusterId);
-    }
-
     @GetMapping("sub-cluster/{subclusterId}")
     public List<UsuarioCidadeDto> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return service.getAllBySubClusterId(subclusterId);
-    }
-
-    @RequestMapping("comunicados")
-    public List<UsuarioCidadeDto> getAtivosParaComunicados(@RequestParam Integer subclusterId) {
-        return service.getAtivosParaComunicados(subclusterId);
-    }
-
-    @GetMapping("sub-clusters")
-    public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
-        return service.getAllBySubClustersId(subclustersId);
     }
 
     @GetMapping("cidade/{cidadeId}")
@@ -177,5 +157,10 @@ public class CidadeController {
                                                @RequestParam String cidade,
                                                @RequestParam String distrito) {
         return service.getCidadeDistrito(uf, cidade, distrito);
+    }
+
+    @PostMapping("cidade-instalacao-ids")
+    public List<ConfiguracaoCidadeResponse> getCidadesByCidadeInstalacaoIds(@RequestBody List<Integer> cidadeInstalacaoIds) {
+        return service.getCidadesByCidadeInstalacaoIds(cidadeInstalacaoIds);
     }
 }

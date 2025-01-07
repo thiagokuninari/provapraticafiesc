@@ -136,6 +136,11 @@ public class Cidade {
         return ObjectUtils.isEmpty(uf) ? null : uf.getNome();
     }
 
+    @JsonIgnore
+    public String getCodigoUf() {
+        return ObjectUtils.isEmpty(uf) ? null : uf.getUf();
+    }
+
     public static Set<Cidade> of(List<Integer> cidades) {
         return cidades.stream()
                 .map(Cidade::new)

@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -72,9 +72,9 @@ public class EmularUsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void deveNaoPermitirEmularUmUsuarioAPartirDeOutraEmulacao() throws Exception {
         mvc.perform(get("/api/emular/usuario?id=102")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .header(AutenticacaoService.HEADER_USUARIO_EMULADOR, "101")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -84,11 +84,11 @@ public class EmularUsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void deveNaoPermitirEmularUmUsuarioQuandoEstiverForaDoHorarioPermitido() throws Exception {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2022, 03, 02, 14, 30));
 
         mvc.perform(get("/api/emular/usuario?id=402")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(

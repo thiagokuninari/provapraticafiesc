@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -8,10 +9,7 @@ public class MessageException {
     private String message;
     private String field;
 
-    public MessageException() {
-    }
-
-    public MessageException(String message) {
+    public MessageException(@JsonProperty("message") String message) {
         this.message = message;
     }
 

@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
-import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
-import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -30,22 +27,12 @@ public class UsuarioComunicadosPredicate {
 
     public UsuarioComunicadosPredicate comFiltroCidadeParceiros(PublicoAlvoComunicadoFiltros filtros,
                                                                 BooleanBuilder builder) {
-        var predicate = comClusterId(filtros.getClusterId())
-            .comCidadesIds(filtros.getCidadesIds())
-            .comGrupoId(filtros.getGrupoId())
+        var predicate = comCidadesIds(filtros.getCidadesIds())
             .comUfId(filtros.getUfId())
-            .comRegionalId(filtros.getRegionalId())
-            .comSubClusterId(filtros.getSubClusterId()).build();
+            .comRegionalId(filtros.getRegionalId()).build();
 
         builder.and(ExpressionUtils.anyOf(comUsuariosIds(filtros.getUsuariosFiltradosPorCidadePol()), predicate));
 
-        return this;
-    }
-
-    private UsuarioComunicadosPredicate comSubClusterId(Integer subClusterId) {
-        if (Objects.nonNull(subClusterId)) {
-            builder.and(subCluster.id.eq(subClusterId));
-        }
         return this;
     }
 
@@ -59,20 +46,6 @@ public class UsuarioComunicadosPredicate {
     private UsuarioComunicadosPredicate comRegionalId(Integer regionalId) {
         if (Objects.nonNull(regionalId)) {
             builder.and(regional.id.eq(regionalId));
-        }
-        return this;
-    }
-
-    private UsuarioComunicadosPredicate comGrupoId(Integer grupoId) {
-        if (Objects.nonNull(grupoId)) {
-            builder.and(grupo.id.eq(grupoId));
-        }
-        return this;
-    }
-
-    private UsuarioComunicadosPredicate comClusterId(Integer clusterId) {
-        if (Objects.nonNull(clusterId)) {
-            builder.and(cluster.id.eq(clusterId));
         }
         return this;
     }
@@ -101,7 +74,4 @@ public class UsuarioComunicadosPredicate {
     public Predicate build() {
         return this.builder;
     }
-
 }
-
-

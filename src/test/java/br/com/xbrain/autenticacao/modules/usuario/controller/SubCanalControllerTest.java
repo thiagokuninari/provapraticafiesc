@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -28,11 +29,9 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalInativoCompletDto;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -54,13 +53,13 @@ public class SubCanalControllerTest {
     private SubCanalService subCanalService;
 
     @Test
+    @WithMockUser
     public void getAllSubCanais_deveRetornarOsSubCanais_quandoSolicitado() throws Exception {
         when(subCanalService.getAll()).thenReturn(List.of(
             new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A),
             new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
 
         mvc.perform(get(API_URI)
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
@@ -75,12 +74,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void getAllSubCanalById_deveRetornarSubCanal_quandoExistir() throws Exception {
         when(subCanalService.getSubCanalById(anyInt())).thenReturn(
             new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
 
         mvc.perform(get(API_URI + "/2")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(2)))
@@ -99,12 +98,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void getSubCanalCompletById_deveRetornarSubCanal_quandoOk() throws Exception {
         when(subCanalService.getSubCanalCompletById(1)).thenReturn(
-            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V));
+            new SubCanalCompletDto(1, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V));
 
         mvc.perform(get(API_URI + "/1/detalhar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(1)))
@@ -118,12 +117,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void getSubCanalCompletById_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
         when(subCanalService.getSubCanalCompletById(1))
             .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
 
         mvc.perform(get(API_URI + "/1/detalhar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -133,16 +132,16 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void getAllSubCanaisConfiguracoes_deveRetornarPageDeSubCanais_quandoOk() throws Exception {
         var pageRequest = new PageRequest();
         var filtros = new SubCanalFiltros();
         when(subCanalService.getAllConfiguracoes(pageRequest, filtros))
             .thenReturn(new PageImpl<>(List.of(
-            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F),
-            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V))));
+            new SubCanalCompletDto(1, ETipoCanal.PAP, "PAP", ESituacao.A, Eboolean.F, Eboolean.F, Eboolean.F),
+            new SubCanalCompletDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A, Eboolean.V, Eboolean.V, Eboolean.V))));
 
         mvc.perform(get(API_URI + "/listar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content", hasSize(2)))
@@ -172,11 +171,39 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    public void getByUsuarioId_deveRetornarUnauthorized_quandoUserNaoForAdmin() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getSubCanalByUsuarioId(any());
+    }
+
+    @Test
+    public void getByUsuarioId_deveRetornarUnauthorized_quandoNaoHouverUsuarioLogado() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getSubCanalByUsuarioId(1);
+    }
+
+    @Test
+    @WithMockUser
+    public void getByUsuarioId_deveRetornarOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get(API_URI + "/usuario-subcanal/1")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(subCanalService).getSubCanalByUsuarioId(1);
+    }
+
+    @Test
+    @WithMockUser(roles = {"AUT_20025"})
     public void editar_deveEditarSubCanal_quandoOk() throws Exception {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
 
         mvc.perform(post(API_URI + "/editar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isOk());
@@ -187,8 +214,6 @@ public class SubCanalControllerTest {
     @Test
     public void editar_deveRetornarUnauthorized_quandoUserNaoForAdmin() throws Exception {
         mvc.perform(post(API_URI + "/editar")
-                .header("Authorization",
-                    getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new SubCanalDto())))
             .andExpect(status().isUnauthorized());
@@ -197,11 +222,11 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = {"AUT_20025"})
     public void editar_deveRetornarException_quandoCamposObrigatoriosNaoPresentes() throws Exception {
         var dto = new SubCanalCompletDto();
 
         mvc.perform(post(API_URI + "/editar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isBadRequest())
@@ -211,21 +236,23 @@ public class SubCanalControllerTest {
                 "O campo nome é obrigatório.",
                 "O campo situacao é obrigatório.",
                 "O campo novaChecagemCredito é obrigatório.",
-                "O campo novaChecagemViabilidade é obrigatório.")));
+                "O campo novaChecagemViabilidade é obrigatório.",
+                "O campo realizarEnriquecimentoEnd é obrigatório.")));
 
         verify(subCanalService, never()).editar(any());
     }
 
     @Test
+    @WithMockUser(roles = {"AUT_20025"})
     public void editar_deveRetornarException_quandoUsuarioLogadoNaoForAdmin() throws Exception {
         var dto = umSubCanalInativoCompletDto(2, ETipoCanal.PAP_PREMIUM, "Um Outro Nome");
         dto.setNovaChecagemCredito(Eboolean.V);
         dto.setNovaChecagemViabilidade(Eboolean.V);
+        dto.setRealizarEnriquecimentoEnd(Eboolean.V);
 
         doThrow(PermissaoException.class).when(subCanalService).editar(dto);
 
         mvc.perform(post(API_URI + "/editar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isForbidden())
@@ -249,12 +276,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void isNovaChecagemCredito_deveDevolverBoolean_quandoOk() throws Exception {
         when(subCanalService.isNovaChecagemCreditoD2d(1))
             .thenReturn(Eboolean.V);
 
         mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito-d2d")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Eboolean.V.toString())));
@@ -274,12 +301,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void isNovaChecagemCredito_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
         when(subCanalService.isNovaChecagemCreditoD2d(1))
             .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
 
         mvc.perform(get(API_URI + "/1/verificar-nova-checagem-credito-d2d")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -288,12 +315,12 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void isNovaChecagemViabilidade_deveDevolverBoolean_quandoOk() throws Exception {
         when(subCanalService.isNovaChecagemViabilidadeD2d(1))
             .thenReturn(Eboolean.V);
 
         mvc.perform(get(API_URI + "/1/verificar-nova-checagem-viabilidade-d2d")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Eboolean.V.toString())));
@@ -313,16 +340,82 @@ public class SubCanalControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void isNovaChecagemViabilidade_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
         when(subCanalService.isNovaChecagemViabilidadeD2d(1))
             .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
 
         mvc.perform(get(API_URI + "/1/verificar-nova-checagem-viabilidade-d2d")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "Erro, subcanal não encontrado.")));
         verify(subCanalService).isNovaChecagemViabilidadeD2d(eq(1));
+    }
+
+    @Test
+    public void getHistorico_deveRetornarUnauthorized_quandoUserNaoForAdmin() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    public void getHistorico_deveRetornarUnauthorized_quandoNaoHouverUsuarioLogado() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    @WithMockUser
+    public void getHistorico_deveRetornarOk_quandoRequisicaoBemSucedida() throws Exception {
+        mvc.perform(get(API_URI + "/1/historico")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(subCanalService).getHistorico(1, new PageRequest());
+    }
+
+    @Test
+    @WithMockUser
+    public void isRealizarEnriquecimentoEnd_deveRetornarBoolean_quandoOk() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1)).thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Eboolean.V.toString())));
+
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
+    }
+
+    @Test
+    public void isRealizarEnriquecimentoEnd_deveRetornarUnauthorized_quandoUsuarioNaoLogado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenReturn(Eboolean.V);
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d"))
+            .andExpect(status().isUnauthorized());
+
+        verify(subCanalService, never()).isRealizarEnriquecimentoEnd(any());
+    }
+
+    @Test
+    @WithMockUser
+    public void isRealizarEnriquecimentoEnd_deveRetornarBadRequest_quandoSubCanalNaoEncontrado() throws Exception {
+        when(subCanalService.isRealizarEnriquecimentoEnd(1))
+            .thenThrow(new ValidacaoException("Erro, subcanal não encontrado."));
+
+        mvc.perform(get(API_URI + "/1/verificar-enriquecimento-end-d2d")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Erro, subcanal não encontrado.")));
+        verify(subCanalService).isRealizarEnriquecimentoEnd(eq(1));
     }
 }

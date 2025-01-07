@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +30,13 @@ public class UsuarioGerenciaController {
     }
 
     @PostMapping("backoffice")
-    public Usuario save(@RequestBody @Validated UsuarioBackofficeDto usuario) {
-        return service.salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+    public UsuarioResponse saveBackoffice(@RequestBody @Valid UsuarioBackofficeRequest usuario) {
+        return service.salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
+    }
+
+    @PostMapping("briefing")
+    public UsuarioResponse saveBriefing(@RequestBody @Valid UsuarioBriefingRequest usuario) {
+        return service.salvarUsuarioBriefing(UsuarioBriefingRequest.of(usuario));
     }
 
     @PutMapping
@@ -152,18 +158,22 @@ public class UsuarioGerenciaController {
         service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
     }
 
-    @PutMapping("inativar/socio-principal")
-    public void inativarAntigoSocioPrincipal(@RequestParam String email) {
-        service.inativarAntigoSocioPrincipal(email);
+    @PutMapping("inativar-limpar-dados/socio-principal/{id}")
+    public void inativarELimparDadosAntigoSocioPrincipal(@PathVariable Integer id) {
+        service.inativarELimparDadosAntigoSocioPrincipal(id);
     }
 
-    @PutMapping("limpar-cpf/socio-principal/{id}")
-    public void limparCpfAntigoSocioPrincipal(@PathVariable Integer id) {
-        service.limparCpfAntigoSocioPrincipal(id);
+    @PutMapping("{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales")
+    public void migrarDadosNetSales(@PathVariable Integer canalNetSalesId,
+                                    @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.migrarDadosNetSales(canalNetSalesId, canalNetSalesResponse);
     }
 
-    @PutMapping("inativar-email/{socioPrincipalId}")
-    public void atualizarEmailSocioInativo(@PathVariable Integer socioPrincipalId) {
-        service.atualizarEmailSocioInativo(socioPrincipalId);
+    @PutMapping("{canalNetSalesId}/atualizar-usuarios-associados-ao-canal-net-sales")
+    public void atualizarCanalNetSalesCodigo(@PathVariable Integer canalNetSalesId,
+                                             @RequestBody CanalNetSalesResponse canalNetSalesResponse) {
+
+        service.atualizarCanalNetSales(canalNetSalesId, canalNetSalesResponse);
     }
 }

@@ -41,8 +41,4 @@ public class Nivel {
         this.id = id;
     }
 
-    public Nivel(Integer id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
 }

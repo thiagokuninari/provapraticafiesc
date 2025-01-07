@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -32,5 +33,31 @@ public class PermissaoEspecialTest {
 
         assertThat(permissaoEspecial.getDataCadastro())
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    public void deveDefinirUsuarioEBaixarData_seUsuarioIdFornecido() {
+        var permissaoEspecial = PermissaoEspecial.of(89, 4006, null);
+        permissaoEspecial.setUsuarioBaixa(Usuario.builder().id(454545).build());
+
+        assertThat(permissaoEspecial.getDataBaixa()).isNull();
+        assertThat(permissaoEspecial.getUsuarioBaixa().getId()).isEqualTo(454545);
+
+        permissaoEspecial.baixar(2);
+
+        assertThat(permissaoEspecial.getUsuarioBaixa().getId()).isEqualTo(2);
+        assertThat(permissaoEspecial.getDataBaixa()).isNotNull();
+    }
+
+    @Test
+    public void prePersist_deveRetonarValorNaDataDeCadastro_quandoSolicitado() {
+        var permissaoEspecial = PermissaoEspecial.of(89, 4006, null);
+        permissaoEspecial.setUsuarioBaixa(Usuario.builder().id(454545).build());
+        permissaoEspecial.setDataCadastro(null);
+        assertThat(permissaoEspecial.getDataCadastro()).isNull();
+
+        permissaoEspecial.prePersist();
+
+        assertThat(permissaoEspecial.getDataCadastro()).isNotNull();
     }
 }

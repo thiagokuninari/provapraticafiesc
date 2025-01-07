@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizado.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -61,6 +61,9 @@ public interface AgenteAutorizadoClient {
         @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
         @PathVariable("buscarInativos") Boolean buscarInativos);
 
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-agentes-autorizados")
+    Map<Integer, Integer> getUsuariosByAasIds(@RequestParam("agentesAutorizadosIds") List<Integer> agentesAutorizadosIds);
+
     @GetMapping(URL_AGENTE_AUTORIZADO + "/agentes-autorizados-permitidos/{usuarioId}")
     List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
 
@@ -102,11 +105,11 @@ public interface AgenteAutorizadoClient {
     @PutMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/{id}/inativar")
     void inativarUsuario(@PathVariable("id") Integer id);
 
-    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
-    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
-
     @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{socioPrincipalId}")
     void atualizarEmailSocioPrincipalInativo(@RequestParam("emailAtual") String emailAtual,
                                              @RequestParam("emailInativo") String emailInativo,
                                              @PathVariable("socioPrincipalId") Integer socioPrincipalId);
+
+    @GetMapping(API_USUARIOS_AGENTE_AUTORIZADO + "/obter-aas-pap-indireto")
+    List<UsuarioDtoVendas> findUsuariosAgentesAutorizadosPapIndireto();
 }

@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

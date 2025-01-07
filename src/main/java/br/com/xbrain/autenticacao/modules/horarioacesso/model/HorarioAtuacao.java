@@ -38,10 +38,6 @@ public class HorarioAtuacao {
     @Column(name = "HORARIO_FIM")
     private LocalTime horarioFim;
 
-    public HorarioAtuacao(Integer id) {
-        this.id = id;
-    }
-
     public static HorarioAtuacao of(HorarioAtuacaoDto request) {
         return HorarioAtuacao.builder()
             .id(request.getId())

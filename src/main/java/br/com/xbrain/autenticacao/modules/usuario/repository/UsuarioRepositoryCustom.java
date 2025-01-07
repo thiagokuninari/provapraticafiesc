@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
@@ -24,8 +25,6 @@ import java.util.Set;
 public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmail(String email);
-
-    Optional<Usuario> findUsuarioByEmail(String email);
 
     Optional<Usuario> findComplete(Integer id);
 
@@ -71,6 +70,8 @@ public interface UsuarioRepositoryCustom {
 
     List<PermissaoEspecial> getUsuariosByPermissaoEspecial(String codigoFuncionalidade);
 
+    List<Integer> getUsuarioIdsByPermissaoEspecial(String codigoFuncionalidade);
+
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
     List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel);
@@ -99,11 +100,6 @@ public interface UsuarioRepositoryCustom {
                                                     List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
-    List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                        List<Integer> areasAtuacaoIds,
-                                                        List<CodigoCargo> cargos,
-                                                        Set<ECanal> canais);
-
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
     List<Uf> getUfsUsuario(Integer usuarioId);
@@ -119,9 +115,9 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findAllIds(Predicate predicate);
 
-    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate, List<Integer> novasRegionaisIds);
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
 
-    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro, List<Integer> novasRegionaisIds);
+    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
 
     long deleteUsuarioHierarquia(Integer usuarioId);
 
@@ -130,6 +126,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds);
 
     List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
+
+    List<SelectResponse> findUsuariosAtivosOperacaoComercialByCargoCodigo(CodigoCargo cargo);
 
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
@@ -143,7 +141,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
 
-    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>... orderSpecifiers);
 
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
@@ -206,4 +204,16 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findByPredicate(Predicate predicate);
 
     List<SelectResponse> findByCodigoCargoAndOrganizacaoId(CodigoCargo codigoCargo, Integer organizacaoId);
+
+    List<Usuario> getAllUsuariosDoUsuarioPapIndireto(List<Integer> usuariosIds);
+
+    Optional<Usuario> findByCpfOrEmailAndSituacaoNotIn(String cpf, String email, List<ESituacao> situacoes);
+
+    boolean existeByCpfOrEmailAndSituacaoAtivo(String cpf, String email);
+
+    boolean isUsuarioSocioPrincipal(Integer usuarioId);
+
+    List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate);
+
+    List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate);
 }

@@ -14,4 +14,10 @@ public class NivelResponseTest {
             .extracting("id", "nome", "codigo")
             .containsExactly(1, "BACKOFFICE", CodigoNivel.BACKOFFICE.name());
     }
+
+    @Test
+    public void of_deveRetornarNivelResponse_seNivelNull() {
+        assertThat(NivelResponse.of(null))
+            .isEqualTo(new NivelResponse());
+    }
 }

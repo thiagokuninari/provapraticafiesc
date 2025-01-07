@@ -61,6 +61,35 @@ public class OrganizacaoEmpresaTest {
         assertFalse(umaOutraOrganizacaoEmpresa().isSuporteVendas());
     }
 
+    @Test
+    public void isSuporteVendas_deveRetornarFalse_quandoNivelDaOrganizacaoForNull() {
+        var empresa = umaOutraOrganizacaoEmpresa();
+        empresa.setNivel(null);
+        assertFalse(empresa.isSuporteVendas());
+    }
+
+    @Test
+    public void inativar_deveInativarOrganizacaoEmpresa_quandoSolicitado() {
+        var empresa = umaOrganizacaoEmpresa();
+        assertThat(empresa.getSituacao()).isEqualTo(ESituacaoOrganizacaoEmpresa.A);
+
+        empresa.inativar();
+
+        assertThat(empresa.getSituacao()).isEqualTo(ESituacaoOrganizacaoEmpresa.I);
+    }
+
+    @Test
+    public void ativar_deveAtivarOrganizacaoEmpresa_quandoSolicitado() {
+        var empresa = umaOrganizacaoEmpresa();
+        empresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
+
+        assertThat(empresa.getSituacao()).isEqualTo(ESituacaoOrganizacaoEmpresa.I);
+
+        empresa.ativar();
+
+        assertThat(empresa.getSituacao()).isEqualTo(ESituacaoOrganizacaoEmpresa.A);
+    }
+
     private OrganizacaoEmpresa umaOrganizacaoComStatus(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
         return OrganizacaoEmpresa.builder()
             .id(id)

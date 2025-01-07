@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.util.StreamUtils;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubCanalId;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.Audited;
@@ -22,7 +24,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -93,6 +94,7 @@ public class Usuario {
     @Column(name = "ORGAO_EXPEDIDOR", length = 30)
     private String orgaoExpedidor;
 
+    //O conjunto de dados netsales so serao obrigatorios para os casos isNivelObrigatorioDadosNetSales
     @Size(max = 120)
     @Column(name = "LOGIN_NET_SALES", length = 120)
     private String loginNetSales;
@@ -105,8 +107,11 @@ public class Usuario {
     @Column(name = "CODIGO_EQUIPE_VENDA_NET_SALES", length = 120)
     private String codigoEquipeVendaNetSales;
 
-    @Column(name = "CANAL_NETSALES")
-    private String canalNetSales;
+    @Column(name = "CANAL_NETSALES_ID")
+    private Integer canalNetSalesId;
+
+    @Column(name = "CANAL_NETSALES_CODIGO")
+    private String canalNetSalesCodigo;
 
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
@@ -284,6 +289,19 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioSenhaIncorretaHistorico> historicosSenhaIncorretas;
 
+    @Column(name = "FK_TERRITORIO_MERCADO_DESEN")
+    private Integer territorioMercadoDesenvolvimentoId;
+
+    @NotAudited
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "USUARIO_SUBNIVEL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBNIVEL", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_SUBNIVEL"))})
+    private Set<SubNivel> subNiveis;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -325,6 +343,7 @@ public class Usuario {
         departamento.getId();
         canais.size();
         Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
+        Optional.ofNullable(subNiveis).ifPresent(Set::size);
         return this;
     }
 
@@ -568,14 +587,17 @@ public class Usuario {
             && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
+    private boolean isAgenteAutorizadoAceite() {
+        return this.cargo != null && this.cargo.getCodigo() == AGENTE_AUTORIZADO_ACEITE;
+    }
+
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
             && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
-    public boolean isBackoffice() {
-        return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
-            && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
+    public boolean isSocioPrincipalOuAceite() {
+        return isAgenteAutorizado() && (isSocioPrincipal() || isAgenteAutorizadoAceite());
     }
 
     public void adicionarHistorico(UsuarioHistorico historico) {
@@ -602,7 +624,7 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
-        return cargo.getCodigo().equals(codigoCargo);
+        return codigoCargo.equals(cargo.getCodigo());
     }
 
     public boolean hasCanal(ECanal canal) {
@@ -745,5 +767,43 @@ public class Usuario {
             this.historicosSenhaIncorretas = new ArrayList<>();
         }
         this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
+    }
+
+    public Integer getTerritorioMercadoDesenvolvimentoIdOrNull() {
+        return territorioMercadoDesenvolvimentoId != null ? territorioMercadoDesenvolvimentoId : null;
+    }
+
+    public boolean isTecnico() {
+        return getCargoCodigo() != null && getCargosTecnicos().contains(getCargoCodigo());
+    }
+
+    public boolean isOperadorSuporteVendas() {
+        return OPERADOR_SUPORTE_VENDAS.equals(getCargoCodigo());
+    }
+
+    public Integer getOrganizacaoId() {
+        return StreamUtils.mapNull(organizacaoEmpresa, OrganizacaoEmpresa::getId);
+    }
+
+    public boolean hasNotDadosNetSales() {
+        return StringUtils.isBlank(loginNetSales)
+            || StringUtils.isBlank(canalNetSalesCodigo)
+            || StringUtils.isBlank(nomeEquipeVendaNetSales)
+            || StringUtils.isBlank(codigoEquipeVendaNetSales)
+            || canalNetSalesId == null;
+    }
+
+    public Set<Integer> getSubNiveisIds() {
+        return !ObjectUtils.isEmpty(this.subNiveis)
+            ? this.subNiveis.stream()
+            .map(SubNivel::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
+    public boolean isCargoVendedorInsideSales() {
+        var cargo = getCargoCodigo();
+
+        return cargo != null && getCargosVendedorInsideSales().contains(cargo);
     }
 }

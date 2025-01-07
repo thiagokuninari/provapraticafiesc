@@ -6,7 +6,9 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeTecnicaSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeTecnicaService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
@@ -56,6 +58,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Autowired
     private SubCanalService subCanalService;
 
+    @Autowired
+    private EquipeTecnicaService equipeTecnicaService;
+
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         DefaultOAuth2AccessToken defaultOAuth2AccessToken = new DefaultOAuth2AccessToken(accessToken);
@@ -70,7 +75,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                     userAuth,
                     getAgentesAutorizadosPermitidos(usuario),
                     getEmpresasDoUsuario(usuario),
-                    getEquipesSupervisionadas(usuario),
+                    getEquipesVendasSupervisionadas(usuario),
+                    getEquipesTecnicasSupervisionadas(usuario),
                     getEquipeVendas(usuario),
                     getSites(usuario)));
         } else {
@@ -99,8 +105,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             : usuario.getEmpresas();
     }
 
-    private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
-        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+    private List<Integer> getEquipesVendasSupervisionadas(Usuario usuario) {
+        return usuario.isAgenteAutorizado()
             ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
             .stream()
             .map(EquipeVendasSupervisionadasResponse::getId)
@@ -108,9 +114,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             : Collections.emptyList();
     }
 
+    private List<Integer> getEquipesTecnicasSupervisionadas(Usuario usuario) {
+        return usuario.isAgenteAutorizado()
+            ? equipeTecnicaService.getEquipesPorSupervisor(usuario.getId())
+            .stream()
+            .map(EquipeTecnicaSupervisionadasResponse::getId)
+            .collect(Collectors.toList())
+            : Collections.emptyList();
+    }
+
     private List<EquipeVendaDto> getEquipeVendas(Usuario usuario) {
-        if (usuario.getNivelCodigo() == AGENTE_AUTORIZADO) {
-            EquipeVendaDto equipeVendas = equipeVendasService.getByUsuario(usuario.getId());
+        if (usuario.isAgenteAutorizado()) {
+            var equipeVendas = equipeVendasService.getByUsuario(usuario.getId());
             return !ObjectUtils.isEmpty(equipeVendas)
                 ? Collections.singletonList(equipeVendas)
                 : Collections.emptyList();
@@ -123,17 +138,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstruturaByUsuarioIdAndAtivo(usuario.getId()) : null;
     }
 
-    private String getTipoCanal(Usuario usuario) {
-        var tipoCanal = usuario.getTipoCanal();
-        return Objects.nonNull(tipoCanal) ? tipoCanal.name() : null;
-    }
-
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
                                           List<Integer> agentesAutorizados,
                                           List<Empresa> empresas,
                                           List<Integer> equipesSupervisionadas,
+                                          List<Integer> equipesTecnicasSupervisionadas,
                                           List<EquipeVendaDto> equipeVendas,
                                           List<SelectResponse> sites) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
@@ -163,10 +174,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("loginNetSales", usuario.getLoginNetSales());
         token.getAdditionalInformation().put("nomeEquipeVendaNetSales", usuario.getNomeEquipeVendaNetSales());
         token.getAdditionalInformation().put("codigoEquipeVendaNetSales", usuario.getCodigoEquipeVendaNetSales());
-        token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSales());
+        token.getAdditionalInformation().put("canalNetSalesId", usuario.getCanalNetSalesId());
+        token.getAdditionalInformation().put("canalNetSales", usuario.getCanalNetSalesCodigo());
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
         token.getAdditionalInformation().put("organizacaoNome", getOrganizacaoEmpresaNome(usuario));
         token.getAdditionalInformation().put("organizacaoCodigo", getOrganizacaoEmpresaCodigo(usuario));
+        token.getAdditionalInformation().put("territorioMercadoDesenvolvimentoId",
+            getTerritorioMercadoDesenvolvimentoId(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -191,8 +205,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             getAplicacoes(usuario));
         token.getAdditionalInformation().put("equipesSupervisionadas",
             equipesSupervisionadas);
+        token.getAdditionalInformation().put("equipesTecnicasSupervisionadas", equipesTecnicasSupervisionadas);
         token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
-        token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
         token.getAdditionalInformation().put("sites", sites);
         token.getAdditionalInformation().put("siteId", sites.stream()
             .map(SelectResponse::getValue)
@@ -206,6 +220,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private String getOrganizacaoEmpresaCodigo(Usuario usuario) {
         return usuario.getOrganizacaoEmpresa() != null ? usuario.getOrganizacaoEmpresa().getCodigo() : "";
+    }
+
+    private Integer getTerritorioMercadoDesenvolvimentoId(Usuario usuario) {
+        return usuario.getTerritorioMercadoDesenvolvimentoId() != null ? usuario.getTerritorioMercadoDesenvolvimentoId() : null;
     }
 
     private String getOrganizacaoEmpresaNome(Usuario usuario) {

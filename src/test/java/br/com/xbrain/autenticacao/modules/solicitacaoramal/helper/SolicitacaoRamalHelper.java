@@ -5,9 +5,9 @@ import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.SocioResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
@@ -95,8 +95,17 @@ public class SolicitacaoRamalHelper {
             .build();
     }
 
-    public static List<RamalResponse> umaListaRamalResponse() {
-        return Arrays.asList(new RamalResponse(), new RamalResponse());
+    public static List<RamalResponse> umListRamalResponse() {
+        return List.of(
+            umRamalResponse(1),
+            umRamalResponse(2));
+    }
+
+    public static RamalResponse umRamalResponse(Integer id) {
+        var response = new RamalResponse();
+        response.setId(id);
+        response.setRamal("123456");
+        return response;
     }
 
     public static SocioResponse umSocioResponse() {
@@ -315,7 +324,7 @@ public class SolicitacaoRamalHelper {
 
     public static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id) {
         return UsuarioAgenteAutorizadoResponse.builder()
-            .id(1)
+            .id(id)
             .nome("TESTE")
             .agenteAutorizadoId(11111)
             .email("TESTE@XBRAIN.COM.BR")

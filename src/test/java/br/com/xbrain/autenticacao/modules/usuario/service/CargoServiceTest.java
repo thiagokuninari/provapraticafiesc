@@ -2,7 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -14,19 +20,30 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
+import org.assertj.core.groups.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.BKO_16008;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosAtaReuniao;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umaListaDeCargosBko;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,7 +100,7 @@ public class CargoServiceTest {
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
         assertThat(service
-            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO), true))
+            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ATIVO_PROPRIO, AGENTE_AUTORIZADO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003, 1004);
     }
@@ -97,11 +114,11 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO), true))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(D2D_PROPRIO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1001, 1002, 1003, 1004);
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO), true))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(AGENTE_AUTORIZADO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003);
     }
@@ -120,6 +137,49 @@ public class CargoServiceTest {
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001);
 
+        verify(cargoRepository).findAll(predicate);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarOsCargosBackoffice_quandoUsuarioForMsoComPermissaoVisualizarDashboard() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        usuarioAutenticado.setPermissoes(List.of(new SimpleGrantedAuthority(BKO_16008.getRole())));
+        var predicate = new CargoPredicate().comNivel(18).build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListaDeCargosBko());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(18, null, true))
+            .extracting("id", "codigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, BACKOFFICE_ANALISTA_TRATAMENTO),
+                tuple(2, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ANTI_FRAUDE),
+                tuple(3, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_CREDITO),
+                tuple(4, BACKOFFICE_ANALISTA_DE_TRATAMENTO_DE_ENDERECOS),
+                tuple(5, BACKOFFICE_COORDENADOR),
+                tuple(6, BACKOFFICE_GERENTE));
+
+        verify(autenticacaoService).getUsuarioAutenticado();
+        verify(cargoRepository).findAll(predicate);
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void getPermitidosPorNivelECanaisPermitidos_deveRetornarListaVazia_quandoUsuarioForMsoENaoPossuirPermissaoVisualizarDashboard() {
+        var usuarioAutenticado = umUsuarioAutenticadoNivelMso();
+        var predicate = new CargoPredicate()
+            .comNivel(18)
+            .comId(List.of())
+            .build();
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(List.of());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(18, null, true))
+            .isEmpty();
+
+        verify(autenticacaoService).getUsuarioAutenticado();
         verify(cargoRepository).findAll(predicate);
     }
 
@@ -180,6 +240,15 @@ public class CargoServiceTest {
     }
 
     @Test
+    public void save_deveLancarExcecao_quandoCodigoCargoExistirAtivoParaOutroCargo() {
+        when(cargoRepository.existsByCodigoAndSituacao(any(), eq(ESituacao.A))).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umCargo(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
+    }
+
+    @Test
     public void update_deveRetonarCargo_quandoForAtualizado() throws Exception {
         when(cargoRepository.findById(any()))
             .thenReturn(Optional.of(umCargo(1, "Assistente", ESituacao.A)));
@@ -192,6 +261,16 @@ public class CargoServiceTest {
     }
 
     @Test
+    public void update_deveLancarExcecao_quandoCodigoCargoExistirAtivoParaOutroCargo() {
+        when(cargoRepository.findById(any())).thenReturn(Optional.of(umCargo(1, "Assistente", ESituacao.A)));
+        when(cargoRepository.existsByCodigoAndSituacaoAndIdNot(any(), eq(ESituacao.A), any())).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.update(umCargo(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
+    }
+
+    @Test
     public void situacao_deveRetonarCargo_quandoSituacaoForAlterado() throws Exception {
         when(cargoRepository.findById(any()))
             .thenReturn(Optional.of(umCargo(1, "Vendedor", ESituacao.A)));
@@ -201,6 +280,16 @@ public class CargoServiceTest {
 
         assertThat(service.situacao(umCargoRequest(1, "Vendedor", ESituacao.I)))
             .extracting("situacao").contains(ESituacao.I);
+    }
+
+    @Test
+    public void situacao_deveLancarExcecao_quandoCodigoCargoExistirAtivoAoAtivarCargo() {
+        when(cargoRepository.findById(any())).thenReturn(Optional.of(umCargo(1, "Vendedor", ESituacao.I)));
+        when(cargoRepository.existsByCodigoAndSituacaoAndIdNot(any(), eq(ESituacao.A), any())).thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.situacao(umCargoRequest(1, "Vendedor", ESituacao.A)))
+            .withMessage("Já existe um cargo ativo com o mesmo código.");
     }
 
     @Test
@@ -230,13 +319,14 @@ public class CargoServiceTest {
                 .builder()
                 .cargoId(10)
                 .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                .nivelCodigo(ENivel.OPERACAO.name())
                 .build());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO), true))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ATIVO_PROPRIO), true))
             .extracting("id", "Canais")
             .contains(
                 tuple(1002, Set.of()),
-                tuple(1004, Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+                tuple(1004, Set.of(D2D_PROPRIO, ATIVO_PROPRIO))
             );
     }
 
@@ -251,7 +341,7 @@ public class CargoServiceTest {
                 .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
                 .build());
         assertThat(service
-            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO), false))
+            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ATIVO_PROPRIO), false))
             .extracting("id", "Nome")
             .contains(tuple(7, "Gerente"));
     }
@@ -262,6 +352,101 @@ public class CargoServiceTest {
         mockUmUsuarioGerenteVisualizarGeral();
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null, true))
             .hasSize(12);
+    }
+
+    @Test
+    public void getAll_deveRetornarTodosOsCargos_quandoInformadoFiltros() {
+        var filtro = new CargoFiltros();
+
+        when(cargoRepository.findAll(filtro.toPredicate(), new PageRequest()))
+            .thenReturn(umaPaginaCargo());
+
+        assertThat(service.getAll(new PageRequest(), filtro))
+            .hasSize(2)
+            .extracting("id", "nome", "situacao", "nivel.nome")
+            .containsExactly(Tuple.tuple(1, "nome 1", ESituacao.A, "Vendedor"),
+                Tuple.tuple(2, "nome 2", ESituacao.A, "Vendedor"));
+
+        verify(cargoRepository).findAll(filtro.toPredicate(), new PageRequest());
+    }
+
+    @Test
+    public void findById_deveRetornarCargo_quandoExistirCargoCadastrado() {
+        when(cargoRepository.findById(1)).thenReturn(Optional.ofNullable(umCargo(1, "nome 1", ESituacao.A)));
+
+        assertThat(service.findById(1))
+            .extracting("id", "nome", "situacao", "nivel.nome")
+            .containsExactly(1, "nome 1", ESituacao.A, "Vendedor");
+
+        verify(cargoRepository).findById(1);
+    }
+
+    @Test
+    public void findById_deveRetornarException_quandoNaoExistirCargoCadastrado() {
+        when(cargoRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatCode(() -> service.findById(1))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Cargo não encontrado.");
+
+        verify(cargoRepository).findById(1);
+    }
+
+    @Test
+    public void getPermitidosPorNiveis_deveRetornarListaCargo_quandoCargoPermitido() {
+        var usuarioAutenticado = UsuarioAutenticado
+                    .builder()
+                    .cargoId(10)
+                    .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                    .build();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
+
+        when(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()))
+            .thenReturn(List.of(11));
+
+        var predicate = new CargoPredicate()
+            .comNiveis(List.of(10))
+            .filtrarPermitidos(usuarioAutenticado, List.of(11))
+            .build();
+
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
+
+        assertThat(service.getPermitidosPorNiveis(List.of(10)))
+            .extracting("id", "canais")
+            .containsExactly(tuple(1000, Set.of(AGENTE_AUTORIZADO)),
+                tuple(1001, Set.of(D2D_PROPRIO)),
+                tuple(1002, Set.of()),
+                tuple(1003, Set.of(AGENTE_AUTORIZADO, D2D_PROPRIO)),
+                tuple(1004, Set.of(ATIVO_PROPRIO, D2D_PROPRIO)));
+    }
+
+    private Page<Cargo> umaPaginaCargo() {
+        var lista = List.of(umCargo(1, "nome 1", ESituacao.A), umCargo(2, "nome 2", ESituacao.A));
+
+        return new PageImpl<>(lista, new PageRequest(), 0);
+    }
+
+    @Test
+    public void findCargosForAtaReuniao_deveRetornarCargosParaAtaReuniao_quandoSolicitado() {
+        doReturn(umaListaDeCargosAtaReuniao())
+            .when(cargoRepository)
+            .findByCodigoIn(anyList());
+
+        assertThat(service.findCargosForAtaReuniao())
+            .extracting(SelectResponse::getValue, SelectResponse::getLabel)
+            .containsExactlyInAnyOrder(
+                tuple(CodigoCargo.ASSISTENTE_OPERACAO, "Assistente"),
+                tuple(CodigoCargo.ASSISTENTE_HUNTER, "Assistente Hunter"),
+                tuple(CodigoCargo.OPERACAO_CONSULTOR, "Consultor"),
+                tuple(CodigoCargo.COORDENADOR_OPERACAO, "Coordenador"),
+                tuple(CodigoCargo.DIRETOR_OPERACAO, "Diretor"),
+                tuple(CodigoCargo.EXECUTIVO, "Executivo"),
+                tuple(CodigoCargo.EXECUTIVO_HUNTER, "Executivo Hunter"),
+                tuple(CodigoCargo.GERENTE_OPERACAO, "Gerente")
+            );
+
+        verify(cargoRepository).findByCodigoIn(anyList());
     }
 
     private void mockUmUsuarioGerenteVisualizarGeral() {
@@ -322,11 +507,11 @@ public class CargoServiceTest {
     @NotNull
     private List<Cargo> umaListadeCargosComCanais() {
         return List.of(
-            umCargo(1000, ECanal.AGENTE_AUTORIZADO),
-            umCargo(1001, ECanal.D2D_PROPRIO),
+            umCargo(1000, AGENTE_AUTORIZADO),
+            umCargo(1001, D2D_PROPRIO),
             umCargo(1002),
-            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
-            umCargo(1004, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO)
+            umCargo(1003, AGENTE_AUTORIZADO, D2D_PROPRIO),
+            umCargo(1004, ATIVO_PROPRIO, D2D_PROPRIO)
         );
     }
 
@@ -334,8 +519,8 @@ public class CargoServiceTest {
         return List.of(
             umCargo(1000, ECanal.INTERNET),
             umCargo(1001, ECanal.INTERNET),
-            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
-            umCargo(1004, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO)
+            umCargo(1003, AGENTE_AUTORIZADO, D2D_PROPRIO),
+            umCargo(1004, ATIVO_PROPRIO, D2D_PROPRIO)
         );
     }
 }

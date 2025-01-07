@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.SocioService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -9,8 +12,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
@@ -27,9 +28,8 @@ import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
@@ -38,9 +38,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
@@ -59,8 +61,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     private String destinatarios;
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository
-            .findAllGerenciaAa(pageable, getBuild(filtros));
+        var solicitacoes = solicitacaoRamalRepository.findAllGerenciaAa(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
             .stream()
@@ -99,8 +100,8 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
             getNomeSocioPrincipalAa(filtros.getAgenteAutorizadoId()),
-            getQuantidadeUsuariosAtivos(filtros.getAgenteAutorizadoId()),
-            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
+            getUsuariosAtivosByAgenteAutorizadoId(filtros.getAgenteAutorizadoId()).size(),
+            getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
             agenteAutorizadoResponse);
     }
 
@@ -130,17 +131,14 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private boolean validarQuantidade(Integer aaId, Integer quantidadeRamais) {
-        var ramais = solicitacaoRamalRepository
-            .findAllByAgenteAutorizadoIdAndSituacaoEnviadoOuConcluido(aaId)
-            .stream()
-            .mapToInt(SolicitacaoRamal::getQuantidadeRamais)
-            .sum();
+        var ramais = getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, aaId);
+        var usuariosAtivos = getUsuariosAtivosByAgenteAutorizadoId(aaId).size();
 
-        return quantidadeRamais + ramais > agenteAutorizadoService.getUsuariosAaAtivoSemVendedoresD2D(aaId).size();
+        return quantidadeRamais + ramais > usuariosAtivos;
     }
 
     private void validarParametroAa(SolicitacaoRamalRequest request) {
-        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
+        if (request.getCanal() == AGENTE_AUTORIZADO
             && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
         }
@@ -222,7 +220,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return "";
     }
 
-    private long getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal canal, Integer agenteAutorizadoId) {
+    private Integer getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal canal, Integer agenteAutorizadoId) {
         return callService.obterRamaisParaCanal(canal, agenteAutorizadoId).size();
     }
 
@@ -230,7 +228,19 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         return socioService.findSocioPrincipalByAaId(agenteAutorizadoId).getNome();
     }
 
-    private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosByAgenteAutorizadoId(Integer agenteAutorizadoId) {
+        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId)
+            .stream()
+            .filter(distinctByKey(UsuarioAgenteAutorizadoResponse::getId))
+            .collect(Collectors.toList());
+    }
+
+    public Integer getRamaisDisponiveis(Integer agenteAutorizadoId) {
+        var ramaisSolicitados = getQuantidadeRamaisPeloAgenteAutorizadoId(AGENTE_AUTORIZADO, agenteAutorizadoId);
+        var usuariosAtivos = getUsuariosAtivosByAgenteAutorizadoId(agenteAutorizadoId).size();
+
+        return usuariosAtivos > ramaisSolicitados
+            ? usuariosAtivos - ramaisSolicitados
+            : 0;
     }
 }

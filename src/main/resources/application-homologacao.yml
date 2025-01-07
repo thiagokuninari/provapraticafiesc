@@ -24,7 +24,7 @@ spring:
     password: xbrain
 
 app-config:
-  url-origin-cors: hom.conexaoclarobrasil.com.br,http://localhost
+  url-origin-cors: hom.conexaoclarobrasil.com.br,http://localhost,https://editor.swagger.io
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
     email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
@@ -39,37 +39,37 @@ app-config:
     vendas:
       url: http://vendas-api-hom:8097
     parceiros-online:
-      url: http://172.10.10.76:8099
+      url: http://parceiros-online-api-hom:8099
     call:
       url: http://call-api-hom:8094
     mailing:
-      url: http://172.10.10.77:8095
+      url: http://mailing-api-hom:8095
     equipe-venda:
-      url: http://172.10.10.82:8089
+      url: http://equipe-venda-api-hom:8089
     contato-crn:
-      url: http://172.10.10.64:8084
+      url: http://contato-crn-api-hom:8084
     comunicados:
       url: http://172.10.10.53:6553
     claro-indico:
-      url: http://172.10.10.55:8055
+      url: http://claro-indico-api-hom:8055
     agente-autorizado:
-      url: http://172.10.10.106:8300
+      url: http://agente-autorizado-api-hom:8300
     gestao:
-      url: http://172.10.10.71:8091
+      url: http://conexao-gestao-api-hom:8091
     notificacao:
       url: http://172.10.10.98:8081
     emails:
       url: http://email-hom:8080
     integracao-vendas:
-      url: http://172.10.10.85:8086
+      url: http://integracao-vendas-api-hom:8086
     mailing-importacao:
-      url: http://172.10.10.86:8087
+      url: http://mailing-importacao-api-hom:8087
     lei-nao-perturbe:
       url: http://lei-nao-perturbe-api:8109
     extrato-comissao:
       url: http://extrato-comissao-api:8309
     funil-prospeccao:
-      url: http://172.10.10.113:8304
+      url: http://funil-prospeccao-api-hom:8304
     localizacao:
       url: http://localizacao-api:8039
     gestao-colaborador-pol:
@@ -82,12 +82,20 @@ app-config:
       url: http://checagem-credito-api:8037
     backoffice:
       url: http://backoffice-api-hom:8101
+    feriado-automacao:
+      url: http://192.168.50.4:8078
+    ata-reuniao:
+      url: http://ata-reuniao-api:8308
+    comunicados-pol:
+      url: http://comunicados-pol-api:8312
+    pgaa:
+      url: http://pgaa-api:8354
 
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: angelica@xbrain.com.br,higor@xbrain.com.br,jose@xbrain.com.br,gabrielpuschel@xbrain.com.br,joaobarion@xbrain.com.br,matheusyoshiaki@xbrain.com.br,mirianynunes@xbrain.com.br,yurivieira@xbrain.com.br,lucassouza@xbrain.com.br
-    emails-solicitacao-ramal: angelica@xbrain.com.br,higor@xbrain.com.br,valdecir@xbrain.com.br,jose@xbrain.com.br,gabrielpuschel@xbrain.com.br,joaobarion@xbrain.com.br,matheusyoshiaki@xbrain.com.br,mirianynunes@xbrain.com.br,yurivieira@xbrain.com.br,lucassouza@xbrain.com.br
+    emails: angelica@xbrain.com.br,yurivieira@xbrain.com.br,joaobarion@xbrain.com.br,tiago.buranello@xbrain.com.br,rafaela.oliveira@xbrain.com.br,kaique.santos@xbrain.com.br,bianca.ferreira@xbrain.com.br,andreia.lima@xbrain.com.br,anderson.silva@xbrain.com.br
+    emails-solicitacao-ramal: angelica@xbrain.com.br,yurivieira@xbrain.com.br,joaobarion@xbrain.com.br,tiago.buranello@xbrain.com.br,rafaela.oliveira@xbrain.com.br,kaique.santos@xbrain.com.br,bianca.ferreira@xbrain.com.br,andreia.lima@xbrain.com.br,anderson.silva@xbrain.com.br
 
 logging:
   level:

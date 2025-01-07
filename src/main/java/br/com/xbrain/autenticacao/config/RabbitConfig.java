@@ -7,6 +7,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class RabbitConfig {
@@ -164,12 +165,25 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-grupos-organizacao-suporte-vendas}")
     private String inativarGruposByOrganizacaoQueue;
 
+    @Value("${app-config.topic.agendador}")
+    private String agendadorTopic;
+
+    @Value("${app-config.queue.agendador-autenticacao-api}")
+    private String agendadorAutenticacaoQueue;
+
+    @Value("${app-config.queue.redistribuir-indicacoes-inside-sales-vendedor}")
+    private String redistribuirIndicacoesInsideSalesMq;
+
+    @Value("${app-config.queue.inativar-direcionamentos-cep-vendedor-inside-sales}")
+    private String inativarDirecionamentoCepMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Bean
+    @Primary
     public TopicExchange topic() {
         return new TopicExchange(autenticacaoTopic);
     }
@@ -657,5 +671,46 @@ public class RabbitConfig {
     @Bean
     Binding inativarGruposByOrganizacaoBinding(FanoutExchange organizacaoInativadaFanout) {
         return BindingBuilder.bind(inativarGruposByOrganizacao()).to(organizacaoInativadaFanout);
+    }
+
+    @Bean
+    TopicExchange agendadorTopic() {
+        return new TopicExchange(agendadorTopic);
+    }
+
+    @Bean
+    Queue agendadorAutenticacaoQueue() {
+        return new Queue(agendadorAutenticacaoQueue, true);
+    }
+
+    @Bean
+    Binding agendadorBinding() {
+        return BindingBuilder.bind(agendadorAutenticacaoQueue())
+            .to(agendadorTopic())
+            .with(agendadorAutenticacaoQueue);
+    }
+
+    @Bean
+    Queue inativarDirecionamentoCepQueue() {
+        return new Queue(inativarDirecionamentoCepMq, false);
+    }
+
+    @Bean
+    public Binding inativarDirecionamentoCepBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarDirecionamentoCepQueue())
+            .to(exchange)
+            .with(inativarDirecionamentoCepMq);
+    }
+
+    @Bean
+    Queue redistribuirIndicacoesInsideSalesQueue() {
+        return new Queue(redistribuirIndicacoesInsideSalesMq, false);
+    }
+
+    @Bean
+    public Binding redistribuirIndicacoesInsideSalesBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(redistribuirIndicacoesInsideSalesQueue())
+            .to(exchange)
+            .with(redistribuirIndicacoesInsideSalesMq);
     }
 }

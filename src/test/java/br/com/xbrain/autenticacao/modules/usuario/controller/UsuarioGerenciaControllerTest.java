@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -45,13 +46,13 @@ import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.convertObjectToJsonString;
 import static helpers.Usuarios.ADMIN;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static br.com.xbrain.autenticacao.modules.canalnetsales.helper.CanalNetSalesHelper.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -104,15 +105,15 @@ public class UsuarioGerenciaControllerTest {
                 .file(umUsuario(new UsuarioDto()))
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(jsonPath("$", hasSize(6)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo nome é obrigatório.",
                 "O campo email é obrigatório.",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo empresasId é obrigatório.",
                 "O campo cargoId é obrigatório.",
-                "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales é obrigatório.")));
+                "O campo departamentoId é obrigatório."
+            )));
     }
 
     @Test
@@ -128,7 +129,7 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+                "O campo nome precisa ter entre 0 e 50 caracteres.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -335,7 +336,7 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isOk());
 
-        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
+        verify(usuarioService).salvarUsuarioBackoffice(UsuarioBackofficeRequest.of(usuario));
     }
 
     @Test
@@ -343,7 +344,7 @@ public class UsuarioGerenciaControllerTest {
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void saveBackoffice_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
         mvc.perform(post(API_URI_BACKOFFICE)
-                .content(convertObjectToJsonBytes(new UsuarioBackofficeDto()))
+                .content(convertObjectToJsonBytes(new UsuarioBackofficeRequest()))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(6)))
@@ -452,7 +453,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"CTR_2033"})
-    public void save_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
+    public void saveBackoffice_deveLancarForbidden_seUsuarioNaoTiverPermissao() {
         var usuario = umUsuarioDtoBackoffice();
 
         mvc.perform(post(API_URI_BACKOFFICE)
@@ -466,10 +467,151 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithAnonymousUser
-    public void save_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+    public void saveBackoffice_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
         var usuario = umUsuarioDtoBackoffice();
 
         mvc.perform(post(API_URI_BACKOFFICE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isUnauthorized());
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarUsuarioSalvo_quandoNivelForBackoffice() {
+        var usuario = umUsuarioBriefingDto();
+
+        mvc.perform(post(API_URI + "/briefing")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).salvarUsuarioBriefing(UsuarioBriefingRequest.of(usuario));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarbadRequest_seCamposObrigatoriosNaoPreenchidos() {
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(new UsuarioBriefingRequest()))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo cpf é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo nascimento é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo unidadeNegocioId é obrigatório.",
+                "O campo empresasId é obrigatório.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoNomeEstiverComSizeMaiorQue80() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setNome("um exemplo de nome grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoEmailEstiverComSizeMaiorQue80() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setEmail("um exemplo de email grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo email precisa ter entre 0 e 80 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoTelefoneEstiverComSizeMaiorQue100() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setTelefone("um exemplo de telefone grande demais".repeat(8));
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo telefone precisa ter entre 0 e 100 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoCpfEstiverComSizeMaiorQue14() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setCpf("123456781234567812");
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo cpf precisa ter entre 0 e 14 caracteres.",
+                "O campo cpf não é um cpf válido.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void saveBriefing_deveRetornarBadRequest_seCampoRgEstiverComSizeMaiorQue25() {
+        var usuario = umUsuarioBriefingDto();
+        usuario.setRg("12345678912345678912345566788951");
+
+        mvc.perform(post(API_URI + "/briefing")
+                .content(convertObjectToJsonBytes(usuario))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo rg precisa ter entre 0 e 25 caracteres.")));
+
+        verifyNoMoreInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void saveBriefing_deveLancarUnauthorized_seUsuarioNaoTiverAutorizacao() {
+        var usuario = umUsuarioBriefingDto();
+
+        mvc.perform(post(API_URI + "/briefing")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(usuario)))
             .andExpect(status().isUnauthorized());
@@ -504,7 +646,7 @@ public class UsuarioGerenciaControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo nome precisa ter entre 0 e 80 caracteres.")));
+                "O campo nome precisa ter entre 0 e 50 caracteres.")));
 
         verifyNoMoreInteractions(usuarioService);
     }
@@ -642,12 +784,11 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(put(API_URI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
-            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(7)))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$", hasSize(6)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo email é obrigatório.",
                 "O campo nome é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales é obrigatório.",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo empresasId é obrigatório.")));
@@ -1325,6 +1466,34 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
+    @WithAnonymousUser
+    public void getAllXbrainMsoAtivos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI.concat("/chamados/usuarios-redirecionamento/2")))
+            .andExpect(status().isUnauthorized());
+        verify(usuarioService, never()).getAllXbrainMsoAtivos(anyInt());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getAllXbrainMsoAtivos_deveRetornarOk_quandoUsuarioAutenticado() {
+        var usuarioConsultaDto = new UsuarioConsultaDto();
+        usuarioConsultaDto.setNome("nome");
+        usuarioConsultaDto.setId(1);
+
+        when(usuarioService.getAllXbrainMsoAtivos(2))
+            .thenReturn(List.of(usuarioConsultaDto));
+
+        mvc.perform(get(API_URI.concat("/chamados/usuarios-redirecionamento/2")))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("nome")))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getAllXbrainMsoAtivos(2);
+    }
+
+    @Test
+    @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void getUsuariosHierarquia_deveBuscarUsuariosHierarquia_seUsuarioAutenticado() {
         mvc.perform(get(API_URI + "/hierarquia/1"))
@@ -1479,32 +1648,138 @@ public class UsuarioGerenciaControllerTest {
     @Test
     @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+    public void inativarELimparDadosAntigoSocioPrincipal_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(put(API_URI + "/inativar-limpar-dados/socio-principal/{id}", 300))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).inativarELimparDadosAntigoSocioPrincipal(300);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void inativarAntigoSocioPrincipal_deveRetornarForbidden_quandoUsuarioSemPermissao() {
         mvc.perform(put(API_URI + "/inativar/socio-principal")
                 .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
-            .andExpect(status().isOk());
+            .andExpect(status().isForbidden());
 
-        verify(usuarioService).inativarAntigoSocioPrincipal("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+        verifyZeroInteractions(usuarioService);
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
-        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300))
-            .andExpect(status().isOk());
+    @WithAnonymousUser
+    public void inativarAntigoSocioPrincipal_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isUnauthorized());
 
-        verify(usuarioService).limparCpfAntigoSocioPrincipal(300);
+        verifyZeroInteractions(usuarioService);
     }
 
     @Test
     @SneakyThrows
-    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+    @WithAnonymousUser
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void limparCpfAntigoSocioPrincipal_deveRetornardeveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarEmailSocioInativo_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void atualizarEmailSocioInativo_deveRetornarForbidden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void migrarDadosNetSales_deveRetornarOk_quandoSolicitado() {
+
+        mvc.perform(put(API_URI + "/{canalNetSalesId}/migrar-usuarios-associados-ao-canal-net-sales", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(umCanalNetSalesResponse())))
             .andExpect(status().isOk());
 
-        verify(usuarioService).atualizarEmailSocioInativo(300);
+        verify(usuarioService).migrarDadosNetSales(any(Integer.class), any(CanalNetSalesResponse.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
+    public void atualizarCanalNetSalesCodigo_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(umCanalNetSalesResponse())))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).atualizarCanalNetSales(any(Integer.class), any(CanalNetSalesResponse.class));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void migrarDadosNetSales_deveRetornarForbbiden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/1/migrar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {""})
+    public void atualizarCanalNetSalesCodigo_deveRetornarForbbiden_quandoUsuarioSemPermissao() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isForbidden());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void atualizarCanalNetSalesCodigo_deveRetornarRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void migrarDadosNetSales_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(put(API_URI + "/1/atualizar-usuarios-associados-ao-canal-net-sales"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
@@ -1540,13 +1815,6 @@ public class UsuarioGerenciaControllerTest {
         return dto;
     }
 
-    private UsuarioDto umUsuarioParaEditar() {
-        return UsuarioDto.builder()
-            .nome("JOAOZINHO")
-            .loginNetSales("MIDORIYA SHOUNEN")
-            .build();
-    }
-
     private UsuarioDto umUsuario(String nome) {
         var usuario = new UsuarioDto();
         usuario.setNome(nome);
@@ -1572,14 +1840,27 @@ public class UsuarioGerenciaControllerTest {
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
 
-    private UsuarioBackofficeDto umUsuarioDtoBackoffice() {
-        var usuario = new UsuarioBackofficeDto();
+    private UsuarioBackofficeRequest umUsuarioDtoBackoffice() {
+        var usuario = new UsuarioBackofficeRequest();
         usuario.setNome("USUARIO BACKOFFICE");
         usuario.setCargoId(110);
         usuario.setEmail("usuarioBackoffice@gmail.com");
         usuario.setDepartamentoId(69);
         usuario.setCpf("870.371.018-18");
         usuario.setNascimento(LocalDate.of(2000, 1, 1));
+        return usuario;
+    }
+
+    private UsuarioBriefingRequest umUsuarioBriefingDto() {
+        var usuario = new UsuarioBriefingRequest();
+        usuario.setNome("USUARIO BRIEFING");
+        usuario.setCpf("870.371.018-18");
+        usuario.setEmail("briefing@gmail.com");
+        usuario.setNascimento(LocalDate.of(2000, 1, 1));
+        usuario.setCargoId(110);
+        usuario.setDepartamentoId(69);
+        usuario.setUnidadeNegocioId(1);
+        usuario.setEmpresasId(singletonList(4));
         return usuario;
     }
 

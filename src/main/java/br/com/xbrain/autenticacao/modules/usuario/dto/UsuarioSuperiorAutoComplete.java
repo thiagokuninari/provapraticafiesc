@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,13 +22,6 @@ public class UsuarioSuperiorAutoComplete {
         var usuarioSuperiorAutoComplete = new UsuarioSuperiorAutoComplete();
         BeanUtils.copyProperties(usuario, usuarioSuperiorAutoComplete);
         usuarioSuperiorAutoComplete.setCargo(usuario.getCargo().getNome());
-        return usuarioSuperiorAutoComplete;
-    }
-
-    public static UsuarioSuperiorAutoComplete of(UsuarioAutenticado usuarioAutenticado) {
-        var usuarioSuperiorAutoComplete = new UsuarioSuperiorAutoComplete();
-        BeanUtils.copyProperties(usuarioAutenticado, usuarioSuperiorAutoComplete);
-        usuarioSuperiorAutoComplete.setCargo(usuarioAutenticado.getCargo());
         return usuarioSuperiorAutoComplete;
     }
 }

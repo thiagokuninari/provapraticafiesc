@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -14,8 +15,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClie
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ParceirosOnlineClient;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
@@ -99,11 +98,9 @@ public class UsuarioServiceIT {
     @MockBean
     private EmailService emailService;
     @MockBean
-    private ParceirosOnlineClient parceirosOnlineClient;
+    private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private ColaboradorVendasService colaboradorVendasService;
-    @MockBean
-    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -423,8 +420,8 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
-        doNothing().when(agenteAutorizadoClient).ativarUsuario(anyInt());
+        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        doNothing().when(agenteAutorizadoService).ativarUsuario(anyInt());
 
         doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
@@ -440,7 +437,7 @@ public class UsuarioServiceIT {
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
             .extracting("id", "nome", "email", "cpf", "situacao")
-            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
+            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "55146494150", ESituacao.A);
         assertThat(usuarioLocalizado.getHistoricos())
             .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
             .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
@@ -467,7 +464,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoClient)
+            .when(agenteAutorizadoService)
             .existeAaAtivoBySocioEmail(anyString());
 
         thrown.expect(ValidacaoException.class);
@@ -486,7 +483,7 @@ public class UsuarioServiceIT {
             .getUsuarioAutenticado();
 
         doReturn(false)
-            .when(agenteAutorizadoClient)
+            .when(agenteAutorizadoService)
             .existeAaAtivoByUsuarioId(anyInt());
 
         thrown.expect(ValidacaoException.class);
@@ -494,6 +491,67 @@ public class UsuarioServiceIT {
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(243)
             .observacao("Teste ativar")
+            .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioJaAtivo() {
+        var usuarioLocalizado = usuarioRepository.findById(247).get();
+        assertThat(usuarioLocalizado.getSituacao())
+            .isEqualTo(A);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("O usuário já está ativo.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(247)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
+
+        assertThat(usuarioLocalizado.getSituacao())
+            .isEqualTo(A);
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioComEmailIgualAtivoJaCadastrado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var emailIgual = "VENDEDOR_OPERACAO_2@GMAIL.COM";
+        var usuarioLocalizado1 = usuarioRepository.findById(239).get();
+        assertThat(usuarioLocalizado1).extracting("email", "situacao")
+            .containsExactly(emailIgual, A);
+
+        var usuarioLocalizado2 = usuarioRepository.findById(241).get();
+        assertThat(usuarioLocalizado2).extracting("email", "situacao")
+            .containsExactly(emailIgual, I);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(241)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioComCpfIgualAtivoJaCadastrado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+        var cpfIgual = "77552837209";
+        var usuarioLocalizado1 = usuarioRepository.findById(238).get();
+        assertThat(usuarioLocalizado1).extracting("cpf", "situacao")
+            .containsExactly(cpfIgual, A);
+
+        var usuarioLocalizado2 = usuarioRepository.findById(240).get();
+        assertThat(usuarioLocalizado2).extracting("cpf", "situacao")
+            .containsExactly(cpfIgual, I);
+
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Já existe um usuário ativo cadastrado com o mesmo e-mail ou CPF.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+            .idUsuario(240)
+            .observacao("ATIVANDO UM USUÁRIO")
             .build());
     }
 
@@ -1037,7 +1095,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(anyInt(), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(100))
             .build());
@@ -1088,7 +1146,7 @@ public class UsuarioServiceIT {
         user.setId(115);
         user.setPermissoes(List.of());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
-        when(agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario(any()))
+        when(agenteAutorizadoService.getIdsUsuariosSubordinadosByFiltros(any()))
             .thenReturn(List.of(111, 104, 115));
 
         assertThat(service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder().build()))
@@ -1105,10 +1163,10 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(10), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
 
         doReturn(umaListaUsuarioResponse(104))
-            .when(agenteAutorizadoClient).getUsuariosByAaId(eq(20), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(10, 20))
@@ -1150,6 +1208,19 @@ public class UsuarioServiceIT {
                 tuple(117, "ROBERTO ALMEIDA", "ROBERTO@NET.COM", "Executivo", EXECUTIVO),
                 tuple(998, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO),
                 tuple(1000, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
+            );
+    }
+
+    @Test
+    public void findColaboradoresAtivosOperacaoComercialPorCargoCodigo_deveRetornarUsuarios_quandoSolicitado() {
+        assertThat(service.findColaboradoresAtivosOperacaoComercialPorCargoCodigo(EXECUTIVO))
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(149, "USUARIO INFERIOR"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(998, "USUARIO REMANEJAR"),
+                tuple(1000, "USUARIO REMANEJAR")
             );
     }
 
@@ -1575,7 +1646,6 @@ public class UsuarioServiceIT {
             .containsExactlyInAnyOrder(
                 tuple(369, "MARIA AUGUSTA"),
                 tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3"),
                 tuple(116, "ALBERTO PEREIRA"),
                 tuple(149, "USUARIO INFERIOR"),
                 tuple(117, "ROBERTO ALMEIDA"),

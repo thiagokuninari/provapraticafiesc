@@ -44,4 +44,9 @@ public class NivelController {
     public List<NivelResponse> getNivelParaOrganizacao() {
         return service.getPermitidosParaOrganizacao();
     }
+
+    @GetMapping("configuracoes-tratativas")
+    public List<NivelResponse> getNiveisConfiguracoesTratativas() {
+        return service.getNiveisConfiguracoesTratativas();
+    }
 }

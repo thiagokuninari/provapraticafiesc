@@ -23,20 +23,24 @@ public class ColaboradorVendasService {
     public void limparCpfColaboradorVendas(String email) {
         try {
             client.limparCpfColaboradorVendas(email);
-        } catch (RetryableException | HystrixBadRequestException ex) {
+        } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 ColaboradorVendasService.class.getName(),
                 EErrors.ERRO_AO_LIMPAR_CPF_COLABORADOR);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 
     public List<Integer> getUsuariosAaFeederPorCargo(List<Integer> aaIds, List<CodigoCargo> cargos) {
         try {
             return client.getUsuariosAaFeederPorCargo(aaIds, cargos);
-        } catch (RetryableException | HystrixBadRequestException ex) {
+        } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 ColaboradorVendasService.class.getName(),
                 EErrors.ERRO_BUSCAR_AAS_FEEDER_POR_CARGO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 

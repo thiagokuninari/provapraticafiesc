@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,5 +158,69 @@ public class CidadeRepositoryTest {
                 .buscarCidadeDistrito("PR", "LONDRINA", "SAO LUIZ").get())
             .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
             .containsExactly(30848, "SAO LUIZ", "PARANA", "PR", 5578);
+    }
+
+    @Test
+    public void findBySubCluster_deveRetornarCidades_quandoExistirSubCluster() {
+        assertThat(cidadeRepository
+            .findBySubCluster(1))
+            .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
+            .containsExactly(tuple(3886, "CORUMBIARA", "RONDONIA", "RO", null));
+    }
+
+    @Test
+    public void findAllByRegionalId_deveRetornarCidades_quandoCidadeTiverRegional() {
+        assertThat(cidadeRepository
+            .findAllByRegionalId(1030, new CidadePredicate().build()))
+            .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
+            .containsExactly(
+                tuple(4864, "BARUERI", "SAO PAULO", "SP", null),
+                tuple(4903, "CAJAMAR", "SAO PAULO", "SP", null),
+                tuple(5189, "OSASCO", "SAO PAULO", "SP", null));
+    }
+
+    @Test
+    public void findAllBySubClusterId_deveRetornarCidades_quandoCidadeTiverSubCluster() {
+        assertThat(cidadeRepository
+            .findAllBySubClusterId(1, new CidadePredicate().build()))
+            .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
+            .containsExactly(
+                tuple(3886, "CORUMBIARA", "RONDONIA", "RO", null));
+    }
+
+    @Test
+    public void getClusterizacao_deveRetornarClusterizacaoDto_quandoCidadesEncontradas() {
+        assertThat(cidadeRepository
+            .getClusterizacao(3237))
+            .extracting("cidadeId", "cidadeNome", "ufId", "ufNome", "regionalNome")
+            .containsExactly(
+                3237, "ARAPONGAS", 1, "PARANA", "RPS");
+    }
+
+    @Test
+    public void findFirstByPredicate_deveRetornarCidade_quandoCidadeEncontrada() {
+        assertThat(cidadeRepository
+            .findFirstByPredicate(new CidadePredicate().build()))
+            .get()
+            .extracting("id", "nome", "uf.nome", "uf.uf", "fkCidade")
+            .containsExactly(46, "CORURIPE", "ALAGOAS", "AL", null);
+    }
+
+    @Test
+    public void findAllByRegionalIdAndUfId_deveRetornarCidade_quandoCidadesEncontradas() {
+        assertThat(cidadeRepository
+            .findCidadesByCodigosIbge(new CidadePredicate().build()).size())
+            .isEqualTo(45);
+    }
+
+    @Test
+    public void findAllCidades_deveRetornarListaDeTodasAsCidadesDoPais_seSolicitado() {
+        assertThat(cidadeRepository.findAllCidades())
+            .extracting("id", "nome", "uf.id")
+            .contains(
+                tuple(3237, "ARAPONGAS", 1),
+                tuple(1443, "BELO VALE", 8),
+                tuple(2466, "BELTERRA", 4),
+                tuple(3022, "BENEDITINOS", 12));
     }
 }

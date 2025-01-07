@@ -1,9 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Set;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsuarioResponseTest {
@@ -11,8 +18,52 @@ public class UsuarioResponseTest {
     @Test
     public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seSolicitado() {
         assertThat(UsuarioResponse.of(umUsuario()))
-            .extracting("id", "nome", "email", "aaId", "tipoCanal")
-            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, ETipoCanal.PAP_PREMIUM);
+            .extracting("id", "nome", "email", "aaId")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101);
+    }
+
+    @Test
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seCanaisForemInformados() {
+        var usuario = umUsuario();
+        usuario.setCanais(Set.of(AGENTE_AUTORIZADO));
+
+        assertThat(UsuarioResponse.of(usuario))
+            .extracting("id", "nome", "email", "aaId", "canais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, Set.of(AGENTE_AUTORIZADO));
+    }
+
+    @Test
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seSubCanaisForemInformados() {
+        var usuario = umUsuario();
+        usuario.setSubCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
+
+        assertThat(UsuarioResponse.of(usuario))
+            .extracting("id", "nome", "email", "aaId", "subCanais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101,
+                Set.of(SubCanalDto.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
+    }
+
+    @Test
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponse_seListaDePermissoesForPassada() {
+        var usuario = umUsuario();
+        usuario.setCargo(umCargo(1, CodigoCargo.ADMINISTRADOR));
+        usuario.setSubCanais(Set.of(SubCanal.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
+
+        assertThat(UsuarioResponse.of(usuario, List.of("MSO")))
+            .extracting("id", "nome", "email", "aaId", "subCanais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101,
+                Set.of(SubCanalDto.builder().codigo(ETipoCanal.PAP).nome("PAP").build()));
+    }
+
+    @Test
+    public void of_deveRetornarUsuarioAgenteAutorizadoResponseComSubCanalNulo_seSubCanalVazio() {
+        var usuario = umUsuario();
+        usuario.setSubCanais(Set.of());
+        usuario.setCargo(umCargo(1, CodigoCargo.ADMINISTRADOR));
+
+        assertThat(UsuarioResponse.of(usuario, List.of("")))
+            .extracting("id", "nome", "email", "aaId", "subCanais")
+            .containsExactly(100, "Fulano de Teste", "teste@teste.com", 101, null);
     }
 
     private static Usuario umUsuario() {
@@ -22,7 +73,6 @@ public class UsuarioResponseTest {
             .nome("Fulano de Teste")
             .email("teste@teste.com")
             .agenteAutorizadoId(101)
-            .tipoCanal(ETipoCanal.PAP_PREMIUM)
             .build();
     }
 }

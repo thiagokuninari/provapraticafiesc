@@ -2,10 +2,13 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
@@ -24,7 +27,7 @@ public class FeriadoTest {
             .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "cidade.id", "tipoFeriado", "situacao",
                 "feriadoPai.id", "feriadoNacional")
             .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), 1111,
-                1, null, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
     }
 
     @Test
@@ -43,7 +46,7 @@ public class FeriadoTest {
             .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "cidade.id", "tipoFeriado", "situacao",
                 "feriadoPai.id", "feriadoNacional", "dataCadastro")
             .containsExactlyInAnyOrder(123, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), 1111,
-                1, null, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F,
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F,
                 LocalDateTime.of(2018, 11, 11, 11, 11, 11));
     }
 
@@ -90,12 +93,89 @@ public class FeriadoTest {
         assertThat(umFeriadoNacional().isFeriadoEstadual()).isFalse();
     }
 
+    @Test
+    public void isFeriadoEstadual_deveRetornarFalse_quandoFeriadoEstadualNulo() {
+        var feriadoNacional = umFeriadoNacional();
+        feriadoNacional.setTipoFeriado(null);
+
+        assertThat(feriadoNacional.isFeriadoEstadual())
+            .isFalse();
+    }
+
+    @Test
+    public void setup_deveRetornarTrue_quandoFeriadoEstadual() {
+        var feriado = umFeriadoNacional();
+        feriado.setNome("nome");
+
+        feriado.setup();
+
+        assertThat(feriado.getNome()).isEqualTo("NOME");
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoCorreto_quandoSolicitado() {
+        assertThat(Feriado.ofAutomacao(umFeriadoAutomacao(), umImportacaoFeriado()))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                1, 1, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoComCamposUfIdECidadeIdNulo_quandoUfIdECidadeIdNulos() {
+        var feriadoAutomacao = umFeriadoAutomacao();
+        feriadoAutomacao.setTipoFeriado(ETipoFeriado.NACIONAL);
+        feriadoAutomacao.setUfId(null);
+        feriadoAutomacao.setCidadeId(null);
+        var importacaoFeriado = umImportacaoFeriado();
+
+        assertThat(Feriado.ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactlyInAnyOrder(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                null, 1, ETipoFeriado.NACIONAL, ESituacaoFeriado.ATIVO, null, Eboolean.V);
+    }
+
+    @Test
+    public void ofAutomacao_deveRetornarFeriadoComUsuarioIdNulo_quandoImportacaoUsuarioIdNulo() {
+        var feriadoAutomacao = umFeriadoAutomacao();
+        feriadoAutomacao.setTipoFeriado(ETipoFeriado.NACIONAL);
+        var importacaoFeriado = umImportacaoFeriado();
+        importacaoFeriado.setUsuarioCadastroId(null);
+
+        assertThat(Feriado.ofAutomacao(feriadoAutomacao, importacaoFeriado))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactly(null, "FERIADO ESTADUAL", LocalDate.of(2023, 9, 20),
+                null, 1, ETipoFeriado.NACIONAL, ESituacaoFeriado.ATIVO, null, Eboolean.V);
+    }
+
+    private FeriadoAutomacao umFeriadoAutomacao() {
+        return FeriadoAutomacao.builder()
+            .dataFeriado(ETipoFeriado.ESTADUAL.getDescricao())
+            .nome("FERIADO ESTADUAL")
+            .tipoFeriado(ETipoFeriado.ESTADUAL)
+            .dataFeriado("20/09/2023")
+            .ufId(1)
+            .cidadeId(1)
+            .build();
+    }
+
+    private ImportacaoFeriado umImportacaoFeriado() {
+        return ImportacaoFeriado.builder()
+            .id(1)
+            .situacaoFeriadoAutomacao(ESituacaoFeriadoAutomacao.IMPORTADO)
+            .usuarioCadastroId(1)
+            .build();
+    }
+
     private FeriadoRequest umFeriadoEstadualRequest(Integer id) {
         return FeriadoRequest.builder()
             .id(id)
             .nome("FERIADO ESTADUAL")
             .tipoFeriado(ETipoFeriado.ESTADUAL)
             .estadoId(1)
+            .cidadeId(1)
             .dataFeriado("12/07/2019")
             .build();
     }

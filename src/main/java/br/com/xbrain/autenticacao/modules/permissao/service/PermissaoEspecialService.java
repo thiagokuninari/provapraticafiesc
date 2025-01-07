@@ -9,31 +9,36 @@ import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSocialHubRequestMq;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import lombok.RequiredArgsConstructor;
+import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
 public class PermissaoEspecialService {
 
-    public static final List<Integer> FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR =
-        List.of(3046, 15000, 15005, 15012, 16101);
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Permissão Especial não encontrada.");
+    public static final List<Integer> FUNC_FEEDER_E_ACOMP_INDICACOES_TECNICO_VENDEDOR =
+        List.of(3046, 15000, 15005, 15012, 16101, 20018, 20102, 20104);
+    private static final Integer ADM_SOCIAL_HUB = 30001;
 
     private final PermissaoEspecialRepository repository;
     private final AutenticacaoService autenticacaoService;
     private final FeederService feederService;
     private final ColaboradorVendasService colaboradorVendasService;
+    private final UsuarioCadastroMqSender usuarioMqSender;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
@@ -48,7 +53,7 @@ public class PermissaoEspecialService {
                     .dataCadastro(LocalDateTime.now())
                     .usuarioCadastro(usuario)
                     .build())
-                .collect(Collectors.toList()));
+                .collect(toList()));
     }
 
     public void save(List<PermissaoEspecial> permissoes) {
@@ -56,13 +61,23 @@ public class PermissaoEspecialService {
     }
 
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
-        return repository
+        var permissao = repository
             .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)
             .map(p -> {
                 p.baixar(autenticacaoService.getUsuarioId());
                 return repository.save(p);
             })
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
+        this.gerenciarPermissaoAdmSocialHub(usuarioId, funcionalidadeId);
+
+        return permissao;
+    }
+
+    private void gerenciarPermissaoAdmSocialHub(int usuarioId, int funcionalidadeId) {
+        if (funcionalidadeId == ADM_SOCIAL_HUB) {
+            usuarioMqSender.enviarDadosUsuarioParaSocialHub(UsuarioSocialHubRequestMq.from(usuarioId, true));
+        }
     }
 
     public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaIds) {
@@ -72,7 +87,7 @@ public class PermissaoEspecialService {
                 CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR))
             .stream()
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
     }
@@ -84,13 +99,17 @@ public class PermissaoEspecialService {
                 CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO))
             .stream()
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         feederService.salvarPermissoesEspeciaisSociosSecundarios(usuariosIds, usuarioAutenticado.getId());
     }
 
     public boolean hasPermissaoEspecialAtiva(Integer usuarioId, Integer funcionalidadeId) {
         return repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId);
+    }
+
+    public boolean hasPermissaoEspecialAtiva(Integer usuarioId, List<Integer> funcionalidadesIds) {
+        return repository.existsByUsuarioIdAndFuncionalidadeIdInAndDataBaixaIsNull(usuarioId, funcionalidadesIds);
     }
 
     public void deletarPermissoesEspeciaisBy(List<Integer> funcionalidadesIds, List<Integer> usuariosIds) {
@@ -110,7 +129,7 @@ public class PermissaoEspecialService {
             .map(usuarioId -> getFuncionalidadesId(permissoesIds, usuarioId))
             .flatMap(Collection::stream)
             .distinct()
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     private List<Integer> getFuncionalidadesId(List<Integer> permissoesIds, Integer usuarioId) {
@@ -118,7 +137,7 @@ public class PermissaoEspecialService {
             .map(PermissaoEspecial::getFuncionalidade)
             .map(Funcionalidade::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     private List<PermissaoEspecial> getPermissoesEspeciais(List<Integer> permissoesIds, Integer usuarioId) {

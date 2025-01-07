@@ -1,17 +1,12 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizado.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizado.client.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.AgenteAutorizadoFiltros;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizado.dto.*;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
@@ -214,6 +209,18 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public Map<Integer, Integer> getUsuariosByAasIds(List<Integer> aasIds) {
+        try {
+            return client.getUsuariosByAasIds(aasIds);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     public List<Integer> getUsuariosIdsByAaId(Integer aaId, Boolean buscarInativos) {
         return getUsuariosByAaId(aaId, buscarInativos).stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
@@ -317,18 +324,6 @@ public class AgenteAutorizadoService {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public void inativarAntigoSocioPrincipal(String email) {
-        try {
-            client.inativarAntigoSocioPrincipal(email);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
