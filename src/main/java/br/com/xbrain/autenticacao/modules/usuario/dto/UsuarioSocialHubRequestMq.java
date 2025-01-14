@@ -3,13 +3,14 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioSocialHubRequestMq {
@@ -26,14 +27,16 @@ public class UsuarioSocialHubRequestMq {
 
     public static UsuarioSocialHubRequestMq from(Usuario usuario, List<Integer> regionaisIds, String nomeCargo,
                                                  boolean isPermissaoAdmSocialRemovida) {
-        var request = new UsuarioSocialHubRequestMq();
-        BeanUtils.copyProperties(usuario, request);
-        request.setCargo(nomeCargo);
-        request.setNivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null);
-        request.setRegionaisIds(regionaisIds);
-        request.setTerritorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull());
-        request.setPermissaoAdmSocialRemovida(isPermissaoAdmSocialRemovida);
-        return request;
+        return UsuarioSocialHubRequestMq.builder()
+            .id(usuario.getId())
+            .nome(usuario.getNome())
+            .email(usuario.getEmail())
+            .nivel(usuario.getNivelCodigo() != null ? usuario.getNivelCodigo().toString() : null)
+            .cargo(nomeCargo)
+            .regionaisIds(regionaisIds)
+            .territorioMercadoDesenvolvimentoId(usuario.getTerritorioMercadoDesenvolvimentoIdOrNull())
+            .isPermissaoAdmSocialRemovida(isPermissaoAdmSocialRemovida)
+            .build();
     }
 
     public static UsuarioSocialHubRequestMq from(Integer usuarioId, boolean isPermissaoAdmSocialRemovida) {

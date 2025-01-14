@@ -25,6 +25,7 @@ public class UsuarioSocialHubRequestMqTest {
         assertEquals(usuario.getNivelCodigo().toString(), request.getNivel());
         assertEquals(List.of(1022), regionaisIds);
         assertFalse(request.isPermissaoAdmSocialRemovida());
+        assertNull(request.getSituacao());
     }
 
     @Test
@@ -41,6 +42,7 @@ public class UsuarioSocialHubRequestMqTest {
         assertNull(request.getTerritorioMercadoDesenvolvimentoId());
         assertNull(request.getNivel());
         assertFalse(request.isPermissaoAdmSocialRemovida());
+        assertNull(request.getSituacao());
     }
 
     @Test
