@@ -49,6 +49,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.SOCIAL_HUB;
 import static br.com.xbrain.autenticacao.config.EScopes.SUPORTE_VENDAS_BKO;
 import static br.com.xbrain.autenticacao.config.EScopes.CHECAGEM_CREDITO_API;
 import static br.com.xbrain.autenticacao.config.EScopes.BRIEFING;
+import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_SALES_API;
 
 @Configuration
 @EnableAuthorizationServer
@@ -205,6 +206,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String briefingApiClient;
     @Value("${app-config.oauth-clients.briefing-api.secret}")
     private String briefingApiSecret;
+    @Value("${app-config.oauth-clients.integracao-sales-api.client}")
+    private String integracaoSalesApiClient;
+    @Value("${app-config.oauth-clients.integracao-sales-api.secret}")
+    private String integracaoSalesApiSecret;
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -434,6 +439,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(briefingApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(BRIEFING.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(integracaoSalesApiClient)
+            .secret(integracaoSalesApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(INTEGRACAO_SALES_API.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

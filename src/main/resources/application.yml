@@ -280,6 +280,9 @@ app-config:
     pgaa-api:
       client: pgaa-api
       secret: pg44
+    integracao-sales-api:
+      client: integracao-sales-api
+      secret: 1nt3gr4c40s4l3s
 
   services:
     autenticacao:
