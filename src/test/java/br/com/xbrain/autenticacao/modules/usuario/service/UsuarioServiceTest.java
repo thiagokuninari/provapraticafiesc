@@ -5015,6 +5015,40 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListaDeInteger_quandoEncontrar() {
+        var umaListaIds = List.of(1, 2, 3);
+
+        doReturn(umaListaIds)
+            .when(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+
+        assertThat(service.findCidadesIdByUsuarioIdComDataBaixaNull(1))
+            .isEqualTo(umaListaIds);
+
+        verify(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+    }
+
+    @Test
+    public void findCidadesIdByUsuarioIdComDataBaixaNull_deveRetornarListaDeIntegerVazia_quandoNaoEncontrar() {
+        doReturn(Collections.emptyList())
+            .when(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+
+        assertThat(service.findCidadesIdByUsuarioIdComDataBaixaNull(1))
+            .isEqualTo(Collections.emptyList());
+
+        verify(usuarioCidadeRepository).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+    }
+
+    @TestConfiguration
+    static class MockitoPublisherConfiguration {
+
+        @Bean
+        @Primary
+        static ApplicationEventPublisher publisher() {
+            return mock(ApplicationEventPublisher.class);
+        }
+    }
+
+    @Test
     public void getCanaisPermitidosParaOrganizacao_deveRetornarCanaisPermitidos_quandoSolicitado() {
         assertThat(service.getCanaisPermitidosParaOrganizacao())
             .extracting("value", "label")
@@ -6495,15 +6529,5 @@ public class UsuarioServiceTest {
         assertThat(service.isUsuarioSocioPrincipal(usuarioId)).isFalse();
 
         verify(repository).isUsuarioSocioPrincipal(usuarioId);
-    }
-
-    @TestConfiguration
-    static class MockitoPublisherConfiguration {
-
-        @Bean
-        @Primary
-        static ApplicationEventPublisher publisher() {
-            return mock(ApplicationEventPublisher.class);
-        }
     }
 }

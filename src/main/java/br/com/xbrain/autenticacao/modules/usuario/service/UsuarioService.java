@@ -3168,6 +3168,10 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(Integer usuarioId) {
+        return usuarioCidadeRepository.findCidadesIdByUsuarioIdComDataBaixaNull(usuarioId);
+    }
+
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
                                                                 List<Integer> funcionalidades) {
         return funcionalidades.stream()

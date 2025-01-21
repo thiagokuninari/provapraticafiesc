@@ -25,6 +25,15 @@ public class UsuarioCidadeRepositoryImpl extends CustomRepository<UsuarioCidade>
     }
 
     @Override
+    public List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuarioCidade.cidade.id)
+            .from(usuarioCidade)
+            .where(usuarioCidade.dataBaixa.isNull().and(usuarioCidade.usuario.id.eq(usuarioId)))
+            .fetch();
+    }
+
+    @Override
     public Set<UsuarioCidade> findUsuarioCidadesByUsuarioId(Integer usuarioId) {
         return new HashSet<>(new JPAQueryFactory(entityManager)
             .selectFrom(usuarioCidade)

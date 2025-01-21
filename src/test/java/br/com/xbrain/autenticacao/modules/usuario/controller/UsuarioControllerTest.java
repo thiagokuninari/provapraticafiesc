@@ -2395,6 +2395,30 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    @WithMockUser
+    public void findCidadesIdByUsuarioId_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/usuario-cidades"))
+                .param("usuarioId", "1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).findCidadesIdByUsuarioIdComDataBaixaNull(1);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void findCidadesIdByUsuarioId_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(get(BASE_URL.concat("/usuario-cidades"))
+                .param("usuarioId", "1")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
     @WithMockUser(username = ADMIN, roles = {"AUT_VISUALIZAR_USUARIO"})
     public void findByCpfAndSituacaoIsNot_deveBuscarUsuarioPorCpfESituacao_seUsuarioAutenticado() {
         mvc.perform(get(BASE_URL)
