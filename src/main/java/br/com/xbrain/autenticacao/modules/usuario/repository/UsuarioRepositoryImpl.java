@@ -38,8 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.infra.PredicateBase.getPartitionPredicate;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
@@ -95,7 +94,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                    .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -736,7 +735,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
                 .where(usuario.email.equalsIgnoreCase(email)
-                    .and(usuario.situacao.ne(ESituacao.R)))
+                    .and(usuario.situacao.ne(R)))
                 .orderBy(usuario.dataCadastro.desc())
                 .fetchFirst());
     }
@@ -1342,7 +1341,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(cargo.nivel, nivel)
             .where(usuario.dataUltimoAcesso.after(dataHoraInativarUsuario)
-                .and(usuario.situacao.ne(I))
+                .and(usuario.situacao.notIn(I, R))
                 .and(usuario.cargo.nivel.codigo.ne(CodigoNivel.INTEGRACAO))
                 .and(usuario.dataUltimoAcesso.before(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS)))
                 .and(usuario.dataReativacao.before(LocalDate.now().atStartOfDay().minusDays(TRES_DIAS))
