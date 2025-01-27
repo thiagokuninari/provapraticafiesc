@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
 import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
@@ -127,6 +128,7 @@ import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -246,6 +248,8 @@ public class UsuarioServiceTest {
     private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
     @Mock
     private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
+    @Mock
+    private ClaroIndicoService claroIndicoService;
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
@@ -760,6 +764,73 @@ public class UsuarioServiceTest {
         verify(redistribuirIndicacoesInsideSalesMqSender).sendRedistribuirIndicacoesInsideSales(14);
     }
 
+    @Test
+    public void inativar_deveRemoverUsuarioDaFilaTratamento_seUsuarioForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(115)
+            .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacao());
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(1);
+    }
+
+    @Test
+    public void inativar_deveRemoverUsuarioDaFilaTratamentoPorExcessoDeLogins_seUsuarioForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(115)
+            .codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacaoSenhaIncorreta());
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamentoInativacao(1);
+    }
+
+    @Test
+    public void inativar_naoDeveRemoverUsuarioDaFilaTratamento_seUsuarioNaoForOperadorBkoCentralizado() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .id(117)
+            .codigo(BACKOFFICE_GERENTE_TRATAMENTO_VENDAS)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO)
+                .nome("BACKOFFICE CENTRALIZADO")
+                .build())
+            .build());
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> service.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService, never()).desvincularUsuarioDaFilaTratamento(1);
+    }
+
     private UsuarioInativacaoDto umUsuarioInativoDto() {
         return UsuarioInativacaoDto.builder()
             .idUsuario(1)
@@ -800,6 +871,7 @@ public class UsuarioServiceTest {
         usuario.setSubCanais(Set.of(new SubCanal(1)));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
@@ -821,6 +893,7 @@ public class UsuarioServiceTest {
         var file = umDocumentoPng();
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
 
         assertThatCode(() -> service.save(usuarioDto, file))
             .doesNotThrowAnyException();
@@ -842,6 +915,7 @@ public class UsuarioServiceTest {
         var file = umDocumentoPng();
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
@@ -864,6 +938,7 @@ public class UsuarioServiceTest {
         ));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(anyInt()))
             .thenReturn(Cargo.builder().codigo(DIRETOR_OPERACAO).build());
         doReturn(umUsuarioAutenticadoAdmin(1))
@@ -930,6 +1005,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5))
             .thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
@@ -991,6 +1067,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
         when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
@@ -1064,6 +1141,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
         when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
             .thenReturn(Set.of(
@@ -1099,6 +1177,7 @@ public class UsuarioServiceTest {
         usuario.setHierarquiasId(List.of(10));
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
         when(repository.findById(eq(10))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
         when(repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
@@ -1339,6 +1418,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
             .when(repository)
             .findById(101112);
+        doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
+            .when(repository)
+            .findComplete(101112);
 
         assertThatCode(() -> service.save(umUsuarioOperacaoComSubCanal(101112, 3, PAP_PREMIUM)))
             .doesNotThrowAnyException();
@@ -1357,6 +1439,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
             .when(repository)
             .findById(101112);
+        doReturn(Optional.of(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
+            .when(repository)
+            .findComplete(101112);
 
         assertThatCode(() -> service.save(umUsuarioOperacaoComSubCanal(101112, 4, INSIDE_SALES_PME)))
             .doesNotThrowAnyException();
@@ -1375,6 +1460,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(umUsuario()))
             .when(repository).findById(1);
+        doReturn(Optional.of(umUsuario()))
+            .when(repository).findComplete(1);
 
         doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
             .when(repository).getSubCanaisByUsuarioIds(List.of(1));
@@ -1397,6 +1484,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(novoUsuario))
             .when(repository).findById(1);
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findComplete(1);
 
         doReturn(umSetSubCanal(2, PAP_PME, PAP_PME.getDescricao()))
             .when(repository).getSubCanaisByUsuarioIds(List.of(1));
@@ -1421,6 +1510,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(novoUsuario))
             .when(repository).findById(1);
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findComplete(1);
 
         assertThatCode(() -> service.save(novoUsuario))
             .doesNotThrowAnyException();
@@ -1439,6 +1530,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(novoUsuario))
             .when(repository).findById(1);
+        doReturn(Optional.of(novoUsuario))
+            .when(repository).findComplete(1);
 
         doReturn(umSetSubCanal(1, PAP, PAP.getDescricao()))
             .when(repository).getSubCanaisByUsuarioIds(List.of(1));
@@ -1828,6 +1921,47 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void salvarUsuarioBackoffice_deveDesvincularUsuarioDoFilaTratamento_quandoUsuarioAlterarCargo() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(115, 100);
+        usuarioAntigoMock.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO).build());
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(200, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService)
+            .desvincularUsuarioDaFilaTratamento(eq(new Usuario(100)), eq(new Usuario(100)));
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_naoDeveDesvincularUsuarioDoFilaTratamento_quandoAlterarCargoParaAnalista() {
+        var usuarioAntigoMock = umUsuarioComCargoEOrganizacao(115, 100);
+        usuarioAntigoMock.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.BACKOFFICE_CENTRALIZADO).build());
+        var usuarioNovoMock = umUsuarioComCargoEOrganizacao(116, 100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+        when(repository.findComplete(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(repository.findById(anyInt()))
+            .thenReturn(Optional.of(usuarioAntigoMock));
+        when(organizacaoEmpresaService.findById(anyInt()))
+            .thenReturn(umaOrganizacaoEmpresa());
+
+        assertThatCode(() -> service.salvarUsuarioBackoffice(usuarioNovoMock))
+            .doesNotThrowAnyException();
+
+        verify(claroIndicoService, never()).desvincularUsuarioDaFilaTratamento(100);
+    }
+
+    @Test
     public void salvarUsuarioBriefing_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelMso());
@@ -1896,11 +2030,13 @@ public class UsuarioServiceTest {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAnterior));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAnterior));
         when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(2, 3));
 
         service.salvarUsuarioBriefing(usuario);
 
         verify(repository, times(3)).findById(23);
+        verify(repository).findComplete(23);
         verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(2, 3), List.of(23));
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
     }
@@ -1912,10 +2048,12 @@ public class UsuarioServiceTest {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
         when(repository.findById(23)).thenReturn(Optional.of(usuario));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuario));
 
         service.salvarUsuarioBriefing(usuario);
 
         verify(repository, times(3)).findById(23);
+        verify(repository).findComplete(23);
         verifyZeroInteractions(permissaoEspecialService);
         verifyZeroInteractions(subNivelService);
     }
@@ -3214,6 +3352,7 @@ public class UsuarioServiceTest {
             CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO);
 
         when(repository.findById(eq(1))).thenReturn(Optional.of(usuarioCompleto));
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuarioCompleto));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
@@ -3265,8 +3404,11 @@ public class UsuarioServiceTest {
     @Test
     @SuppressWarnings("LineLength")
     public void save_naoDeveDispararValidacaoException_seUsuarioOriginalNaoPossuirSitesVinculados() {
+        var usuario = UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1);
         when(repository.findById(eq(1)))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)));
+            .thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1)))
+            .thenReturn(Optional.of(usuario));
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of());
 
@@ -3281,8 +3423,11 @@ public class UsuarioServiceTest {
     @Test
     @SuppressWarnings("LineLength")
     public void save_naoDeveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosENaoForCoordenadorOuSupervisorOperacao() {
+        var usuario = UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1);
         when(repository.findById(eq(1)))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)));
+            .thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1)))
+            .thenReturn(Optional.of(usuario));
 
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
@@ -3299,8 +3444,11 @@ public class UsuarioServiceTest {
     @Test
     @SuppressWarnings("LineLength")
     public void save_naoDeveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosECargoCoordenadorOuSupervisorECanalAtivoLocalMantidos() {
+        var usuario = UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1);
         when(repository.findById(eq(1)))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)));
+            .thenReturn(Optional.of(usuario));
+        when(repository.findComplete(eq(1)))
+            .thenReturn(Optional.of(usuario));
 
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
@@ -3344,6 +3492,8 @@ public class UsuarioServiceTest {
             ECanal.D2D_PROPRIO);
         usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(repository.findById(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
+        when(repository.findComplete(any()))
             .thenReturn(Optional.of(usuarioSalvo));
         when(repository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
@@ -3425,6 +3575,8 @@ public class UsuarioServiceTest {
 
         when(repository.findById(any()))
             .thenReturn(Optional.of(usuarioSalvo));
+        when(repository.findComplete(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
         when(repository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -3451,6 +3603,8 @@ public class UsuarioServiceTest {
         usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(repository.findById(any()))
             .thenReturn(Optional.of(usuarioSalvo));
+        when(repository.findComplete(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
@@ -3476,6 +3630,8 @@ public class UsuarioServiceTest {
         usuarioSalvo.setSubCanais(Set.of(new SubCanal(1)));
         when(repository.findById(any()))
             .thenReturn(Optional.of(usuarioSalvo));
+        when(repository.findComplete(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
@@ -3495,9 +3651,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveLancarException_quandoUsuarioPossuiCanalForaVerificacao() {
+        var usuario = umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO);
+
         when(repository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
-                CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
+            .thenReturn(Optional.of(usuario));
+        when(repository.findComplete(any()))
+            .thenReturn(Optional.of(usuario));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
             .when(autenticacaoService)
@@ -3518,6 +3678,8 @@ public class UsuarioServiceTest {
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuarioSalvo.setSubCanais(Set.of(new SubCanal(2)));
         when(repository.findById(any()))
+            .thenReturn(Optional.of(usuarioSalvo));
+        when(repository.findComplete(any()))
             .thenReturn(Optional.of(usuarioSalvo));
         doReturn(umUsuarioAutenticadoAdmin(1))
             .when(autenticacaoService)
@@ -3542,6 +3704,8 @@ public class UsuarioServiceTest {
 
         when(repository.findById(eq(150016)))
             .thenReturn(Optional.of(usuarioComUsuarioCadastroNulo));
+        when(repository.findComplete(eq(150016)))
+            .thenReturn(Optional.of(usuarioComUsuarioCadastroNulo));
         when(autenticacaoService.getUsuarioAutenticadoId())
             .thenReturn(Optional.of(101112));
 
@@ -3559,6 +3723,8 @@ public class UsuarioServiceTest {
     @Test
     public void save_naoDeveAtualizarUsuarioCadastroId_quandoUsuarioJaPossuirUsuarioCadastro() {
         when(repository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso()));
+        when(repository.findComplete(eq(150016)))
             .thenReturn(Optional.of(umUsuarioMso()));
 
         doReturn(umUsuarioAutenticadoNivelBackoffice())
@@ -3584,7 +3750,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(vendedor))
             .when(repository)
             .findById(1);
-
+        doReturn(Optional.of(vendedor))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(eq(100))).thenReturn(Optional.of(vendedor));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(100, ECanal.D2D_PROPRIO)));
@@ -3609,7 +3777,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(vendedor))
             .when(repository)
             .findById(1);
-
+        doReturn(Optional.of(vendedor))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(eq(100))).thenReturn(Optional.of(vendedor));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(100, ECanal.D2D_PROPRIO)));
@@ -3698,6 +3868,7 @@ public class UsuarioServiceTest {
 
         when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
@@ -3739,11 +3910,13 @@ public class UsuarioServiceTest {
         when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAntigo));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
         verify(repository, times(7)).findById(23);
+        verify(repository).findComplete(23);
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3771,11 +3944,13 @@ public class UsuarioServiceTest {
         when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAntigo));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
         verify(repository, times(7)).findById(23);
+        verify(repository).findComplete(23);
         verify(subNivelService).getFuncionalidadesIdsByNivel(2);
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3808,11 +3983,13 @@ public class UsuarioServiceTest {
         when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(setSubNiveis, 20)).thenReturn(List.of(2, 3));
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAntigo));
 
         assertThatCode(() -> service.save(usuarioDto, null))
             .doesNotThrowAnyException();
 
         verify(repository, times(7)).findById(23);
+        verify(repository).findComplete(23);
         verify(subNivelService).findByIdIn(Set.of(2, 3));
         verify(autenticacaoService).getUsuarioAutenticado();
         verify(repository).saveAndFlush(any(Usuario.class));
@@ -3851,6 +4028,7 @@ public class UsuarioServiceTest {
 
         when(subNivelService.getFuncionalidadesIdsByNivel(2)).thenReturn(List.of(1, 2, 3));
         when(repository.findById(23)).thenReturn(Optional.of(usuarioAntigo));
+        when(repository.findComplete(23)).thenReturn(Optional.of(usuarioAntigo));
         when(subNivelService.findByIdIn(Set.of(2, 3))).thenReturn(subniveis);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioXBrain());
         when(subNivelService.getSubNivelFuncionalidadesIdsByCargo(anySet(), anyInt())).thenReturn(List.of(2, 3));
@@ -4560,6 +4738,15 @@ public class UsuarioServiceTest {
             .build();
     }
 
+    private MotivoInativacao umMotivoInativacao() {
+        return MotivoInativacao.builder()
+            .id(1)
+            .descricao("TESTE")
+            .codigo(CodigoMotivoInativacao.INATIVO)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
     private Usuario umUsuarioCompletoSenhaErrada() {
         var usuario = umUsuarioCompleto();
         usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
@@ -4647,6 +4834,7 @@ public class UsuarioServiceTest {
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
+        when(repository.findComplete(1)).thenReturn(Optional.of(umUsuario()));
 
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
@@ -4667,6 +4855,7 @@ public class UsuarioServiceTest {
         verify(permissaoTecnicoIndicadorService, times(1))
             .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest), eq(false));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(any(), any());
     }
 
     @Test
@@ -4687,6 +4876,7 @@ public class UsuarioServiceTest {
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
+        when(repository.findComplete(1)).thenReturn(Optional.of(umUsuario()));
 
         var usuarioMqRequest = UsuarioMqRequest.builder()
             .id(1)
@@ -4732,6 +4922,7 @@ public class UsuarioServiceTest {
         when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
         when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
         when(repository.findById(1)).thenReturn(Optional.of(umUsuario()));
+        when(repository.findComplete(1)).thenReturn(Optional.of(umUsuario()));
 
         var expectedDto = umUsuarioDtoSender();
         expectedDto.setUnidadeNegocioId(null);
@@ -4759,6 +4950,7 @@ public class UsuarioServiceTest {
         verify(permissaoTecnicoIndicadorService, times(1))
             .adicionarPermissaoTecnicoIndicadorParaUsuarioNovo(eq(expectedDto), eq(usuarioMqRequest), eq(false));
         verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(any(), any());
     }
 
     @Test
@@ -4898,6 +5090,7 @@ public class UsuarioServiceTest {
         var usuarioDto = umUsuarioDtoParse();
 
         when(repository.findById(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
+        when(repository.findComplete(usuarioDto.getId())).thenReturn(Optional.of(umUsuarioConvertFrom()));
         when(cargoRepository.findByCodigo(usuarioMqRequest.getCargo())).thenReturn(umCargoGerente());
         when(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento())).thenReturn(umDepartamentoAa());
         when(nivelRepository.findByCodigo(usuarioMqRequest.getNivel())).thenReturn(umNivelAa());
@@ -4915,6 +5108,7 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository).findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         verify(empresaRepository).findByCodigoIn(usuarioMqRequest.getEmpresa());
         verify(autenticacaoService).getUsuarioAutenticado();
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamento(any(), any());
     }
 
     @Test
@@ -5434,6 +5628,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(2))
             .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
@@ -5460,7 +5657,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
-
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(2)).thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
             .thenReturn(List.of(new Canal(2, ECanal.INTERNET)));
@@ -5484,6 +5683,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(2))
             .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
@@ -5510,6 +5712,9 @@ public class UsuarioServiceTest {
         doReturn(Optional.of(usuario))
             .when(repository)
             .findById(1);
+        doReturn(Optional.of(usuario))
+            .when(repository)
+            .findComplete(1);
         when(repository.findById(2))
             .thenReturn(Optional.of(usuario));
         when(repository.getCanaisByUsuarioIds(anyList()))
@@ -6000,6 +6205,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(umUsuarioInsideSalesPme()))
             .when(repository).findById(1);
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findComplete(1);
         doReturn(umUsuarioAutenticadoAdmin(41))
             .when(autenticacaoService).getUsuarioAutenticado();
 
@@ -6018,6 +6225,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(umUsuarioInsideSalesPme()))
             .when(repository).findById(1);
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findComplete(1);
         doReturn(umUsuarioAutenticadoAdmin(41))
             .when(autenticacaoService).getUsuarioAutenticado();
 
@@ -6035,6 +6244,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(umUsuarioInsideSalesPme()))
             .when(repository).findById(1);
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findComplete(1);
         doReturn(umUsuarioAutenticadoAdmin(41))
             .when(autenticacaoService).getUsuarioAutenticado();
 
@@ -6053,6 +6264,8 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of(umUsuarioInsideSalesPme()))
             .when(repository).findById(1);
+        doReturn(Optional.of(umUsuarioInsideSalesPme()))
+            .when(repository).findComplete(1);
         doReturn(umUsuarioAutenticadoAdmin(41))
             .when(autenticacaoService).getUsuarioAutenticado();
 
@@ -6529,5 +6742,98 @@ public class UsuarioServiceTest {
         assertThat(service.isUsuarioSocioPrincipal(usuarioId)).isFalse();
 
         verify(repository).isUsuarioSocioPrincipal(usuarioId);
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivosESemVinculo() {
+        var operadorBackofficeCentralizado = Usuario.builder()
+            .id(1)
+            .nome("USUARIO UM")
+            .cargo(Cargo.builder().id(115).codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+        var analistaBackofficeCentralizado = Usuario.builder()
+            .id(2)
+            .nome("USUARIO DOIS")
+            .cargo(Cargo.builder().id(116).codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+
+        when(repository.getUsuariosFilter(any()))
+            .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of());
+        
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertFalse(resultado.isEmpty());
+        assertThat(resultado)
+            .extracting(
+                UsuarioResponse::getId,
+                UsuarioResponse::getNome)
+            .containsExactlyInAnyOrder(
+                tuple(1, "USUARIO UM"),
+                tuple(2, "USUARIO DOIS")
+            );
+
+        verify(repository).getUsuariosFilter(any());
+        verify(claroIndicoService).buscarUsuariosVinculados();
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarLista_quandoHouverUsuariosAtivosEComVinculo() {
+        var operadorBackofficeCentralizado = Usuario.builder()
+            .id(1)
+            .nome("USUARIO UM")
+            .cargo(Cargo.builder().id(115).codigo(BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+        var analistaBackofficeCentralizado = Usuario.builder()
+            .id(2)
+            .nome("USUARIO DOIS")
+            .cargo(Cargo.builder().id(116).codigo(BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS).build())
+            .situacao(A)
+            .build();
+
+        when(repository.getUsuariosFilter(any()))
+            .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of(1));
+
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertFalse(resultado.isEmpty());
+        assertThat(resultado)
+            .extracting(
+                UsuarioResponse::getId,
+                UsuarioResponse::getNome)
+            .containsExactlyInAnyOrder(
+                tuple(2, "USUARIO DOIS")
+            );
+
+        verify(repository).getUsuariosFilter(any());
+        verify(claroIndicoService).buscarUsuariosVinculados();
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivosESemVinculo() {
+        when(repository.getUsuariosFilter(any())).thenReturn(List.of());
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of());
+
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertTrue(resultado.isEmpty());
+
+        verify(repository).getUsuariosFilter(any());
+    }
+
+    @Test
+    public void getColaboradoresBackofficeCentralizado_deveRetornarListaVazia_quandoNaoHouverUsuariosAtivosEComVinculo() {
+        when(repository.getUsuariosFilter(any())).thenReturn(List.of());
+        when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of(1));
+
+        var resultado = service.getColaboradoresBackofficeCentralizado();
+
+        assertTrue(resultado.isEmpty());
+
+        verify(repository).getUsuariosFilter(any());
     }
 }

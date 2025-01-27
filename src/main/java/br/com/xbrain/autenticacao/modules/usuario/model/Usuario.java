@@ -806,4 +806,10 @@ public class Usuario {
 
         return cargo != null && getCargosVendedorInsideSales().contains(cargo);
     }
+
+    @JsonIgnore
+    public boolean isNivelBkoCentralizado() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo() == CodigoNivel.BACKOFFICE_CENTRALIZADO;
+    }
 }

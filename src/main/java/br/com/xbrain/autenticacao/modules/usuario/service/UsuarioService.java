@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.canalnetsales.dto.CanalNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.InativarDirecionamentosCepMqSender;
 import br.com.xbrain.autenticacao.modules.claroindico.rabbitmq.RedistribuirIndicacoesInsideSalesMqSender;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -93,6 +94,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
@@ -101,6 +103,7 @@ import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.isNivelObrigatorioDadosNetSales;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoUsuario.SOCIO;
@@ -289,6 +292,8 @@ public class UsuarioService {
     private InativarDirecionamentosCepMqSender inativarDirecionamentosCepMqSender;
     @Autowired
     private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
+    @Autowired
+    private ClaroIndicoService claroIndicoService;
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -647,6 +652,7 @@ public class UsuarioService {
             enviarNovosDadosParaEquipeVendasUsuario(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
+            tratarUsuarioAntigoBackoffice(usuario);
             var enviarEmail = usuario.isNovoCadastro();
             atualizarUsuarioCadastroNulo(usuario);
             removerPermissoes(usuario);
@@ -860,6 +866,7 @@ public class UsuarioService {
             var usuarioAntigo = findCompleteById(usuario.getId());
             suporteVendasService.desvincularGruposByUsuario(usuarioAntigo, usuario);
             deletarPermissoesEspeciaisMso(usuarioAntigo);
+            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
         }
     }
 
@@ -867,6 +874,7 @@ public class UsuarioService {
         validar(usuario);
         tratarCadastroUsuario(usuario);
         this.removerPermissoesEspeciaisSubNivelMsoByNivel(usuario);
+        tratarUsuarioAntigoBackoffice(usuario);
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
@@ -1898,6 +1906,7 @@ public class UsuarioService {
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerDirecionamentoPorCepEIndicoesInsideSalesAoInativar(usuario);
+        removerUsuarioDaFilaTratamento(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
         inativarSocio(usuario);
@@ -3149,7 +3158,7 @@ public class UsuarioService {
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
                     .observacao(ECodigoObservacao.ITL.getObservacao())
-                    .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+                    .codigoMotivoInativacao(TENTATIVAS_LOGIN_SENHA_INCORRETA)
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
@@ -3468,6 +3477,45 @@ public class UsuarioService {
         if (usuario.hasSubCanalInsideSalesPme() && usuario.isCargoVendedorInsideSales()) {
             removerDirecionamentoPorCepDoUsuario(usuario.getId());
             redistribuirIndicacoesDoUsuario(usuario.getId());
+        }
+    }
+
+    public List<UsuarioResponse> getColaboradoresBackofficeCentralizado() {
+        var predicate = new UsuarioPredicate()
+            .comCargosIds(CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO)
+            .isAtivo(Eboolean.V);
+
+        var usuariosVinculados = claroIndicoService.buscarUsuariosVinculados();
+
+        return repository.getUsuariosFilter(predicate.build())
+            .stream()
+            .filter(usuario -> !isUsuarioVinculado(usuario, usuariosVinculados))
+            .map(UsuarioResponse::of)
+            .collect(toList());
+    }
+
+    private boolean isUsuarioVinculado(Usuario usuario, List<Integer> usuariosVinculados) {
+        if (!isEmpty(usuariosVinculados)) {
+            return usuariosVinculados.contains(usuario.getId());
+        }
+
+        return false;
+    }
+
+    private void removerUsuarioDaFilaTratamento(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isNivelBkoCentralizado() && CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoId())) {
+            if (motivoInativacao.getCodigo() == TENTATIVAS_LOGIN_SENHA_INCORRETA) {
+                claroIndicoService.desvincularUsuarioDaFilaTratamentoInativacao(usuario.getId());
+            } else {
+                claroIndicoService.desvincularUsuarioDaFilaTratamento(usuario.getId());
+            }
+        }
+    }
+
+    private void tratarUsuarioAntigoBackoffice(Usuario usuario) {
+        if (usuario != null && !usuario.isNovoCadastro()) {
+            var usuarioAntigo = findCompleteById(usuario.getId());
+            claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
         }
     }
 }

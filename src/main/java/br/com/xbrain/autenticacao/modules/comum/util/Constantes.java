@@ -55,4 +55,9 @@ public class Constantes {
     public static final Integer PERMISSAO_DESBLOQUEAR_INDICACAO_EXTERNA_ID = 22127;
 
     public static final List<Integer> LISTA_ROLES_PERMITE_CRIAR_TRATATIVAS = List.of(3052, 16106);
+    public static final List<CodigoCargo> CARGOS_COLABORADOR_BKO_CENTRALIZADO = List.of(
+        CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS,
+        CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO_VENDAS
+    );
+    public static final List<Integer> CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO = List.of(115, 116);
 }

@@ -2572,4 +2572,24 @@ public class UsuarioControllerTest {
 
         verify(usuarioService).findSociosIdsAtivosByUsuariosIds(List.of(1, 2));
     }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void buscarColaboradoresBackofficeCentralizado_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/colaboradores-backoffice-centralizado"))
+            .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(usuarioService);
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void buscarColaboradoresBackofficeCentralizado_deveRetornarOk_quandoUsuarioAutenticado() {
+        mvc.perform(get(BASE_URL + "/colaboradores-backoffice-centralizado"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService).getColaboradoresBackofficeCentralizado();
+    }
 }

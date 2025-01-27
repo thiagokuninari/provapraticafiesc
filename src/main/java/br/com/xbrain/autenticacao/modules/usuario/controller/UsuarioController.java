@@ -637,7 +637,7 @@ public class UsuarioController {
     }
 
     @GetMapping("buscar-emails/{cargoId}")
-    List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
+    public List<String> getEmailsByCargoId(@PathVariable Integer cargoId) {
         return usuarioService.getEmailsByCargoId(cargoId);
     }
 
@@ -654,5 +654,10 @@ public class UsuarioController {
     @GetMapping("usuario-cidades")
     public List<Integer> findCidadesIdByUsuarioIdComDataBaixaNull(@RequestParam Integer usuarioId) {
         return usuarioService.findCidadesIdByUsuarioIdComDataBaixaNull(usuarioId);
+    }
+
+    @GetMapping("colaboradores-backoffice-centralizado")
+    public List<UsuarioResponse> buscarColaboradoresBackofficeCentralizado() {
+        return usuarioService.getColaboradoresBackofficeCentralizado();
     }
 }

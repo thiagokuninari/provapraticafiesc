@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
@@ -62,6 +64,8 @@ public class UsuarioAcessoServiceTest {
     private InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Mock
+    private ClaroIndicoService claroIndicoService;
 
     @Test
     public void registrarAcesso_deveRegistrarAcesso_quandoUsuarioEfetuarLogin() {
@@ -131,6 +135,33 @@ public class UsuarioAcessoServiceTest {
         verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(anyInt(), eq("TESTE"));
         verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
         verify(inativarUsuarioFeederMqSender, never()).sendSuccess(anyString());
+    }
+
+    @Test
+    public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNivelForBackofficeCentralizado() {
+        ReflectionTestUtils.setField(service, "dataHoraInativarUsuario", "2021-05-30T00:00:00.000");
+        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0)))
+            .thenReturn(List.of(umUsuarioDto(1), umUsuarioFeederDto(3, null)));
+        var operadorBko = umUsuarioDto(4);
+        operadorBko.setNivelCodigo(CodigoNivel.BACKOFFICE_CENTRALIZADO);
+        operadorBko.setCargoCodigo(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_VENDAS);
+        when(usuarioRepository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0)))
+            .thenReturn(List.of(umUsuarioDto(2), umUsuarioFeederDto(2, null), operadorBko));
+
+        assertThat(service.inativarUsuariosSemAcesso("TESTE"))
+            .isEqualTo(5);
+
+        verify(usuarioRepository).findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0));
+        verify(usuarioRepository).findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+            LocalDateTime.of(2021, 5, 30, 0, 0));
+        verify(usuarioRepository).atualizarParaSituacaoInativo(1);
+        verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(anyInt(), eq("TESTE"));
+        verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
+        verify(inativarUsuarioFeederMqSender, never()).sendSuccess(anyString());
+        verify(claroIndicoService).desvincularUsuarioDaFilaTratamentoInativacao(4);
     }
 
     @Test

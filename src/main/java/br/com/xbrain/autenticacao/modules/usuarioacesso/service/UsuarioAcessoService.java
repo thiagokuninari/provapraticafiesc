@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.claroindico.service.ClaroIndicoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.CARGOS_COLABORADOR_BKO_CENTRALIZADO;
 import static java.util.stream.StreamSupport.stream;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -63,6 +65,7 @@ public class UsuarioAcessoService {
     private final InativarColaboradorMqSender inativarColaboradorMqSender;
     private final NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     private final InativarUsuarioFeederMqSender inativarUsuarioFeederMqSender;
+    private final ClaroIndicoService claroIndicoService;
 
     @Value("${app-config.timer-usuario.data-hora-inativar-usuario-a-partir-de}")
     private String dataHoraInativarUsuario;
@@ -91,6 +94,8 @@ public class UsuarioAcessoService {
                     usuarioHistoricoService.gerarHistoricoInativacao(usuario.getId(), origem);
                     if (usuario.getNivelCodigo() == CodigoNivel.FEEDER) {
                         inativarUsuarioFeeder(usuario);
+                    } else if (usuario.getNivelCodigo() == CodigoNivel.BACKOFFICE_CENTRALIZADO) {
+                        inativarUsuarioBkoCentralizado(usuario);
                     } else {
                         inativarColaboradorPol(usuario);
                     }
@@ -273,6 +278,12 @@ public class UsuarioAcessoService {
             inativarUsuarioFeederMqSender.sendSuccess(usuario.getEmail());
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
+        }
+    }
+
+    private void inativarUsuarioBkoCentralizado(UsuarioDto usuario) {
+        if (CARGOS_COLABORADOR_BKO_CENTRALIZADO.contains(usuario.getCargoCodigo())) {
+            claroIndicoService.desvincularUsuarioDaFilaTratamentoInativacao(usuario.getId());
         }
     }
 
