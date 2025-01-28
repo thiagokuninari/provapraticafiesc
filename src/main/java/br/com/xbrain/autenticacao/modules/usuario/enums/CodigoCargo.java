@@ -1,9 +1,14 @@
 package br.com.xbrain.autenticacao.modules.usuario.enums;
 
 import java.util.List;
+import java.util.Objects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.ObjectUtils;
+
+import static java.util.Objects.nonNull;
 
 @Getter
 @AllArgsConstructor

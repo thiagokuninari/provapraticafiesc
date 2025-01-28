@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRemanejamentoReques
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
     name = "colaboradorTecnicoClient",
@@ -17,5 +18,8 @@ public interface ColaboradorTecnicoClient {
 
     @PutMapping(API_COLABORADOR_TECNICO + "/atualizar-usuario-remanejado")
     void atualizarUsuarioRemanejado(@RequestBody UsuarioRemanejamentoRequest request);
+
+    @PutMapping(API_COLABORADOR_TECNICO + "/limpar-cpf")
+    void limparCpfColaboradorTecnico(@RequestParam("email") String email);
 
 }

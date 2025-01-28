@@ -1874,12 +1874,18 @@ public class UsuarioService {
         return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
+    @Transactional
     public void limparCpfUsuario(Integer id) {
         var usuario = limpaCpf(id);
-        colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
+        var email = usuario.getEmail();
+
+        if (usuario.isTecnico()) {
+            colaboradorTecnicoService.limparCpfColaboradorTecnico(email);
+        } else {
+            colaboradorVendasService.limparCpfColaboradorVendas(email);
+        }
     }
 
-    @Transactional
     public Usuario limpaCpf(Integer id) {
         var usuario = findComplete(id);
         usuario.setCpf(null);
