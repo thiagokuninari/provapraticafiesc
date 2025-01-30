@@ -283,6 +283,9 @@ app-config:
     integracao-sales-api:
       client: integracao-sales-api
       secret: 1nt3gr4c40s4l3s
+    agendadores-api:
+      client: agendadores-api
+      secret: 4g3nd4d0r3s
 
   services:
     autenticacao:

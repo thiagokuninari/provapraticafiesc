@@ -42,7 +42,7 @@
     </root>
 
     <springProfile name="test">
-        <root level="ERROR">
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
         <logger name="br.com.api.common.client.ApiErrorDecoder" level="OFF"/>
