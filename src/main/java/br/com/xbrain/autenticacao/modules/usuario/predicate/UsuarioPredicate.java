@@ -495,6 +495,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comUsuariosSuperiores(List<Integer> usuariosIds) {
+        Optional.ofNullable(usuariosIds)
+            .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
+            .map(builder::and);
+        return this;
+    }
+
     public BooleanBuilder build() {
         return this.builder;
     }

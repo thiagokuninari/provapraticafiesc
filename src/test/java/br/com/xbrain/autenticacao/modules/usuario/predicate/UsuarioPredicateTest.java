@@ -188,6 +188,25 @@ public class UsuarioPredicateTest {
     }
 
     @Test
+    public void comExecutivosDosCoordenadores_deveMontarPredicate_quandoIdsNaoNull() {
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(List.of(1))
+            .build();
+        var expected = new BooleanBuilder(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(List.of(1)));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comUsuariosSuperiores_deveMontarPredicate_quandoIdsNaoNull() {
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(null)
+            .build();
+        var expected = new BooleanBuilder();
+
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
     public void comUsuariosEmail_deveRetornarPredicate_quandoEmailsForFornecido() {
         var predicate = new UsuarioPredicate()
             .comUsuariosEmail(List.of("email1", "email2"))

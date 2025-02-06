@@ -216,4 +216,8 @@ public interface UsuarioRepositoryCustom {
     List<Integer> findSociosIdsAtivosByUsuariosIds(Predicate predicate);
 
     List<UsuarioAgenteAutorizadoResponse> findAllUsuarioAaResponse(Predicate predicate);
+
+    List<UsuarioNomeResponse> findExecutivosPorCoordenadoresIds(Predicate predicate);
+
+    List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds);
 }

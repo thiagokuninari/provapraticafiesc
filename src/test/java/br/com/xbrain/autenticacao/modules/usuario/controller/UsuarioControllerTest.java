@@ -38,6 +38,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static helpers.TestBuilders.umUsuario;
+import static helpers.TestBuilders.umUsuarioNomeResponse;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.*;
@@ -2591,5 +2592,55 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService).getColaboradoresBackofficeCentralizado();
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getExecutivosPorCoodenadoresIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/executivos-hierarquia")
+                .param("coordenadoresIds", "1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getExecutivosPorCoodenadoresIds_deveRetornarExecutivos_quandoUsuarioAutenticado() {
+        when(usuarioService.getExecutivosPorCoordenadoresIds(List.of(1)))
+            .thenReturn(List.of(umUsuarioNomeResponse(1, "Thiago", A)));
+
+        mvc.perform(get(BASE_URL + "/executivos-hierarquia")
+                .param("coordenadoresIds", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Thiago")));
+
+        verify(usuarioService).getExecutivosPorCoordenadoresIds(List.of(1));
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(BASE_URL + "/usuarios/subordinados")
+                .param("usuariosIds", "1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSubordinadosIds_quandoUsuarioAutenticado() {
+        when(usuarioService.getUsuariosSubordinadosIdsByUsuariosIds(List.of(1)))
+            .thenReturn(List.of(1, 2));
+
+        mvc.perform(get(BASE_URL + "/usuarios/subordinados")
+                .param("usuariosIds", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]", is(1)))
+            .andExpect(jsonPath("$[1]", is(2)));
+
+        verify(usuarioService).getUsuariosSubordinadosIdsByUsuariosIds(List.of(1));
     }
 }

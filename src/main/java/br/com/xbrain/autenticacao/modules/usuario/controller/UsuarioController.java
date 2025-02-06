@@ -172,6 +172,11 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
+    @GetMapping("/usuarios/subordinados")
+    public List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+    }
+
     @RequestMapping(value = "/{id}/subordinados/vendas", method = RequestMethod.GET)
     public List<Integer> getSubordinadosVendas(@PathVariable("id") int id) {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
@@ -249,10 +254,10 @@ public class UsuarioController {
     public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
 
         return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+            .stream()
+            .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     @GetMapping(params = "email")
@@ -659,5 +664,10 @@ public class UsuarioController {
     @GetMapping("colaboradores-backoffice-centralizado")
     public List<UsuarioResponse> buscarColaboradoresBackofficeCentralizado() {
         return usuarioService.getColaboradoresBackofficeCentralizado();
+    }
+
+    @GetMapping("executivos-hierarquia")
+    public List<UsuarioNomeResponse> getExecutivosPorCoodenadoresIds(@RequestParam List<Integer> coordenadoresIds) {
+        return usuarioService.getExecutivosPorCoordenadoresIds(coordenadoresIds);
     }
 }

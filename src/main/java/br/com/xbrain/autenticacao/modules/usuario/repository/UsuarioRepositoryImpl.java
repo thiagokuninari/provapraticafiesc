@@ -1510,4 +1510,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(predicate)
             .fetch();
     }
+
+    @Override
+    public List<UsuarioNomeResponse> findExecutivosPorCoordenadoresIds(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .where(predicate)
+            .fetch();
+    }
+
+    public List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuarioHierarquia.usuario.id)
+            .from(usuarioHierarquia)
+            .where(usuarioHierarquia.usuarioSuperior.id.in(usuariosIds))
+            .fetch()
+            .stream()
+            .distinct()
+            .collect(Collectors.toList());
+    }
 }

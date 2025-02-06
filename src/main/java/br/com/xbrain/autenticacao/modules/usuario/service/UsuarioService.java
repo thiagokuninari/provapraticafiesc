@@ -94,9 +94,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.CARGOS_IDS_COLABORADOR_BKO_CENTRALIZADO;
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.ROLE_SHB;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.*;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.atualizarEmailInativo;
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getRandomPassword;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
@@ -124,6 +122,11 @@ import static org.thymeleaf.util.StringUtils.concat;
 @SuppressWarnings({"PMD.TooManyStaticImports", "PMD.UnusedImports", "VariableDeclarationUsageDistance"})
 public class UsuarioService {
 
+    public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR, INTERNET_COORDENADOR);
+    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
+        INTERNET_VENDEDOR);
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
@@ -153,7 +156,6 @@ public class UsuarioService {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
-    public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
@@ -175,10 +177,6 @@ public class UsuarioService {
     private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_AA_ESTRUTURA_NAO_LOJA_FUTURO =
         "O usuário não pode ser ativado pois a estrutura do agente autorizado não é Loja do Futuro.";
-    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_SUPERVISOR = Set.of(INTERNET_BACKOFFICE,
-        INTERNET_VENDEDOR, INTERNET_COORDENADOR);
-    public static final Set<CodigoCargo> CARGOS_PERMITIDOS_INTERNET_COODERNADOR = Set.of(INTERNET_BACKOFFICE,
-        INTERNET_VENDEDOR);
     private static final String MSG_ERRO_ATIVAR_USUARIO_COM_FORNECEDOR_INATIVO =
         "O usuário não pode ser ativado pois o fornecedor está inativo.";
     private static final String MSG_ERRO_SALVAR_USUARIO_COM_FORNECEDOR_INATIVO =
@@ -294,6 +292,14 @@ public class UsuarioService {
     private RedistribuirIndicacoesInsideSalesMqSender redistribuirIndicacoesInsideSalesMqSender;
     @Autowired
     private ClaroIndicoService claroIndicoService;
+
+    private static String verificarSituacao(String nome, ESituacao situacao) {
+        return ESituacao.I == situacao
+            ? nome.concat(" (INATIVO)")
+            : ESituacao.R == situacao
+            ? nome.concat(" (REALOCADO)")
+            : nome;
+    }
 
     public Usuario findComplete(Integer id) {
         var usuario = repository.findComplete(id).orElseThrow(() -> new ValidacaoException(MSG_USUARIO_NAO_ENCONTRADO));
@@ -2939,14 +2945,6 @@ public class UsuarioService {
         return repository.findAllUsuariosReceptivosIdsByOrganizacaoId(id);
     }
 
-    private static String verificarSituacao(String nome, ESituacao situacao) {
-        return ESituacao.I == situacao
-            ? nome.concat(" (INATIVO)")
-            : ESituacao.R == situacao
-            ? nome.concat(" (REALOCADO)")
-            : nome;
-    }
-
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
@@ -3523,5 +3521,21 @@ public class UsuarioService {
             var usuarioAntigo = findCompleteById(usuario.getId());
             claroIndicoService.desvincularUsuarioDaFilaTratamento(usuarioAntigo, usuario);
         }
+    }
+
+    public List<UsuarioNomeResponse> getExecutivosPorCoordenadoresIds(List<Integer> coordenadoresIds) {
+        var usuarioPredicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(coordenadoresIds)
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO);
+        return repository.findExecutivosPorCoordenadoresIds(usuarioPredicate.build());
+    }
+
+    public List<Integer> getUsuariosSubordinadosIdsByUsuariosIds(List<Integer> usuariosIds) {
+        var subordinados = repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+
+        return Stream.concat(subordinados.stream(), usuariosIds.stream())
+            .distinct()
+            .collect(toList());
     }
 }

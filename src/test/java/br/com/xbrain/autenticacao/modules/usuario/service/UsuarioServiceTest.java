@@ -125,6 +125,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponse
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioServiceHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.UsuarioAcessoHelper.umUsuarioXBrain;
 import static helpers.TestBuilders.umUsuarioAutenticadoAdmin;
+import static helpers.TestBuilders.umUsuarioNomeResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
@@ -6170,6 +6171,53 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void getExecutivosPorCoordenadoresIds_deveRetornarListaUsuarioResponseNome_quandoSolicitado() {
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(List.of(1))
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+
+        doReturn(List.of(umUsuarioNomeResponse(1, "Thiago", A)))
+            .when(repository)
+            .findExecutivosPorCoordenadoresIds(predicate);
+
+        assertThat(service.getExecutivosPorCoordenadoresIds(List.of(1)))
+            .hasSize(1)
+            .extracting("id", "nome")
+            .containsExactly(tuple(1, "Thiago"));
+
+        verify(repository).findExecutivosPorCoordenadoresIds(predicate);
+    }
+
+    @Test
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarListaDeIdsDistintos_quandoSolicitado() {
+        var usuariosIds = List.of(1, 2, 3);
+        var subordinadosIds = List.of(4, 5, 6, 6);
+
+        when(repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds)).thenReturn(subordinadosIds);
+
+        var resultado = service.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+
+        assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
+
+        verify(repository).getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+    }
+
+    @Test
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSomenteUsuariosIds_quandoNaoExistiremSubordinados() {
+        var usuariosIds = List.of(1, 2, 3);
+
+        when(repository.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds)).thenReturn(List.of());
+
+        var resultado = service.getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+
+        assertThat(resultado).containsExactlyInAnyOrder(1, 2, 3);
+
+        verify(repository).getUsuariosSubordinadosIdsByUsuariosIds(usuariosIds);
+    }
+
+    @Test
     @SuppressWarnings({"checkstyle:linelength"})
     public void inativarELimparDadosAntigoSocioPrincipal_deveAtualizarEmailParaInativoLimparCpfEInativarUsuario_seUsuarioLocalizado() {
         var usuario = Usuario
@@ -6762,7 +6810,7 @@ public class UsuarioServiceTest {
         when(repository.getUsuariosFilter(any()))
             .thenReturn(List.of(operadorBackofficeCentralizado, analistaBackofficeCentralizado));
         when(claroIndicoService.buscarUsuariosVinculados()).thenReturn(List.of());
-        
+
         var resultado = service.getColaboradoresBackofficeCentralizado();
 
         assertFalse(resultado.isEmpty());

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -625,4 +626,26 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findSociosIdsAtivosByUsuariosIds(predicate.build()))
             .isEqualTo(List.of(127));
     }
+
+    @Test
+    public void findExecutivosPorCoordenadoresIds_deveRetornarExecutivosDoCoordenador_quandoSolicitado() {
+        var predicate = new UsuarioPredicate()
+            .comUsuariosSuperiores(List.of(109))
+            .comCargo(EXECUTIVO)
+            .comCanal(ECanal.AGENTE_AUTORIZADO).build();
+
+        assertThat(repository.findExecutivosPorCoordenadoresIds(predicate))
+            .hasSize(2)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"));
+    }
+
+    @Test
+    public void getUsuariosSubordinadosIdsByUsuariosIds_deveRetornarSubordinadosIds_quandoSolicitado() {
+        assertThat(repository.getUsuariosSubordinadosIdsByUsuariosIds(List.of(109)))
+            .containsExactly(107, 108, 114, 115);
+    }
+
 }
