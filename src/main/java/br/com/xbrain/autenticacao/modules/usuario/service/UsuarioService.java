@@ -129,6 +129,7 @@ public class UsuarioService {
         INTERNET_VENDEDOR);
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
+    private static final int MIN_CARACTERES_SENHA = 8;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String CONTRATO_ATIVO = "CONTRATO ATIVO";
@@ -2208,6 +2209,7 @@ public class UsuarioService {
             || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
+        validarPoliticaDeSenha(usuarioDadosAcessoRequest.getSenhaNova());
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
@@ -2219,6 +2221,40 @@ public class UsuarioService {
     private void validarSenhaAtual(Usuario usuario, final String senhaAtual) {
         if (!BCrypt.checkpw(senhaAtual, usuario.getSenha())) {
             throw SENHA_ATUAL_INCORRETA_EXCEPTION;
+        }
+    }
+
+    private void validarPoliticaDeSenha(String novaSenha) {
+        if (isNotBlank(novaSenha) && novaSenha.length() >= MIN_CARACTERES_SENHA) {
+            Pattern maiusculas = Pattern.compile("[A-Z]");
+            Pattern minusculas = Pattern.compile("[a-z]");
+            Pattern numeros = Pattern.compile("[0-9]");
+            Pattern caracteresEspeciais = Pattern.compile("[!$%&*=@#^+-]");
+            Pattern espacos = Pattern.compile("\\p{Zs}+");
+
+            var possuiMaiusculas = maiusculas.matcher(novaSenha).find();
+            var possuiMinusculas = minusculas.matcher(novaSenha).find();
+            var possuiNumeros = numeros.matcher(novaSenha).find();
+            var possuiCaracteresEspeciais = caracteresEspeciais.matcher(novaSenha).find();
+            var possuiEspacos = espacos.matcher(novaSenha).find();
+
+            if (!possuiMinusculas) {
+                throw new ValidacaoException("A senha deve possuir no mínimo uma letra minúscula.");
+            }
+            if (!possuiMaiusculas) {
+                throw new ValidacaoException("A senha deve possuir no mínimo uma letra maiúscula.");
+            }
+            if (!possuiNumeros) {
+                throw new ValidacaoException("A senha deve possuir no mínimo um número.");
+            }
+            if (!possuiCaracteresEspeciais) {
+                throw new ValidacaoException("A senha deve possuir no mínimo um caracter especial.");
+            }
+            if (possuiEspacos) {
+                throw new ValidacaoException("A senha não deve possuir espaços.");
+            }
+        } else {
+            throw new ValidacaoException("A senha deve possuir no mínimo 8 caracteres.");
         }
     }
 

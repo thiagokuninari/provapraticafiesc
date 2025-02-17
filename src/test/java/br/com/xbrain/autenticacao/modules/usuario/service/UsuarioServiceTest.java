@@ -78,6 +78,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -2976,9 +2977,6 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoService.getUsuariosByAasIds(anyList())).thenReturn(Map.of(
             100, 100,
             101, 100));
-        when(repository.findAllUsuarioAaResponse(
-            umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
-            .thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
@@ -6883,5 +6881,230 @@ public class UsuarioServiceTest {
         assertTrue(resultado.isEmpty());
 
         verify(repository).getUsuariosFilter(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaComMenosDeOitoCaracteres() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("teste")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo 8 caracteres.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaVazia() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo 8 caracteres.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemMaiusculas() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("teste123@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo uma letra maiúscula.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemMinusculas() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("TESTE123@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo uma letra minúscula.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemNumeros() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("testeSenha@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo um número.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaSemCaracteresEspeciais() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("testeSENHA123")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha deve possuir no mínimo um caracter especial.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioInformarNovaSenhaComEspacos() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("TesteS3nh@ ")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("A senha não deve possuir espaços.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_naoDeveLancarException_quandoUsuarioInformarNovaSenhaDentroDaPolitica() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .usuarioId(100)
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("T3steS&nh@")
+            .build();
+
+        when(repository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatCode(() -> service.alterarDadosAcessoSenha(request))
+            .doesNotThrowAnyException();
+
+        verify(repository).updateSenha(any(), any(), any());
+        verify(notificacaoService).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_naoDeveLancarException_quandoUsuarioAutenticadoInformarNovaSenhaDentroDaPolitica() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .alterarSenha(Eboolean.V)
+            .ignorarSenhaAtual(Boolean.TRUE)
+            .senhaNova("T3steS&nh@")
+            .build();
+
+        var usuarioAutenticado = UsuarioAutenticado.builder().usuario(umUsuarioCompleto()).build();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        assertThatCode(() -> service.alterarDadosAcessoSenha(request))
+            .doesNotThrowAnyException();
+
+        verify(repository).updateSenha(any(), any(), any());
+        verify(notificacaoService).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_naoDeveLancarException_quandoUsuarioAutenticadoInformarSenhaAtualCorreta() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .alterarSenha(Eboolean.V)
+            .senhaAtual("TESTE123")
+            .senhaNova("T3steS&nh@")
+            .build();
+
+        var senha = BCrypt.hashpw("TESTE123", BCrypt.gensalt());
+        var usuario = umUsuarioCompleto();
+        usuario.setSenha(senha);
+
+        var usuarioAutenticado = UsuarioAutenticado.builder().usuario(usuario).build();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        assertThatCode(() -> service.alterarDadosAcessoSenha(request))
+            .doesNotThrowAnyException();
+
+        verify(repository).updateSenha(any(), any(), any());
+        verify(notificacaoService).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoSenha_deveLancarException_quandoUsuarioAutenticadoInformarSenhaAtualIncorreta() {
+        var request = UsuarioDadosAcessoRequest.builder()
+            .alterarSenha(Eboolean.V)
+            .senhaAtual("teste123")
+            .senhaNova("T3steS&nh@")
+            .build();
+
+        var senha = BCrypt.hashpw("TESTE123", BCrypt.gensalt());
+        var usuario = umUsuarioCompleto();
+        usuario.setSenha(senha);
+
+        var usuarioAutenticado = UsuarioAutenticado.builder().usuario(usuario).build();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.alterarDadosAcessoSenha(request))
+            .withMessage("Senha atual está incorreta.");
+
+        verify(repository, never()).updateSenha(any(), any(), any());
+        verify(notificacaoService, never()).enviarEmailAtualizacaoSenha(any(), any());
+        verify(autenticacaoService, never()).forcarLogoutGeradorLeadsEClienteLojaFuturo(any());
     }
 }
