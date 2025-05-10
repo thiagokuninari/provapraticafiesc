@@ -1,1 +1,0 @@
-UPDATE USUARIO SET CPF = REPLACE(REPLACE(CPF, '.', ''), '-', '') WHERE CPF LIKE '%.%';

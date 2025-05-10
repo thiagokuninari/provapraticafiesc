@@ -1,1 +1,0 @@
-INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (10019, 'Baixar relatório mensal da anatel', 'REL_10019', 17);

@@ -1,2 +1,0 @@
-UPDATE FUNCIONALIDADE SET NOME = 'Visualizar Layout de Alarme' WHERE NOME = 'Vizualizar Layout de Alarme';
-UPDATE FUNCIONALIDADE SET NOME = 'Visualizar Painel Gerencial' WHERE NOME = 'Vizualizar Painel Gerencial';

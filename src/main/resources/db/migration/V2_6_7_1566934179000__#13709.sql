@@ -1,1 +1,0 @@
-INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (2040, 'Consultar buscas realizadas na Lei Não Perturbe', 'CTR_2040', 20);

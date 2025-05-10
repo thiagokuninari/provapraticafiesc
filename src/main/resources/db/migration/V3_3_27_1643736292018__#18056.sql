@@ -1,1 +1,0 @@
-INSERT INTO cargo_canal (fk_cargo, canal) VALUES (5, 'D2D_PROPRIO');

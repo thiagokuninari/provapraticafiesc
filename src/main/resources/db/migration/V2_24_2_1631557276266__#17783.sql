@@ -1,1 +1,0 @@
-ALTER TABLE usuarios_para_deslogar ADD BLOQUEADO VARCHAR2(1) DEFAULT 'F';

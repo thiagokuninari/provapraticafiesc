@@ -1,3 +1,0 @@
--- Adiciona funcionalidade Visualizar Tratativas Tecnico Vendedor para Subnivel BACKOFFICE CENTRALIZADO
-INSERT INTO CARGO_FUNC_SUBNIVEL (ID, FK_FUNCIONALIDADE, FK_SUBNIVEL)
-VALUES (SEQ_CARGO_FUNC_SUBNIVEL.nextval, 16107, 2);
